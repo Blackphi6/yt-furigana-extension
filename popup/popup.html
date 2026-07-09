@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YT Furigana</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>YT Furigana</h1>
+        <p>YouTubeの日本語字幕にひらがなルビを表示</p>
+      </header>
+
+      <label class="toggle" for="enabled">
+        <span>ふりがなを表示</span>
+        <input type="checkbox" id="enabled" checked />
+        <span class="slider" aria-hidden="true"></span>
+      </label>
+
+      <section class="panel">
+        <h2>変換エンジン</h2>
+
+        <label class="radio">
+          <input type="radio" name="engine" value="ollama" checked />
+          <span>
+            <strong>ローカル LLM（Ollama）</strong>
+            <small>軽量モデルで文脈理解。一組目→ひとくみめ など高精度</small>
+          </span>
+        </label>
+
+        <label class="radio">
+          <input type="radio" name="engine" value="kuromoji" />
+          <span>
+            <strong>Kuromoji（辞書）</strong>
+            <small>Ollama不要。速いが誤読あり</small>
+          </span>
+        </label>
+      </section>
+
+      <section class="panel" id="ollama-settings">
+        <label class="field" for="ollamaUrl">
+          <span>Ollama URL</span>
+          <input type="text" id="ollamaUrl" value="http://localhost:11434" />
+        </label>
+
+        <label class="field" for="ollamaModel">
+          <span>モデル名</span>
+          <select id="ollamaModel"></select>
+          <input
+            type="text"
+            id="ollamaModelCustom"
+            hidden
+            placeholder="例: qwen2.5:14b"
+          />
+        </label>
+
+        <button type="button" id="testOllama" class="button">接続テスト</button>
+        <p class="status" id="ollamaStatus" hidden></p>
+
+        <p class="hint">
+          ポップアップを開くとインストール済みモデルを自動検出します。<br />
+          未インストールの場合: <code>ollama pull qwen2.5:14b</code><br />
+          接続テストは変換APIまで確認します（403の場合は拡張機能を再読み込み）。<br />
+          14b など大きいモデルは1字幕あたり20〜30秒かかります。
+        </p>
+      </section>
+
+      <p class="hint">
+        字幕が表示されない場合は、YouTubeの字幕設定で日本語を有効にしてください。
+      </p>
+    </main>
+    <script type="module" src="../dist/popup.js"></script>
+  </body>
+</html>

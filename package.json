@@ -1,0 +1,21 @@
+{
+  "name": "yt-furigana-extension",
+  "version": "1.0.0",
+  "description": "YouTube日本語字幕にひらがなのルビを表示するChrome拡張機能",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node scripts/test-furigana.mjs && node scripts/test-segments.mjs && node scripts/test-timeout.mjs && node scripts/test-default-settings.mjs",
+    "watch": "node scripts/build.mjs --watch"
+  },
+  "dependencies": {
+    "kuromoji": "^0.1.2"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true
+  }
+}

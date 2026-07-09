@@ -1,0 +1,37 @@
+/* ルビ用の余白だけ追加。フォントサイズはJS側でYouTube原本を復元する */
+.ytp-caption-window-container .caption-window:has([data-yt-furigana-styled]) {
+  padding-top: 1em !important;
+}
+
+.ytp-caption-segment ruby,
+.caption-visual-line ruby,
+ytd-transcript-segment-renderer .segment-text ruby {
+  display: inline;
+  position: relative;
+  ruby-position: unset;
+}
+
+.ytp-caption-segment rt,
+.caption-visual-line rt,
+ytd-transcript-segment-renderer .segment-text rt {
+  position: absolute;
+  bottom: calc(100% - 0.05em);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.62em;
+  font-weight: 400;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0.92;
+  color: inherit;
+  text-shadow: inherit;
+  pointer-events: none;
+}
+
+ytd-transcript-segment-renderer .segment-text[data-yt-furigana-styled] {
+  line-height: 2 !important;
+}
+
+ytd-transcript-segment-renderer .segment-text ruby {
+  ruby-align: center;
+}
