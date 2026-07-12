@@ -151,15 +151,37 @@ export function aggregatePromotionCandidates(proposals, options = {}) {
   }
 
   const promoted = [];
+  /** @type {Map<string, Set<string>>} */
+  const readingsBySurface = new Map();
+  for (const item of groups.values()) {
+    const fromSeed = item.sources.has("seed");
+    const fromUser = item.sources.has("user");
+    if (!fromSeed && !fromUser && item.votes < minVotes) continue;
+    const set = readingsBySurface.get(item.surface) || new Set();
+    set.add(item.reading);
+    readingsBySurface.set(item.surface, set);
+  }
+
   for (const item of groups.values()) {
     const fromSeed = item.sources.has("seed");
     const fromUser = item.sources.has("user");
     if (!fromSeed && !fromUser && item.votes < minVotes) continue;
 
+    const ambiguous =
+      (readingsBySurface.get(item.surface)?.size || 0) > 1;
+    const cues = [...item.cues];
+    if (cues.length === 0) {
+      for (const text of item.texts) {
+        const around = text.replace(item.surface, " ").trim().slice(0, 12);
+        if (around) cues.push(around);
+      }
+    }
+
+    // 同形異音や文脈付き学習はフレーズ上書き禁止（最後の1読みが全文を汚染する）
     const usePhrase =
-      item.surface.length >= (options.preferPhraseLength ?? 4) ||
-      fromSeed ||
-      fromUser;
+      !ambiguous &&
+      cues.length === 0 &&
+      item.surface.length >= (options.preferPhraseLength ?? 4);
 
     if (usePhrase) {
       promoted.push({
@@ -170,19 +192,13 @@ export function aggregatePromotionCandidates(proposals, options = {}) {
         sources: [...item.sources]
       });
     } else {
-      const cues = [...item.cues];
-      if (cues.length === 0) {
-        for (const text of item.texts) {
-          const around = text.replace(item.surface, " ").trim().slice(0, 12);
-          if (around) cues.push(around);
-        }
-      }
+      const finalCues = cues.length > 0 ? cues : [item.surface];
       promoted.push({
         type: "context",
         surface: item.surface,
         reading: item.reading,
-        weight: fromSeed || fromUser ? 4 : 3,
-        cues: cues.slice(0, 8),
+        weight: fromSeed || fromUser ? 5 : 3,
+        cues: finalCues.slice(0, 8),
         votes: item.votes,
         sources: [...item.sources]
       });

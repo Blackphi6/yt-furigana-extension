@@ -15,6 +15,8 @@
     "learn:bench": "node scripts/learning/evaluate-seed-bench.mjs",
     "learn:label": "node scripts/learning/auto-label.mjs",
     "learn:promote": "node scripts/learning/promote.mjs",
+    "learn:reranker-smoke": ".venv-reading/bin/python reading-engine/train/train_reranker_smoke.py",
+    "learn:reranker-dry": ".venv-reading/bin/python reading-engine/train/train_reranker_smoke.py --dry-run",
     "reading-engine": "cd reading-engine && ../.venv-reading/bin/uvicorn reading_engine.server:app --host 127.0.0.1 --port 8765",
     "reading-engine:test": "node scripts/test-reading-engine.mjs",
     "mint-license": "node scripts/mint-license.mjs",

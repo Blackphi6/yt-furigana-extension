@@ -17,6 +17,7 @@ import {
 } from "./bench-utils.mjs";
 import { buildFuriganaHtml } from "../../src/furigana.js";
 import { extractReadingsFromRubyHtml } from "../../src/reading-learning.js";
+import { buildLearningCues } from "../../src/user-reading-dict.js";
 
 const tokenize = await createBenchTokenizer();
 const seedCases = await loadJsonl(seedBenchPath());
@@ -108,26 +109,22 @@ for (const event of inbox) {
 
 for (const event of inbox) {
   if (!event.text) continue;
+  // 現状の誤読みを hybrid 提案にすると、正しい user/seed のキューが汚染される。
+  // ユーザーが選んだ want と一致するときだけ確認票として残す。
+  if (!(event.kind === "user" && event.surface && event.want)) continue;
   const html = buildFuriganaHtml(event.text, tokenize);
   const map = extractReadingsFromRubyHtml(html);
-  for (const [surface, reading] of map) {
-    if (
-      event.surface &&
-      surface !== event.surface &&
-      !event.surface.startsWith(surface)
-    ) {
-      continue;
-    }
-    proposals.push({
-      ts,
-      kind: "proposal",
-      text: event.text,
-      surface: event.surface || surface,
-      reading,
-      source: "hybrid",
-      cues: extractCues(event.text, event.surface || surface)
-    });
-  }
+  const got = map.get(event.surface);
+  if (got !== event.want) continue;
+  proposals.push({
+    ts,
+    kind: "proposal",
+    text: event.text,
+    surface: event.surface,
+    reading: event.want,
+    source: "hybrid",
+    cues: extractCues(event.text, event.surface)
+  });
 }
 
 await mkdir(path.dirname(proposalsPath()), { recursive: true });
@@ -152,10 +149,5 @@ console.log(
 );
 
 function extractCues(text, surface) {
-  if (!text || !surface) return [];
-  const idx = text.indexOf(surface);
-  if (idx === -1) return [];
-  const before = text.slice(Math.max(0, idx - 6), idx);
-  const after = text.slice(idx + surface.length, idx + surface.length + 6);
-  return [before, after].map((s) => s.trim()).filter((s) => s.length >= 2);
+  return buildLearningCues(surface, text);
 }

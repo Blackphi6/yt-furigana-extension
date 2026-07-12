@@ -214,7 +214,8 @@ function scoreReading(reading, context, rulesForSurface) {
     if (rule.reading !== reading) continue;
     for (const cue of rule.cues) {
       if (!context.includes(cue)) continue;
-      score += rule.weight;
+      // 長いキュー（永遠に > 永遠）ほど優先
+      score += rule.weight * (1 + Math.min(cue.length, 12) / 6);
       matched.push(cue);
     }
   }
