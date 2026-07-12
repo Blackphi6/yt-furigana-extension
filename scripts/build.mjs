@@ -1,6 +1,6 @@
 import { build, context } from "esbuild";
 import { cp, mkdir, writeFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { deflateSync } from "node:zlib";
@@ -19,6 +19,27 @@ async function copyKuromojiDict() {
 
   await mkdir(target, { recursive: true });
   await cp(source, target, { recursive: true, force: true });
+}
+
+async function copySudachiDict() {
+  const source = path.join(
+    root,
+    "node_modules",
+    "sudachi-wasm333",
+    "resources",
+    "system.dic"
+  );
+  const targetDir = path.join(root, "dict", "sudachi");
+  const target = path.join(targetDir, "system.dic");
+
+  if (!existsSync(source)) {
+    throw new Error("Sudachi dictionary not found. Run npm install first.");
+  }
+
+  await mkdir(targetDir, { recursive: true });
+  await cp(source, target, { force: true });
+  const sizeMb = statSync(target).size / (1024 * 1024);
+  console.log(`Sudachi dictionary ready (${sizeMb.toFixed(0)} MB)`);
 }
 
 function createPng(size, rgba) {
@@ -167,6 +188,27 @@ async function buildContentScript() {
   await build(options);
 }
 
+async function buildPageCaptionBridge() {
+  const options = {
+    entryPoints: [path.join(root, "src", "page-caption-bridge.js")],
+    outfile: path.join(root, "dist", "page-caption-bridge.js"),
+    bundle: true,
+    format: "iife",
+    platform: "browser",
+    target: ["chrome109"],
+    logLevel: "info"
+  };
+
+  if (watch) {
+    const ctx = await context(options);
+    await ctx.watch();
+    console.log("Watching page caption bridge...");
+    return;
+  }
+
+  await build(options);
+}
+
 async function buildPopupScript() {
   const options = {
     entryPoints: [path.join(root, "src", "popup.js")],
@@ -191,9 +233,11 @@ async function buildPopupScript() {
 async function run() {
   await mkdir(path.join(root, "dist"), { recursive: true });
   await copyKuromojiDict();
+  await copySudachiDict();
   await generateIcons();
   await buildBackgroundScript();
   await buildContentScript();
+  await buildPageCaptionBridge();
   await buildPopupScript();
   console.log("Build complete.");
 }

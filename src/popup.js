@@ -1,6 +1,29 @@
-import { DEFAULT_SETTINGS, pickPreferredOllamaModel } from "./default-settings.js";
+import {
+  DEFAULT_SETTINGS,
+  pickPreferredOllamaModel
+} from "./default-settings.js";
+import { readingApiOriginPattern } from "./reading-api.js";
+import {
+  DEFAULT_SPONSORS_URL,
+  isPremiumPlan,
+  normalizePlan,
+  resolveEntitlement
+} from "./premium.js";
 
 const enabledInput = document.getElementById("enabled");
+const readingApiUrlInput = document.getElementById("readingApiUrl");
+const readingApiKeyInput = document.getElementById("readingApiKey");
+const licenseKeyInput = document.getElementById("licenseKey");
+const planBadge = document.getElementById("planBadge");
+const planHint = document.getElementById("planHint");
+const premiumStatus = document.getElementById("premiumStatus");
+const sponsorsLink = document.getElementById("sponsorsLink");
+const verifyLicenseButton = document.getElementById("verifyLicense");
+const syncDictButton = document.getElementById("syncDict");
+const fetchSharedDictButton = document.getElementById("fetchSharedDict");
+const testReadingApiButton = document.getElementById("testReadingApi");
+const readingApiStatus = document.getElementById("readingApiStatus");
+const readingApiSettings = document.getElementById("reading-api-settings");
 const ollamaUrlInput = document.getElementById("ollamaUrl");
 const ollamaModelSelect = document.getElementById("ollamaModel");
 const ollamaModelCustom = document.getElementById("ollamaModelCustom");
@@ -11,15 +34,40 @@ const ollamaSettings = document.getElementById("ollama-settings");
 
 const CUSTOM_MODEL_VALUE = "__custom__";
 
-function updateOllamaPanelVisibility() {
-  const engine = document.querySelector('input[name="engine"]:checked')?.value ?? "ollama";
-  ollamaSettings.hidden = engine !== "ollama";
+function selectedEngine() {
+  return document.querySelector('input[name="engine"]:checked')?.value ?? "kuromoji";
 }
 
-function setStatus(message, ok) {
-  ollamaStatus.hidden = false;
-  ollamaStatus.textContent = message;
-  ollamaStatus.className = ok ? "status ok" : "status error";
+function updateEnginePanels() {
+  const engine = selectedEngine();
+  readingApiSettings.hidden = engine !== "reading-api";
+  if (engine === "ollama") {
+    ollamaSettings.open = true;
+  }
+}
+
+function setStatus(el, message, ok) {
+  if (!el) return;
+  el.hidden = false;
+  el.textContent = message;
+  el.className = ok ? "status ok" : "status error";
+}
+
+function updatePlanUi(settings) {
+  const entitlement = resolveEntitlement(settings);
+  const premium = isPremiumPlan(entitlement.plan);
+  if (planBadge) {
+    planBadge.textContent = premium ? "Premium" : "Free";
+    planBadge.classList.toggle("is-premium", premium);
+  }
+  if (planHint) {
+    planHint.innerHTML = premium
+      ? "Premium 有効: 辞書同期・共有辞書・ホスト読みAPIが使えます。"
+      : "Free: ローカルふりがな・クリック学習は無制限（クラウド送信なし）。<br />Premium: 辞書クラウド同期・共有辞書・ホスト読みAPI。";
+  }
+  if (sponsorsLink) {
+    sponsorsLink.href = settings.sponsorsUrl || DEFAULT_SPONSORS_URL;
+  }
 }
 
 function getSelectedModelName() {
@@ -80,9 +128,9 @@ function setModelField(modelName, models = []) {
   ollamaModelCustom.hidden = false;
 }
 
-function sendMessage(type) {
+function sendMessage(type, extra = {}) {
   return new Promise((resolve) => {
-    chrome.runtime.sendMessage({ type }, (response) => {
+    chrome.runtime.sendMessage({ type, ...extra }, (response) => {
       if (chrome.runtime.lastError) {
         resolve({ ok: false, error: chrome.runtime.lastError.message });
         return;
@@ -92,12 +140,24 @@ function sendMessage(type) {
   });
 }
 
+async function ensureReadingApiPermission(url) {
+  const origin = readingApiOriginPattern(url);
+  if (!origin || !chrome.permissions?.request) return true;
+  try {
+    const already = await chrome.permissions.contains({ origins: [origin] });
+    if (already) return true;
+    return chrome.permissions.request({ origins: [origin] });
+  } catch {
+    return false;
+  }
+}
+
 async function refreshInstalledModels({ autoFix = false } = {}) {
   await saveSettings();
   const response = await sendMessage("LIST_OLLAMA_MODELS");
 
   if (!response.ok) {
-    setStatus(response.error ?? "モデル一覧の取得に失敗しました", false);
+    setStatus(ollamaStatus, response.error ?? "モデル一覧の取得に失敗しました", false);
     return response;
   }
 
@@ -110,7 +170,7 @@ async function refreshInstalledModels({ autoFix = false } = {}) {
     if (preferred && preferred !== current) {
       current = preferred;
       await chrome.storage.sync.set({ ollamaModel: preferred });
-      setStatus(`インストール済みモデルを自動選択: ${preferred}`, true);
+      setStatus(ollamaStatus, `インストール済みモデルを自動選択: ${preferred}`, true);
     }
   }
 
@@ -118,41 +178,84 @@ async function refreshInstalledModels({ autoFix = false } = {}) {
   return response;
 }
 
+function normalizeStoredEngine(engine) {
+  if (engine === "groq") return "hybrid";
+  return engine || DEFAULT_SETTINGS.engine;
+}
+
 async function loadSettings() {
   const result = await chrome.storage.sync.get(DEFAULT_SETTINGS);
   enabledInput.checked = result.enabled;
+  readingApiUrlInput.value = result.readingApiUrl || "";
+  if (readingApiKeyInput) readingApiKeyInput.value = result.readingApiKey || "";
+  if (licenseKeyInput) licenseKeyInput.value = result.licenseKey || "";
   ollamaUrlInput.value = result.ollamaUrl;
   setModelField(result.ollamaModel, []);
+  updatePlanUi(result);
 
+  const engine = normalizeStoredEngine(result.engine);
   engineInputs.forEach((input) => {
-    input.checked = input.value === result.engine;
+    input.checked = input.value === engine;
   });
 
-  updateOllamaPanelVisibility();
+  updateEnginePanels();
 
-  if (result.engine === "ollama") {
+  if (engine === "ollama") {
     await refreshInstalledModels({ autoFix: true });
   }
 }
 
 async function saveSettings() {
-  const engine = document.querySelector('input[name="engine"]:checked')?.value ?? "ollama";
+  const engine = selectedEngine();
+  const readingApiUrl = readingApiUrlInput.value.trim();
+
+  if (engine === "reading-api" && readingApiUrl) {
+    const granted = await ensureReadingApiPermission(readingApiUrl);
+    if (!granted) {
+      setStatus(
+        readingApiStatus,
+        "このURLへのアクセス許可が必要です（ブラウザの許可ダイアログを確認）",
+        false
+      );
+    }
+  }
+
+  const current = await chrome.storage.sync.get(DEFAULT_SETTINGS);
   await chrome.storage.sync.set({
     enabled: enabledInput.checked,
     engine,
+    readingApiUrl,
+    readingApiKey: readingApiKeyInput?.value.trim() || "",
+    licenseKey: licenseKeyInput?.value.trim() || "",
+    plan: normalizePlan(current.plan),
+    premiumExpiresAt: current.premiumExpiresAt || "",
+    dictRevisedAt: current.dictRevisedAt || "",
+    sharedDictEnabled: current.sharedDictEnabled !== false,
+    sponsorsUrl: current.sponsorsUrl || DEFAULT_SPONSORS_URL,
     ollamaUrl: ollamaUrlInput.value.trim() || DEFAULT_SETTINGS.ollamaUrl,
     ollamaModel: getSelectedModelName()
   });
 }
 
 enabledInput.addEventListener("change", saveSettings);
+readingApiUrlInput.addEventListener("change", saveSettings);
+readingApiUrlInput.addEventListener("blur", saveSettings);
+readingApiKeyInput?.addEventListener("change", saveSettings);
+readingApiKeyInput?.addEventListener("blur", saveSettings);
+licenseKeyInput?.addEventListener("change", saveSettings);
+licenseKeyInput?.addEventListener("blur", saveSettings);
+
 ollamaUrlInput.addEventListener("change", async () => {
   await saveSettings();
-  await refreshInstalledModels({ autoFix: true });
+  if (selectedEngine() === "ollama") {
+    await refreshInstalledModels({ autoFix: true });
+  }
 });
 ollamaUrlInput.addEventListener("blur", async () => {
   await saveSettings();
-  await refreshInstalledModels({ autoFix: true });
+  if (selectedEngine() === "ollama") {
+    await refreshInstalledModels({ autoFix: true });
+  }
 });
 
 ollamaModelSelect.addEventListener("change", async () => {
@@ -169,7 +272,7 @@ ollamaModelCustom.addEventListener("blur", saveSettings);
 
 engineInputs.forEach((input) => {
   input.addEventListener("change", async () => {
-    updateOllamaPanelVisibility();
+    updateEnginePanels();
     await saveSettings();
     if (input.value === "ollama") {
       await refreshInstalledModels({ autoFix: true });
@@ -177,13 +280,29 @@ engineInputs.forEach((input) => {
   });
 });
 
+testReadingApiButton?.addEventListener("click", async () => {
+  await saveSettings();
+  setStatus(readingApiStatus, "接続確認中...", true);
+  const granted = await ensureReadingApiPermission(readingApiUrlInput.value.trim());
+  if (!granted) {
+    setStatus(readingApiStatus, "アクセス許可が拒否されました", false);
+    return;
+  }
+  const response = await sendMessage("CHECK_READING_API");
+  if (!response.ok) {
+    setStatus(readingApiStatus, response.error ?? "接続に失敗しました", false);
+    return;
+  }
+  setStatus(readingApiStatus, `接続OK（${response.endpoint}）`, true);
+});
+
 testOllamaButton.addEventListener("click", async () => {
   await saveSettings();
-  setStatus("接続確認中...", true);
+  setStatus(ollamaStatus, "接続確認中...", true);
 
   const response = await sendMessage("CHECK_OLLAMA");
   if (!response.ok) {
-    setStatus(response.error ?? "接続に失敗しました", false);
+    setStatus(ollamaStatus, response.error ?? "接続に失敗しました", false);
     return;
   }
 
@@ -195,13 +314,120 @@ testOllamaButton.addEventListener("click", async () => {
     setModelField(response.suggestedModel, models);
     await chrome.storage.sync.set({ ollamaModel: response.suggestedModel });
     setStatus(
+      ollamaStatus,
       `接続OK。${current || "未設定"} は未インストールのため ${response.suggestedModel} に切り替えました`,
       true
     );
     return;
   }
 
-  setStatus(`接続OK（${response.effectiveModel} で変換可能）`, true);
+  setStatus(ollamaStatus, `接続OK（${response.effectiveModel} で変換可能）`, true);
+});
+
+verifyLicenseButton?.addEventListener("click", async () => {
+  await saveSettings();
+  const url = readingApiUrlInput.value.trim() || "http://127.0.0.1:8765";
+  if (!readingApiUrlInput.value.trim()) {
+    readingApiUrlInput.value = url;
+    await saveSettings();
+  }
+  const granted = await ensureReadingApiPermission(url);
+  if (!granted) {
+    setStatus(premiumStatus, "サーバーへのアクセス許可が必要です", false);
+    return;
+  }
+  setStatus(premiumStatus, "ライセンス検証中...", true);
+  const response = await sendMessage("VERIFY_LICENSE", {
+    licenseKey: licenseKeyInput?.value.trim() || ""
+  });
+  if (!response.ok) {
+    setStatus(premiumStatus, response.error ?? "検証に失敗しました", false);
+    return;
+  }
+  const settings = await chrome.storage.sync.get(DEFAULT_SETTINGS);
+  updatePlanUi(settings);
+  setStatus(premiumStatus, `Premium 有効（${response.licenseKey}）`, true);
+});
+
+syncDictButton?.addEventListener("click", async () => {
+  await saveSettings();
+  setStatus(premiumStatus, "辞書を同期中...", true);
+  const response = await sendMessage("SYNC_USER_DICT");
+  if (!response.ok) {
+    setStatus(premiumStatus, response.error ?? "同期に失敗しました", false);
+    return;
+  }
+  setStatus(
+    premiumStatus,
+    `同期完了（${response.count} 語 / ${response.revisedAt || ""}）`,
+    true
+  );
+});
+
+fetchSharedDictButton?.addEventListener("click", async () => {
+  await saveSettings();
+  setStatus(premiumStatus, "共有辞書を取得中...", true);
+  const response = await sendMessage("FETCH_SHARED_DICT");
+  if (!response.ok) {
+    setStatus(premiumStatus, response.error ?? "取得に失敗しました", false);
+    return;
+  }
+  setStatus(
+    premiumStatus,
+    `共有辞書 ${response.count} 語を取り込みました（ページ再読込で反映）`,
+    true
+  );
+});
+
+const exportLearningButton = document.getElementById("exportLearning");
+const clearLearningButton = document.getElementById("clearLearning");
+const learningStatus = document.getElementById("learningStatus");
+
+function setLearningStatus(message, ok) {
+  if (!learningStatus) return;
+  learningStatus.hidden = false;
+  learningStatus.textContent = message;
+  learningStatus.className = ok ? "status ok" : "status error";
+}
+
+exportLearningButton?.addEventListener("click", async () => {
+  const response = await sendMessage("GET_LEARNING_INBOX");
+  if (!response.ok) {
+    setLearningStatus(response.error ?? "取得に失敗しました", false);
+    return;
+  }
+
+  const inbox = response.inbox ?? [];
+  const body =
+    inbox.map((row) => JSON.stringify(row)).join("\n") + (inbox.length ? "\n" : "");
+  const blob = new Blob([body], { type: "application/x-ndjson" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+  anchor.href = url;
+  anchor.download = `yt-furigana-inbox-${stamp}.jsonl`;
+  anchor.click();
+  URL.revokeObjectURL(url);
+  setLearningStatus(`${inbox.length} 件を書き出しました（inbox.jsonl に追記して npm run learn）`, true);
+});
+
+clearLearningButton?.addEventListener("click", async () => {
+  const response = await sendMessage("CLEAR_LEARNING_INBOX");
+  if (!response.ok) {
+    setLearningStatus(response.error ?? "消去に失敗しました", false);
+    return;
+  }
+  setLearningStatus("学習ログを消去しました", true);
+});
+
+document.getElementById("openLicenses")?.addEventListener("click", (event) => {
+  event.preventDefault();
+  const url = chrome.runtime.getURL("licenses/licenses.html");
+  if (chrome.tabs?.create) {
+    void chrome.tabs.create({ url });
+    return;
+  }
+  window.open(url, "_blank", "noopener,noreferrer");
 });
 
 void loadSettings();

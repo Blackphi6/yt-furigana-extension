@@ -10,7 +10,7 @@
     <main>
       <header>
         <h1>YT Furigana</h1>
-        <p>YouTubeの日本語字幕にひらがなルビを表示</p>
+        <p>YouTube / TVer の日本語字幕にひらがなルビを表示</p>
       </header>
 
       <label class="toggle" for="enabled">
@@ -23,23 +23,62 @@
         <h2>変換エンジン</h2>
 
         <label class="radio">
-          <input type="radio" name="engine" value="ollama" checked />
+          <input type="radio" name="engine" value="kuromoji" checked />
           <span>
-            <strong>ローカル LLM（Ollama）</strong>
-            <small>軽量モデルで文脈理解。一組目→ひとくみめ など高精度</small>
+            <strong>Kuromoji（推奨・既定）</strong>
+            <small>完全ローカル・無料。複合語は結合して候補表示。クリックで学習</small>
           </span>
         </label>
 
         <label class="radio">
-          <input type="radio" name="engine" value="kuromoji" />
+          <input type="radio" name="engine" value="hybrid" />
           <span>
-            <strong>Kuromoji（辞書）</strong>
-            <small>Ollama不要。速いが誤読あり</small>
+            <strong>Hybrid（Sudachi + Kuromoji）</strong>
+            <small>分割は Sudachi、読みは両方で補完。1人→ひとり に強い</small>
+          </span>
+        </label>
+
+        <label class="radio">
+          <input type="radio" name="engine" value="sudachi" />
+          <span>
+            <strong>Sudachi のみ</strong>
+            <small>現代語辞書（初回読込やや重い）</small>
+          </span>
+        </label>
+
+        <label class="radio">
+          <input type="radio" name="engine" value="reading-api" />
+          <span>
+            <strong>読みAPI（任意・BYO）</strong>
+            <small>JRM互換。自分のURL／公開APIを指定。失敗時はローカルにフォールバック</small>
           </span>
         </label>
       </section>
 
-      <section class="panel" id="ollama-settings">
+      <section class="panel" id="reading-api-settings" hidden>
+        <button type="button" id="testReadingApi" class="button">接続テスト</button>
+        <p class="status" id="readingApiStatus" hidden></p>
+        <p class="hint">
+          サーバーURLは上の「プラン」欄で設定します。ローカル:
+          <code>npm run reading-engine</code> →
+          <code>http://127.0.0.1:8765</code>。<br />
+          個人辞書は <code>user_dict</code> として送信されます。
+        </p>
+      </section>
+
+      <details class="panel advanced" id="ollama-settings">
+        <summary>上級者向け（ローカル LLM / Ollama）</summary>
+        <p class="hint">
+          自由生成LLMは本文を書き換えやすいため、通常は推奨しません。読みAPIやKuromojiの方が安定です。
+        </p>
+        <label class="radio ollama-enable">
+          <input type="radio" name="engine" value="ollama" />
+          <span>
+            <strong>Ollama を使う</strong>
+            <small>要ローカル Ollama。失敗時は辞書にフォールバック</small>
+          </span>
+        </label>
+
         <label class="field" for="ollamaUrl">
           <span>Ollama URL</span>
           <input type="text" id="ollamaUrl" value="http://localhost:11434" />
@@ -52,7 +91,7 @@
             type="text"
             id="ollamaModelCustom"
             hidden
-            placeholder="例: qwen2.5:14b"
+            placeholder="例: gemma3:4b"
           />
         </label>
 
@@ -60,16 +99,107 @@
         <p class="status" id="ollamaStatus" hidden></p>
 
         <p class="hint">
-          ポップアップを開くとインストール済みモデルを自動検出します。<br />
-          未インストールの場合: <code>ollama pull qwen2.5:14b</code><br />
-          接続テストは変換APIまで確認します（403の場合は拡張機能を再読み込み）。<br />
-          14b など大きいモデルは1字幕あたり20〜30秒かかります。
+          推奨（軽い）: <code>ollama pull gemma3:4b</code>
+        </p>
+      </details>
+
+      <section class="panel">
+        <h2>プラン</h2>
+        <p class="plan-badge" id="planBadge">Free</p>
+        <p class="hint" id="planHint">
+          Free: ローカルふりがな・クリック学習は無制限（クラウド送信なし）。<br />
+          Premium: 辞書クラウド同期・共有辞書・ホスト読みAPI。
+        </p>
+        <label class="field" for="readingApiUrl">
+          <span>同期 / 読みAPI サーバー</span>
+          <input
+            type="text"
+            id="readingApiUrl"
+            placeholder="http://127.0.0.1:8765 または https://…"
+          />
+        </label>
+        <label class="field" for="licenseKey">
+          <span>ライセンスキー</span>
+          <input
+            type="password"
+            id="licenseKey"
+            placeholder="ytfp_live_…"
+            autocomplete="off"
+          />
+        </label>
+        <label class="field" for="readingApiKey">
+          <span>読みAPIキー（任意）</span>
+          <input
+            type="password"
+            id="readingApiKey"
+            placeholder="ホスト運用時のみ"
+            autocomplete="off"
+          />
+        </label>
+        <div class="button-row">
+          <button type="button" id="verifyLicense" class="button">ライセンス検証</button>
+          <button type="button" id="syncDict" class="button secondary">辞書を同期</button>
+          <button type="button" id="fetchSharedDict" class="button secondary">共有辞書</button>
+        </div>
+        <p class="status" id="premiumStatus" hidden></p>
+        <p class="hint">
+          ローカル検証用デモキー: <code>ytfp_live_demo_key_001</code>（要
+          <code>npm run reading-engine</code>）。
+        </p>
+        <p class="hint">
+          <a id="sponsorsLink" href="https://github.com/sponsors/Blackphi6" target="_blank" rel="noreferrer"
+            >GitHub Sponsors で支援</a
+          >
         </p>
       </section>
 
+      <section class="panel">
+        <h2>自動学習</h2>
+        <p class="hint">
+          字幕の漢字を押すと読み候補が出ます。選ぶと端末内に学習されます。
+          Free ではクラウド送信しません。Premium の「辞書を同期」で端末間共有できます。
+          曖昧な読みのログも端末内に溜められます。書き出して
+          <code>data/learning/inbox.jsonl</code> に置き、<code>npm run learn</code> で辞書を自動更新できます。
+        </p>
+        <button type="button" id="exportLearning" class="button">学習ログを書き出し</button>
+        <button type="button" id="clearLearning" class="button secondary">学習ログを消去</button>
+        <p class="status" id="learningStatus" hidden></p>
+      </section>
+
       <p class="hint">
-        字幕が表示されない場合は、YouTubeの字幕設定で日本語を有効にしてください。
+        字幕が表示されない場合は、YouTubeの字幕設定で日本語を有効にしてください。<br />
+        通常利用は Kuromoji（自己負担0・ローカル）を推奨します。
       </p>
+
+      <footer class="legal">
+        <p>
+          <a href="#" id="openLicenses">ライセンス / 帰属表示</a>
+          ·
+          <a
+            href="https://github.com/Blackphi6/yt-furigana-extension/blob/main/docs/TERMS.md"
+            target="_blank"
+            rel="noreferrer"
+            >利用条件</a
+          >
+          ·
+          <a
+            href="https://github.com/Blackphi6/yt-furigana-extension/blob/main/docs/PRIVACY.md"
+            target="_blank"
+            rel="noreferrer"
+            >プライバシー</a
+          >
+          ·
+          <a
+            href="https://github.com/Blackphi6/yt-furigana-extension"
+            target="_blank"
+            rel="noreferrer"
+            >GitHub</a
+          >
+        </p>
+        <p class="legal-note">
+          © 2026 Blackphi6 · MIT · AS IS（無保証）· コンテンツ著作権は各権利者に帰属
+        </p>
+      </footer>
     </main>
     <script type="module" src="../dist/popup.js"></script>
   </body>

@@ -16,13 +16,17 @@ function hasKanji(text) {
   return /[\u3400-\u9fff\uF900-\uFAFF]/.test(text);
 }
 
+function hasDigit(text) {
+  return /[0-9０-９]/.test(text);
+}
+
 function parseSegments(surface) {
   const segments = [];
   let current = "";
   let type = null;
 
   for (const char of surface) {
-    const charType = isKanji(char) ? "kanji" : "kana";
+    const charType = isKanji(char) ? "kanji" : isKana(char) ? "kana" : "other";
     if (type !== charType) {
       if (current) segments.push({ type, text: current });
       current = char;
@@ -75,6 +79,11 @@ export function buildRuby(surface, reading) {
   if (!hasKanji(surface)) return surface;
   if (!hiraganaReading || hiraganaReading === toHiragana(surface)) return surface;
 
+  // 1人→ひとり など、数字混じりは語全体にルビを振る
+  if (hasDigit(surface)) {
+    return `<ruby>${surface}<rt>${hiraganaReading}</rt></ruby>`;
+  }
+
   const segments = parseSegments(surface);
   let result = "";
   let index = 0;
@@ -120,14 +129,46 @@ export function buildRuby(surface, reading) {
   return result + trailing.join("");
 }
 
+import {
+  applyContextualReadings,
+  applyManualPhraseReadings,
+  MANUAL_PHRASE_READINGS
+} from "./reading-context.js";
+import { normalizeReading } from "./reading-normalize.js";
+import { mergeTokensForRuby } from "./token-merge.js";
+
+function escapeAttr(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/** トークンを候補クリック可能な span で包む */
+export function wrapFuriganaWord(surface, reading, rubyHtml) {
+  if (!surface || !reading) return rubyHtml;
+  return `<span class="yt-furigana-word" data-surface="${escapeAttr(surface)}" data-reading="${escapeAttr(reading)}" tabindex="0" role="button" title="クリックで読み候補">${rubyHtml}</span>`;
+}
+
+/**
+ * RubiPon と同じ順: トークン化 → 結合 → 読み上書き。
+ * 原文を「何」などで先に切り出すと「何故か」が分断されるのでやらない。
+ */
 export function buildFuriganaHtml(text, tokenize) {
-  const tokens = tokenize(text);
+  const tokens = applyManualPhraseReadings(
+    mergeTokensForRuby(applyContextualReadings(tokenize(text), text), {
+      extraSurfaces: MANUAL_PHRASE_READINGS.keys()
+    })
+  );
 
   return tokens
     .map((token) => {
       const surface = token.surface_form;
       const reading = token.reading || token.pronunciation || "";
-      return buildRuby(surface, reading);
+      const ruby = buildRuby(surface, reading);
+      if (!reading || ruby === surface) return ruby;
+      return wrapFuriganaWord(surface, normalizeReading(reading), ruby);
     })
     .join("");
 }

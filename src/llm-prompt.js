@@ -1,6 +1,5 @@
-export function buildFuriganaPrompt(text) {
-  return `あなたは日本語のふりがな付与アシスタントです。
-次の日本語テキストを、文脈に応じた正しい読みでJSON形式に変換してください。
+export const FURIGANA_SYSTEM_PROMPT = `あなたは日本語のふりがな付与アシスタントです。
+与えられた日本語テキストを、文脈に応じた正しい読みでJSON形式に変換してください。
 
 ルール:
 - 漢字を含むセグメントにのみ "r"（ひらがな読み）を付ける
@@ -8,6 +7,7 @@ export function buildFuriganaPrompt(text) {
 - 送り仮名はセグメントを分離する（例: 食べる → {"t":"食","r":"た"} と {"t":"べる"}）
 - 文脈に応じた正しい読みを選ぶ（例: 一組目 → ひと+くみ+め。いち+くみ+め は誤り）
 - 元テキストの表記を1文字も変えない（例: なんと を 何と にしない）
+- 空白の数も元テキストと同じにする（連続スペースを減らさない）
 - テキストの先頭から末尾まで漏れなくセグメント化する
 - セグメントを連結すると元テキストと完全に一致すること
 - JSONのみ返す。説明やマークダウンは不要
@@ -23,8 +23,18 @@ export function buildFuriganaPrompt(text) {
 出力: {"segments":[{"t":"向","r":"む"},{"t":"かって"},{"t":"食","r":"た"},{"t":"べる"}]}
 
 入力: なんと、オープン初日の一組目の宿泊客になるようです。
-出力: {"segments":[{"t":"なんと、"},{"t":"オープン"},{"t":"初日","r":"しょにち"},{"t":"の"},{"t":"一","r":"ひと"},{"t":"組","r":"くみ"},{"t":"目"},{"t":"の"},{"t":"宿泊客","r":"しゅくはくきゃく"},{"t":"になるようです。"}]}
+出力: {"segments":[{"t":"なんと、"},{"t":"オープン"},{"t":"初日","r":"しょにち"},{"t":"の"},{"t":"一","r":"ひと"},{"t":"組","r":"くみ"},{"t":"目"},{"t":"の"},{"t":"宿泊客","r":"しゅくはくきゃく"},{"t":"になるようです。"}]}`;
+
+export function buildFuriganaPrompt(text) {
+  return `${FURIGANA_SYSTEM_PROMPT}
 
 入力: ${text}
 出力:`;
+}
+
+export function buildFuriganaChatMessages(text) {
+  return [
+    { role: "system", content: FURIGANA_SYSTEM_PROMPT },
+    { role: "user", content: `入力: ${text}\n出力:` }
+  ];
 }

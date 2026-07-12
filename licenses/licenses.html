@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YT Furigana — ライセンス</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #1f2937;
+        --muted: #6b7280;
+        --line: #e5e7eb;
+        --bg: #f8fafc;
+        --card: #ffffff;
+        --accent: #dc2626;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background: var(--bg);
+        line-height: 1.6;
+      }
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 28px 20px 48px;
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 22px;
+      }
+      h2 {
+        margin: 28px 0 10px;
+        font-size: 16px;
+      }
+      h3 {
+        margin: 18px 0 6px;
+        font-size: 14px;
+      }
+      p,
+      li {
+        font-size: 13px;
+        color: var(--ink);
+      }
+      .lead {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 0 0 20px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin: 12px 0;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 8px 6px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      th {
+        color: var(--muted);
+        font-weight: 600;
+      }
+      a {
+        color: var(--accent);
+      }
+      code {
+        font-size: 11px;
+        background: #f3f4f6;
+        padding: 1px 5px;
+        border-radius: 4px;
+      }
+      .muted {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      pre {
+        white-space: pre-wrap;
+        font-size: 11px;
+        background: #f3f4f6;
+        border-radius: 8px;
+        padding: 12px;
+        overflow: auto;
+        max-height: 280px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>ライセンス / 帰属表示</h1>
+      <p class="lead">
+        YT Furigana 本体と、同梱・利用しているオープンソース成果物の情報です。
+      </p>
+
+      <section class="card">
+        <h2>本プロジェクト</h2>
+        <table>
+          <tr>
+            <th>ライセンス</th>
+            <td>MIT License</td>
+          </tr>
+          <tr>
+            <th>著作権</th>
+            <td>Copyright (c) 2026 Blackphi6 and YT Furigana contributors</td>
+          </tr>
+          <tr>
+            <th>リポジトリ</th>
+            <td>
+              <a
+                href="https://github.com/Blackphi6/yt-furigana-extension"
+                target="_blank"
+                rel="noreferrer"
+                >github.com/Blackphi6/yt-furigana-extension</a
+              >
+            </td>
+          </tr>
+        </table>
+        <p class="muted">全文はリポジトリ直下の <code>LICENSE</code> を参照してください。</p>
+      </section>
+
+      <section class="card">
+        <h2>第三者ソフトウェア・辞書</h2>
+        <table>
+          <tr>
+            <th>成果物</th>
+            <th>ライセンス</th>
+            <th>用途</th>
+          </tr>
+          <tr>
+            <td>
+              <a href="https://github.com/takuyaa/kuromoji.js" target="_blank" rel="noreferrer"
+                >kuromoji.js</a
+              >
+            </td>
+            <td>Apache-2.0</td>
+            <td>形態素解析（既定エンジン）</td>
+          </tr>
+          <tr>
+            <td>mecab-ipadic（kuromoji 経由）</td>
+            <td>NAIST / ICOT 条件</td>
+            <td>日本語辞書データ</td>
+          </tr>
+          <tr>
+            <td>
+              <a href="https://github.com/Benjas333/sudachi-wasm333" target="_blank" rel="noreferrer"
+                >sudachi-wasm333</a
+              >
+            </td>
+            <td>Apache-2.0</td>
+            <td>Sudachi 解析</td>
+          </tr>
+          <tr>
+            <td>SudachiDict</td>
+            <td>Apache-2.0（上流）</td>
+            <td>Sudachi 辞書</td>
+          </tr>
+        </table>
+        <p class="muted">
+          詳細はリポジトリの <code>NOTICE</code> /
+          <code>docs/OPEN-SOURCE-LICENSES.md</code> /
+          <code>third_party/</code> を参照してください。
+        </p>
+      </section>
+
+      <section class="card">
+        <h2>mecab-ipadic（要約）</h2>
+        <p>
+          Copyright 2000–2003 Nara Institute of Science and Technology. All Rights
+          Reserved.
+        </p>
+        <p>
+          利用・複製・配布は許可されています。複製物には上記著作権表示と、ICOT Free
+          Software に由来する無保証条項を含める必要があります。辞書エントリの多くは
+          ICOT Free Software に由来します。
+        </p>
+        <p class="muted">全文: <code>third_party/NOTICE-kuromoji.md</code></p>
+      </section>
+
+      <section class="card">
+        <h2>コンテンツとサービスについて</h2>
+        <ul>
+          <li>
+            本拡張は、ブラウザ上で表示中の字幕にルビを重ねるクライアント側の表示加工です。
+          </li>
+          <li>YouTube / TVer など各サービスの利用規約は、別途ご確認ください。</li>
+          <li>
+            字幕・歌詞などのコンテンツ著作権は各権利者に帰属します。本プロジェクトはそれらを再配布するサービスではありません。
+          </li>
+          <li>
+            Free プランの学習データは端末内のみ。Premium
+            の同期は、利用者が接続したサーバーに保存されます。
+          </li>
+        </ul>
+        <p class="muted">
+          詳しくはリポジトリの
+          <a
+            href="https://github.com/Blackphi6/yt-furigana-extension/blob/main/docs/TERMS.md"
+            target="_blank"
+            rel="noreferrer"
+            >利用条件・免責</a
+          >
+          および
+          <a
+            href="https://github.com/Blackphi6/yt-furigana-extension/blob/main/docs/PRIVACY.md"
+            target="_blank"
+            rel="noreferrer"
+            >プライバシーポリシー</a
+          >
+          を参照してください。
+        </p>
+      </section>
+
+      <section class="card">
+        <h2>MIT License（本プロジェクト）</h2>
+        <pre>
+MIT License
+
+Copyright (c) 2026 Blackphi6 and YT Furigana contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+        </pre>
+      </section>
+    </main>
+  </body>
+</html>

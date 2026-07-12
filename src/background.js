@@ -6,13 +6,29 @@ import {
 } from "./default-settings.js";
 import { getOllamaTimeoutMs } from "./ollama-config.js";
 import {
+  buildReadingApiRequest,
+  buildReadingApiHeaders,
+  normalizeReadingApiUrl,
+  parseReadingApiResponse
+} from "./reading-api.js";
+import { USER_READING_DICT_KEY } from "./user-reading-dict.js";
+import {
+  verifyLicense,
+  pullAndMergeDict,
+  pushDict,
+  fetchSharedDict
+} from "./dict-sync.js";
+import { PLAN_FREE, resolveEntitlement } from "./premium.js";
+import {
+  describeSegmentMismatch,
   parseLlmSegments,
-  segmentsToHtml,
-  validateSegments
+  repairSegmentsToOriginal,
+  segmentsToHtml
 } from "./segment-html.js";
 
 const LLM_CACHE_LIMIT = 500;
 const llmCache = new Map();
+const READING_API_TIMEOUT_MS = 30_000;
 
 export function normalizeOllamaUrl(url) {
   return (url || DEFAULT_SETTINGS.ollamaUrl).replace(/\/+$/, "");
@@ -20,6 +36,12 @@ export function normalizeOllamaUrl(url) {
 
 async function getSettings() {
   return chrome.storage.sync.get(DEFAULT_SETTINGS);
+}
+
+async function loadUserDict() {
+  const stored = await chrome.storage.local.get({ [USER_READING_DICT_KEY]: {} });
+  const dict = stored[USER_READING_DICT_KEY];
+  return dict && typeof dict === "object" ? dict : {};
 }
 
 async function resolveOllamaModel(settings) {
@@ -43,7 +65,11 @@ async function resolveOllamaModel(settings) {
 }
 
 function getCacheKey(text, settings) {
-  return `${settings.ollamaUrl}:${settings.ollamaModel}:${text}`;
+  return `ollama:${settings.ollamaUrl}:${settings.ollamaModel}:${text}`;
+}
+
+function getReadingApiCacheKey(text, settings) {
+  return `reading-api:${normalizeReadingApiUrl(settings.readingApiUrl)}:${text}`;
 }
 
 function setCache(key, html) {
@@ -94,15 +120,57 @@ export async function callOllama(text, settings, resolvedModel) {
     }
 
     const segments = parseLlmSegments(raw);
-    if (!validateSegments(text, segments)) {
-      throw new Error("Ollama response failed validation");
+    const repaired = repairSegmentsToOriginal(text, segments);
+    if (!repaired) {
+      const detail = describeSegmentMismatch(text, segments);
+      throw new Error(
+        `Ollama response failed validation (in="${detail.original.slice(0, 40)}" out="${detail.joined.slice(0, 40)}")`
+      );
     }
 
-    return segmentsToHtml(segments);
+    return segmentsToHtml(repaired);
   } catch (error) {
     if (error.name === "AbortError") {
       throw new Error(
         `Ollama timed out after ${Math.round(timeoutMs / 1000)}s (${model})`
+      );
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+export async function callReadingApi(text, settings, userDict) {
+  const endpoint = normalizeReadingApiUrl(settings.readingApiUrl);
+  if (!endpoint) {
+    throw new Error(
+      "読みAPIのURLが未設定です。ポップアップでエンドポイントを入力してください。"
+    );
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), READING_API_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      signal: controller.signal,
+      headers: buildReadingApiHeaders(settings),
+      body: JSON.stringify(buildReadingApiRequest(text, userDict))
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`Reading API error (${response.status}): ${body.slice(0, 200)}`);
+    }
+
+    const payload = await response.json();
+    return parseReadingApiResponse(payload, text);
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw new Error(
+        `Reading API timed out after ${Math.round(READING_API_TIMEOUT_MS / 1000)}s`
       );
     }
     throw error;
@@ -150,6 +218,19 @@ export async function checkOllamaConnection(settings) {
   };
 }
 
+export async function checkReadingApiConnection(settings) {
+  const endpoint = normalizeReadingApiUrl(settings.readingApiUrl);
+  if (!endpoint) {
+    throw new Error("読みAPIのURLが未設定です");
+  }
+
+  const html = await callReadingApi("今日は良い天気です。", settings, {});
+  if (!html) {
+    throw new Error("Reading API returned empty HTML");
+  }
+  return { endpoint, ok: true };
+}
+
 async function convertWithOllama(text) {
   const settings = await getSettings();
   const { model } = await resolveOllamaModel(settings);
@@ -164,10 +245,30 @@ async function convertWithOllama(text) {
   return html;
 }
 
+async function convertWithReadingApi(text) {
+  const settings = await getSettings();
+  const cacheKey = getReadingApiCacheKey(text, settings);
+  if (llmCache.has(cacheKey)) {
+    return llmCache.get(cacheKey);
+  }
+
+  const userDict = await loadUserDict();
+  const html = await callReadingApi(text, settings, userDict);
+  setCache(cacheKey, html);
+  return html;
+}
+
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === "CONVERT_FURIGANA") {
     convertWithOllama(message.text)
       .then((html) => sendResponse({ html, source: "ollama" }))
+      .catch((error) => sendResponse({ error: error.message }));
+    return true;
+  }
+
+  if (message?.type === "CONVERT_READING_API") {
+    convertWithReadingApi(message.text)
+      .then((html) => sendResponse({ html, source: "reading-api" }))
       .catch((error) => sendResponse({ error: error.message }));
     return true;
   }
@@ -200,12 +301,119 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return true;
   }
 
+  if (message?.type === "CHECK_READING_API") {
+    getSettings()
+      .then((settings) => checkReadingApiConnection(settings))
+      .then((data) => sendResponse({ ok: true, ...data }))
+      .catch((error) => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+
+  if (message?.type === "GET_LEARNING_INBOX") {
+    chrome.storage.local
+      .get({ learningInbox: [] })
+      .then((stored) =>
+        sendResponse({
+          ok: true,
+          inbox: Array.isArray(stored.learningInbox) ? stored.learningInbox : []
+        })
+      )
+      .catch((error) => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+
+  if (message?.type === "CLEAR_LEARNING_INBOX") {
+    chrome.storage.local
+      .set({ learningInbox: [] })
+      .then(() => sendResponse({ ok: true }))
+      .catch((error) => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+
+  if (message?.type === "VERIFY_LICENSE") {
+    getSettings()
+      .then(async (settings) => {
+        const verified = await verifyLicense({
+          ...settings,
+          licenseKey: message.licenseKey || settings.licenseKey
+        });
+        await chrome.storage.sync.set({
+          plan: verified.plan,
+          licenseKey: verified.licenseKey,
+          premiumExpiresAt: verified.premiumExpiresAt || ""
+        });
+        return verified;
+      })
+      .then((data) => sendResponse({ ok: true, ...data }))
+      .catch((error) => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+
+  if (message?.type === "SYNC_USER_DICT") {
+    getSettings()
+      .then(async (settings) => {
+        const entitlement = resolveEntitlement(settings);
+        if (entitlement.plan === PLAN_FREE) {
+          throw new Error("辞書同期は Premium 機能です。ライセンスを検証してください。");
+        }
+        const localDict = await loadUserDict();
+        const localRevisedAt = settings.dictRevisedAt || "";
+        const pulled = await pullAndMergeDict(
+          { ...settings, plan: entitlement.plan },
+          localDict,
+          localRevisedAt
+        );
+        await chrome.storage.local.set({ [USER_READING_DICT_KEY]: pulled.dict });
+        const pushed = await pushDict(
+          { ...settings, plan: entitlement.plan },
+          pulled.dict,
+          pulled.revisedAt
+        );
+        const revisedAt = pushed.revisedAt || pulled.revisedAt;
+        await chrome.storage.sync.set({ dictRevisedAt: revisedAt });
+        return {
+          count: Object.keys(pulled.dict).length,
+          revisedAt
+        };
+      })
+      .then((data) => sendResponse({ ok: true, ...data }))
+      .catch((error) => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+
+  if (message?.type === "FETCH_SHARED_DICT") {
+    getSettings()
+      .then(async (settings) => {
+        const entitlement = resolveEntitlement(settings);
+        if (entitlement.plan === PLAN_FREE) {
+          throw new Error("共有辞書は Premium 機能です。");
+        }
+        const entries = await fetchSharedDict({
+          ...settings,
+          plan: entitlement.plan
+        });
+        await chrome.storage.local.set({ sharedReadingDict: entries });
+        return { count: Object.keys(entries).length, entries };
+      })
+      .then((data) => sendResponse({ ok: true, ...data }))
+      .catch((error) => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+
   return false;
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "sync") return;
-  if (changes.engine || changes.ollamaUrl || changes.ollamaModel) {
+  if (
+    changes.engine ||
+    changes.ollamaUrl ||
+    changes.ollamaModel ||
+    changes.readingApiUrl ||
+    changes.readingApiKey ||
+    changes.plan ||
+    changes.licenseKey
+  ) {
     llmCache.clear();
   }
 });

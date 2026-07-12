@@ -1,0 +1,51 @@
+YT Furigana — Third-Party Notices
+=================================
+
+This product includes software and data developed by third parties.
+See also `docs/OPEN-SOURCE-LICENSES.md` and `licenses/licenses.html`.
+
+-------------------------------------------------------------------------------
+kuromoji.js (Apache License 2.0)
+-------------------------------------------------------------------------------
+Copyright Takuya Asano and contributors.
+https://github.com/takuyaa/kuromoji.js
+
+Full license text: third_party/Apache-2.0.txt
+Dictionary notice (mecab-ipadic): third_party/NOTICE-kuromoji.md
+
+-------------------------------------------------------------------------------
+mecab-ipadic-2.7.0-20070801 (bundled via kuromoji)
+-------------------------------------------------------------------------------
+Copyright 2000, 2001, 2002, 2003 Nara Institute of Science and Technology.
+All Rights Reserved.
+
+Use, reproduction, and distribution of this software is permitted.
+Any copy of this software, whether in its original form or modified,
+must include both the above copyright notice and the ICOT Free Software
+conditions described in third_party/NOTICE-kuromoji.md (NO WARRANTY).
+
+A large portion of the dictionary entries originate from ICOT Free Software.
+
+-------------------------------------------------------------------------------
+sudachi-wasm333 (Apache License 2.0)
+-------------------------------------------------------------------------------
+https://github.com/Benjas333/sudachi-wasm333
+Based on sudachi.rs / SudachiDict (Works Applications / contributors).
+Dictionary: SudachiDict (typically Apache-2.0). See upstream project notices.
+
+Full license text: third_party/Apache-2.0.txt
+
+-------------------------------------------------------------------------------
+Optional local reading-engine dependencies
+-------------------------------------------------------------------------------
+- fugashi — MIT AND BSD-3-Clause
+- unidic-lite — see https://github.com/polm/unidic-lite (UniDic-derived data;
+  follow UniDic / NINJAL terms when redistributing)
+- fastapi — MIT
+- uvicorn — BSD-3-Clause
+- pydantic — MIT
+
+-------------------------------------------------------------------------------
+Build tooling (not shipped in the extension runtime)
+-------------------------------------------------------------------------------
+- esbuild — MIT

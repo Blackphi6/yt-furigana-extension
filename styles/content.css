@@ -1,35 +1,219 @@
-/* ルビ用の余白だけ追加。フォントサイズはJS側でYouTube原本を復元する */
-.ytp-caption-window-container .caption-window:has([data-yt-furigana-styled]) {
-  padding-top: 1em !important;
+/* ルビ用レイアウト。行高は YouTube 原本を保ち、ルビは ruby の padding-top 内に収める */
+
+.ytp-caption-window-container .caption-window:has([data-yt-furigana-styled]),
+.ytp-caption-window-container .captions-text:has([data-yt-furigana-styled]) {
+  padding-top: 0.2em !important;
+}
+
+.ytp-caption-window-container .caption-window:has([data-yt-furigana-styled]) .caption-visual-line,
+.ytp-caption-window-container .captions-text:has([data-yt-furigana-styled]) .caption-visual-line,
+.ytp-caption-window-container .caption-window:has([data-yt-furigana-styled]) .ytp-caption-segment,
+.ytp-caption-window-container .captions-text:has([data-yt-furigana-styled]) .ytp-caption-segment {
+  line-break: strict;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+
+/* 2行目のルビが1行目本文に食い込まないよう、行同士に余裕を確保 */
+.ytp-caption-window-container .caption-window:has([data-yt-furigana-styled]) .caption-visual-line:not(:last-child),
+.ytp-caption-window-container .captions-text:has([data-yt-furigana-styled]) .caption-visual-line:not(:last-child) {
+  margin-bottom: 0.55em !important;
+}
+
+/* TVer (Video.js / Streaks) */
+.vjs-text-track-display .vjs-text-track-cue-line:has([data-yt-furigana-styled]),
+.vjs-text-track-display .vjs-text-track-cue-line > span[data-yt-furigana-styled] {
+  line-break: strict;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+
+/*
+ * TVer の字幕レイヤーは pointer-events:none（動画操作のため）。
+ * 読み候補クリックのため、ふりがな語だけ再有効化する。
+ */
+.vjs-text-track-display .yt-furigana-word,
+.vjs-text-track-display .yt-furigana-word rt {
+  pointer-events: auto !important;
+  cursor: pointer;
 }
 
 .ytp-caption-segment ruby,
 .caption-visual-line ruby,
+.vjs-text-track-cue-line > span ruby,
 ytd-transcript-segment-renderer .segment-text ruby {
-  display: inline;
+  display: inline-block;
   position: relative;
+  vertical-align: baseline;
+  /* ルビ文字分。実測で JS が上書きする */
+  padding-top: 0.72em;
+  line-height: 1;
   ruby-position: unset;
 }
 
 .ytp-caption-segment rt,
 .caption-visual-line rt,
+.vjs-text-track-cue-line > span rt,
 ytd-transcript-segment-renderer .segment-text rt {
   position: absolute;
-  bottom: calc(100% - 0.05em);
+  top: 0.02em;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 0.62em;
+  transform-origin: center top;
+  width: max-content;
+  max-width: none;
+  text-align: center;
+  font-size: 0.55em;
   font-weight: 400;
   line-height: 1;
   white-space: nowrap;
-  opacity: 0.92;
+  letter-spacing: 0;
+  opacity: 0.94;
   color: inherit;
   text-shadow: inherit;
   pointer-events: none;
 }
 
+.yt-furigana-word {
+  cursor: pointer;
+  border-radius: 2px;
+  outline: none;
+  pointer-events: auto;
+}
+
+/* rt は通常 pointer-events:none だが、候補クリックのため語の中では有効 */
+.yt-furigana-word rt {
+  pointer-events: auto;
+}
+
+.yt-furigana-word:hover,
+.yt-furigana-word:focus-visible {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.yt-furigana-picker {
+  position: fixed;
+  z-index: 2147483646;
+  min-width: 9.5em;
+  max-width: min(16em, calc(100vw - 16px));
+  padding: 6px;
+  border-radius: 10px;
+  background: rgba(20, 20, 20, 0.94);
+  color: #f5f5f5;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.3;
+  pointer-events: auto;
+}
+
+.yt-furigana-picker__head {
+  padding: 4px 8px 6px;
+  font-size: 12px;
+  opacity: 0.75;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  margin-bottom: 4px;
+}
+
+.yt-furigana-picker__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.yt-furigana-picker__item {
+  display: flex;
+  width: 100%;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.yt-furigana-picker__item:hover,
+.yt-furigana-picker__item:focus-visible {
+  background: rgba(255, 255, 255, 0.14);
+  outline: none;
+}
+
+.yt-furigana-picker__item.is-current {
+  background: rgba(96, 165, 250, 0.28);
+}
+
+.yt-furigana-picker__reading {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.yt-furigana-picker__label {
+  font-size: 11px;
+  opacity: 0.65;
+  white-space: nowrap;
+}
+
+.yt-furigana-picker__custom {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.yt-furigana-picker__custom-label {
+  display: block;
+  padding: 0 4px 4px;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.yt-furigana-picker__custom-row {
+  display: flex;
+  gap: 6px;
+}
+
+.yt-furigana-picker__input {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f5f5f5;
+  font-size: 14px;
+}
+
+.yt-furigana-picker__input:focus {
+  outline: 2px solid rgba(96, 165, 250, 0.7);
+  border-color: transparent;
+}
+
+.yt-furigana-picker__submit {
+  flex-shrink: 0;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: rgba(96, 165, 250, 0.9);
+  color: #0b1220;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.yt-furigana-picker__hint {
+  margin: 5px 4px 0;
+  font-size: 10px;
+  line-height: 1.4;
+  opacity: 0.55;
+}
+
 ytd-transcript-segment-renderer .segment-text[data-yt-furigana-styled] {
-  line-height: 2 !important;
+  line-height: 2.2 !important;
+  padding-top: 0.4em;
 }
 
 ytd-transcript-segment-renderer .segment-text ruby {

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "YT Furigana",
-  "version": "1.2.6",
-  "description": "YouTubeの日本語字幕にひらがなのルビを表示します",
+  "version": "1.6.2",
+  "description": "YouTube / TVer の日本語字幕にひらがなルビを表示（Kuromoji既定・ローカル学習・任意の読みAPI）",
   "permissions": [
     "storage",
     "declarativeNetRequest",
@@ -10,8 +10,13 @@
   ],
   "host_permissions": [
     "*://www.youtube.com/*",
+    "*://tver.jp/*",
     "http://localhost:11434/*",
     "http://127.0.0.1:11434/*"
+  ],
+  "optional_host_permissions": [
+    "http://*/*",
+    "https://*/*"
   ],
   "background": {
     "service_worker": "dist/background.js",
@@ -42,7 +47,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://www.youtube.com/*"],
+      "matches": ["*://www.youtube.com/*", "*://tver.jp/*"],
       "js": ["dist/content.js"],
       "css": ["styles/content.css"],
       "run_at": "document_idle"
@@ -50,8 +55,12 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["dict/*"],
-      "matches": ["*://www.youtube.com/*"]
+      "resources": [
+        "dict/*",
+        "dict/sudachi/*",
+        "dist/page-caption-bridge.js"
+      ],
+      "matches": ["*://www.youtube.com/*", "*://tver.jp/*"]
     }
   ]
 }

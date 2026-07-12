@@ -1,16 +1,26 @@
 {
   "name": "yt-furigana-extension",
-  "version": "1.0.0",
+  "version": "1.6.2",
   "description": "YouTube日本語字幕にひらがなのルビを表示するChrome拡張機能",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test": "node scripts/test-furigana.mjs && node scripts/test-segments.mjs && node scripts/test-timeout.mjs && node scripts/test-default-settings.mjs",
+    "test": "node scripts/test-furigana.mjs && node scripts/test-sudachi.mjs && node scripts/test-reading-context.mjs && node scripts/test-hybrid-tokenizer.mjs && node scripts/test-default-settings.mjs && node scripts/test-reading-api.mjs && node scripts/test-youtube-captions.mjs && node scripts/test-caption-prefetch.mjs && node scripts/test-youtube-transcript-dom.mjs && node scripts/test-segment-html.mjs && node scripts/test-caption-source-text.mjs && node scripts/test-reading-learning.mjs && node scripts/test-reading-candidates.mjs && node scripts/test-token-merge.mjs && node scripts/test-ruby-layout.mjs && node scripts/test-caption-background.mjs && node scripts/test-reading-picker-hit.mjs && node scripts/test-dictionary-match.mjs && node scripts/test-premium.mjs && node scripts/test-dict-sync-headers.mjs",
+    "learn": "node scripts/learning/run-loop.mjs",
+    "learn:bench": "node scripts/learning/evaluate-seed-bench.mjs",
+    "learn:label": "node scripts/learning/auto-label.mjs",
+    "learn:promote": "node scripts/learning/promote.mjs",
+    "reading-engine": "cd reading-engine && ../.venv-reading/bin/uvicorn reading_engine.server:app --host 127.0.0.1 --port 8765",
+    "reading-engine:test": "node scripts/test-reading-engine.mjs",
+    "mint-license": "node scripts/mint-license.mjs",
+    "harvest-ruby": ".venv-reading/bin/python reading-engine/harvest_ruby.py",
     "watch": "node scripts/build.mjs --watch"
   },
   "dependencies": {
-    "kuromoji": "^0.1.2"
+    "kuromoji": "^0.1.2",
+    "sudachi-wasm333": "^1.0.4"
   },
   "devDependencies": {
     "esbuild": "^0.25.0"

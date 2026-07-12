@@ -1,71 +1,77 @@
 # YT Furigana
 
-YouTubeの日本語字幕にひらがなのルビを表示するChrome拡張機能です。
+YouTube / TVer の日本語字幕にひらがなルビを表示する Chrome 拡張です。
 
-## 機能
+> **重要（権利・免責）**  
+> 本拡張は、ブラウザ上で表示中の字幕にルビを重ねるクライアント側の表示加工です。字幕・歌詞などの著作権は各権利者に帰属します。再配布サービスではありません。  
+> ご利用前に [利用条件・免責](docs/TERMS.md) と [プライバシーポリシー](docs/PRIVACY.md) を確認してください。OSS 帰属は [オープンソースライセンス](docs/OPEN-SOURCE-LICENSES.md) / [NOTICE](NOTICE) を参照。
 
-- YouTube動画の日本語字幕に `<ruby>` タグでひらがなルビを表示
-- **ローカル LLM（Ollama）** — 軽量モデルで文脈理解（例: 一組目→ひとくみめ）
-- **Kuromoji** — 辞書ベースのフォールバック（Ollama未起動時）
-- 字幕トランスクリプトにも対応
-- ポップアップからエンジン切り替え・接続テスト
+## ビジネスモデル（Freemium）
 
-## 技術スタック
+- **Free（既定）**: 完全ローカル（Kuromoji / Sudachi / Hybrid）。クリックで読み学習。クラウド送信なし。
+- **Premium**: 辞書の端末間同期・共有辞書・ホスト読みAPI。
+- **支援**: [GitHub Sponsors](https://github.com/sponsors/Blackphi6)
 
-- **Ollama** + 軽量モデル（`qwen2.5:1.5b` 推奨）
-- **Kuromoji**（オフラインフォールバック）
-- Chrome Extension Manifest V3
+詳細は [docs/FREEMIUM.md](docs/FREEMIUM.md)。
 
 ## セットアップ
-
-### 1. Ollama をインストール
-
-[ollama.com](https://ollama.com) からインストールし、軽量モデルを取得:
-
-```bash
-ollama pull qwen2.5:1.5b
-```
-
-より軽くしたい場合: `qwen2.5:0.5b`  
-精度優先の場合: `qwen2.5:3b`
-
-### 2. 拡張機能をビルド
 
 ```bash
 npm install
 npm run build
 ```
 
-### 3. Chrome に読み込み
-
-`chrome://extensions/` → デベロッパーモード → このフォルダを読み込み
-
-### 4. 接続確認
-
-拡張機能ポップアップで「接続テスト」を押し、Ollama への接続を確認
-
-## Chrome への読み込み
-
-1. `chrome://extensions/` を開く
-2. 「デベロッパーモード」を有効化
-3. 「パッケージ化されていない拡張機能を読み込む」
-4. このプロジェクトのルートフォルダ（`manifest.json` がある場所）を選択
+`chrome://extensions/` → デベロッパーモード → このフォルダを読み込み。
 
 ## 使い方
 
-1. YouTubeで動画を開く
-2. 字幕を日本語で表示する
-3. 漢字の上にひらがなのルビが自動で表示されます
-4. 拡張機能アイコンから表示のオン/オフを切り替えられます
+1. YouTube / TVer で日本語字幕を表示
+2. 漢字の上にルビが付く
+3. 漢字を押すと読み候補 → 端末内に学習
+4. ポップアップでエンジン / Premium / ライセンス表記 / Sponsors
+
+## ローカル読みエンジン（任意）
+
+```bash
+python3 -m venv .venv-reading
+.venv-reading/bin/pip install -r reading-engine/requirements.txt
+npm run reading-engine
+```
+
+Premium デモキー: `ytfp_live_demo_key_001`（サーバー起動時に自動作成）
 
 ## 開発
 
 ```bash
+npm test
 npm run watch
 ```
 
-ファイル変更後、Chrome拡張機能ページで「更新」ボタンを押してください。
+貢献は [CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。
+
+## 文書一覧
+
+| 文書 | リンク |
+|------|--------|
+| 利用条件・免責 | [docs/TERMS.md](docs/TERMS.md) |
+| プライバシー | [docs/PRIVACY.md](docs/PRIVACY.md) |
+| OSS ライセンス | [docs/OPEN-SOURCE-LICENSES.md](docs/OPEN-SOURCE-LICENSES.md) |
+| Freemium | [docs/FREEMIUM.md](docs/FREEMIUM.md) |
+| セキュリティ | [SECURITY.md](SECURITY.md) |
+| ドキュメント索引 | [docs/README.md](docs/README.md) |
 
 ## ライセンス
 
-MIT
+本プロジェクトは **MIT License** です。全文は [`LICENSE`](LICENSE) を参照してください。
+
+第三者ソフトウェア・辞書の帰属:
+
+- [`NOTICE`](NOTICE) — 要約
+- [`third_party/`](third_party/) — Apache-2.0 全文 / kuromoji（IPADIC）NOTICE
+- 拡張ポップアップの「ライセンス / 帰属表示」→ `licenses/licenses.html`
+
+| 成果物 | ライセンス |
+|--------|------------|
+| kuromoji.js | Apache-2.0 |
+| mecab-ipadic（同梱データ） | NAIST / ICOT 条件付き |
+| sudachi-wasm333 / SudachiDict | Apache-2.0 |

@@ -1,3 +1,6 @@
+import { wrapFuriganaWord } from "./furigana.js";
+import { normalizeReading } from "./reading-normalize.js";
+
 export function hasKanji(text) {
   return /[\u3400-\u9fff\uF900-\uFAFF]/.test(text);
 }
@@ -14,7 +17,12 @@ export function segmentsToHtml(segments) {
     .map((segment) => {
       const text = escapeHtml(segment.t);
       if (segment.r && hasKanji(segment.t)) {
-        return `<ruby>${text}<rt>${escapeHtml(segment.r)}</rt></ruby>`;
+        const ruby = `<ruby>${text}<rt>${escapeHtml(segment.r)}</rt></ruby>`;
+        return wrapFuriganaWord(
+          segment.t,
+          normalizeReading(segment.r),
+          ruby
+        );
       }
       return text;
     })
@@ -22,17 +30,21 @@ export function segmentsToHtml(segments) {
 }
 
 export function normalizeForCompare(text) {
-  return text.normalize("NFKC");
+  return String(text ?? "").normalize("NFKC");
+}
+
+export function collapseWhitespace(text) {
+  return normalizeForCompare(text).replace(/\s+/g, "");
 }
 
 export function segmentsToPlainText(segments) {
   return segments.map((segment) => segment.t).join("");
 }
 
-export function validateSegments(original, segments) {
+function segmentsStructureValid(segments) {
   if (!Array.isArray(segments) || segments.length === 0) return false;
 
-  const structureValid = segments.every((segment) => {
+  return segments.every((segment) => {
     if (!segment || typeof segment.t !== "string" || segment.t.length === 0) {
       return false;
     }
@@ -44,30 +56,79 @@ export function validateSegments(original, segments) {
     }
     return true;
   });
+}
 
-  if (!structureValid) return false;
+export function validateSegments(original, segments, options = {}) {
+  if (!segmentsStructureValid(segments)) return false;
 
-  return (
-    normalizeForCompare(segmentsToPlainText(segments)) ===
-    normalizeForCompare(original)
-  );
+  const joined = segmentsToPlainText(segments);
+  const exact =
+    normalizeForCompare(joined) === normalizeForCompare(original);
+  if (exact) return true;
+
+  const allowWhitespaceDrift = options.allowWhitespaceDrift !== false;
+  if (!allowWhitespaceDrift) return false;
+
+  return collapseWhitespace(joined) === collapseWhitespace(original);
+}
+
+/**
+ * Accept LLM segments when content matches (exact or whitespace-only drift).
+ * Returns null when the surface text was rewritten.
+ */
+export function repairSegmentsToOriginal(original, segments) {
+  if (validateSegments(original, segments, { allowWhitespaceDrift: false })) {
+    return segments;
+  }
+  if (validateSegments(original, segments, { allowWhitespaceDrift: true })) {
+    return segments;
+  }
+  return null;
+}
+
+export function describeSegmentMismatch(original, segments) {
+  const joined = Array.isArray(segments) ? segmentsToPlainText(segments) : "";
+  return {
+    original,
+    joined,
+    originalCollapsed: collapseWhitespace(original),
+    joinedCollapsed: collapseWhitespace(joined)
+  };
 }
 
 export function parseLlmSegments(raw) {
-  const cleaned = raw
+  const cleaned = String(raw ?? "")
     .trim()
     .replace(/^```json\s*/i, "")
     .replace(/^```\s*/i, "")
     .replace(/\s*```$/i, "");
 
-  const parsed = JSON.parse(cleaned);
+  let parsed;
+  try {
+    parsed = JSON.parse(cleaned);
+  } catch {
+    const start = cleaned.indexOf("{");
+    const end = cleaned.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      parsed = JSON.parse(cleaned.slice(start, end + 1));
+    } else {
+      const arrayStart = cleaned.indexOf("[");
+      const arrayEnd = cleaned.lastIndexOf("]");
+      if (arrayStart >= 0 && arrayEnd > arrayStart) {
+        parsed = JSON.parse(cleaned.slice(arrayStart, arrayEnd + 1));
+      } else {
+        throw new Error("Invalid LLM response format");
+      }
+    }
+  }
+
   const segments = parsed.segments ?? parsed;
   if (!Array.isArray(segments)) {
     throw new Error("Invalid LLM response format");
   }
 
   return segments.map((segment) => ({
-    t: segment.t,
-    r: segment.r || undefined
-  }));
+    t: String(segment.t ?? segment.text ?? ""),
+    r: segment.r || segment.reading || undefined
+  })).filter((segment) => segment.t.length > 0);
 }

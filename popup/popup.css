@@ -199,3 +199,99 @@ header p {
   background: #f3f4f6;
   font-size: 10px;
 }
+
+.button.secondary {
+  margin-top: 8px;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.button-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.plan-badge {
+  display: inline-block;
+  margin: 0 0 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.plan-badge.is-premium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+details.advanced {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+details.advanced > summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  list-style: none;
+}
+
+details.advanced > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.advanced > summary::before {
+  content: "▸ ";
+  color: #9ca3af;
+}
+
+details.advanced[open] > summary::before {
+  content: "▾ ";
+}
+
+details.advanced > summary + .hint,
+details.advanced .field,
+details.advanced .radio,
+details.advanced .button,
+details.advanced .status {
+  margin-top: 10px;
+}
+
+.ollama-enable {
+  border-top: none;
+  padding-top: 0;
+}
+
+.legal {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.legal p {
+  margin: 0;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.legal a {
+  color: #dc2626;
+  text-decoration: none;
+}
+
+.legal a:hover {
+  text-decoration: underline;
+}
+
+.legal-note {
+  margin-top: 6px !important;
+  font-size: 10px !important;
+  color: #9ca3af !important;
+}
+
