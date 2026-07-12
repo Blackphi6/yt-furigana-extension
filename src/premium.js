@@ -23,6 +23,12 @@ export const PREMIUM_FEATURES = Object.freeze([
 /** メンテナーの GitHub Sponsors（変更可） */
 export const DEFAULT_SPONSORS_URL = "https://github.com/sponsors/Blackphi6";
 
+/** 公開サイト（GitHub Pages） */
+export const DEFAULT_SITE_URL = "https://blackphi6.github.io/yt-furigana-extension";
+export const DEFAULT_PRICING_URL = `${DEFAULT_SITE_URL}/pricing.html`;
+export const DEFAULT_PRIVACY_URL = `${DEFAULT_SITE_URL}/privacy.html`;
+export const DEFAULT_TERMS_URL = `${DEFAULT_SITE_URL}/terms.html`;
+
 /**
  * @param {unknown} value
  * @returns {"free" | "premium"}

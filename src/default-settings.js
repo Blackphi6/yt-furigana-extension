@@ -16,6 +16,11 @@ export const DEFAULT_SETTINGS = {
   sharedDictEnabled: true,
   /** GitHub Sponsors URL */
   sponsorsUrl: "https://github.com/sponsors/Blackphi6",
+  /** GitHub Pages サイト（料金・ポリシー） */
+  siteUrl: "https://blackphi6.github.io/yt-furigana-extension",
+  pricingUrl: "https://blackphi6.github.io/yt-furigana-extension/pricing.html",
+  privacyUrl: "https://blackphi6.github.io/yt-furigana-extension/privacy.html",
+  termsUrl: "https://blackphi6.github.io/yt-furigana-extension/terms.html",
   ollamaUrl: "http://localhost:11434",
   ollamaModel: ""
 };

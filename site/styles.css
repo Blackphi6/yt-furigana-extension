@@ -1,0 +1,337 @@
+/* YT Furigana site — sumi ink + vermillion editorial */
+:root {
+  --sumi: #1c1917;
+  --sumi-soft: #44403c;
+  --paper: #f3efe6;
+  --paper-deep: #e7e0d2;
+  --vermilion: #c23b22;
+  --vermilion-deep: #9a2e1b;
+  --line: color-mix(in oklab, var(--sumi) 14%, transparent);
+  --display: "Shippori Mincho", "Hiragino Mincho ProN", serif;
+  --body: "Zen Kaku Gothic New", "Hiragino Sans", sans-serif;
+  --max: 68rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--sumi);
+  background:
+    radial-gradient(1200px 500px at 10% -10%, color-mix(in oklab, var(--vermilion) 10%, transparent), transparent 60%),
+    linear-gradient(180deg, var(--paper) 0%, var(--paper-deep) 100%);
+  font-family: var(--body);
+  line-height: 1.7;
+}
+
+a {
+  color: var(--vermilion-deep);
+  text-underline-offset: 0.18em;
+}
+
+a:hover {
+  color: var(--vermilion);
+}
+
+.wrap {
+  width: min(100% - 2rem, var(--max));
+  margin-inline: auto;
+}
+
+.site-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 0 0.5rem;
+}
+
+.brand {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  color: var(--sumi);
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem 1.25rem;
+  font-size: 0.92rem;
+}
+
+.nav a {
+  text-decoration: none;
+  color: var(--sumi-soft);
+}
+
+.nav a:hover {
+  color: var(--vermilion);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  align-items: end;
+  padding: clamp(2.5rem, 8vw, 5.5rem) 0 3rem;
+  border-bottom: 1px solid var(--line);
+}
+
+@media (max-width: 860px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hero h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(2.4rem, 7vw, 4.6rem);
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+}
+
+.hero .lead {
+  margin: 1.1rem 0 0;
+  max-width: 34rem;
+  font-size: 1.05rem;
+  color: var(--sumi-soft);
+}
+
+.hero-aside {
+  border-left: 3px solid var(--vermilion);
+  padding: 0.2rem 0 0.2rem 1.1rem;
+  font-family: var(--display);
+  font-size: 1.15rem;
+  line-height: 1.8;
+}
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.72rem 1.15rem;
+  border-radius: 999px;
+  border: 1px solid var(--sumi);
+  background: var(--sumi);
+  color: var(--paper);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  color: var(--paper);
+  background: var(--vermilion);
+  border-color: var(--vermilion);
+}
+
+.btn.ghost {
+  background: transparent;
+  color: var(--sumi);
+}
+
+.btn.ghost:hover {
+  background: color-mix(in oklab, var(--vermilion) 12%, transparent);
+  color: var(--vermilion-deep);
+  border-color: var(--vermilion);
+}
+
+.section {
+  padding: clamp(2.5rem, 6vw, 4.5rem) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.section h2 {
+  margin: 0 0 0.75rem;
+  font-family: var(--display);
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 600;
+}
+
+.section .sub {
+  margin: 0 0 1.5rem;
+  color: var(--sumi-soft);
+  max-width: 38rem;
+}
+
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+@media (max-width: 720px) {
+  .plan-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.plan {
+  padding: 1.35rem 1.4rem 1.5rem;
+  border: 1px solid var(--line);
+  background: color-mix(in oklab, white 55%, var(--paper));
+}
+
+.plan.featured {
+  border-color: color-mix(in oklab, var(--vermilion) 55%, var(--line));
+  box-shadow: 0 18px 40px color-mix(in oklab, var(--sumi) 8%, transparent);
+}
+
+.plan h3 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.35rem;
+}
+
+.plan .price {
+  margin: 0.35rem 0 0.9rem;
+  font-size: 1.8rem;
+  font-family: var(--display);
+}
+
+.plan ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--sumi-soft);
+}
+
+.plan li + li {
+  margin-top: 0.35rem;
+}
+
+.prose {
+  max-width: 42rem;
+}
+
+.prose h1 {
+  font-family: var(--display);
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  margin: 2rem 0 1rem;
+}
+
+.prose h2 {
+  font-family: var(--display);
+  font-size: 1.35rem;
+  margin: 2rem 0 0.6rem;
+}
+
+.prose p,
+.prose li {
+  color: var(--sumi-soft);
+}
+
+.site-footer {
+  padding: 2rem 0 3rem;
+  color: var(--sumi-soft);
+  font-size: 0.88rem;
+}
+
+.site-footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem 1.2rem;
+  margin-bottom: 0.85rem;
+}
+
+.ruby-demo {
+  font-family: var(--display);
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+  line-height: 2.1;
+}
+
+.ruby-demo ruby {
+  ruby-align: center;
+}
+
+.ruby-demo rt {
+  font-size: 0.45em;
+  color: var(--vermilion-deep);
+}
+
+.fade-up {
+  animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.fade-up.delay {
+  animation-delay: 0.12s;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-up,
+  .btn {
+    animation: none;
+    transition: none;
+  }
+}
+
+.field-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.field-row input {
+  flex: 1 1 14rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+  font: inherit;
+}
+
+.status {
+  margin-top: 0.85rem;
+  font-size: 0.92rem;
+}
+
+.status.ok {
+  color: #166534;
+}
+
+.status.err {
+  color: var(--vermilion-deep);
+}
+
+code.key {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.45rem 0.65rem;
+  background: white;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  word-break: break-all;
+}

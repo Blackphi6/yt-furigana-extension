@@ -5,6 +5,8 @@ import {
   PLAN_FREE,
   PLAN_PREMIUM,
   DEFAULT_SPONSORS_URL,
+  DEFAULT_SITE_URL,
+  DEFAULT_PRICING_URL,
   normalizePlan,
   isPremiumPlan,
   canUseFeature,
@@ -33,6 +35,8 @@ assert.equal(canUseFeature(PLAN_PREMIUM, "hostedReadingApi"), true);
 assert.ok(FREE_FEATURES.includes("localFurigana"));
 assert.ok(PREMIUM_FEATURES.includes("dictSync"));
 assert.ok(DEFAULT_SPONSORS_URL.includes("github.com"));
+assert.ok(DEFAULT_SITE_URL.includes("github.io"));
+assert.ok(DEFAULT_PRICING_URL.includes("pricing.html"));
 
 assert.equal(parseLicenseKeyShape("").ok, false);
 assert.equal(parseLicenseKeyShape("short").ok, false);

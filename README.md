@@ -4,6 +4,10 @@ YouTube / TVer の日本語字幕にひらがなルビを表示する Chrome 拡
 
 字幕・歌詞などの著作権は各権利者に帰属します。本拡張は画面上の表示加工であり、コンテンツの再配布を目的としません。
 
+**サイト**: https://blackphi6.github.io/yt-furigana-extension/  
+**料金 / Premium**: https://blackphi6.github.io/yt-furigana-extension/pricing.html  
+**プライバシー**: https://blackphi6.github.io/yt-furigana-extension/privacy.html
+
 ## 機能
 
 - **Free（既定）**: 完全ローカル（Kuromoji / Sudachi / Hybrid）。クリックで読み学習
@@ -19,6 +23,14 @@ npm run build
 
 `chrome://extensions/` → デベロッパーモード → このフォルダを読み込み。
 
+Chrome Web Store 用 zip:
+
+```bash
+npm run pack:store
+# → dist-store/yt-furigana-extension.zip
+# 説明文・チェックリスト: store/listing.md
+```
+
 ## 使い方
 
 1. YouTube / TVer で日本語字幕を表示
@@ -32,6 +44,8 @@ python3 -m venv .venv-reading
 .venv-reading/bin/pip install -r reading-engine/requirements.txt
 npm run reading-engine
 ```
+
+Stripe 未設定時は Checkout が dry-run でライセンスを即発行します。
 
 ## 開発
 

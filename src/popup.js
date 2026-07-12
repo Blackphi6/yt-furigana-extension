@@ -4,7 +4,10 @@ import {
 } from "./default-settings.js";
 import { readingApiOriginPattern } from "./reading-api.js";
 import {
+  DEFAULT_PRICING_URL,
+  DEFAULT_PRIVACY_URL,
   DEFAULT_SPONSORS_URL,
+  DEFAULT_TERMS_URL,
   isPremiumPlan,
   normalizePlan,
   resolveEntitlement
@@ -18,6 +21,9 @@ const planBadge = document.getElementById("planBadge");
 const planHint = document.getElementById("planHint");
 const premiumStatus = document.getElementById("premiumStatus");
 const sponsorsLink = document.getElementById("sponsorsLink");
+const buyPremiumLink = document.getElementById("buyPremiumLink");
+const privacyLink = document.getElementById("privacyLink");
+const termsLink = document.getElementById("termsLink");
 const verifyLicenseButton = document.getElementById("verifyLicense");
 const syncDictButton = document.getElementById("syncDict");
 const fetchSharedDictButton = document.getElementById("fetchSharedDict");
@@ -67,6 +73,15 @@ function updatePlanUi(settings) {
   }
   if (sponsorsLink) {
     sponsorsLink.href = settings.sponsorsUrl || DEFAULT_SPONSORS_URL;
+  }
+  if (buyPremiumLink) {
+    buyPremiumLink.href = settings.pricingUrl || DEFAULT_PRICING_URL;
+  }
+  if (privacyLink) {
+    privacyLink.href = settings.privacyUrl || DEFAULT_PRIVACY_URL;
+  }
+  if (termsLink) {
+    termsLink.href = settings.termsUrl || DEFAULT_TERMS_URL;
   }
 }
 
@@ -232,6 +247,10 @@ async function saveSettings() {
     dictRevisedAt: current.dictRevisedAt || "",
     sharedDictEnabled: current.sharedDictEnabled !== false,
     sponsorsUrl: current.sponsorsUrl || DEFAULT_SPONSORS_URL,
+    siteUrl: current.siteUrl || DEFAULT_SETTINGS.siteUrl,
+    pricingUrl: current.pricingUrl || DEFAULT_SETTINGS.pricingUrl,
+    privacyUrl: current.privacyUrl || DEFAULT_SETTINGS.privacyUrl,
+    termsUrl: current.termsUrl || DEFAULT_SETTINGS.termsUrl,
     ollamaUrl: ollamaUrlInput.value.trim() || DEFAULT_SETTINGS.ollamaUrl,
     ollamaModel: getSelectedModelName()
   });

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>プライバシーポリシー — YT Furigana</title>
+    <meta name="description" content="YT Furigana のプライバシーポリシー。" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="site-header">
+        <a class="brand" href="./">YT Furigana</a>
+        <nav class="nav">
+          <a href="./pricing.html">料金</a>
+          <a href="./terms.html">利用規約</a>
+          <a href="./">ホーム</a>
+        </nav>
+      </header>
+
+      <article class="section prose" style="border-top: none; padding-top: 2rem">
+        <h1>プライバシーポリシー</h1>
+        <p>最終更新: 2026-07-12</p>
+        <p>
+          対象: YT Furigana（Chrome 拡張および関連のローカル／任意サーバー機能）。本文書は法的助言ではありません。
+        </p>
+
+        <h2>1. 運営</h2>
+        <ul>
+          <li>
+            リポジトリ:
+            <a href="https://github.com/Blackphi6/yt-furigana-extension"
+              >https://github.com/Blackphi6/yt-furigana-extension</a
+            >
+          </li>
+          <li>連絡: GitHub Issues</li>
+        </ul>
+
+        <h2>2. 収集するデータ（Free / 既定）</h2>
+        <p>
+          <strong>既定（Free）では、開発者のサーバーへ字幕本文や学習データを送信しません。</strong>
+        </p>
+        <ul>
+          <li>設定 → <code>chrome.storage.sync</code>（設定の保持）</li>
+          <li>ユーザー辞書 → <code>chrome.storage.local</code>（端末内）</li>
+          <li>学習ログ → 端末内。書き出しはユーザー操作時のみ</li>
+        </ul>
+        <p>字幕テキストの解析は、原則としてユーザーのブラウザ内で行います。</p>
+
+        <h2>3. 任意機能で送信されうるデータ</h2>
+        <p>ユーザーが自ら有効化・接続した場合に限ります。</p>
+        <ul>
+          <li>読み API（BYO）: 指定 URL へ字幕テキスト・個人読み辞書</li>
+          <li>Ollama: ユーザーのローカル Ollama へ変換用テキスト</li>
+          <li>Premium 辞書同期 / 共有辞書: 指定サーバーへ辞書・ライセンスキー</li>
+          <li>Premium 購入（Stripe）: 決済は Stripe。ライセンス発行は読みエンジン側</li>
+        </ul>
+        <p>
+          第三者の公開 API を指定した場合、その事業者のプライバシーポリシーが適用されます。
+        </p>
+
+        <h2>4. 広告・トラッキング</h2>
+        <p>本拡張の既定実装に、広告 SDK や行動トラッキングは含みません。</p>
+
+        <h2>5. 子どもの利用</h2>
+        <p>13 歳未満を対象としたサービスではありません。</p>
+
+        <h2>6. データの削除</h2>
+        <ul>
+          <li>拡張の削除、または Chrome の拡張データ削除で端末内データは消去できます。</li>
+          <li>Premium 同期サーバー上のデータは、当該サーバー運用者の手順に従ってください。</li>
+        </ul>
+
+        <h2>7. 変更</h2>
+        <p>本ポリシーは予告なく更新されることがあります。重要な変更はリポジトリの更新日で示します。</p>
+
+        <h2>8. 関連</h2>
+        <p>
+          <a href="./terms.html">利用規約</a> ·
+          <a href="https://github.com/Blackphi6/yt-furigana-extension/blob/main/docs/PRIVACY.md"
+            >リポジトリ版（Markdown）</a
+          >
+        </p>
+      </article>
+
+      <footer class="site-footer">
+        <p>© YT Furigana — MIT License</p>
+      </footer>
+    </div>
+  </body>
+</html>

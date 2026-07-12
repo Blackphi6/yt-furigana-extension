@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>購入完了 — YT Furigana</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./config.js"></script>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="site-header">
+        <a class="brand" href="./">YT Furigana</a>
+        <nav class="nav">
+          <a href="./pricing.html">料金</a>
+          <a href="./">ホーム</a>
+        </nav>
+      </header>
+
+      <section class="section prose" style="border-top: none; padding-top: 2.5rem">
+        <h1>購入ありがとうございます</h1>
+        <p>
+          決済が完了すると、ライセンスキーが表示されます。拡張機能のポップアップに貼り付けて「検証」してください。
+        </p>
+        <p id="status" class="status" role="status" aria-live="polite">ライセンスを取得しています…</p>
+        <code id="license" class="key" hidden></code>
+        <div class="cta-row" style="margin-top: 1.5rem">
+          <a class="btn" id="store-link" href="https://chromewebstore.google.com/detail/placeholder">拡張を開く</a>
+          <a class="btn ghost" href="./">ホームへ</a>
+        </div>
+      </section>
+    </div>
+    <script>
+      const cfg = window.YT_FURIGANA_SITE || {};
+      const store = document.getElementById("store-link");
+      if (cfg.chromeStoreUrl) store.href = cfg.chromeStoreUrl;
+      const API = (
+        (typeof localStorage !== "undefined" && localStorage.getItem("ytf_reading_api")) ||
+        cfg.readingApiUrl ||
+        "http://127.0.0.1:8765"
+      ).replace(/\/$/, "");
+      const status = document.getElementById("status");
+      const licenseEl = document.getElementById("license");
+      const sessionId = new URLSearchParams(location.search).get("session_id");
+      (async () => {
+        if (!sessionId) {
+          status.className = "status err";
+          status.textContent =
+            "session_id がありません。メールの領収書またはサポートにお問い合わせください。";
+          return;
+        }
+        try {
+          const res = await fetch(`${API}/v1/billing/order?session_id=${encodeURIComponent(sessionId)}`);
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.detail || data.error || `HTTP ${res.status}`);
+          if (!data.licenseKey) {
+            throw new Error("ライセンスキーがまだ発行されていません。数秒後に再読み込みしてください。");
+          }
+          status.className = "status ok";
+          status.textContent = "ライセンスキー:";
+          licenseEl.hidden = false;
+          licenseEl.textContent = data.licenseKey;
+        } catch (err) {
+          status.className = "status err";
+          status.textContent = String(err.message || err);
+        }
+      })();
+    </script>
+  </body>
+</html>

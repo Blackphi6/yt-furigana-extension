@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>料金 — YT Furigana</title>
+    <meta name="description" content="YT Furigana の Free / Premium 料金と購入方法。" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./config.js"></script>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="site-header">
+        <a class="brand" href="./">YT Furigana</a>
+        <nav class="nav">
+          <a href="./">ホーム</a>
+          <a href="./privacy.html">プライバシー</a>
+          <a href="./terms.html">利用規約</a>
+        </nav>
+      </header>
+
+      <section class="section" style="border-top: none; padding-top: 2.5rem">
+        <h2>料金</h2>
+        <p class="sub">
+          Free は端末内の読み付けが無制限。Premium は辞書同期・共有辞書・ホスト API を解放する買い切りライセンスです。
+        </p>
+        <div class="plan-grid">
+          <article class="plan">
+            <h3>Free</h3>
+            <p class="price">¥0</p>
+            <ul>
+              <li>ローカル読み付け（無制限）</li>
+              <li>ユーザー辞書・手動読み</li>
+              <li>クラウド同期なし</li>
+            </ul>
+          </article>
+          <article class="plan featured">
+            <h3>Premium</h3>
+            <p class="price">¥980</p>
+            <ul>
+              <li>辞書の端末間同期</li>
+              <li>共有辞書</li>
+              <li>ホスト型読み API</li>
+              <li>買い切り（Stripe Checkout）</li>
+            </ul>
+            <form id="checkout-form" class="field-row" style="margin-top: 1.25rem">
+              <input
+                id="email"
+                type="email"
+                name="email"
+                placeholder="領収用メール（任意）"
+                autocomplete="email"
+              />
+              <button class="btn" type="submit">Stripe で購入</button>
+            </form>
+            <p id="checkout-status" class="status" role="status" aria-live="polite"></p>
+            <p class="sub" style="margin-top: 1rem; margin-bottom: 0">
+              デモ検証キー（開発用）:
+              <code class="key">ytfp_live_demo_key_001</code>
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <footer class="site-footer">
+        <nav>
+          <a href="./privacy.html">プライバシー</a>
+          <a href="./terms.html">利用規約</a>
+          <a href="https://github.com/Blackphi6/yt-furigana-extension">GitHub</a>
+        </nav>
+      </footer>
+    </div>
+    <script>
+      const cfg = window.YT_FURIGANA_SITE || {};
+      const API = (
+        (typeof localStorage !== "undefined" && localStorage.getItem("ytf_reading_api")) ||
+        cfg.readingApiUrl ||
+        "http://127.0.0.1:8765"
+      ).replace(/\/$/, "");
+      const form = document.getElementById("checkout-form");
+      const status = document.getElementById("checkout-status");
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        status.className = "status";
+        status.textContent = "Checkout を準備しています…";
+        try {
+          const email = document.getElementById("email").value.trim();
+          const res = await fetch(`${API}/v1/billing/checkout`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: email || undefined,
+              successUrl: new URL("./success.html?session_id={CHECKOUT_SESSION_ID}", location.href).href,
+              cancelUrl: new URL("./pricing.html?canceled=1", location.href).href,
+            }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            throw new Error(data.detail || data.error || `HTTP ${res.status}`);
+          }
+          if (data.url) {
+            location.href = data.url;
+            return;
+          }
+          if ((data.dry_run || data.mode === "dry-run") && data.licenseKey) {
+            status.className = "status ok";
+            status.textContent = "開発モード（Stripe 未設定）でライセンスを発行しました。";
+            const code = document.createElement("code");
+            code.className = "key";
+            code.textContent = data.licenseKey;
+            status.appendChild(document.createElement("br"));
+            status.appendChild(code);
+            return;
+          }
+          throw new Error("Checkout URL がありません");
+        } catch (err) {
+          status.className = "status err";
+          status.textContent = String(err.message || err);
+        }
+      });
+      if (new URLSearchParams(location.search).get("canceled")) {
+        status.className = "status";
+        status.textContent = "購入がキャンセルされました。";
+      }
+    </script>
+  </body>
+</html>

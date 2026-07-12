@@ -6,9 +6,17 @@
 | [PRIVACY.md](PRIVACY.md) | プライバシーポリシー |
 | [TERMS.md](TERMS.md) | 利用条件・免責（補足） |
 | [OPEN-SOURCE-LICENSES.md](OPEN-SOURCE-LICENSES.md) | OSS / 辞書の帰属（詳細） |
-| [FREEMIUM.md](FREEMIUM.md) | Free / Premium モデル |
+| [FREEMIUM.md](FREEMIUM.md) | Free / Premium / Stripe |
+| [../site/README.md](../site/README.md) | GitHub Pages サイト |
+| [../store/listing.md](../store/listing.md) | Chrome Web Store 申請文面 |
 
-リポジトリ直下:
+公開 URL:
+
+- サイト: https://blackphi6.github.io/yt-furigana-extension/
+- プライバシー: https://blackphi6.github.io/yt-furigana-extension/privacy.html
+- 利用規約: https://blackphi6.github.io/yt-furigana-extension/terms.html
+
+**注**: 弁護士によるレビューは本リポジトリ作業の範囲外です。
 
 - [`LICENSE`](../LICENSE) — MIT
 - [`NOTICE`](../NOTICE) — 第三者帰属要約

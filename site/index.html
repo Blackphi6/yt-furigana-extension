@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>YT Furigana — YouTube / TVer 字幕にふりがな</title>
+    <meta
+      name="description"
+      content="YouTube・TVerの日本語字幕にふりがなを付与するChrome拡張。無料のローカル読みと、Premiumの辞書同期・共有辞書・ホストAPI。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./config.js"></script>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="site-header">
+        <a class="brand" href="./">YT Furigana</a>
+        <nav class="nav" aria-label="主要ナビ">
+          <a href="./pricing.html">料金</a>
+          <a href="./privacy.html">プライバシー</a>
+          <a href="./terms.html">利用規約</a>
+          <a href="https://github.com/Blackphi6/yt-furigana-extension">GitHub</a>
+        </nav>
+      </header>
+
+      <section class="hero">
+        <div class="fade-up">
+          <h1>YT Furigana</h1>
+          <p class="lead">
+            YouTube と TVer の日本語字幕に、読みやすいふりがなを重ねる Chrome 拡張です。
+            無料プランは端末内だけで完結。Premium は辞書の同期と共有、ホスト API を解放します。
+          </p>
+          <div class="cta-row">
+            <a class="btn" id="cta-store" href="https://chromewebstore.google.com/detail/placeholder">Chrome に追加</a>
+            <a class="btn ghost" href="./pricing.html">Premium を見る</a>
+          </div>
+        </div>
+        <aside class="hero-aside fade-up delay" aria-label="デモ">
+          <p class="ruby-demo">
+            <ruby>何故<rt>なぜ</rt></ruby>か
+            <ruby>直書き<rt>じかがき</rt></ruby>の
+            <ruby>字幕<rt>じまく</rt></ruby>に、
+            <ruby>振り仮名<rt>ふりがな</rt></ruby>を。
+          </p>
+        </aside>
+      </section>
+
+      <section class="section" id="features">
+        <h2>できること</h2>
+        <p class="sub">字幕の漢字に ruby を付け、読みの単位を自然な塊にまとめます。</p>
+        <div class="plan-grid">
+          <article class="plan">
+            <h3>Free</h3>
+            <p class="price">¥0</p>
+            <ul>
+              <li>ローカル辞書・形態素ベースの読み付け</li>
+              <li>手動読み・ユーザー辞書</li>
+              <li>オフラインでも動作</li>
+            </ul>
+          </article>
+          <article class="plan featured">
+            <h3>Premium</h3>
+            <p class="price">買い切り</p>
+            <ul>
+              <li>端末間の辞書同期</li>
+              <li>共有辞書の取り込み</li>
+              <li>ホスト型読み API</li>
+            </ul>
+            <p style="margin: 1rem 0 0">
+              <a class="btn" href="./pricing.html">料金と購入</a>
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>オープンソース</h2>
+        <p class="sub">
+          ソースは GitHub で公開。辞書由来の帰属は
+          <a href="https://github.com/Blackphi6/yt-furigana-extension/blob/main/COPYING">COPYING</a>
+          と
+          <a href="https://github.com/Blackphi6/yt-furigana-extension/blob/main/NOTICE">NOTICE</a>
+          を参照してください。
+        </p>
+        <div class="cta-row">
+          <a class="btn ghost" href="https://github.com/Blackphi6/yt-furigana-extension">リポジトリを開く</a>
+          <a class="btn ghost" href="./privacy.html">プライバシーポリシー</a>
+        </div>
+      </section>
+
+      <footer class="site-footer">
+        <nav aria-label="フッタ">
+          <a href="./pricing.html">料金</a>
+          <a href="./privacy.html">プライバシー</a>
+          <a href="./terms.html">利用規約</a>
+          <a href="https://github.com/Blackphi6/yt-furigana-extension/blob/main/docs/OPEN-SOURCE-LICENSES.md"
+            >OSS ライセンス</a
+          >
+        </nav>
+        <p>© YT Furigana — MIT License</p>
+      </footer>
+    </div>
+    <script>
+      const cfg = window.YT_FURIGANA_SITE || {};
+      const store = document.getElementById("cta-store");
+      if (cfg.chromeStoreUrl) store.href = cfg.chromeStoreUrl;
+    </script>
+  </body>
+</html>
