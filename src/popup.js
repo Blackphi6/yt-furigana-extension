@@ -251,6 +251,7 @@ async function saveSettings() {
     pricingUrl: current.pricingUrl || DEFAULT_SETTINGS.pricingUrl,
     privacyUrl: current.privacyUrl || DEFAULT_SETTINGS.privacyUrl,
     termsUrl: current.termsUrl || DEFAULT_SETTINGS.termsUrl,
+    installUrl: current.installUrl || DEFAULT_SETTINGS.installUrl,
     ollamaUrl: ollamaUrlInput.value.trim() || DEFAULT_SETTINGS.ollamaUrl,
     ollamaModel: getSelectedModelName()
   });

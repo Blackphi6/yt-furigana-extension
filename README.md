@@ -5,8 +5,10 @@ YouTube / TVer の日本語字幕にひらがなルビを表示する Chrome 拡
 字幕・歌詞などの著作権は各権利者に帰属します。本拡張は画面上の表示加工であり、コンテンツの再配布を目的としません。
 
 **サイト**: https://blackphi6.github.io/yt-furigana-extension/  
+**インストール**: https://blackphi6.github.io/yt-furigana-extension/install.html  
 **料金 / Premium**: https://blackphi6.github.io/yt-furigana-extension/pricing.html  
-**プライバシー**: https://blackphi6.github.io/yt-furigana-extension/privacy.html
+**プライバシー**: https://blackphi6.github.io/yt-furigana-extension/privacy.html  
+**リリース状態**: [docs/RELEASE.md](docs/RELEASE.md)
 
 ## 機能
 

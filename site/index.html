@@ -22,6 +22,7 @@
       <header class="site-header">
         <a class="brand" href="./">YT Furigana</a>
         <nav class="nav" aria-label="主要ナビ">
+          <a href="./install.html">インストール</a>
           <a href="./pricing.html">料金</a>
           <a href="./privacy.html">プライバシー</a>
           <a href="./terms.html">利用規約</a>
@@ -37,7 +38,7 @@
             無料プランは端末内だけで完結。Premium は辞書の同期と共有、ホスト API を解放します。
           </p>
           <div class="cta-row">
-            <a class="btn" id="cta-store" href="https://chromewebstore.google.com/detail/placeholder">Chrome に追加</a>
+            <a class="btn" id="cta-primary" href="./install.html">インストール</a>
             <a class="btn ghost" href="./pricing.html">Premium を見る</a>
           </div>
         </div>
@@ -96,6 +97,7 @@
 
       <footer class="site-footer">
         <nav aria-label="フッタ">
+          <a href="./install.html">インストール</a>
           <a href="./pricing.html">料金</a>
           <a href="./privacy.html">プライバシー</a>
           <a href="./terms.html">利用規約</a>
@@ -108,8 +110,13 @@
     </div>
     <script>
       const cfg = window.YT_FURIGANA_SITE || {};
-      const store = document.getElementById("cta-store");
-      if (cfg.chromeStoreUrl) store.href = cfg.chromeStoreUrl;
+      const primary = document.getElementById("cta-primary");
+      if (cfg.chromeStoreUrl) {
+        primary.href = cfg.chromeStoreUrl;
+        primary.textContent = "Chrome に追加";
+      } else if (cfg.installUrl) {
+        primary.href = cfg.installUrl;
+      }
     </script>
   </body>
 </html>

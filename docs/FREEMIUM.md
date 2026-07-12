@@ -11,7 +11,10 @@
 本体のふりがなは常に Free。課金壁で普及を止めない。
 
 公開サイト: https://blackphi6.github.io/yt-furigana-extension/  
+インストール: https://blackphi6.github.io/yt-furigana-extension/install.html  
 購入ページ: https://blackphi6.github.io/yt-furigana-extension/pricing.html
+
+Premium の当面の受付は **GitHub Sponsors**。Stripe 自動購入は読みエンジンをホストしキーを設定したあとに有効になります。
 
 ## ローカルで Premium を試す
 
@@ -65,6 +68,6 @@ npm run reading-engine
 - `YT_FURIGANA_API_KEYS` をセットすると `/v1/readings` も Bearer 必須
 - ライセンス発行: `POST /v1/admin/mint-license`（adminToken 必須）または `node scripts/mint-license.mjs`
 
-## 弁護士レビュー
+## 問題が起きたとき
 
-プライバシー・利用規約・COPYING 等はテンプレ／OSS 慣行に基づく文書であり、**弁護士によるレビューは本リポジトリ作業の範囲外**です。商用公開前に専門家へ依頼してください。
+平時は公開文書と自己調査で運用し、トラブルや規模拡大時に専門家へ相談する想定です。

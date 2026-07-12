@@ -21,6 +21,7 @@ export const DEFAULT_SETTINGS = {
   pricingUrl: "https://blackphi6.github.io/yt-furigana-extension/pricing.html",
   privacyUrl: "https://blackphi6.github.io/yt-furigana-extension/privacy.html",
   termsUrl: "https://blackphi6.github.io/yt-furigana-extension/terms.html",
+  installUrl: "https://blackphi6.github.io/yt-furigana-extension/install.html",
   ollamaUrl: "http://localhost:11434",
   ollamaModel: ""
 };

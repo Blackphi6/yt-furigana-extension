@@ -19,7 +19,7 @@
       <header class="site-header">
         <a class="brand" href="./">YT Furigana</a>
         <nav class="nav">
-          <a href="./">ホーム</a>
+          <a href="./install.html">インストール</a>
           <a href="./privacy.html">プライバシー</a>
           <a href="./terms.html">利用規約</a>
         </nav>
@@ -28,7 +28,7 @@
       <section class="section" style="border-top: none; padding-top: 2.5rem">
         <h2>料金</h2>
         <p class="sub">
-          Free は端末内の読み付けが無制限。Premium は辞書同期・共有辞書・ホスト API を解放する買い切りライセンスです。
+          Free は端末内の読み付けが無制限。Premium は辞書同期・共有辞書・ホスト API を解放します。
         </p>
         <div class="plan-grid">
           <article class="plan">
@@ -39,17 +39,32 @@
               <li>ユーザー辞書・手動読み</li>
               <li>クラウド同期なし</li>
             </ul>
+            <p style="margin: 1.25rem 0 0">
+              <a class="btn ghost" href="./install.html">インストール</a>
+            </p>
           </article>
           <article class="plan featured">
             <h3>Premium</h3>
-            <p class="price">¥980</p>
+            <p class="price">支援 / 買い切り</p>
             <ul>
               <li>辞書の端末間同期</li>
               <li>共有辞書</li>
               <li>ホスト型読み API</li>
-              <li>買い切り（Stripe Checkout）</li>
             </ul>
-            <form id="checkout-form" class="field-row" style="margin-top: 1.25rem">
+
+            <h3 style="margin-top: 1.35rem; font-size: 1.05rem">1. GitHub Sponsors（いま使える）</h3>
+            <p class="sub" style="margin-bottom: 0.75rem">
+              支援後、Issue かメールで連絡いただければライセンスキーを発行します。
+            </p>
+            <a class="btn" id="sponsors-btn" href="https://github.com/sponsors/Blackphi6" target="_blank" rel="noreferrer"
+              >Sponsors で支援</a
+            >
+
+            <h3 style="margin-top: 1.5rem; font-size: 1.05rem">2. Stripe（ホスト API 接続時）</h3>
+            <p class="sub" style="margin-bottom: 0.5rem">
+              読みエンジンを公開し Stripe を設定すると、下のボタンで自動購入できます。
+            </p>
+            <form id="checkout-form" class="field-row">
               <input
                 id="email"
                 type="email"
@@ -57,12 +72,14 @@
                 placeholder="領収用メール（任意）"
                 autocomplete="email"
               />
-              <button class="btn" type="submit">Stripe で購入</button>
+              <button class="btn" type="submit" id="checkout-btn">Stripe で購入</button>
             </form>
             <p id="checkout-status" class="status" role="status" aria-live="polite"></p>
+
             <p class="sub" style="margin-top: 1rem; margin-bottom: 0">
-              デモ検証キー（開発用）:
+              ローカル検証用デモキー:
               <code class="key">ytfp_live_demo_key_001</code>
+              （要 <code>npm run reading-engine</code>）
             </p>
           </article>
         </div>
@@ -78,15 +95,25 @@
     </div>
     <script>
       const cfg = window.YT_FURIGANA_SITE || {};
-      const API = (
-        (typeof localStorage !== "undefined" && localStorage.getItem("ytf_reading_api")) ||
-        cfg.readingApiUrl ||
-        "http://127.0.0.1:8765"
-      ).replace(/\/$/, "");
+      const sponsors = document.getElementById("sponsors-btn");
+      if (cfg.sponsorsUrl) sponsors.href = cfg.sponsorsUrl;
+
+      const stored = typeof localStorage !== "undefined" && localStorage.getItem("ytf_reading_api");
+      const API = String(stored || cfg.readingApiUrl || "").replace(/\/$/, "");
       const form = document.getElementById("checkout-form");
       const status = document.getElementById("checkout-status");
+      const checkoutBtn = document.getElementById("checkout-btn");
+
+      if (!API) {
+        checkoutBtn.disabled = true;
+        status.className = "status";
+        status.textContent =
+          "本番の読みエンジン URL が未設定のため、いまは Sponsors 経由で Premium を受け付けます。";
+      }
+
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
+        if (!API) return;
         status.className = "status";
         status.textContent = "Checkout を準備しています…";
         try {
@@ -110,7 +137,7 @@
           }
           if ((data.dry_run || data.mode === "dry-run") && data.licenseKey) {
             status.className = "status ok";
-            status.textContent = "開発モード（Stripe 未設定）でライセンスを発行しました。";
+            status.textContent = "開発モードでライセンスを発行しました。";
             const code = document.createElement("code");
             code.className = "key";
             code.textContent = data.licenseKey;

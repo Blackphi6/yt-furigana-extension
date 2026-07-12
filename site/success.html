@@ -31,7 +31,7 @@
         <p id="status" class="status" role="status" aria-live="polite">ライセンスを取得しています…</p>
         <code id="license" class="key" hidden></code>
         <div class="cta-row" style="margin-top: 1.5rem">
-          <a class="btn" id="store-link" href="https://chromewebstore.google.com/detail/placeholder">拡張を開く</a>
+          <a class="btn" id="store-link" href="./install.html">インストールへ</a>
           <a class="btn ghost" href="./">ホームへ</a>
         </div>
       </section>
@@ -39,7 +39,12 @@
     <script>
       const cfg = window.YT_FURIGANA_SITE || {};
       const store = document.getElementById("store-link");
-      if (cfg.chromeStoreUrl) store.href = cfg.chromeStoreUrl;
+      if (cfg.chromeStoreUrl) {
+        store.href = cfg.chromeStoreUrl;
+        store.textContent = "拡張を開く";
+      } else if (cfg.installUrl) {
+        store.href = cfg.installUrl;
+      }
       const API = (
         (typeof localStorage !== "undefined" && localStorage.getItem("ytf_reading_api")) ||
         cfg.readingApiUrl ||
