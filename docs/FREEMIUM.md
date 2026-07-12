@@ -29,6 +29,17 @@ npm run reading-engine
 3. 「ライセンス検証」→ Premium
 4. 「辞書を同期」「共有辞書」
 
+## Stripe（アカウント内の別サービス）
+
+同じ Stripe アカウント（説明文エディタ / SecurData と共通メール）に **Product を分けて**作成しています。
+
+| モード | Product | Price (¥980 買い切り) |
+|--------|---------|------------------------|
+| Test | `prod_Us03UPjsqOraab` | `price_1TsG3X8H0GxhdXkpaefsbvrC` |
+| Live | Dashboard または `scripts/setup-stripe-product.sh live` | 作成後に記入 |
+
+詳細: [STRIPE.md](STRIPE.md)
+
 ## Stripe Checkout（本番）
 
 読みエンジン側の環境変数:
