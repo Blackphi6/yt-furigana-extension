@@ -152,14 +152,18 @@ export function wrapFuriganaWord(surface, reading, rubyHtml) {
 }
 
 /**
- * RubiPon と同じ順: トークン化 → 結合 → 読み上書き。
+ * RubiPon と同じ順: トークン化 → 結合 → 文脈読み → フレーズ上書き。
+ * 文脈を結合前に掛けると「何度も何も…」で「何」が全部「なに」になり「なにど」になる。
  * 原文を「何」などで先に切り出すと「何故か」が分断されるのでやらない。
  */
 export function buildFuriganaHtml(text, tokenize) {
   const tokens = applyManualPhraseReadings(
-    mergeTokensForRuby(applyContextualReadings(tokenize(text), text), {
-      extraSurfaces: MANUAL_PHRASE_READINGS.keys()
-    })
+    applyContextualReadings(
+      mergeTokensForRuby(tokenize(text), {
+        extraSurfaces: MANUAL_PHRASE_READINGS.keys()
+      }),
+      text
+    )
   );
 
   return tokens

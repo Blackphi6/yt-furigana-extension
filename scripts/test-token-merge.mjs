@@ -66,5 +66,15 @@ assert.ok(html.includes('data-surface="雲"'), html);
 assert.ok(!html.includes('data-surface="夏"'), html);
 assert.ok(!html.includes('data-surface="乾い"'), html);
 
+// 何度: 何+度 を一塊、読みは なんど（文中に「何も」があっても汚染しない）
+const nando = buildFuriganaHtml("何度も何も言わない", (text) =>
+  tokenizer.tokenize(text)
+);
+assert.ok(nando.includes('data-surface="何度"'), nando);
+assert.ok(nando.includes('data-reading="なんど"'), nando);
+assert.ok(!nando.includes("なにど"), nando);
+assert.ok(!nando.includes('data-surface="何"'), nando);
+
 console.log("Token merge tests passed.");
 console.log(html);
+console.log(nando);

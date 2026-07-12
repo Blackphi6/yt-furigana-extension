@@ -21,6 +21,15 @@ const EXPLICIT_COMPOUND_RULES = [
   { parts: ["何", "故"], reading: "なぜ" },
   { parts: ["何故", "か"], reading: "なぜか" },
   { parts: ["何故", "に"], reading: "なぜに" },
+  // 数詞の「何」+ 助数詞（Kuromoji は 何/ナン + 度/ド に割る）
+  { parts: ["何", "度"], reading: "なんど" },
+  { parts: ["何", "回"], reading: "なんかい" },
+  { parts: ["何", "人"], reading: "なんにん" },
+  { parts: ["何", "年"], reading: "なんねん" },
+  { parts: ["何", "枚"], reading: "なんまい" },
+  { parts: ["何", "冊"], reading: "なんさつ" },
+  { parts: ["何", "階"], reading: "なんかい" },
+  { parts: ["何", "倍"], reading: "なんばい" },
   { parts: ["直", "書き"], reading: "じかがき" }
 ];
 
@@ -32,6 +41,14 @@ function dictionaryReadingFor(surface) {
     如何: "いかが",
     如何に: "いかに",
     如何して: "どうして",
+    何度: "なんど",
+    何回: "なんかい",
+    何人: "なんにん",
+    何年: "なんねん",
+    何枚: "なんまい",
+    何冊: "なんさつ",
+    何階: "なんかい",
+    何倍: "なんばい",
     直書き: "じかがき"
   };
   return fallback[surface] || "";
