@@ -11,7 +11,12 @@ import {
   normalizeReadingApiUrl,
   parseReadingApiResponse
 } from "./reading-api.js";
-import { USER_READING_DICT_KEY } from "./user-reading-dict.js";
+import {
+  USER_READING_DICT_KEY,
+  loadUserReadingDict,
+  loadUserReadingStore,
+  normalizeUserReadingStore
+} from "./user-reading-dict.js";
 import {
   verifyLicense,
   pullAndMergeDict,
@@ -39,9 +44,7 @@ async function getSettings() {
 }
 
 async function loadUserDict() {
-  const stored = await chrome.storage.local.get({ [USER_READING_DICT_KEY]: {} });
-  const dict = stored[USER_READING_DICT_KEY];
-  return dict && typeof dict === "object" ? dict : {};
+  return loadUserReadingDict();
 }
 
 async function resolveOllamaModel(settings) {
@@ -363,7 +366,12 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
           localDict,
           localRevisedAt
         );
-        await chrome.storage.local.set({ [USER_READING_DICT_KEY]: pulled.dict });
+        const store = await loadUserReadingStore();
+        const nextStore = normalizeUserReadingStore({
+          ...store,
+          phrases: pulled.dict
+        });
+        await chrome.storage.local.set({ [USER_READING_DICT_KEY]: nextStore });
         const pushed = await pushDict(
           { ...settings, plan: entitlement.plan },
           pulled.dict,

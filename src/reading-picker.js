@@ -1,8 +1,13 @@
 import { buildRuby } from "./furigana.js";
 import { collectReadingCandidates } from "./reading-candidates.js";
-import { saveUserReading, loadUserReadingDict } from "./user-reading-dict.js";
+import {
+  saveUserReadingChoice,
+  loadUserReadingStore,
+  buildLearningCues
+} from "./user-reading-dict.js";
 import {
   MANUAL_PHRASE_READINGS,
+  CONTEXT_READING_RULES,
   rebuildManualPhraseIndex
 } from "./reading-context.js";
 import { normalizeReading } from "./reading-normalize.js";
@@ -53,12 +58,12 @@ export async function openReadingPicker(wordEl, options = {}) {
 
   // 表示単位（結合後の data-surface）だけで候補を出す。
   // 「何」クリックで「なぜか」が出るような表層の勝手な拡張はしない。
-  const userDict = await loadUserReadingDict();
+  const userStore = await loadUserReadingStore();
   const candidates = collectReadingCandidates(
     surface,
     currentReading,
     contextText,
-    userDict
+    userStore
   );
 
   const popup = document.createElement("div");
@@ -97,7 +102,7 @@ export async function openReadingPicker(wordEl, options = {}) {
         />
         <button type="submit" class="yt-furigana-picker__submit">保存</button>
       </div>
-      <p class="yt-furigana-picker__hint">例: くう / せわしい。端末内だけに学習されます。</p>
+      <p class="yt-furigana-picker__hint">例: とわ。前後の文脈（永遠に など）付きで端末内に学習します。</p>
     </form>
   `;
 
@@ -160,9 +165,27 @@ async function applyReadingChoice(wordEl, surface, reading, contextText) {
   wordEl.innerHTML = buildRuby(surface, normalized);
   requestAnimationFrame(() => fitRubyReadings(wordEl));
 
-  MANUAL_PHRASE_READINGS.set(surface, normalized);
-  rebuildManualPhraseIndex();
-  await saveUserReading(surface, normalized);
+  const cues = buildLearningCues(surface, contextText);
+  if (cues.length > 0) {
+    // 文脈付き: グローバル上書きにしない（別文の「えいえん」を守る）
+    MANUAL_PHRASE_READINGS.delete(surface);
+    CONTEXT_READING_RULES.push({
+      surface,
+      reading: normalized,
+      weight: 5,
+      cues
+    });
+    rebuildManualPhraseIndex();
+  } else {
+    MANUAL_PHRASE_READINGS.set(surface, normalized);
+    rebuildManualPhraseIndex();
+  }
+
+  await saveUserReadingChoice({
+    surface,
+    reading: normalized,
+    contextText
+  });
 
   if (typeof chrome !== "undefined" && chrome?.storage?.local) {
     const stored = await chrome.storage.local.get({ [LEARNING_INBOX_KEY]: [] });
@@ -178,6 +201,7 @@ async function applyReadingChoice(wordEl, surface, reading, contextText) {
         surface,
         want: normalized,
         reading: normalized,
+        cues,
         source: "user",
         videoUrl: typeof location !== "undefined" ? location.href : ""
       },

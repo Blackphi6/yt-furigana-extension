@@ -18,11 +18,12 @@ import { buildFuriganaHtml } from "./furigana.js";
 import { recordLearningSample } from "./learning-inbox.js";
 import { installReadingPicker } from "./reading-picker.js";
 import {
-  applyUserReadingDictToManual,
-  loadUserReadingDict
+  applyUserReadingLearning,
+  loadUserReadingStore
 } from "./user-reading-dict.js";
 import {
   MANUAL_PHRASE_READINGS,
+  CONTEXT_READING_RULES,
   rebuildManualPhraseIndex
 } from "./reading-context.js";
 import { initSudachiTokenizer } from "./sudachi-tokenizer.js";
@@ -701,11 +702,12 @@ function startVideoNavigationWatch() {
 
 async function bootstrap() {
   await loadSettings();
-  const userDict = await loadUserReadingDict();
-  applyUserReadingDictToManual(
+  const userStore = await loadUserReadingStore();
+  applyUserReadingLearning(
     MANUAL_PHRASE_READINGS,
+    CONTEXT_READING_RULES,
     rebuildManualPhraseIndex,
-    userDict
+    userStore
   );
 
   // Premium 共有辞書（検証後に popup から取得して local に保存済みのもの）
@@ -715,8 +717,9 @@ async function bootstrap() {
       stored.sharedReadingDict && typeof stored.sharedReadingDict === "object"
         ? stored.sharedReadingDict
         : {};
-    applyUserReadingDictToManual(
+    applyUserReadingLearning(
       MANUAL_PHRASE_READINGS,
+      CONTEXT_READING_RULES,
       rebuildManualPhraseIndex,
       shared
     );

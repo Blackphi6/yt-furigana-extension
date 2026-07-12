@@ -3,6 +3,10 @@ import {
   CONTEXT_READING_RULES,
   MANUAL_PHRASE_READINGS
 } from "./reading-context.js";
+import {
+  matchUserContextualReadings,
+  normalizeUserReadingStore
+} from "./user-reading-dict.js";
 import heteronymCandidates from "../data/generated/heteronym-candidates.json" with {
   type: "json"
 };
@@ -21,24 +25,24 @@ const EXTRA_HETERONYM_READINGS = {
   何度: ["なんど"],
   何回: ["なんかい"],
   何人: ["なんにん"],
+  永遠: ["えいえん", "とわ"],
   直書き: ["じかがき"],
   直: ["じか", "なお", "ちょく"]
 };
 
 /**
  * 表層に対する読み候補を集める（IMEの変換候補に相当）。
- * 既存の同形異音辞書があれば、現在の読み以外も必ず候補に含める。
  * @param {string} surface
  * @param {string} [currentReading]
  * @param {string} [contextText]
- * @param {Record<string, string>} [userDict]
+ * @param {Record<string, string> | object} [userDictOrStore]
  * @returns {{ reading: string, source: string, label: string }[]}
  */
 export function collectReadingCandidates(
   surface,
   currentReading = "",
   contextText = "",
-  userDict = {}
+  userDictOrStore = {}
 ) {
   if (!surface) return [];
 
@@ -56,8 +60,33 @@ export function collectReadingCandidates(
   const current = normalizeReading(currentReading);
   if (current) add(current, "current", "現在", 10);
 
-  if (userDict[surface]) {
-    add(userDict[surface], "user", "学習済み", 9);
+  const store = normalizeUserReadingStore(
+    userDictOrStore &&
+      typeof userDictOrStore === "object" &&
+      ("phrases" in userDictOrStore ||
+        "contextRules" in userDictOrStore ||
+        "version" in userDictOrStore)
+      ? userDictOrStore
+      : { version: 2, phrases: userDictOrStore || {}, contextRules: [] }
+  );
+
+  for (const reading of matchUserContextualReadings(
+    surface,
+    contextText,
+    store
+  )) {
+    const contextualHit = store.contextRules.some(
+      (rule) =>
+        rule.surface === surface &&
+        rule.reading === reading &&
+        rule.cues.some((cue) => String(contextText || "").includes(cue))
+    );
+    add(
+      reading,
+      "user",
+      contextualHit ? "学習（文脈）" : "学習済み",
+      contextualHit ? 9.5 : 9
+    );
   }
 
   if (MANUAL_PHRASE_READINGS.has(surface)) {
@@ -66,8 +95,6 @@ export function collectReadingCandidates(
 
   for (const [phrase, reading] of MANUAL_PHRASE_READINGS) {
     if (phrase === surface) continue;
-    // 短い表層に長い複合語の読みを混ぜない（何 → なぜか は不可）
-    // 長い表層が短い固定句を含む場合だけ参考にする（何故かが 何故 を含む等）
     if (surface.includes(phrase) && phrase.length >= 2) {
       add(reading, "manual", "固定", 5);
     }
@@ -75,8 +102,6 @@ export function collectReadingCandidates(
 
   const context = contextText || "";
   for (const rule of CONTEXT_READING_RULES) {
-    // 表層一致、またはより長い表層が rule.surface で始まる場合のみ
-    // （何故 → 何 方向の漏れを防ぐ）
     if (rule.surface !== surface && !surface.startsWith(rule.surface)) {
       continue;
     }
@@ -100,11 +125,13 @@ export function collectReadingCandidates(
     }
   }
 
-  // 部分一致（何 → 何か は別語なので exact 優先。短い表層の完全一致のみ）
   if (!dictReadings && !extra && surface.length >= 2) {
     for (const [key, readings] of Object.entries(heteronymCandidates)) {
       if (key === surface) continue;
-      if (key.length <= surface.length + 1 && (key.startsWith(surface) || surface.startsWith(key))) {
+      if (
+        key.length <= surface.length + 1 &&
+        (key.startsWith(surface) || surface.startsWith(key))
+      ) {
         for (const reading of readings) add(reading, "dict", "辞書", 2);
       }
     }
