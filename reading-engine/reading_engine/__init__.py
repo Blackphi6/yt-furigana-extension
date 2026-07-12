@@ -1,4 +1,12 @@
-"""Local JRM-shaped reading engine: lattice + cue rerank + creative ruby."""
+"""Local JRM-shaped reading engine.
+
+Pipeline (hallucination-proof; matches Zenn JRM article order):
+  1. user_dict (highest priority)
+  2. trust regex patterns (idioms LLM judges get wrong)
+  3. UniDic + heteronym lattice (candidates only; gold must be in set)
+  4. ModernBERT pair rerank when available, else cue rules
+  5. low confidence → dictionary/base fallback
+"""
 
 from __future__ import annotations
 
@@ -11,14 +19,15 @@ from typing import Any
 
 from fugashi import Tagger
 
+from reading_engine.reranker import confidence_threshold, get_reranker
+from reading_engine.trust_patterns import match_trust_reading
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CREATIVE_SEED = REPO_ROOT / "data" / "creative-ruby" / "seed.jsonl"
 CREATIVE_HARVEST = REPO_ROOT / "data" / "creative-ruby" / "harvested.jsonl"
 HETERONYM_JSON = REPO_ROOT / "data" / "generated" / "heteronym-candidates.json"
 
-_KATA_TO_HIRA = str.maketrans(
-    {i: i - 0x60 for i in range(0x30A1, 0x30F7)}
-)
+_KATA_TO_HIRA = str.maketrans({i: i - 0x60 for i in range(0x30A1, 0x30F7)})
 
 
 def to_hiragana(text: str) -> str:
@@ -29,7 +38,6 @@ def normalize_reading(text: str) -> str:
     return to_hiragana(unicodedata.normalize("NFKC", text or ""))
 
 
-# Port of high-value cues from src/reading-context.js (+ extras)
 CONTEXT_RULES: list[dict[str, Any]] = [
     {"surface": "忙しい", "reading": "せわしい", "weight": 3, "cues": ["暇もない", "世界", "恋", "心", "胸", "街", "夜", "夢", "涙", "君", "僕"]},
     {"surface": "忙しい", "reading": "いそがしい", "weight": 1, "cues": ["仕事", "予定", "会議", "残業"]},
@@ -44,8 +52,12 @@ CONTEXT_RULES: list[dict[str, Any]] = [
     {"surface": "方", "reading": "ほう", "weight": 2, "cues": ["の方", "方向", "一方", "両方", "方へ"]},
     {"surface": "大事", "reading": "おおごと", "weight": 3, "cues": ["誤解", "なる", "騒ぎ", "事件", "問題に"]},
     {"surface": "大事", "reading": "だいじ", "weight": 2, "cues": ["大切", "大事な人", "大事に", "とても大事"]},
-    {"surface": "市場", "reading": "しじょう", "weight": 3, "cues": ["株式", "規模", "経済", "金融", "市場調査"]},
-    {"surface": "市場", "reading": "いちば", "weight": 3, "cues": ["朝の", "鮮魚", "野菜", "市場で買", "朝市"]},
+    {"surface": "市場", "reading": "しじょう", "weight": 3, "cues": ["株式", "規模", "経済", "金融", "市場調査", "市場規模"]},
+    {"surface": "市場", "reading": "いちば", "weight": 3, "cues": ["朝の", "鮮魚", "野菜", "市場で買", "朝市", "市場で魚"]},
+    {"surface": "永遠", "reading": "とわ", "weight": 4, "cues": ["永遠に"]},
+    {"surface": "永遠", "reading": "えいえん", "weight": 3, "cues": ["永遠の", "永遠の絆"]},
+    {"surface": "下手", "reading": "したて", "weight": 5, "cues": ["下手に出", "下手に回"]},
+    {"surface": "下手", "reading": "へた", "weight": 3, "cues": ["下手だ", "絵が下手", "字が下手"]},
     {"surface": "今日", "reading": "きょう", "weight": 2, "cues": ["明日", "昨日", "今日は", "今日も"]},
     {"surface": "今日", "reading": "こんにち", "weight": 3, "cues": ["今日この頃", "今日では", "今日において"]},
     {"surface": "風", "reading": "かぜ", "weight": 2, "cues": ["吹", "強風", "風が"]},
@@ -103,6 +115,25 @@ def load_heteronym_map(path: Path = HETERONYM_JSON) -> dict[str, list[str]]:
     }
 
 
+def _pick_constrained(
+    cands: list[str], scored: list[tuple[float, str, str]], base: str, threshold: float
+) -> tuple[str, float, str]:
+    """Argmax among candidates only; low confidence → base fallback."""
+    if not scored:
+        reading = base or (cands[0] if cands else "")
+        return reading, 0.5, "base_engine"
+    scored.sort(key=lambda x: (-x[0], x[1]))
+    conf, reading, source = scored[0]
+    # Structural guarantee: never leave the lattice
+    if reading not in cands:
+        reading = base if base in cands else cands[0]
+        conf = 0.5
+        source = "base_engine"
+    if conf < threshold and base and base in cands:
+        return base, round(max(conf, 0.5), 4), "base_engine"
+    return reading, round(conf, 4), source
+
+
 class ReadingEngine:
     def __init__(self) -> None:
         self.tagger = Tagger()
@@ -111,6 +142,7 @@ class ReadingEngine:
         self._creative_by_surface: dict[str, list[CreativeEntry]] = {}
         for entry in self.creative:
             self._creative_by_surface.setdefault(entry.surface, []).append(entry)
+        self._threshold = confidence_threshold()
 
     def _base_reading(self, word) -> str:
         kana = getattr(word.feature, "kana", None) or getattr(word.feature, "pron", None) or ""
@@ -119,6 +151,7 @@ class ReadingEngine:
         return normalize_reading(kana.replace("ー", ""))
 
     def _candidates_for(self, surface: str, base: str, full_text: str) -> list[str]:
+        """Build lattice. Base reading is always first when present. No free-form adds."""
         cands: list[str] = []
         seen: set[str] = set()
 
@@ -126,7 +159,6 @@ class ReadingEngine:
             r = normalize_reading(reading)
             if not r or r in seen:
                 return
-            # Drop fragment junk from heteronym dumps (夏→か/げ, 口→く).
             if base and len(r) == 1 and len(base) >= 2:
                 return
             seen.add(r)
@@ -141,20 +173,18 @@ class ReadingEngine:
                 add(rule["reading"])
         for entry in self._creative_by_surface.get(surface, []):
             add(entry.reading)
-        # compound: 伝え方
+        trust = match_trust_reading(surface, full_text)
+        if trust:
+            add(trust.reading)
         if surface == "方" and "伝え方" in full_text:
             add("かた")
         return cands
 
-    def _score_reading(
+    def _score_cue(
         self, surface: str, reading: str, full_text: str, base: str
-    ) -> tuple[float, str, list[str]]:
-        """Return confidence, source, candidate list helpers."""
-        # user handled outside
+    ) -> tuple[float, str]:
         best = 0.0
         source = "base_engine"
-        matched_cues: list[str] = []
-
         if reading == base:
             best = 0.55
             source = "base_engine"
@@ -164,23 +194,22 @@ class ReadingEngine:
                 continue
             hits = [c for c in rule["cues"] if c in full_text]
             if hits:
+                longest = max(len(h) for h in hits)
                 score = 0.7 + 0.05 * min(len(hits), 4) + 0.02 * rule.get("weight", 1)
+                score += min(longest, 8) * 0.01
                 if score > best:
                     best = min(score, 0.99)
                     source = "reranker"
-                    matched_cues = hits
 
         for entry in self._creative_by_surface.get(surface, []):
             if entry.reading != reading:
                 continue
             hits = [c for c in entry.cues if c in full_text]
-            # Creative: need cue hit OR explicit genre preference when cues empty and lyric-ish
             if hits:
                 score = 0.85 + 0.03 * min(len(hits), 3)
                 if score > best:
                     best = min(score, 0.995)
                     source = "creative_ruby"
-                    matched_cues = hits
             elif entry.genre in ("lyric", "novel") and any(
                 k in full_text for k in ("夏", "君", "恋", "夢", "夜", "風", "歌")
             ):
@@ -195,7 +224,38 @@ class ReadingEngine:
                     best = 0.92
                     source = "reranker"
 
-        return best, source, matched_cues
+        return best, source
+
+    def _select_reading(
+        self, surface: str, base: str, cands: list[str], full_text: str
+    ) -> tuple[str, float, str, list[str]]:
+        # 2) Trust patterns (idioms)
+        trust = match_trust_reading(surface, full_text)
+        if trust and trust.reading in cands:
+            return trust.reading, trust.confidence, "trust_pattern", cands[:6]
+
+        # 4) ModernBERT among lattice only
+        reranker = get_reranker()
+        if reranker is not None and len(cands) >= 2:
+            try:
+                pairs = reranker.score_pairs(full_text, surface, cands)
+                scored = [(score, cand, "reranker") for cand, score in pairs]
+                reading, conf, source = _pick_constrained(
+                    cands, scored, base, self._threshold
+                )
+                return reading, conf, source, cands[:6]
+            except Exception as exc:  # noqa: BLE001
+                print(f"[reading_engine] reranker score failed: {exc}")
+
+        # Cue rules fallback (still lattice-only)
+        scored = []
+        for cand in cands:
+            conf, source = self._score_cue(surface, cand, full_text, base)
+            scored.append((conf, cand, source))
+        reading, conf, source = _pick_constrained(
+            cands, scored, base, self._threshold
+        )
+        return reading, conf, source, cands[:6]
 
     def analyze(self, text: str, user_dict: list[dict[str, str]] | None = None) -> dict[str, Any]:
         user_map = {
@@ -205,10 +265,8 @@ class ReadingEngine:
         }
         words = list(self.tagger(text))
         tokens: list[dict[str, Any]] = []
-        reading_parts: list[str] = []
         cursor = 0
 
-        # Align surfaces to original text indices for spans
         for word in words:
             surface = word.surface
             start = text.find(surface, cursor)
@@ -217,6 +275,7 @@ class ReadingEngine:
             end = start + len(surface)
             cursor = end
 
+            # 1) user_dict highest priority
             if surface in user_map:
                 reading = user_map[surface]
                 tokens.append(
@@ -229,28 +288,17 @@ class ReadingEngine:
                         "candidates": [reading],
                     }
                 )
-                reading_parts.append(reading)
                 continue
 
-            # Prefer creative/compound phrase hits longer than token
-            phrase_hit = None
-            for entry in self.creative:
-                if entry.surface in text[max(0, start - 2) : end + 4] and entry.surface.startswith(
-                    surface
-                ):
-                    # handled at phrase level below
-                    pass
-
-            base = self._base_reading(word)
             has_kanji = bool(re.search(r"[\u3400-\u9fff]", surface))
             if not has_kanji:
-                reading_parts.append(normalize_reading(surface) if re.search(r"[ァ-ヶ]", surface) else surface)
                 continue
 
+            base = self._base_reading(word)
+            # 3) lattice
             cands = self._candidates_for(surface, base, text)
             if not cands:
                 if base:
-                    reading_parts.append(base)
                     tokens.append(
                         {
                             "surface": surface,
@@ -261,38 +309,29 @@ class ReadingEngine:
                             "candidates": [base],
                         }
                     )
-                else:
-                    reading_parts.append(surface)
                 continue
 
-            scored = []
-            for cand in cands:
-                conf, source, _ = self._score_reading(surface, cand, text, base)
-                scored.append((conf, cand, source))
-            scored.sort(key=lambda x: (-x[0], x[1]))
-            conf, reading, source = scored[0]
-            # If creative surface exact match with cues, override whole phrase
-            for entry in self._creative_by_surface.get(surface, []):
-                if entry.cues and any(c in text for c in entry.cues):
-                    reading = entry.reading
-                    conf = max(conf, 0.9)
-                    source = "creative_ruby"
-                    if entry.reading not in cands:
-                        cands = [entry.reading] + cands
+            reading, conf, source, out_cands = self._select_reading(
+                surface, base, cands, text
+            )
+            # Final structural check
+            if reading not in out_cands:
+                reading = base if base in out_cands else out_cands[0]
+                conf = 0.5
+                source = "base_engine"
 
             tokens.append(
                 {
                     "surface": surface,
                     "span": [start, end],
                     "reading": reading,
-                    "confidence": round(conf, 4),
+                    "confidence": conf,
                     "source": source,
-                    "candidates": cands[:6],
+                    "candidates": out_cands,
                 }
             )
-            reading_parts.append(reading)
 
-        # Second pass: multi-char creative surfaces (氷菓)
+        # Creative multi-char surfaces (氷菓) — still lattice-local
         for entry in self.creative:
             idx = text.find(entry.surface)
             if idx < 0:
@@ -301,12 +340,13 @@ class ReadingEngine:
             if not hits and entry.genre not in ("lyric", "novel"):
                 continue
             if not hits and not any(k in text for k in ("夏", "君", "恋", "風", "木陰", "口に")):
-                # still allow exact known seed with weak prior for demo sentences
                 if entry.surface != "氷菓":
                     continue
-            # Replace overlapping tokens
             end = idx + len(entry.surface)
             tokens = [t for t in tokens if not (t["span"][0] < end and t["span"][1] > idx)]
+            creative_cands = [entry.reading]
+            if "ひょうか" not in creative_cands:
+                creative_cands.append("ひょうか")
             tokens.append(
                 {
                     "surface": entry.surface,
@@ -314,17 +354,11 @@ class ReadingEngine:
                     "reading": entry.reading,
                     "confidence": 0.94 if hits else 0.8,
                     "source": "creative_ruby",
-                    "candidates": [entry.reading, "ひょうか"],
+                    "candidates": creative_cands,
                 }
             )
         tokens.sort(key=lambda t: t["span"][0])
 
-        # Rebuild full reading string coarsely
-        full_reading = "".join(
-            t["reading"] if t.get("reading") else text[t["span"][0] : t["span"][1]]
-            for t in tokens
-        )
-        # Fill gaps with raw kana/punct from text
         rebuilt = []
         pos = 0
         for t in tokens:

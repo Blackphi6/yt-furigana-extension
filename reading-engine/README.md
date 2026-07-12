@@ -2,6 +2,22 @@
 
 Local-first reading API for the Chrome extension. No cloud fee.
 
+設計は [JRM 記事（Zenn）](https://zenn.dev/nixo/articles/3139042d4034f2) と同じく
+**「LLM に自由に読ませない」** です。出力は常に候補ラティス内に制約されます。
+
+## 推論パイプライン（幻覚が構造的に起きない順）
+
+```
+入力テキスト
+  ├─ 1. user_dict（最優先・confidence=1.0）
+  ├─ 2. trust regex（下手に出る→したて 等。LLM審判が全滅する慣用句）
+  ├─ 3. UniDic + heteronym → 候補ラティス（base を必ず含む）
+  ├─ 4. ModernBERT pair rerank（任意）／なければ cue ルール
+  └─ 5. 確信度 < 閾値 → 辞書（base）へ安全フォールバック
+```
+
+候補外の読みはコード上 `assert` 相当のガードで採用しません。
+
 ## Research notes (2026-07)
 
 | Option | Status | Notes |
@@ -11,10 +27,17 @@ Local-first reading API for the Chrome extension. No cloud fee.
 | **ModernBERT-Ja** (SB Intuitions 30m–310m) | Best open encoder base | Needs fine-tune for readings (JRM-style) |
 | **llm-jp-modernbert** | Open | Similar; not SOTA over SB Intuitions on JGLUE |
 
-**This MVP** = UniDic lattice + context cue rerank + creative-ruby dict (JRM-shaped API).  
-**Next** = fine-tune `sbintuitions/modernbert-ja-30m` on NDL + synthetic (see `train/README.md`).
+**This MVP** = lattice + trust patterns + cue rerank (+ optional ModernBERT) + creative-ruby.  
+**Next** = fine-tune on NDL + synthetic with token-boundary gate (see `train/README.md`).
 
-Creative ruby (氷菓→あいす) is a separate lane: seed dict + harvest from structured ruby HTML / `《》` text — not Google SERP dumps.
+## 手順（記事順 / 最適）
+
+1. **ラティスを固める** — `heteronym-candidates.json` + UniDic base。合成ラベルはトークン境界一致のみ採用（預金の「金」問題）。
+2. **慣用句は trust 表** — `trust_patterns.py`（下手に出る 等）。LLM 審判に任せない。
+3. **ModernBERT を候補内だけ学習** — `npm run learn:reranker-smoke` → `YT_FURIGANA_RERANKER_PATH=...`
+4. **閾値フォールバック** — `YT_FURIGANA_RERANKER_THRESHOLD=0.55`（既定）
+5. **評価ゲート** — `npm run reading-engine:test` / `npm run learn`（seed-bench 悪化で昇格拒否）
+6. **商用 LLM API 出力は学習禁止** — オープンウェイトの生成×別ファミリー盲検×仲裁のみ
 
 ## Freemium endpoints
 
@@ -23,27 +46,23 @@ Creative ruby (氷菓→あいす) is a separate lane: seed dict + harvest from 
 | `POST /v1/readings` | optional | Set `YT_FURIGANA_API_KEYS` to require Bearer |
 | `POST /v1/license/verify` | license in body | Activates Premium in the extension |
 | `GET/PUT /v1/dict/sync` | Bearer license | Per-license user dictionary |
-| `GET /v1/dict/shared` | Bearer license | Shared pack (何故か / 直書き …) |
+| `GET /v1/dict/shared` | Bearer license | Shared pack |
 | `POST /v1/admin/mint-license` | admin token | `YT_FURIGANA_ADMIN_TOKEN` |
 
-Demo license (auto-created): `ytfp_live_demo_key_001`
-
-See `docs/FREEMIUM.md`.
-
-## License / attribution
-
-This engine is part of YT Furigana (MIT). Third-party notices for UniDic / fugashi etc. are summarized in the repo root `NOTICE` and `docs/OPEN-SOURCE-LICENSES.md`.
+Demo license: `ytfp_live_demo_key_001` — see `docs/FREEMIUM.md`.
 
 ## Run
 
 ```bash
-# from repo root (once)
 python3 -m venv .venv-reading
 .venv-reading/bin/pip install -r reading-engine/requirements.txt
 
-# run API
 npm run reading-engine
 # → http://127.0.0.1:8765/v1/readings
+
+# Optional ModernBERT (after smoke/full train)
+export YT_FURIGANA_RERANKER_PATH=reading-engine/train/artifacts/reranker-smoke
+npm run reading-engine
 ```
 
 Extension: engine **読みAPI** → URL `http://127.0.0.1:8765`
@@ -51,5 +70,6 @@ Extension: engine **読みAPI** → URL `http://127.0.0.1:8765`
 ```bash
 npm run reading-engine:test
 curl -s http://127.0.0.1:8765/v1/readings -H 'content-type: application/json' \
-  -d '{"text":"夏の木陰に「氷菓」を口に放り込んで"}' | python3 -m json.tool
+  -d '{"text":"交渉では下手に出る。市場規模を見た。","user_dict":[{"surface":"東海林","reading":"しょうじ"}]}' \
+  | python3 -m json.tool
 ```
