@@ -2,14 +2,18 @@
 
 この拡張機能と関連ツールは、自作コードに加え複数のオープンソース成果物を利用しています。
 
-## 本プロジェクト
+本プロジェクト
 
 | 項目 | 内容 |
 |------|------|
 | 名称 | YT Furigana |
 | ライセンス | [MIT License](../LICENSE) |
 | 著作権 | Copyright (c) 2026 Blackphi6 and YT Furigana contributors |
+| 出典一覧（NEologd と同様の表記） | [COPYING](../COPYING) |
 | リポジトリ | https://github.com/Blackphi6/yt-furigana-extension |
+
+**まず読むファイル:** [`COPYING`](../COPYING)（利用データ・ライブラリの出典と感謝、無保証）
+
 
 ## 拡張機能に同梱・利用する主な第三者成果物
 

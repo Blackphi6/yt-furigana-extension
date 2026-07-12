@@ -2,9 +2,10 @@
 
 | 文書 | 内容 |
 |------|------|
+| [../COPYING](../COPYING) | **出典・感謝・無保証（NEologd 形式・まずここ）** |
 | [PRIVACY.md](PRIVACY.md) | プライバシーポリシー |
-| [TERMS.md](TERMS.md) | 利用条件・免責 |
-| [OPEN-SOURCE-LICENSES.md](OPEN-SOURCE-LICENSES.md) | OSS / 辞書の帰属 |
+| [TERMS.md](TERMS.md) | 利用条件・免責（補足） |
+| [OPEN-SOURCE-LICENSES.md](OPEN-SOURCE-LICENSES.md) | OSS / 辞書の帰属（詳細） |
 | [FREEMIUM.md](FREEMIUM.md) | Free / Premium モデル |
 
 リポジトリ直下:

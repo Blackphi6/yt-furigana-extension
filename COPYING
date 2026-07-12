@@ -1,0 +1,66 @@
+Copyright (C) 2026 Blackphi6 and YT Furigana contributors
+
+  https://github.com/Blackphi6/yt-furigana-extension
+
+  本ソフトウェアは、ブラウザ上で表示中の字幕等にひらがなルビを
+  重ねて表示するための Chrome 拡張機能である。
+  字幕・歌詞などのコンテンツそのものの著作権は各権利者に帰属する。
+  本プロジェクトはそれらの再配布を目的としない。
+
+
+i. 本ソフトウェアは、Takuya Asano 氏らが提供する kuromoji.js および
+   それに同梱される mecab-ipadic 辞書データを利用している。
+
+   kuromoji.js のライセンスは Apache License, Version 2.0 である。
+   mecab-ipadic の著作権表示および ICOT Free Software に由来する
+   条件（無保証を含む）は、同梱の次のファイルに従う。
+
+   kuromoji.js :
+   https://github.com/takuyaa/kuromoji.js
+
+   mecab-ipadic 由来の NOTICE :
+   third_party/NOTICE-kuromoji.md
+
+
+ii. 本ソフトウェアは、sudachi-wasm333 および SudachiDict を
+    利用できる（ユーザーがエンジンとして選択した場合）。
+
+    これらの著作権・ライセンスは各上流プロジェクトに帰属し、
+    主として Apache License, Version 2.0 のもとで提供される。
+
+    sudachi-wasm333 :
+    https://github.com/Benjas333/sudachi-wasm333
+
+    Sudachi / SudachiDict :
+    https://github.com/WorksApplications/Sudachi
+    https://github.com/WorksApplications/SudachiDict
+
+
+iii. 任意のローカル読みエンジン（reading-engine）は、fugashi および
+     unidic-lite（UniDic 由来データを含む）等を利用する。
+
+     各パッケージおよび UniDic の条件は上流の表記に従う。
+
+     fugashi : https://github.com/polm/fugashi
+     unidic-lite : https://github.com/polm/unidic-lite
+
+
+iv. 上記以外のビルドツール等（例: esbuild）は、拡張の実行時同梱物では
+    ないが、開発依存として各々の OSS ライセンスに従う。
+
+
+本ソフトウェア本体のソースコードは MIT License とする。
+依存データ・ライブラリについては、それぞれのライセンスおよび
+上記の出典表記を尊重すること。
+
+詳細なライセンス全文:
+  LICENSE（本プロジェクト / MIT）
+  third_party/Apache-2.0.txt
+  third_party/NOTICE-kuromoji.md
+
+Licensed under the MIT License (project source) and the respective
+licenses of third-party components listed above.
+
+THE SOFTWARE AND INCLUDED DICTIONARIES ARE PROVIDED "AS IS",
+WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
+See LICENSE and third_party/NOTICE-kuromoji.md for details.
