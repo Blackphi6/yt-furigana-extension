@@ -36,16 +36,23 @@ ii. 本ソフトウェアは、sudachi-wasm333 および SudachiDict を
     https://github.com/WorksApplications/SudachiDict
 
 
-iii. 任意のローカル読みエンジン（reading-engine）は、fugashi および
-     unidic-lite（UniDic 由来データを含む）等を利用する。
+iv. 任意のローカル読みエンジン（reading-engine）は、fugashi および
+    unidic-lite（UniDic 由来データを含む）等を利用する。
 
-     各パッケージおよび UniDic の条件は上流の表記に従う。
+    各パッケージおよび UniDic の条件は上流の表記に従う。
 
-     fugashi : https://github.com/polm/fugashi
-     unidic-lite : https://github.com/polm/unidic-lite
+    fugashi : https://github.com/polm/fugashi
+    unidic-lite : https://github.com/polm/unidic-lite
 
 
-iv. 上記以外のビルドツール等（例: esbuild）は、拡張の実行時同梱物では
+v. 本リポジトリに含まれる data/generated/*.json および
+   data/creative-ruby/seed.jsonl は、本プロジェクトが生成・編集した
+   補助データである（同形異音の候補、学習オーバーライド、創作ルビ種など）。
+   これらは上流辞書の代替ではなく、MIT License の本プロジェクト成果物
+   として扱う。派生元の制約が残る場合は上流表記を優先する。
+
+
+vi. 上記以外のビルドツール等（例: esbuild）は、拡張の実行時同梱物では
     ないが、開発依存として各々の OSS ライセンスに従う。
 
 
