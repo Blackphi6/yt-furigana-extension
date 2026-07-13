@@ -68,6 +68,18 @@ TRUST_PATTERNS: list[TrustPattern] = [
         reading="えいえん",
         confidence=0.97,
     ),
+    TrustPattern(
+        name="kuu-wo-kiru",
+        pattern=re.compile(r"空を切"),
+        surface="空",
+        reading="くう",
+    ),
+    TrustPattern(
+        name="oogoto-ni-naru",
+        pattern=re.compile(r"大事に(?:なる|した|なるぞ|なるな)|大事になる"),
+        surface="大事",
+        reading="おおごと",
+    ),
 ]
 
 

@@ -38,5 +38,11 @@ export YT_FURIGANA_RERANKER_PATH=reading-engine/train/artifacts/reranker-smoke
 npm run reading-engine
 ```
 
-本番規模（NDL 青空・書誌）は `reading-engine/train/README.md` の Phase 2。
-評価ゲートなしのモデル差し替えはしない。
+本番規模（NDL 青空・書誌）:
+
+```bash
+npm run learn:ndl   # fetch → build（境界ゲート）→ train（seed/holdout 評価ゲート）
+export YT_FURIGANA_RERANKER_PATH=reading-engine/train/artifacts/reranker-prod
+```
+
+評価ゲートなしのモデル差し替えはしない。詳細は `reading-engine/train/README.md`。

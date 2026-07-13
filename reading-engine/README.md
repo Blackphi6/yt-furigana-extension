@@ -27,17 +27,21 @@ Local-first reading API for the Chrome extension. No cloud fee.
 | **ModernBERT-Ja** (SB Intuitions 30m–310m) | Best open encoder base | Needs fine-tune for readings (JRM-style) |
 | **llm-jp-modernbert** | Open | Similar; not SOTA over SB Intuitions on JGLUE |
 
-**This MVP** = lattice + trust patterns + cue rerank (+ optional ModernBERT) + creative-ruby.  
-**Next** = fine-tune on NDL + synthetic with token-boundary gate (see `train/README.md`).
+**This MVP** = lattice + trust + NDL-trained ModernBERT (optional) + cue fallback + creative-ruby.
 
 ## 手順（記事順 / 最適）
 
 1. **ラティスを固める** — `heteronym-candidates.json` + UniDic base。合成ラベルはトークン境界一致のみ採用（預金の「金」問題）。
 2. **慣用句は trust 表** — `trust_patterns.py`（下手に出る 等）。LLM 審判に任せない。
-3. **ModernBERT を候補内だけ学習** — `npm run learn:reranker-smoke` → `YT_FURIGANA_RERANKER_PATH=...`
+3. **NDL 本学習** — `npm run learn:ndl`（青空+書誌 → lattice softmax → seed/holdout ゲート → `artifacts/reranker-prod`）
 4. **閾値フォールバック** — `YT_FURIGANA_RERANKER_THRESHOLD=0.55`（既定）
-5. **評価ゲート** — `npm run reading-engine:test` / `npm run learn`（seed-bench 悪化で昇格拒否）
+5. **評価ゲート** — `npm run reading-engine:test` / seed smoke（悪化で昇格拒否）
 6. **商用 LLM API 出力は学習禁止** — オープンウェイトの生成×別ファミリー盲検×仲裁のみ
+
+```bash
+export YT_FURIGANA_RERANKER_PATH=reading-engine/train/artifacts/reranker-prod
+npm run reading-engine
+```
 
 ## Freemium endpoints
 
