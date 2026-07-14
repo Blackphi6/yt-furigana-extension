@@ -269,6 +269,7 @@ def main() -> None:
     for seed_name, source_tag in (
         ("reranker-smoke.jsonl", "seed"),
         ("synth-accepted.jsonl", "llm-synth"),
+        ("corpus/synth-open.jsonl", "llm-synth-open"),
     ):
         smoke = ROOT / "data" / "learning" / seed_name
         if not smoke.exists():

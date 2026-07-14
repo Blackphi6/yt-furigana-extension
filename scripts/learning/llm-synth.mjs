@@ -143,7 +143,17 @@ async function main() {
   const verifier = modelSet.verifier.id;
   const arbitrator = modelSet.arbitrator.id;
   const perTarget = cli.perTarget || config.per_target || 4;
-  let targets = config.targets || [];
+  const skipJudge = new Set(
+    (config.skip_llm_judge || []).map((t) => `${t.surface}\0${normalizeReading(t.gold)}`)
+  );
+  let targets = (config.targets || []).filter((t) => {
+    const key = `${t.surface}\0${normalizeReading(t.gold)}`;
+    if (skipJudge.has(key)) {
+      console.log(`skip LLM target (trust only): ${t.surface}=${t.gold}`);
+      return false;
+    }
+    return true;
+  });
   if (cli.limit > 0) targets = targets.slice(0, cli.limit);
 
   console.log("=== LLM synth (3-family, sequential) ===");
@@ -152,6 +162,11 @@ async function main() {
   );
   console.log(`gen=${generator}  verify=${verifier}  arbitrate=${arbitrator}`);
   console.log(`targets=${targets.length} per_target=${perTarget} fast=${cli.fast}`);
+  if ((config.skip_llm_judge || []).length) {
+    console.log(
+      `trust_only(skip_llm_judge)=${(config.skip_llm_judge || []).map((t) => `${t.surface}=${t.gold}`).join(",")}`
+    );
+  }
 
   if (cli.dryRun) {
     console.log("dry-run: config OK (Ollama 呼び出しなし)");

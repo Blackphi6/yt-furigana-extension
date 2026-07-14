@@ -18,9 +18,13 @@ data/learning/reranker-ndl.jsonl
 data/learning/reranker-ndl-holdout.jsonl
 data/learning/reranker-ndl-focus.jsonl
 data/learning/_seed-only.jsonl
+# Ephemeral LLM synth outputs (merge into tracked corpus/)
 data/learning/synth-accepted.jsonl
 data/learning/synth-rejected.jsonl
 data/learning/synth-log.jsonl
+# Tracked forever: data/learning/corpus/synth-open.jsonl
+# Tracked forever: data/learning/gate-baseline.json
+# Tracked forever: data/learning/benches/*.jsonl
 data/.cache/
 **/__pycache__/
 *.pyc

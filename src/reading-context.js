@@ -149,6 +149,18 @@ export const CONTEXT_READING_RULES = [
     reading: "なんど",
     weight: 5,
     cues: ["何度", "何度も", "何度か", "何度でも", "何度目"]
+  },
+  {
+    surface: "大事",
+    reading: "おおごと",
+    weight: 5,
+    cues: ["大事になる", "大事にした", "大事になるぞ", "大事になるな"]
+  },
+  {
+    surface: "大事",
+    reading: "だいじ",
+    weight: 2,
+    cues: ["大事な", "大事です", "大事だ", "大事に思", "大事にして"]
   }
 ];
 

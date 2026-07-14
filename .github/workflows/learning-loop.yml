@@ -1,62 +1,133 @@
-# Manual / scheduled learning smoke on GitHub-hosted runners.
-# Full llm-synth (gpt-oss:20b etc.) needs ~13GB+ RAM → use local Mac or a bigger runner.
+# JRM-compatible learning loop (concerns from the Zenn article).
+#
+# - smoke:            ubuntu-latest (no big LLM)
+# - synth (6h):       self-hosted Mac with Ollama (3-family blind labels)
+# - retrain (weekly): self-hosted Mac (rebuild + train + 3-bench gate)
+#
+# Setup self-hosted runner once (this Mac):
+#   https://github.com/Blackphi6/yt-furigana-extension/settings/actions/runners/new
+#   Labels: self-hosted, macOS, ARM64
+#   Keep ollama serve running; Node 22 + .venv-reading for retrain.
+
 name: Learning loop
 
 on:
+  schedule:
+    # Every 6 hours — LLM teacher synth → commit corpus
+    - cron: "0 */6 * * *"
+    # Weekly Monday 03:00 UTC — retrain + eval gate
+    - cron: "0 3 * * 1"
   workflow_dispatch:
     inputs:
       mode:
-        description: "smoke = synth dry-run + seed-bench / engine-contract notes"
+        description: "smoke | synth | retrain | full"
         type: choice
         options:
           - smoke
+          - synth
+          - retrain
+          - full
         default: smoke
-  # Uncomment when ready for unattended runs (same smoke; not full LLM):
-  # schedule:
-  #   - cron: "0 */6 * * *"
+      per_target:
+        description: "Sentences per target (synth)"
+        type: string
+        default: "2"
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: learning-loop
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   smoke:
-    name: Learning smoke
+    name: Smoke (ubuntu)
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'smoke'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: npm
-
-      - name: Install deps
-        run: npm ci || npm install
-
-      - name: Synth config dry-run
-        run: npm run learn:synth:dry
-
-      - name: Seed bench
-        run: npm run learn:bench
-
-      - name: Contract tests (extension-side reading)
-        run: |
-          node scripts/test-reading-context.mjs
-          node scripts/test-reading-candidates.mjs
-          node scripts/test-user-reading-dict.mjs
-          node scripts/test-reading-learning.mjs
-
+      - run: npm ci || npm install
+      - run: npm run learn:autoloop -- --phase=smoke --write-baseline
       - name: Summary
         run: |
-          echo "## Learning loop smoke OK" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Mode: \`${{ inputs.mode || 'smoke' }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Full LLM synth (Ollama) is **local-only** on this machine (36GB)." >> "$GITHUB_STEP_SUMMARY"
-          echo "- Command locally: \`npm run learn:synth\` → \`npm run learn:ndl-build\` → \`npm run learn:ndl-train\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Smoke OK (article gates checked structurally)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- No commercial LLM APIs" >> "$GITHUB_STEP_SUMMARY"
+          echo "- 3-bench floors evaluated" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Full synth/retrain → self-hosted Mac runner" >> "$GITHUB_STEP_SUMMARY"
+
+  synth:
+    name: Synth 6h (self-hosted)
+    if: >
+      (github.event_name == 'schedule' && github.event.schedule == '0 */6 * * *') ||
+      (github.event_name == 'workflow_dispatch' &&
+       (github.event.inputs.mode == 'synth' || github.event.inputs.mode == 'full'))
+    runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Ollama
+        run: curl -sf http://127.0.0.1:11434/api/tags >/dev/null
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci || npm install
+      - name: Generate × blind verify × arbitrate
+        run: |
+          PER="${{ github.event.inputs.per_target }}"
+          PER="${PER:-2}"
+          npm run learn:autoloop -- --phase=synth --per-target "$PER"
+      - name: Commit corpus (accepted labels only)
+        run: |
+          git config user.name "yt-furigana-learning-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin "$(git rev-parse --abbrev-ref HEAD)" || true
+          git add data/learning/corpus/synth-open.jsonl data/learning/gate-baseline.json || true
+          if git diff --staged --quiet; then
+            echo "No corpus changes"
+          else
+            git commit -m "chore(learning): append open-weight synth corpus"
+            git push
+          fi
+
+  retrain:
+    name: Retrain weekly (self-hosted + eval gate)
+    if: >
+      (github.event_name == 'schedule' && github.event.schedule == '0 3 * * 1') ||
+      (github.event_name == 'workflow_dispatch' &&
+       (github.event.inputs.mode == 'retrain' || github.event.inputs.mode == 'full'))
+    runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci || npm install
+      - name: NDL build + candidate-constrained train + 3 benches
+        env:
+          YT_FURIGANA_RERANKER_PATH: reading-engine/train/artifacts/reranker-prod
+        run: |
+          npm run learn:autoloop -- --phase=retrain
+      - name: Commit gate baseline + learned overrides (not model weights)
+        run: |
+          git config user.name "yt-furigana-learning-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin "$(git rev-parse --abbrev-ref HEAD)" || true
+          git add \
+            data/learning/gate-baseline.json \
+            data/learning/corpus/synth-open.jsonl \
+            data/generated/learned-overrides.json \
+            || true
+          if git diff --staged --quiet; then
+            echo "No promote artifacts to commit"
+          else
+            git commit -m "chore(learning): promote after eval gate pass"
+            git push
+          fi
+        # Model weights stay gitignored under reading-engine/train/artifacts/
