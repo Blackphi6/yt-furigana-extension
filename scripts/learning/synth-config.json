@@ -1,0 +1,103 @@
+{
+  "hardware": {
+    "chip": "Apple M3 Pro",
+    "unified_memory_gb": 36,
+    "notes": [
+      "gpt-oss-120b / Qwen35B / GLM-large は載らないので量子化済み・別サイズで代替",
+      "3モデル同時ロード禁止。keep_alive=0 で順次入れ替え（ピーク ~14GB）"
+    ]
+  },
+  "ollama": {
+    "host": "http://127.0.0.1:11434",
+    "keep_alive": "0",
+    "temperature": 0.7,
+    "judge_temperature": 0.1
+  },
+  "models": {
+    "generator": {
+      "id": "gpt-oss:20b",
+      "family": "gpt-oss",
+      "role": "generate sentences for a target reading",
+      "approx_ram_gb": 13,
+      "instead_of": "gpt-oss-120b"
+    },
+    "verifier": {
+      "id": "qwen2.5:14b",
+      "family": "qwen",
+      "role": "blind reading judgment",
+      "approx_ram_gb": 9,
+      "instead_of": "qwen3.5"
+    },
+    "arbitrator": {
+      "id": "gemma4:e4b",
+      "family": "gemma",
+      "role": "third-family arbitration when gen≠verify",
+      "approx_ram_gb": 10,
+      "instead_of": "zai-glm-4.7"
+    }
+  },
+  "fast_models": {
+    "generator": { "id": "gpt-oss:20b", "family": "gpt-oss" },
+    "verifier": { "id": "qwen2.5-coder:7b", "family": "qwen" },
+    "arbitrator": { "id": "gemma3:4b", "family": "gemma" }
+  },
+  "per_target": 4,
+  "max_sentence_chars": 60,
+  "targets": [
+    {
+      "surface": "市場",
+      "gold": "しじょう",
+      "candidates": ["いちば", "しじょう"],
+      "hint": "株式・規模・経済・金融の文脈"
+    },
+    {
+      "surface": "市場",
+      "gold": "いちば",
+      "candidates": ["いちば", "しじょう"],
+      "hint": "朝市・魚・野菜など物理的な市場"
+    },
+    {
+      "surface": "辛い",
+      "gold": "からい",
+      "candidates": ["からい", "つらい"],
+      "hint": "ラーメン・カレー・味・唐辛子"
+    },
+    {
+      "surface": "辛い",
+      "gold": "つらい",
+      "candidates": ["からい", "つらい"],
+      "hint": "経験・出来事・境遇（味ではない）"
+    },
+    {
+      "surface": "永遠",
+      "gold": "とわ",
+      "candidates": ["えいえん", "とわ"],
+      "hint": "永遠に〜（副詞的）"
+    },
+    {
+      "surface": "永遠",
+      "gold": "えいえん",
+      "candidates": ["えいえん", "とわ"],
+      "hint": "永遠の〜（名詞・連体）"
+    },
+    {
+      "surface": "忙しい",
+      "gold": "せわしい",
+      "candidates": ["いそがしい", "せわしい"],
+      "hint": "歌詞・詩的・落ち着かない様子"
+    },
+    {
+      "surface": "忙しい",
+      "gold": "いそがしい",
+      "candidates": ["いそがしい", "せわしい"],
+      "hint": "仕事・予定・日常の忙しさ"
+    }
+  ],
+  "skip_llm_judge": [
+    {
+      "surface": "下手",
+      "gold": "したて",
+      "note": "慣用句は trust_patterns。LLM審判は全滅しやすい"
+    }
+  ]
+}

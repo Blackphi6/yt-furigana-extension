@@ -266,19 +266,26 @@ def main() -> None:
     corpus_rows: list[dict] = []
 
     seed_rows: list[dict] = []
-    smoke = ROOT / "data" / "learning" / "reranker-smoke.jsonl"
-    if smoke.exists():
+    for seed_name, source_tag in (
+        ("reranker-smoke.jsonl", "seed"),
+        ("synth-accepted.jsonl", "llm-synth"),
+    ):
+        smoke = ROOT / "data" / "learning" / seed_name
+        if not smoke.exists():
+            continue
         for line in smoke.read_text(encoding="utf-8").splitlines():
             if not line.strip():
                 continue
             obj = json.loads(line)
+            if "gold" not in obj or "candidates" not in obj:
+                continue
             seed_rows.append(
                 {
                     "text": obj["text"],
                     "surface": obj["surface"],
                     "candidates": [normalize_reading(c) for c in obj["candidates"]],
                     "gold": normalize_reading(obj["gold"]),
-                    "source": "seed",
+                    "source": source_tag,
                 }
             )
     seed_rows.extend(expand_seed_bench(heteronyms))

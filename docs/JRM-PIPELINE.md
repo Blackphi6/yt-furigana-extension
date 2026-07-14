@@ -46,3 +46,22 @@ export YT_FURIGANA_RERANKER_PATH=reading-engine/train/artifacts/reranker-prod
 ```
 
 評価ゲートなしのモデル差し替えはしない。詳細は `reading-engine/train/README.md`。
+
+## LLM 教師合成（生成×盲検検証×仲裁）
+
+記事どおり **商用 API は使わない**。このマシン（M3 Pro / 36GB）向けに量子化済みを順次ロード:
+
+| 役割 | 記事の想定 | この PC の選択 | 理由 |
+|------|------------|----------------|------|
+| 生成 | gpt-oss-120b | `gpt-oss:20b` (MXFP4 ~13GB) | 同系統・メモリに収まる |
+| 検証 | qwen3.5 | `qwen2.5:14b` (Q4 ~9GB) | 別ファミリー |
+| 仲裁 | zai-glm-4.7 | `gemma4:e4b` (Q4 ~10GB) | 第3ファミリー（既取得） |
+
+3 モデル同時は禁止（`keep_alive=0`）。慣用句（下手に出る等）は LLM 審判対象外。
+
+```bash
+npm run learn:synth:dry          # 設定確認
+npm run learn:synth:fast -- --limit 2 --per-target 2   # 軽量モデルで煙テスト
+npm run learn:synth              # 本番セット（順次ロード）
+# 受理 → data/learning/synth-accepted.jsonl （ndl-build の seed に自動合流）
+```
