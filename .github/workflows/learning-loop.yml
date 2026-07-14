@@ -1,0 +1,62 @@
+# Manual / scheduled learning smoke on GitHub-hosted runners.
+# Full llm-synth (gpt-oss:20b etc.) needs ~13GB+ RAM → use local Mac or a bigger runner.
+name: Learning loop
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "smoke = synth dry-run + seed-bench / engine-contract notes"
+        type: choice
+        options:
+          - smoke
+        default: smoke
+  # Uncomment when ready for unattended runs (same smoke; not full LLM):
+  # schedule:
+  #   - cron: "0 */6 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: learning-loop
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: Learning smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install deps
+        run: npm ci || npm install
+
+      - name: Synth config dry-run
+        run: npm run learn:synth:dry
+
+      - name: Seed bench
+        run: npm run learn:bench
+
+      - name: Contract tests (extension-side reading)
+        run: |
+          node scripts/test-reading-context.mjs
+          node scripts/test-reading-candidates.mjs
+          node scripts/test-user-reading-dict.mjs
+          node scripts/test-reading-learning.mjs
+
+      - name: Summary
+        run: |
+          echo "## Learning loop smoke OK" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Mode: \`${{ inputs.mode || 'smoke' }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Full LLM synth (Ollama) is **local-only** on this machine (36GB)." >> "$GITHUB_STEP_SUMMARY"
+          echo "- Command locally: \`npm run learn:synth\` → \`npm run learn:ndl-build\` → \`npm run learn:ndl-train\`" >> "$GITHUB_STEP_SUMMARY"

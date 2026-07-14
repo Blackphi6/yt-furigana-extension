@@ -47,6 +47,19 @@ export YT_FURIGANA_RERANKER_PATH=reading-engine/train/artifacts/reranker-prod
 
 評価ゲートなしのモデル差し替えはしない。詳細は `reading-engine/train/README.md`。
 
+## GitHub Actions（無人の入口）
+
+指示書: [`.github/workflows/learning-loop.yml`](../.github/workflows/learning-loop.yml)
+
+- **いまできること**: Actions 上で `learn:synth:dry` + seed-bench + 契約テスト（手動 `workflow_dispatch`）
+- **まだ Actions ではやらないこと**: `gpt-oss:20b` などの本 LLM 合成（Runner の RAM 不足）→ **ローカル Mac** で `npm run learn:synth`
+
+```bash
+# Actions を一回手動実行
+gh workflow run learning-loop.yml
+gh run watch
+```
+
 ## LLM 教師合成（生成×盲検検証×仲裁）
 
 記事どおり **商用 API は使わない**。このマシン（M3 Pro / 36GB）向けに量子化済みを順次ロード:
