@@ -52,6 +52,7 @@ function parseArgs(argv) {
 function resolveProvider(cli) {
   if (cli.provider) return cli.provider;
   if (process.env.LEARN_PROVIDER) return process.env.LEARN_PROVIDER;
+  if (process.env.GROQ_API_KEY) return "groq";
   if (process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_API_TOKEN) {
     return "cloudflare";
   }
@@ -172,6 +173,34 @@ async function cloudflareChat(accountId, token, model, messages, { temperature }
   return JSON.stringify(result ?? "");
 }
 
+async function groqChat(apiKey, model, messages, { temperature }) {
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      messages,
+      temperature,
+      max_tokens: 512,
+    }),
+  });
+  const raw = await res.text();
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    throw new Error(`groq ${model}: ${res.status} ${raw.slice(0, 200)}`);
+  }
+  if (!res.ok) {
+    const err = data?.error?.message || raw.slice(0, 300) || res.statusText;
+    throw new Error(`groq ${model}: ${res.status} ${err}`);
+  }
+  return data?.choices?.[0]?.message?.content || "";
+}
+
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
@@ -209,8 +238,21 @@ async function main() {
   let keepAlive = "0";
   let cfAccountId = "";
   let cfToken = "";
+  let groqKey = "";
 
-  if (provider === "cloudflare") {
+  if (provider === "groq") {
+    const g = config.groq || {};
+    const modelSet = cli.fast ? g.fallback_models || g.models : g.models;
+    if (!modelSet?.generator) {
+      throw new Error("synth-config.json に groq.models がありません");
+    }
+    generator = modelSet.generator.id;
+    verifier = modelSet.verifier.id;
+    arbitrator = modelSet.arbitrator.id;
+    genTemp = g.temperature ?? 0.7;
+    judgeTemp = g.judge_temperature ?? 0.1;
+    groqKey = process.env.GROQ_API_KEY || "";
+  } else if (provider === "cloudflare") {
     const cf = config.cloudflare || {};
     const modelSet = cli.fast ? cf.fallback_models || cf.models : cf.models;
     if (!modelSet?.generator) {
@@ -231,12 +273,12 @@ async function main() {
     judgeTemp = config.ollama.judge_temperature ?? 0.1;
     keepAlive = config.ollama.keep_alive ?? "0";
   } else {
-    throw new Error(`unknown provider: ${provider} (cloudflare|ollama)`);
+    throw new Error(`unknown provider: ${provider} (groq|cloudflare|ollama)`);
   }
 
   const perTarget =
     cli.perTarget ||
-    (provider === "cloudflare" ? 1 : config.per_target) ||
+    (provider === "cloudflare" || provider === "groq" ? 1 : config.per_target) ||
     4;
   const skipJudge = new Set(
     (config.skip_llm_judge || []).map((t) => `${t.surface}\0${normalizeReading(t.gold)}`)
@@ -257,6 +299,8 @@ async function main() {
     console.log(
       `HW: ${config.hardware.chip} / ${config.hardware.unified_memory_gb}GB`
     );
+  } else if (provider === "groq") {
+    console.log("HW: Groq free tier (open-weight, no Mac)");
   } else {
     console.log("HW: Cloudflare Workers AI free tier (≤10k neurons/day)");
   }
@@ -269,7 +313,13 @@ async function main() {
   }
 
   if (cli.dryRun) {
-    if (provider === "cloudflare") {
+    if (provider === "groq") {
+      console.log(
+        groqKey
+          ? "dry-run: GROQ_API_KEY present"
+          : "dry-run: set GROQ_API_KEY (console.groq.com free)"
+      );
+    } else if (provider === "cloudflare") {
       console.log(
         cfAccountId && cfToken
           ? "dry-run: Cloudflare credentials present"
@@ -282,6 +332,11 @@ async function main() {
   }
 
   async function chat(model, messages, temperature) {
+    if (provider === "groq") {
+      const out = await groqChat(groqKey, model, messages, { temperature });
+      await sleep(200);
+      return out;
+    }
     if (provider === "cloudflare") {
       const out = await cloudflareChat(cfAccountId, cfToken, model, messages, {
         temperature,
@@ -292,7 +347,14 @@ async function main() {
     return ollamaChat(host, model, messages, { temperature, keepAlive });
   }
 
-  if (provider === "cloudflare") {
+  if (provider === "groq") {
+    if (!groqKey) {
+      throw new Error(
+        "GROQ_API_KEY が未設定です。https://console.groq.com/keys で無料キーを作成し、\n" +
+          "  gh secret set GROQ_API_KEY"
+      );
+    }
+  } else if (provider === "cloudflare") {
     if (!cfAccountId || !cfToken) {
       throw new Error(
         "Cloudflare が未設定です。無料で使うには:\n" +
@@ -487,10 +549,12 @@ async function main() {
   console.log(`\n=== done accepted=${accepted} rejected=${rejected} ===`);
   console.log(`wrote ${acceptedPath}`);
   console.log(`次: npm run learn:merge → corpus/synth-open.jsonl`);
-  if (provider === "cloudflare" && generateCalls > 0 && accepted === 0 && rejected === 0) {
-    throw new Error(
-      "synth produced no accepted/rejected rows — likely Cloudflare auth or model failure"
-    );
+  if (provider === "cloudflare" || provider === "groq") {
+    if (generateCalls > 0 && accepted === 0 && rejected === 0) {
+      throw new Error(
+        "synth produced no accepted/rejected rows — likely provider auth or model failure"
+      );
+    }
   }
 }
 

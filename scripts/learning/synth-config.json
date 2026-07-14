@@ -43,9 +43,8 @@
   },
   "cloudflare": {
     "notes": [
-      "Optimal light ¥0 path: daily synth + weekly retrain-lite",
-      "Workers AI free 10k neurons/day — stay on Workers Free (no Paid plan)",
-      "Cheap 3-family models; per_target=1 is enough for this extension"
+      "Optional fallback. Some accounts get 401 on Workers AI REST despite valid tokens.",
+      "Prefer groq for ¥0 unattended loop."
     ],
     "temperature": 0.7,
     "judge_temperature": 0.1,
@@ -67,6 +66,34 @@
       "generator": { "id": "@cf/meta/llama-3.2-3b-instruct", "family": "llama" },
       "verifier": { "id": "@cf/mistral/mistral-7b-instruct-v0.2", "family": "mistral" },
       "arbitrator": { "id": "@cf/google/gemma-3-12b-it", "family": "gemma" }
+    }
+  },
+  "groq": {
+    "notes": [
+      "Default ¥0 path: free tier, no Mac, OpenAI-compatible API",
+      "Create key at https://console.groq.com/keys — no credit card",
+      "3 open-weight families: Llama / Qwen / GPT-OSS"
+    ],
+    "temperature": 0.7,
+    "judge_temperature": 0.1,
+    "models": {
+      "generator": {
+        "id": "llama-3.1-8b-instant",
+        "family": "llama"
+      },
+      "verifier": {
+        "id": "qwen/qwen3-32b",
+        "family": "qwen"
+      },
+      "arbitrator": {
+        "id": "openai/gpt-oss-20b",
+        "family": "gpt-oss"
+      }
+    },
+    "fallback_models": {
+      "generator": { "id": "llama-3.1-8b-instant", "family": "llama" },
+      "verifier": { "id": "llama-3.3-70b-versatile", "family": "llama" },
+      "arbitrator": { "id": "openai/gpt-oss-20b", "family": "gpt-oss" }
     }
   },
   "per_target": 1,

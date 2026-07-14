@@ -1,21 +1,16 @@
 # JRM learning loop — optimal ¥0 path (no Mac).
 #
-# Light usage profile:
-#   - synth: once daily via Cloudflare Workers AI free (10k neurons/day)
-#   - retrain-lite: weekly (rules + 3-bench; no ModernBERT GPU train)
-#   - per_target=1 — plenty of headroom; do NOT upgrade to Workers Paid
+# Default synth provider: Groq free tier (Cloudflare Workers AI REST often 401s
+# even with valid tokens on some accounts).
 #
-# Secrets (Cloudflare free account, once):
-#   CLOUDFLARE_ACCOUNT_ID
-#   CLOUDFLARE_API_TOKEN
+# Secret (once):
+#   GROQ_API_KEY   from https://console.groq.com/keys  (free, no card)
 
 name: Learning loop
 
 on:
   schedule:
-    # Daily 04:00 UTC — light CF synth
     - cron: "0 4 * * *"
-    # Weekly Monday 03:00 UTC — rule promote + benches
     - cron: "0 3 * * 1"
   workflow_dispatch:
     inputs:
@@ -41,7 +36,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  LEARN_PROVIDER: cloudflare
+  LEARN_PROVIDER: groq
 
 jobs:
   smoke:
@@ -56,15 +51,15 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci || npm install
-      - run: npm run learn:autoloop -- --phase=smoke --write-baseline
+      - run: npm run learn:autoloop -- --phase=smoke --provider groq --write-baseline
       - name: Summary
         run: |
-          echo "## Smoke OK (optimal ¥0 path)" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Daily CF synth + weekly retrain-lite" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Smoke OK (¥0 Groq path)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Daily Groq synth + weekly retrain-lite" >> "$GITHUB_STEP_SUMMARY"
           echo "- No Mac / no paid GPU" >> "$GITHUB_STEP_SUMMARY"
 
   synth:
-    name: Synth daily (CF free)
+    name: Synth daily (Groq free)
     if: >
       (github.event_name == 'schedule' && github.event.schedule == '0 4 * * *') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -78,40 +73,31 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci || npm install
-      - name: Require Cloudflare free secrets
+      - name: Require Groq free secret
         env:
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
-          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ] || [ -z "$CLOUDFLARE_API_TOKEN" ]; then
-            echo "::error::Set secrets CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN (free account OK)"
+          if [ -z "$GROQ_API_KEY" ]; then
+            echo "::error::Set secret GROQ_API_KEY (https://console.groq.com/keys)"
             exit 1
           fi
-          echo "account_id_len=${#CLOUDFLARE_ACCOUNT_ID} token_len=${#CLOUDFLARE_API_TOKEN}"
-          if [ "${#CLOUDFLARE_API_TOKEN}" -lt 30 ]; then
-            echo "::error::CLOUDFLARE_API_TOKEN looks truncated (len=${#CLOUDFLARE_API_TOKEN}). Re-create and re-set the secret."
-            exit 1
-          fi
-          CODE=$(curl -s -o /tmp/cf-verify.json -w "%{http_code}" \
-            -X POST "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/meta/llama-3.2-3b-instruct" \
-            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-            -H "Content-Type: application/json" \
-            -d '{"messages":[{"role":"user","content":"OK"}]}')
-          echo "cf_verify_http=$CODE"
+          CODE=$(curl -s -o /tmp/groq-verify.json -w "%{http_code}" \
+            https://api.groq.com/openai/v1/models \
+            -H "Authorization: Bearer ${GROQ_API_KEY}")
+          echo "groq_verify_http=$CODE"
           if [ "$CODE" != "200" ]; then
-            echo "::error::Cloudflare Workers AI auth failed (HTTP $CODE). Token needs Account→Workers AI→Edit. Re-create token and: gh secret set CLOUDFLARE_API_TOKEN"
-            python3 -c "import json;d=json.load(open('/tmp/cf-verify.json'));print(d.get('errors'))" || true
+            echo "::error::Groq auth failed (HTTP $CODE). Recreate key and: gh secret set GROQ_API_KEY"
+            head -c 300 /tmp/groq-verify.json || true
             exit 1
           fi
       - name: Generate × blind verify × arbitrate
         env:
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          LEARN_PROVIDER: cloudflare
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          LEARN_PROVIDER: groq
         run: |
           PER="${{ github.event.inputs.per_target }}"
           PER="${PER:-1}"
-          npm run learn:autoloop -- --phase=synth --provider cloudflare --per-target "$PER"
+          npm run learn:autoloop -- --phase=synth --provider groq --per-target "$PER"
       - name: Commit corpus
         run: |
           git config user.name "yt-furigana-learning-bot"
@@ -121,7 +107,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "No corpus changes"
           else
-            git commit -m "chore(learning): append CF free-tier synth corpus"
+            git commit -m "chore(learning): append Groq free-tier synth corpus"
             git push
           fi
 

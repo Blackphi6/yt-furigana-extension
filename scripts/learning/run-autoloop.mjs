@@ -34,13 +34,13 @@ function parseArgs(argv) {
     else if (a === "--provider") args.provider = argv[++i];
   }
   if (!args.provider) {
-    args.provider =
-      process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_API_TOKEN
-        ? "cloudflare"
-        : "ollama";
+    if (process.env.GROQ_API_KEY) args.provider = "groq";
+    else if (process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_API_TOKEN)
+      args.provider = "cloudflare";
+    else args.provider = "ollama";
   }
   if (args.perTarget == null) {
-    args.perTarget = args.provider === "cloudflare" ? 1 : 2;
+    args.perTarget = args.provider === "ollama" ? 2 : 1;
   }
   return args;
 }
