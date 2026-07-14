@@ -13,7 +13,7 @@
 | 商用 API を教師にするな | オープンウェイトのみ（Ollama 3 ファミリー盲検） |
 | ドメイン合成を回せ | `learn:synth` → `merge` → `corpus/synth-open.jsonl` |
 | 評価ゲートなしで昇格するな | 3 ベンチ + `gate-baseline.json`（低下拒否） |
-| 無人で強化 | Actions: 6h synth + 週次 retrain（**self-hosted Mac**） |
+| 無人で強化 | Actions: **日次 CF 合成** + 週次 retrain-lite（Mac不要・¥0） |
 
 ## やること / やらないこと
 
@@ -69,52 +69,49 @@ npm run learn:gate -- --write-baseline
 
 一時ファイル（gitignore）: `synth-accepted/rejected/log.jsonl`、NDL 中間 jsonl、`artifacts/`
 
-## GitHub Actions（¥0・Mac不要が既定）
+## GitHub Actions（最適・¥0・Mac不要）
+
+軽利用向けの既定構成です。枠は十分余るので **6時間ごとではなく日次1回**。
 
 [`.github/workflows/learning-loop.yml`](../.github/workflows/learning-loop.yml)
 
 | トリガ | Runner | 内容 |
 |--------|--------|------|
 | `mode=smoke` | ubuntu-latest | dry + 3ベンチ |
-| cron 6h / `mode=synth` | ubuntu-latest | **Cloudflare Workers AI 無料枠**で合成 → corpus コミット |
-| cron 月曜 / `mode=retrain` | ubuntu-latest | merge + ルール学習 + 3ベンチ（ModernBERT学習はしない） |
+| cron 毎日 04:00 UTC / `mode=synth` | ubuntu-latest | Cloudflare Workers AI 無料枠で合成 |
+| cron 月曜 03:00 UTC / `mode=retrain` | ubuntu-latest | merge + ルール学習 + 3ベンチ |
+
+1日あたり想定呼び出し ~100回・枠の数%〜2割程度。Workers **Free** のまま（Paid に上げない）。
 
 ### 一回だけ（無料アカウント）
 
-1. [Cloudflare](https://dash.cloudflare.com/) 無料登録
-2. Account ID を控える（Overview 右下）
-3. API Token: **Workers AI** が使えるトークンを作成
-4. GitHub repo secrets に登録:
+1. [Cloudflare](https://dash.cloudflare.com/) 無料登録  
+2. Account ID（Overview）と Workers AI 用 API Token  
+3. secrets:
 
 ```bash
 gh secret set CLOUDFLARE_ACCOUNT_ID
 gh secret set CLOUDFLARE_API_TOKEN
-```
-
-Workers AI free = **10,000 neurons/day**。`per_target=1` 推奨（超過するとその日はエラーで止まる＝課金されにくい Free plan）。
-
-```bash
 gh workflow run learning-loop.yml -f mode=smoke
 gh workflow run learning-loop.yml -f mode=synth -f per_target=1
 ```
 
-### 任意: この Mac の Ollama（高精度・有料クラウド不要）
+### 任意・高精度（この Mac の Ollama）
 
 ```bash
 LEARN_PROVIDER=ollama npm run learn:synth
-bash scripts/start-actions-runner.sh   # 旧 self-hosted 経路（任意）
 ```
 
-ModernBERT 再学習（`phase=retrain` 重い方）だけローカル `.venv-reading` が要る。
+ModernBERT 本番再学習だけローカル `.venv-reading` が要る（通常は不要）。
 
 ## LLM 教師合成
 
-| 経路 | 費用 | 場所 |
+| 経路 | 費用 | 備考 |
 |------|------|------|
-| **Cloudflare Workers AI（既定）** | ¥0（日次無料枠） | GitHub Actions ubuntu |
-| Ollama ローカル | 電気代のみ | この Mac |
+| **Cloudflare（既定・最適）** | ¥0 | 日次・安い3ファミリー・`per_target=1` |
+| Ollama ローカル | 電気代のみ | 任意 |
 
-3 ファミリー盲検＋境界ゲート＋慣用句 skip は共通。受理 → `learn:merge` → `corpus/synth-open.jsonl`。
+Groq 等の太い無料枠は「枠が足りなくなったら」で十分。いまの負荷では過剰です。
 
 ## 一度回すコマンド（推論 Smoke）
 

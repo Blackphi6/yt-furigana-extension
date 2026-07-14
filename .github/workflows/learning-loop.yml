@@ -1,18 +1,21 @@
-# JRM learning loop — default path is ¥0 (no Mac).
+# JRM learning loop — optimal ¥0 path (no Mac).
 #
-# - smoke / synth / retrain-lite: ubuntu-latest
-# - synth LLM: Cloudflare Workers AI free tier (10k neurons/day)
-# - Optional local Ollama Mac path remains via --provider ollama
+# Light usage profile:
+#   - synth: once daily via Cloudflare Workers AI free (10k neurons/day)
+#   - retrain-lite: weekly (rules + 3-bench; no ModernBERT GPU train)
+#   - per_target=1 — plenty of headroom; do NOT upgrade to Workers Paid
 #
-# One-time secrets (Cloudflare free account):
+# Secrets (Cloudflare free account, once):
 #   CLOUDFLARE_ACCOUNT_ID
-#   CLOUDFLARE_API_TOKEN   (Workers AI / Account permission)
+#   CLOUDFLARE_API_TOKEN
 
 name: Learning loop
 
 on:
   schedule:
-    - cron: "0 */6 * * *"
+    # Daily 04:00 UTC — light CF synth
+    - cron: "0 4 * * *"
+    # Weekly Monday 03:00 UTC — rule promote + benches
     - cron: "0 3 * * 1"
   workflow_dispatch:
     inputs:
@@ -26,7 +29,7 @@ on:
           - full
         default: smoke
       per_target:
-        description: "Sentences per target (keep 1–2 for CF free tier)"
+        description: "Sentences per target (default 1)"
         type: string
         default: "1"
 
@@ -56,18 +59,18 @@ jobs:
       - run: npm run learn:autoloop -- --phase=smoke --write-baseline
       - name: Summary
         run: |
-          echo "## Smoke OK" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Runner: ubuntu-latest (Mac不要)" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Synth LLM: Cloudflare Workers AI free tier" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Smoke OK (optimal ¥0 path)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Daily CF synth + weekly retrain-lite" >> "$GITHUB_STEP_SUMMARY"
+          echo "- No Mac / no paid GPU" >> "$GITHUB_STEP_SUMMARY"
 
   synth:
-    name: Synth (ubuntu + CF free)
+    name: Synth daily (CF free)
     if: >
-      (github.event_name == 'schedule' && github.event.schedule == '0 */6 * * *') ||
+      (github.event_name == 'schedule' && github.event.schedule == '0 4 * * *') ||
       (github.event_name == 'workflow_dispatch' &&
        (github.event.inputs.mode == 'synth' || github.event.inputs.mode == 'full'))
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -81,10 +84,10 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           if [ -z "$CLOUDFLARE_ACCOUNT_ID" ] || [ -z "$CLOUDFLARE_API_TOKEN" ]; then
-            echo "::error::Set secrets CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN (Cloudflare free OK)"
+            echo "::error::Set secrets CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN (free account OK)"
             exit 1
           fi
-      - name: Generate × blind verify × arbitrate (Workers AI)
+      - name: Generate × blind verify × arbitrate
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -107,7 +110,7 @@ jobs:
           fi
 
   retrain:
-    name: Retrain-lite (ubuntu ¥0, no GPU train)
+    name: Retrain-lite weekly (ubuntu ¥0)
     if: >
       (github.event_name == 'schedule' && github.event.schedule == '0 3 * * 1') ||
       (github.event_name == 'workflow_dispatch' &&
@@ -121,7 +124,7 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci || npm install
-      - name: Merge + rule learn + 3-bench gate (skip ModernBERT on free)
+      - name: Merge + rule learn + 3-bench gate
         run: npm run learn:autoloop -- --phase=retrain-lite --write-baseline
       - name: Commit gate baseline + overrides
         run: |
