@@ -81,10 +81,12 @@ npm run learn:gate -- --write-baseline
 
 self-hosted 手順（この Mac 一回）:
 
-1. [Runners](https://github.com/Blackphi6/yt-furigana-extension/settings/actions/runners/new) で macOS ARM64 登録
-2. ラベル: `self-hosted`, `macOS`, `ARM64`
+1. Runner は `/Volumes/SSD4/actions-runner` に登録済み（名前 `mac-m3pro-Mac`、ラベル `self-hosted,macOS,ARM64`）
+2. **常時起動**: Cursor のバックグラウンドだと落ちるので Terminal で起動する  
+   `bash scripts/start-actions-runner.sh`  
+   （Login 時に自動なら `~/Library/LaunchAgents/com.github.actions.runner.yt-furigana.plist` を `launchctl load`）
 3. `ollama serve` 常駐、モデル取得済み（`gpt-oss:20b` / `qwen2.5:14b` / `gemma4:e4b`）
-4. リポ clone 先で Node 22 + `.venv-reading`（retrain 用）
+4. retrain 用にリポ clone 先で Node 22 + `.venv-reading`
 
 ```bash
 gh workflow run learning-loop.yml -f mode=smoke
