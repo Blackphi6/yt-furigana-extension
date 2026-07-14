@@ -87,6 +87,22 @@ jobs:
             echo "::error::Set secrets CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN (free account OK)"
             exit 1
           fi
+          echo "account_id_len=${#CLOUDFLARE_ACCOUNT_ID} token_len=${#CLOUDFLARE_API_TOKEN}"
+          if [ "${#CLOUDFLARE_API_TOKEN}" -lt 30 ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN looks truncated (len=${#CLOUDFLARE_API_TOKEN}). Re-create and re-set the secret."
+            exit 1
+          fi
+          CODE=$(curl -s -o /tmp/cf-verify.json -w "%{http_code}" \
+            -X POST "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/meta/llama-3.2-3b-instruct" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{"messages":[{"role":"user","content":"OK"}]}')
+          echo "cf_verify_http=$CODE"
+          if [ "$CODE" != "200" ]; then
+            echo "::error::Cloudflare Workers AI auth failed (HTTP $CODE). Token needs Account→Workers AI→Edit. Re-create token and: gh secret set CLOUDFLARE_API_TOKEN"
+            python3 -c "import json;d=json.load(open('/tmp/cf-verify.json'));print(d.get('errors'))" || true
+            exit 1
+          fi
       - name: Generate × blind verify × arbitrate
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

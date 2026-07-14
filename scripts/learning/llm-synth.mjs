@@ -317,6 +317,8 @@ async function main() {
 
   let accepted = 0;
   let rejected = 0;
+  let authFailures = 0;
+  let generateCalls = 0;
 
   for (const target of targets) {
     const { surface, gold, candidates, hint } = target;
@@ -334,10 +336,21 @@ async function main() {
     ].join("\n");
 
     let genRaw = "";
+    generateCalls += 1;
     try {
       genRaw = await chat(generator, [{ role: "user", content: genPrompt }], genTemp);
     } catch (err) {
-      console.error(`generate failed: ${err.message}`);
+      const msg = String(err.message || err);
+      console.error(`generate failed: ${msg}`);
+      if (/401|Authentication|Unauthorized|Invalid API Token/i.test(msg)) {
+        authFailures += 1;
+        if (authFailures >= 2) {
+          throw new Error(
+            `Cloudflare Auth 失敗が連続しました。API Token を再作成し、` +
+              `gh secret set CLOUDFLARE_API_TOKEN で入れ直してください。 (${msg})`
+          );
+        }
+      }
       continue;
     }
 
@@ -474,6 +487,11 @@ async function main() {
   console.log(`\n=== done accepted=${accepted} rejected=${rejected} ===`);
   console.log(`wrote ${acceptedPath}`);
   console.log(`次: npm run learn:merge → corpus/synth-open.jsonl`);
+  if (provider === "cloudflare" && generateCalls > 0 && accepted === 0 && rejected === 0) {
+    throw new Error(
+      "synth produced no accepted/rejected rows — likely Cloudflare auth or model failure"
+    );
+  }
 }
 
 main().catch((err) => {
