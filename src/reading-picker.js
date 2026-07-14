@@ -102,7 +102,7 @@ export async function openReadingPicker(wordEl, options = {}) {
         />
         <button type="submit" class="yt-furigana-picker__submit">保存</button>
       </div>
-      <p class="yt-furigana-picker__hint">例: とわ。前後の文脈（永遠に など）付きで端末内に学習します。</p>
+      <p class="yt-furigana-picker__hint">例: とわ。文脈付きで学習（デフォルトはえいえん、とわは愛・誓いなど感情寄り）。</p>
     </form>
   `;
 

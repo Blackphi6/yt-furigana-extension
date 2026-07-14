@@ -78,8 +78,31 @@ assert.equal(shijou.tokens.find((t) => t.surface === "市場")?.reading, "しじ
 const towa = await runEngine("ただ永遠に愛");
 assert.equal(towa.tokens.find((t) => t.surface === "永遠")?.reading, "とわ");
 
+const eienCasual = await runEngine("お前の話は永遠に終わらない");
+assert.equal(
+  eienCasual.tokens.find((t) => t.surface === "永遠")?.reading,
+  "えいえん"
+);
+
+const eienTheme = await runEngine("永遠のテーマを議論した");
+assert.equal(
+  eienTheme.tokens.find((t) => t.surface === "永遠")?.reading,
+  "えいえん"
+);
+
 // Hallucination guard: chosen reading must be in candidates
-for (const sample of [spicy, hard, sky, ice, kata, shitate, shijou, towa]) {
+for (const sample of [
+  spicy,
+  hard,
+  sky,
+  ice,
+  kata,
+  shitate,
+  shijou,
+  towa,
+  eienCasual,
+  eienTheme,
+]) {
   for (const token of sample.tokens) {
     assert.ok(
       token.candidates.includes(token.reading),

@@ -54,16 +54,20 @@ TRUST_PATTERNS: list[TrustPattern] = [
         surface="市場",
         reading="いちば",
     ),
+    # 永遠: デフォルトはえいえん。とわは主観・感情・文学寄りのみ強制。
+    # 「永遠に」全面＝とわは誤り（例: 永遠に終わらない＝えいえん）。
     TrustPattern(
-        name="towa-ni",
-        pattern=re.compile(r"永遠に"),
+        name="towa-lyric-ai",
+        pattern=re.compile(r"ただ永遠に|永遠に愛|永遠の愛|永遠の眠り|とわに"),
         surface="永遠",
         reading="とわ",
         confidence=0.97,
     ),
     TrustPattern(
-        name="eien-no",
-        pattern=re.compile(r"永遠の"),
+        name="eien-objective",
+        pattern=re.compile(
+            r"永遠の(?:テーマ|課題|命題|命|若さ)|永遠に(?:終わ|続く|未完成)"
+        ),
         surface="永遠",
         reading="えいえん",
         confidence=0.97,
