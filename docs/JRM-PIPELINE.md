@@ -69,46 +69,52 @@ npm run learn:gate -- --write-baseline
 
 一時ファイル（gitignore）: `synth-accepted/rejected/log.jsonl`、NDL 中間 jsonl、`artifacts/`
 
-## GitHub Actions
+## GitHub Actions（¥0・Mac不要が既定）
 
 [`.github/workflows/learning-loop.yml`](../.github/workflows/learning-loop.yml)
 
 | トリガ | Runner | 内容 |
 |--------|--------|------|
-| `workflow_dispatch` mode=smoke | ubuntu-latest | dry + 3ベンチ |
-| cron 6h / mode=synth | **self-hosted macOS ARM64** | Ollama 合成 → corpus コミット |
-| cron 月曜 / mode=retrain | **self-hosted macOS ARM64** | build+train+ゲート → baseline コミット |
+| `mode=smoke` | ubuntu-latest | dry + 3ベンチ |
+| cron 6h / `mode=synth` | ubuntu-latest | **Cloudflare Workers AI 無料枠**で合成 → corpus コミット |
+| cron 月曜 / `mode=retrain` | ubuntu-latest | merge + ルール学習 + 3ベンチ（ModernBERT学習はしない） |
 
-self-hosted 手順（この Mac 一回）:
+### 一回だけ（無料アカウント）
 
-1. Runner は `/Volumes/SSD4/actions-runner` に登録済み（名前 `mac-m3pro-Mac`、ラベル `self-hosted,macOS,ARM64`）
-2. **常時起動**: Cursor のバックグラウンドだと落ちるので Terminal で起動する  
-   `bash scripts/start-actions-runner.sh`  
-   （Login 時に自動なら `~/Library/LaunchAgents/com.github.actions.runner.yt-furigana.plist` を `launchctl load`）
-3. `ollama serve` 常駐、モデル取得済み（`gpt-oss:20b` / `qwen2.5:14b` / `gemma4:e4b`）
-4. retrain 用にリポ clone 先で Node 22 + `.venv-reading`
+1. [Cloudflare](https://dash.cloudflare.com/) 無料登録
+2. Account ID を控える（Overview 右下）
+3. API Token: **Workers AI** が使えるトークンを作成
+4. GitHub repo secrets に登録:
+
+```bash
+gh secret set CLOUDFLARE_ACCOUNT_ID
+gh secret set CLOUDFLARE_API_TOKEN
+```
+
+Workers AI free = **10,000 neurons/day**。`per_target=1` 推奨（超過するとその日はエラーで止まる＝課金されにくい Free plan）。
 
 ```bash
 gh workflow run learning-loop.yml -f mode=smoke
-gh workflow run learning-loop.yml -f mode=synth -f per_target=2
-gh workflow run learning-loop.yml -f mode=retrain
+gh workflow run learning-loop.yml -f mode=synth -f per_target=1
 ```
 
-Ubuntu だけでは本 LLM 合成・ModernBERT 再学習は回せない（記事どおりローカル／self-hosted）。
+### 任意: この Mac の Ollama（高精度・有料クラウド不要）
 
-## LLM 教師合成（生成×盲検検証×仲裁）
+```bash
+LEARN_PROVIDER=ollama npm run learn:synth
+bash scripts/start-actions-runner.sh   # 旧 self-hosted 経路（任意）
+```
 
-記事どおり **商用 API は使わない**。このマシン（M3 Pro / 36GB）向けに量子化済みを順次ロード:
+ModernBERT 再学習（`phase=retrain` 重い方）だけローカル `.venv-reading` が要る。
 
-| 役割 | 記事の想定 | この PC の選択 | 理由 |
-|------|------------|----------------|------|
-| 生成 | gpt-oss-120b | `gpt-oss:20b` (MXFP4 ~13GB) | 同系統・メモリに収まる |
-| 検証 | qwen3.5 | `qwen2.5:14b` (Q4 ~9GB) | 別ファミリー |
-| 仲裁 | zai-glm-4.7 | `gemma4:e4b` (Q4 ~10GB) | 第3ファミリー |
+## LLM 教師合成
 
-3 モデル同時は禁止（`keep_alive=0`）。慣用句は LLM 審判対象外（trust / cues）。
+| 経路 | 費用 | 場所 |
+|------|------|------|
+| **Cloudflare Workers AI（既定）** | ¥0（日次無料枠） | GitHub Actions ubuntu |
+| Ollama ローカル | 電気代のみ | この Mac |
 
-受理ラベルは `synth-accepted.jsonl`（一時）→ `learn:merge` で `corpus/synth-open.jsonl` に合流し、`build_ndl_train.py` の seed に載る。
+3 ファミリー盲検＋境界ゲート＋慣用句 skip は共通。受理 → `learn:merge` → `corpus/synth-open.jsonl`。
 
 ## 一度回すコマンド（推論 Smoke）
 

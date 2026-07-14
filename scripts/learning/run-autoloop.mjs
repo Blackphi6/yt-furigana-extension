@@ -1,13 +1,10 @@
 #!/usr/bin/env node
 /**
- * Full JRM-style autoloop (local or self-hosted Actions):
- *   synth → merge corpus → (optional) rule learn → ndl-build → ndl-train → 3-bench gate
+ * JRM-style autoloop.
+ * Default cloud path is ¥0: Cloudflare Workers AI + ubuntu (no Mac).
  *
- * Usage:
- *   node scripts/learning/run-autoloop.mjs --phase=synth
- *   node scripts/learning/run-autoloop.mjs --phase=retrain
- *   node scripts/learning/run-autoloop.mjs --phase=full
- *   node scripts/learning/run-autoloop.mjs --phase=smoke
+ *   --phase=smoke|synth|retrain|retrain-lite|full
+ *   --provider=cloudflare|ollama
  */
 import { spawn } from "node:child_process";
 import path from "node:path";
@@ -18,10 +15,11 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 function parseArgs(argv) {
   const args = {
     phase: "full",
-    perTarget: 2,
+    perTarget: null,
     fast: false,
     skipSynth: false,
     writeBaseline: false,
+    provider: process.env.LEARN_PROVIDER || "",
   };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
@@ -32,6 +30,17 @@ function parseArgs(argv) {
     else if (a === "--fast") args.fast = true;
     else if (a === "--skip-synth") args.skipSynth = true;
     else if (a === "--write-baseline") args.writeBaseline = true;
+    else if (a.startsWith("--provider=")) args.provider = a.slice(11);
+    else if (a === "--provider") args.provider = argv[++i];
+  }
+  if (!args.provider) {
+    args.provider =
+      process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_API_TOKEN
+        ? "cloudflare"
+        : "ollama";
+  }
+  if (args.perTarget == null) {
+    args.perTarget = args.provider === "cloudflare" ? 1 : 2;
   }
   return args;
 }
@@ -53,7 +62,12 @@ function run(cmd, cmdArgs, env = {}) {
 }
 
 async function phaseSmoke(args) {
-  await run("npm", ["run", "learn:synth:dry"]);
+  await run("node", [
+    "scripts/learning/llm-synth.mjs",
+    "--dry-run",
+    "--provider",
+    args.provider,
+  ]);
   await run("npm", ["run", "learn:bench"]);
   const benchArgs = ["scripts/learning/evaluate-three-benches.mjs"];
   if (args.writeBaseline) benchArgs.push("--write-baseline");
@@ -63,18 +77,27 @@ async function phaseSmoke(args) {
 async function phaseSynth(args) {
   const synthArgs = [
     "scripts/learning/llm-synth.mjs",
+    "--provider",
+    args.provider,
     "--per-target",
     String(args.perTarget),
   ];
   if (args.fast) synthArgs.push("--fast");
-  await run("node", synthArgs);
+  await run("node", synthArgs, { LEARN_PROVIDER: args.provider });
   await run("node", ["scripts/learning/merge-synth-corpus.mjs"]);
 }
 
-async function phaseRetrain(args) {
+async function phaseRetrainLite(args) {
   await run("node", ["scripts/learning/merge-synth-corpus.mjs"]);
   await run("npm", ["run", "learn"]);
-  // Prefer existing NDL cache; build merges synth-open via train script seed paths
+  const benchArgs = ["scripts/learning/evaluate-three-benches.mjs"];
+  if (args.writeBaseline) benchArgs.push("--write-baseline");
+  await run("node", benchArgs);
+}
+
+async function phaseRetrain(args) {
+  // Heavy path: needs local Python venv + GPU-ish Mac (optional)
+  await phaseRetrainLite(args);
   await run(".venv-reading/bin/python", [
     "reading-engine/train/build_ndl_train.py",
     "--per-surface",
@@ -101,18 +124,20 @@ async function phaseRetrain(args) {
 }
 
 const args = parseArgs(process.argv.slice(2));
-console.log(`=== autoloop phase=${args.phase} ===`);
+console.log(`=== autoloop phase=${args.phase} provider=${args.provider} ===`);
 
 try {
   if (args.phase === "smoke") {
     await phaseSmoke(args);
   } else if (args.phase === "synth") {
     await phaseSynth(args);
+  } else if (args.phase === "retrain-lite") {
+    await phaseRetrainLite(args);
   } else if (args.phase === "retrain") {
     await phaseRetrain(args);
   } else if (args.phase === "full") {
     if (!args.skipSynth) await phaseSynth(args);
-    await phaseRetrain(args);
+    await phaseRetrainLite(args);
   } else {
     throw new Error(`unknown phase: ${args.phase}`);
   }

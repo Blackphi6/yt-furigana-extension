@@ -1,21 +1,18 @@
-# JRM-compatible learning loop (concerns from the Zenn article).
+# JRM learning loop — default path is ¥0 (no Mac).
 #
-# - smoke:            ubuntu-latest (no big LLM)
-# - synth (6h):       self-hosted Mac with Ollama (3-family blind labels)
-# - retrain (weekly): self-hosted Mac (rebuild + train + 3-bench gate)
+# - smoke / synth / retrain-lite: ubuntu-latest
+# - synth LLM: Cloudflare Workers AI free tier (10k neurons/day)
+# - Optional local Ollama Mac path remains via --provider ollama
 #
-# Setup self-hosted runner once (this Mac):
-#   https://github.com/Blackphi6/yt-furigana-extension/settings/actions/runners/new
-#   Labels: self-hosted, macOS, ARM64
-#   Keep ollama serve running; Node 22 + .venv-reading for retrain.
+# One-time secrets (Cloudflare free account):
+#   CLOUDFLARE_ACCOUNT_ID
+#   CLOUDFLARE_API_TOKEN   (Workers AI / Account permission)
 
 name: Learning loop
 
 on:
   schedule:
-    # Every 6 hours — LLM teacher synth → commit corpus
     - cron: "0 */6 * * *"
-    # Weekly Monday 03:00 UTC — retrain + eval gate
     - cron: "0 3 * * 1"
   workflow_dispatch:
     inputs:
@@ -29,9 +26,9 @@ on:
           - full
         default: smoke
       per_target:
-        description: "Sentences per target (synth)"
+        description: "Sentences per target (keep 1–2 for CF free tier)"
         type: string
-        default: "2"
+        default: "1"
 
 permissions:
   contents: write
@@ -40,9 +37,12 @@ concurrency:
   group: learning-loop
   cancel-in-progress: false
 
+env:
+  LEARN_PROVIDER: cloudflare
+
 jobs:
   smoke:
-    name: Smoke (ubuntu)
+    name: Smoke (ubuntu ¥0)
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'smoke'
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -56,33 +56,44 @@ jobs:
       - run: npm run learn:autoloop -- --phase=smoke --write-baseline
       - name: Summary
         run: |
-          echo "## Smoke OK (article gates checked structurally)" >> "$GITHUB_STEP_SUMMARY"
-          echo "- No commercial LLM APIs" >> "$GITHUB_STEP_SUMMARY"
-          echo "- 3-bench floors evaluated" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Full synth/retrain → self-hosted Mac runner" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Smoke OK" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Runner: ubuntu-latest (Mac不要)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Synth LLM: Cloudflare Workers AI free tier" >> "$GITHUB_STEP_SUMMARY"
 
   synth:
-    name: Synth 6h (self-hosted)
+    name: Synth (ubuntu + CF free)
     if: >
       (github.event_name == 'schedule' && github.event.schedule == '0 */6 * * *') ||
       (github.event_name == 'workflow_dispatch' &&
        (github.event.inputs.mode == 'synth' || github.event.inputs.mode == 'full'))
-    runs-on: [self-hosted, macOS, ARM64]
-    timeout-minutes: 180
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-      - name: Check Ollama
-        run: curl -sf http://127.0.0.1:11434/api/tags >/dev/null
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: npm
       - run: npm ci || npm install
-      - name: Generate × blind verify × arbitrate
+      - name: Require Cloudflare free secrets
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ] || [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::Set secrets CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN (Cloudflare free OK)"
+            exit 1
+          fi
+      - name: Generate × blind verify × arbitrate (Workers AI)
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          LEARN_PROVIDER: cloudflare
         run: |
           PER="${{ github.event.inputs.per_target }}"
-          PER="${PER:-2}"
-          npm run learn:autoloop -- --phase=synth --per-target "$PER"
-      - name: Commit corpus (accepted labels only)
+          PER="${PER:-1}"
+          npm run learn:autoloop -- --phase=synth --provider cloudflare --per-target "$PER"
+      - name: Commit corpus
         run: |
           git config user.name "yt-furigana-learning-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -91,30 +102,28 @@ jobs:
           if git diff --staged --quiet; then
             echo "No corpus changes"
           else
-            git commit -m "chore(learning): append open-weight synth corpus"
+            git commit -m "chore(learning): append CF free-tier synth corpus"
             git push
           fi
 
   retrain:
-    name: Retrain weekly (self-hosted + eval gate)
+    name: Retrain-lite (ubuntu ¥0, no GPU train)
     if: >
       (github.event_name == 'schedule' && github.event.schedule == '0 3 * * 1') ||
       (github.event_name == 'workflow_dispatch' &&
        (github.event.inputs.mode == 'retrain' || github.event.inputs.mode == 'full'))
-    runs-on: [self-hosted, macOS, ARM64]
-    timeout-minutes: 360
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: npm
       - run: npm ci || npm install
-      - name: NDL build + candidate-constrained train + 3 benches
-        env:
-          YT_FURIGANA_RERANKER_PATH: reading-engine/train/artifacts/reranker-prod
-        run: |
-          npm run learn:autoloop -- --phase=retrain
-      - name: Commit gate baseline + learned overrides (not model weights)
+      - name: Merge + rule learn + 3-bench gate (skip ModernBERT on free)
+        run: npm run learn:autoloop -- --phase=retrain-lite --write-baseline
+      - name: Commit gate baseline + overrides
         run: |
           git config user.name "yt-furigana-learning-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -127,7 +136,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No promote artifacts to commit"
           else
-            git commit -m "chore(learning): promote after eval gate pass"
+            git commit -m "chore(learning): promote after free eval gate"
             git push
           fi
-        # Model weights stay gitignored under reading-engine/train/artifacts/

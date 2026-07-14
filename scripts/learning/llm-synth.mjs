@@ -8,7 +8,8 @@
  * Models load ONE AT A TIME via Ollama keep_alive=0 (peak ~13GB).
  *
  * Usage:
- *   npm run learn:synth          # default models
+ *   npm run learn:synth                # Ollama (this Mac)
+ *   npm run learn:synth:cf             # Cloudflare Workers AI (¥0 free tier)
  *   npm run learn:synth -- --fast
  *   npm run learn:synth -- --limit 2 --per-target 2
  */
@@ -33,6 +34,7 @@ function parseArgs(argv) {
     perTarget: 0,
     dryRun: false,
     host: "",
+    provider: "",
   };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
@@ -41,8 +43,19 @@ function parseArgs(argv) {
     else if (a === "--limit") args.limit = Number(argv[++i] || 0);
     else if (a === "--per-target") args.perTarget = Number(argv[++i] || 0);
     else if (a === "--host") args.host = argv[++i] || "";
+    else if (a === "--provider") args.provider = argv[++i] || "";
+    else if (a.startsWith("--provider=")) args.provider = a.slice(11);
   }
   return args;
+}
+
+function resolveProvider(cli) {
+  if (cli.provider) return cli.provider;
+  if (process.env.LEARN_PROVIDER) return process.env.LEARN_PROVIDER;
+  if (process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_API_TOKEN) {
+    return "cloudflare";
+  }
+  return "ollama";
 }
 
 function normalizeReading(s) {
@@ -115,6 +128,54 @@ async function ensureOllama(host) {
   return new Set((data.models || []).map((m) => m.name));
 }
 
+function cloudflareCredentials() {
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID || "";
+  const token = process.env.CLOUDFLARE_API_TOKEN || "";
+  return { accountId, token };
+}
+
+async function cloudflareChat(accountId, token, model, messages, { temperature }) {
+  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      messages,
+      temperature,
+      max_tokens: 512,
+    }),
+  });
+  const raw = await res.text();
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    throw new Error(`cloudflare ${model}: ${res.status} ${raw.slice(0, 200)}`);
+  }
+  if (!res.ok || data?.success === false) {
+    const err =
+      data?.errors?.map((e) => e.message).join("; ") ||
+      raw.slice(0, 300) ||
+      res.statusText;
+    throw new Error(`cloudflare ${model}: ${res.status} ${err}`);
+  }
+  const result = data?.result;
+  if (typeof result === "string") return result;
+  if (typeof result?.response === "string") return result.response;
+  if (Array.isArray(result?.response)) {
+    return result.response.map((x) => x?.content || x).join("\n");
+  }
+  if (result?.message?.content) return result.message.content;
+  return JSON.stringify(result ?? "");
+}
+
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
 function tokenSurface(t) {
   if (typeof t === "string") return t;
   return t?.surface_form || t?.surface || "";
@@ -137,12 +198,46 @@ async function appendJsonl(filePath, row) {
 async function main() {
   const cli = parseArgs(process.argv.slice(2));
   const config = JSON.parse(await readFile(configPath, "utf8"));
+  const provider = resolveProvider(cli);
   const host = cli.host || config.ollama.host || "http://127.0.0.1:11434";
-  const modelSet = cli.fast ? config.fast_models : config.models;
-  const generator = modelSet.generator.id;
-  const verifier = modelSet.verifier.id;
-  const arbitrator = modelSet.arbitrator.id;
-  const perTarget = cli.perTarget || config.per_target || 4;
+
+  let generator;
+  let verifier;
+  let arbitrator;
+  let genTemp;
+  let judgeTemp;
+  let keepAlive = "0";
+  let cfAccountId = "";
+  let cfToken = "";
+
+  if (provider === "cloudflare") {
+    const cf = config.cloudflare || {};
+    const modelSet = cli.fast ? cf.fallback_models || cf.models : cf.models;
+    if (!modelSet?.generator) {
+      throw new Error("synth-config.json に cloudflare.models がありません");
+    }
+    generator = modelSet.generator.id;
+    verifier = modelSet.verifier.id;
+    arbitrator = modelSet.arbitrator.id;
+    genTemp = cf.temperature ?? 0.7;
+    judgeTemp = cf.judge_temperature ?? 0.1;
+    ({ accountId: cfAccountId, token: cfToken } = cloudflareCredentials());
+  } else if (provider === "ollama") {
+    const modelSet = cli.fast ? config.fast_models : config.models;
+    generator = modelSet.generator.id;
+    verifier = modelSet.verifier.id;
+    arbitrator = modelSet.arbitrator.id;
+    genTemp = config.ollama.temperature ?? 0.7;
+    judgeTemp = config.ollama.judge_temperature ?? 0.1;
+    keepAlive = config.ollama.keep_alive ?? "0";
+  } else {
+    throw new Error(`unknown provider: ${provider} (cloudflare|ollama)`);
+  }
+
+  const perTarget =
+    cli.perTarget ||
+    (provider === "cloudflare" ? 1 : config.per_target) ||
+    4;
   const skipJudge = new Set(
     (config.skip_llm_judge || []).map((t) => `${t.surface}\0${normalizeReading(t.gold)}`)
   );
@@ -157,9 +252,14 @@ async function main() {
   if (cli.limit > 0) targets = targets.slice(0, cli.limit);
 
   console.log("=== LLM synth (3-family, sequential) ===");
-  console.log(
-    `HW: ${config.hardware.chip} / ${config.hardware.unified_memory_gb}GB`
-  );
+  console.log(`provider=${provider}`);
+  if (provider === "ollama") {
+    console.log(
+      `HW: ${config.hardware.chip} / ${config.hardware.unified_memory_gb}GB`
+    );
+  } else {
+    console.log("HW: Cloudflare Workers AI free tier (≤10k neurons/day)");
+  }
   console.log(`gen=${generator}  verify=${verifier}  arbitrate=${arbitrator}`);
   console.log(`targets=${targets.length} per_target=${perTarget} fast=${cli.fast}`);
   if ((config.skip_llm_judge || []).length) {
@@ -169,14 +269,43 @@ async function main() {
   }
 
   if (cli.dryRun) {
-    console.log("dry-run: config OK (Ollama 呼び出しなし)");
+    if (provider === "cloudflare") {
+      console.log(
+        cfAccountId && cfToken
+          ? "dry-run: Cloudflare credentials present"
+          : "dry-run: set CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN"
+      );
+    } else {
+      console.log("dry-run: config OK (Ollama 呼び出しなし)");
+    }
     return;
   }
 
-  const available = await ensureOllama(host);
-  for (const id of [generator, verifier, arbitrator]) {
-    if (!available.has(id)) {
-      throw new Error(`モデル未取得: ${id}\n  ollama pull ${id}`);
+  async function chat(model, messages, temperature) {
+    if (provider === "cloudflare") {
+      const out = await cloudflareChat(cfAccountId, cfToken, model, messages, {
+        temperature,
+      });
+      await sleep(250);
+      return out;
+    }
+    return ollamaChat(host, model, messages, { temperature, keepAlive });
+  }
+
+  if (provider === "cloudflare") {
+    if (!cfAccountId || !cfToken) {
+      throw new Error(
+        "Cloudflare が未設定です。無料で使うには:\n" +
+          "  CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN\n" +
+          "Actions: Repository secrets に同名で登録"
+      );
+    }
+  } else {
+    const available = await ensureOllama(host);
+    for (const id of [generator, verifier, arbitrator]) {
+      if (!available.has(id)) {
+        throw new Error(`モデル未取得: ${id}\n  ollama pull ${id}`);
+      }
     }
   }
 
@@ -185,9 +314,6 @@ async function main() {
   if (!existsSync(rejectedPath)) await writeFile(rejectedPath, "", "utf8");
 
   const tokenize = await createBenchTokenizer();
-  const keepAlive = config.ollama.keep_alive ?? "0";
-  const genTemp = config.ollama.temperature ?? 0.7;
-  const judgeTemp = config.ollama.judge_temperature ?? 0.1;
 
   let accepted = 0;
   let rejected = 0;
@@ -209,12 +335,7 @@ async function main() {
 
     let genRaw = "";
     try {
-      genRaw = await ollamaChat(
-        host,
-        generator,
-        [{ role: "user", content: genPrompt }],
-        { temperature: genTemp, keepAlive }
-      );
+      genRaw = await chat(generator, [{ role: "user", content: genPrompt }], genTemp);
     } catch (err) {
       console.error(`generate failed: ${err.message}`);
       continue;
@@ -260,11 +381,10 @@ async function main() {
       let arbGuess = null;
 
       try {
-        verifyRaw = await ollamaChat(
-          host,
+        verifyRaw = await chat(
           verifier,
           [{ role: "user", content: judgePrompt }],
-          { temperature: judgeTemp, keepAlive }
+          judgeTemp
         );
         verifyGuess = extractReadingGuess(verifyRaw, candidates);
       } catch (err) {
@@ -281,11 +401,10 @@ async function main() {
         source = "verify_agree";
       } else {
         try {
-          arbRaw = await ollamaChat(
-            host,
+          arbRaw = await chat(
             arbitrator,
             [{ role: "user", content: judgePrompt }],
-            { temperature: judgeTemp, keepAlive }
+            judgeTemp
           );
           arbGuess = extractReadingGuess(arbRaw, candidates);
         } catch (err) {
@@ -301,8 +420,6 @@ async function main() {
           verifyGuess === arbGuess &&
           candidates.map(normalizeReading).includes(verifyGuess)
         ) {
-          // both judges agree on something else → discard for our gold target
-          // (don't poison with majority wrong labels on intended gold tasks)
           finalReading = null;
           source = "judges_disagree_with_gold";
         } else {
@@ -322,6 +439,7 @@ async function main() {
         generator,
         verifier,
         arbitrator,
+        provider,
         source,
       };
 
@@ -333,7 +451,7 @@ async function main() {
           surface,
           candidates: base.candidates,
           gold: finalReading,
-          source: `llm-synth:${source}`,
+          source: `llm-synth:${provider}:${source}`,
           note: hint || "",
         };
         await appendJsonl(acceptedPath, row);
@@ -355,7 +473,7 @@ async function main() {
 
   console.log(`\n=== done accepted=${accepted} rejected=${rejected} ===`);
   console.log(`wrote ${acceptedPath}`);
-  console.log(`次: npm run learn:ndl-build の seed に混ぜるか、train に --extra で使う`);
+  console.log(`次: npm run learn:merge → corpus/synth-open.jsonl`);
 }
 
 main().catch((err) => {
