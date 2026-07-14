@@ -87,10 +87,31 @@ TRUST_PATTERNS: list[TrustPattern] = [
 ]
 
 
-def match_trust_reading(surface: str, full_text: str) -> TrustPattern | None:
+def match_trust_reading(
+    surface: str,
+    full_text: str,
+    span: tuple[int, int] | None = None,
+) -> TrustPattern | None:
+    """Return the first trust rule for this surface.
+
+    When ``span`` is provided, a regex hit must overlap that token's span
+    (with a small right pad) so one cue does not force later same-surface tokens.
+    """
     for rule in TRUST_PATTERNS:
         if rule.surface != surface:
             continue
-        if rule.pattern.search(full_text):
-            return rule
+        if span is None:
+            if rule.pattern.search(full_text):
+                return rule
+            continue
+        start, end = span
+        for m in rule.pattern.finditer(full_text):
+            # Allow a little room after the surface (助詞・語尾)
+            pad_end = min(len(full_text), end + 6)
+            if m.end() > start and m.start() < pad_end:
+                # Prefer matches that cover this surface occurrence
+                if m.start() <= start and m.end() >= end:
+                    return rule
+                if abs(m.start() - start) <= 2 or abs(m.end() - end) <= 4:
+                    return rule
     return None

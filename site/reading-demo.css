@@ -1,0 +1,287 @@
+/* Reading demo — extends site paper/sumi language */
+
+.demo-page .demo-hero {
+  padding: clamp(2rem, 5vw, 3.5rem) 0 1.25rem;
+  max-width: 40rem;
+}
+
+.demo-page .eyebrow {
+  margin: 0 0 0.6rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--vermilion-deep);
+}
+
+.demo-page .demo-hero h1 {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(1.85rem, 4.2vw, 2.75rem);
+  line-height: 1.25;
+  margin: 0 0 1rem;
+  letter-spacing: 0.02em;
+}
+
+.demo-page .demo-hero h1 em {
+  font-style: normal;
+  border-bottom: 0.12em solid color-mix(in oklab, var(--vermilion) 55%, transparent);
+}
+
+.demo-page .engine-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 1.1rem 0 0;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+  border: 1px solid var(--line);
+  background: color-mix(in oklab, var(--paper) 70%, white);
+}
+
+.demo-page .engine-status::before {
+  content: "";
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--sumi-soft);
+}
+
+.demo-page .engine-status[data-state="ok"]::before {
+  background: #3f6f4e;
+}
+
+.demo-page .engine-status[data-state="down"]::before {
+  background: var(--vermilion);
+}
+
+.demo-workbench {
+  padding: 1.5rem 0 2.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.sample-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.chip {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--sumi-soft);
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.chip:hover,
+.chip[aria-pressed="true"] {
+  color: var(--sumi);
+  border-color: var(--vermilion);
+  transform: translateY(-1px);
+}
+
+.field-label {
+  display: block;
+  margin: 0.75rem 0 0.35rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  color: var(--sumi-soft);
+}
+
+#input-text,
+#api-url,
+.dict-surface,
+.dict-reading {
+  width: 100%;
+  font: inherit;
+  color: var(--sumi);
+  background: color-mix(in oklab, var(--paper) 40%, white);
+  border: 1px solid var(--line);
+  padding: 0.75rem 0.9rem;
+  resize: vertical;
+}
+
+#input-text:focus,
+#api-url:focus,
+.dict-surface:focus,
+.dict-reading:focus {
+  outline: 2px solid color-mix(in oklab, var(--vermilion) 45%, transparent);
+  outline-offset: 1px;
+}
+
+.user-dict-panel {
+  margin: 1rem 0;
+  border-top: 1px dashed var(--line);
+  padding-top: 0.75rem;
+}
+
+.user-dict-panel summary {
+  cursor: pointer;
+  color: var(--sumi-soft);
+  font-size: 0.92rem;
+}
+
+.user-dict-rows {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+.dict-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.5rem;
+}
+
+.btn.small {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+}
+
+.api-row {
+  margin: 0.75rem 0 1rem;
+}
+
+.cta-row .hint {
+  align-self: center;
+  font-size: 0.8rem;
+  color: var(--sumi-soft);
+}
+
+.error {
+  color: var(--vermilion-deep);
+  background: color-mix(in oklab, var(--vermilion) 8%, var(--paper));
+  border: 1px solid color-mix(in oklab, var(--vermilion) 25%, transparent);
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+}
+
+.result-block {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.result-block h3 {
+  font-family: var(--display);
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+}
+
+.ruby-out {
+  font-family: var(--display);
+  font-size: clamp(1.35rem, 2.8vw, 1.85rem);
+  line-height: 2.1;
+  padding: 1rem 0 0.5rem;
+}
+
+.ruby-out ruby {
+  ruby-align: center;
+}
+
+.ruby-out rt {
+  font-family: var(--body);
+  font-size: 0.45em;
+  color: var(--vermilion-deep);
+}
+
+.ruby-out [data-hit] {
+  background: color-mix(in oklab, var(--vermilion) 8%, transparent);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.full-reading {
+  font-size: 0.9rem;
+  color: var(--sumi-soft);
+  word-break: break-all;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 1rem 0;
+}
+
+.legend span {
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  padding: 0.2rem 0.45rem;
+  border: 1px solid var(--line);
+  color: var(--sumi-soft);
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border-top: 1px solid var(--line);
+}
+
+.result-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.result-table th,
+.result-table td {
+  text-align: left;
+  padding: 0.65rem 0.5rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.result-table th {
+  font-weight: 500;
+  color: var(--sumi-soft);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+}
+
+.cand-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.cand-list b {
+  font-weight: 600;
+  color: var(--vermilion-deep);
+}
+
+.steps {
+  padding-left: 1.2rem;
+  color: var(--sumi-soft);
+}
+
+.run-hint {
+  margin-top: 1.25rem;
+  padding: 1rem 1.1rem;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  overflow-x: auto;
+  background: color-mix(in oklab, var(--sumi) 92%, var(--paper));
+  color: var(--paper);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 640px) {
+  .dict-row {
+    grid-template-columns: 1fr;
+  }
+}

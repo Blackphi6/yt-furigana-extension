@@ -227,10 +227,15 @@ class ReadingEngine:
         return best, source
 
     def _select_reading(
-        self, surface: str, base: str, cands: list[str], full_text: str
+        self,
+        surface: str,
+        base: str,
+        cands: list[str],
+        full_text: str,
+        span: tuple[int, int] | None = None,
     ) -> tuple[str, float, str, list[str]]:
-        # 2) Trust patterns (idioms)
-        trust = match_trust_reading(surface, full_text)
+        # 2) Trust patterns (idioms) — scoped to this token's neighborhood
+        trust = match_trust_reading(surface, full_text, span)
         if trust and trust.reading in cands:
             return trust.reading, trust.confidence, "trust_pattern", cands[:6]
 
@@ -312,7 +317,7 @@ class ReadingEngine:
                 continue
 
             reading, conf, source, out_cands = self._select_reading(
-                surface, base, cands, text
+                surface, base, cands, text, (start, end)
             )
             # Final structural check
             if reading not in out_cands:

@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>読みデモ — YT Furigana Reading Engine</title>
+    <meta
+      name="description"
+      content="ローカル読みエンジンの同形異音・確信度・根拠をその場で確認するデモ。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./reading-demo.css" />
+    <script src="./config.js"></script>
+  </head>
+  <body class="demo-page">
+    <div class="wrap">
+      <header class="site-header">
+        <a class="brand" href="./">YT Furigana</a>
+        <nav class="nav" aria-label="主要ナビ">
+          <a href="./reading-demo.html" aria-current="page">読みデモ</a>
+          <a href="./install.html">インストール</a>
+          <a href="./pricing.html">料金</a>
+          <a href="https://github.com/Blackphi6/yt-furigana-extension">GitHub</a>
+        </nav>
+      </header>
+
+      <section class="demo-hero fade-up">
+        <p class="eyebrow">学習の手応えを見る</p>
+        <h1>同じ漢字でも、<em>読みは文脈で変わる</em></h1>
+        <p class="lead">
+          候補の外には出さない読みエンジンを、文章を打ち込んで試せます。
+          確信度・根拠・候補を一覧表示。本番の字幕拡張と同じ API です。
+        </p>
+        <p class="engine-status" id="engine-status" role="status">エンジンを確認中…</p>
+      </section>
+
+      <section class="demo-workbench fade-up delay" aria-labelledby="demo-heading">
+        <h2 id="demo-heading" class="visually-hidden">読み判定</h2>
+
+        <div class="sample-row" role="group" aria-label="サンプル文">
+          <button type="button" class="chip" data-sample="辛いラーメンを食べた後、辛い経験を思い出した。">辛い×2</button>
+          <button type="button" class="chip" data-sample="市場規模が拡大した。朝の市場で魚を買った。">市場</button>
+          <button type="button" class="chip" data-sample="交渉では下手に出る。絵が下手だと笑われた。">下手</button>
+          <button type="button" class="chip" data-sample="ただ永遠に愛。永遠のテーマを議論した。お前の話は永遠に終わらない。">永遠</button>
+          <button type="button" class="chip" data-sample="馬鹿みたいに空を切った手で。大事になる前に止めた。">空・大事</button>
+        </div>
+
+        <label class="field-label" for="input-text">入力テキスト（500文字まで）</label>
+        <textarea
+          id="input-text"
+          maxlength="500"
+          rows="4"
+          placeholder="ここに日本語の文を入力…"
+        >辛いラーメンを食べた後、辛い経験を思い出した。</textarea>
+
+        <details class="user-dict-panel">
+          <summary>ユーザー辞書（任意）— 人名など、AIより優先</summary>
+          <div id="user-dict-rows" class="user-dict-rows"></div>
+          <button type="button" class="btn ghost small" id="add-dict-row">＋ 語を追加</button>
+        </details>
+
+        <div class="api-row">
+          <label class="field-label" for="api-url">API URL</label>
+          <input id="api-url" type="url" spellcheck="false" />
+        </div>
+
+        <div class="cta-row">
+          <button type="button" class="btn" id="run-btn">読みを判定する</button>
+          <span class="hint">⌘/Ctrl + Enter</span>
+        </div>
+
+        <p class="error" id="error" hidden></p>
+
+        <div class="result-block" id="result-block" hidden>
+          <h3>判定結果（ルビ）</h3>
+          <div class="ruby-out" id="ruby-out" lang="ja"></div>
+          <p class="full-reading" id="full-reading"></p>
+
+          <div class="legend">
+            <span data-source="trust_pattern">trust</span>
+            <span data-source="reranker">reranker</span>
+            <span data-source="cue">cue</span>
+            <span data-source="user_dict">user_dict</span>
+            <span data-source="base_engine">base</span>
+            <span data-source="creative_ruby">creative</span>
+          </div>
+
+          <div class="table-wrap">
+            <table class="result-table">
+              <thead>
+                <tr>
+                  <th>表記</th>
+                  <th>読み</th>
+                  <th>確信度</th>
+                  <th>根拠</th>
+                  <th>候補</th>
+                </tr>
+              </thead>
+              <tbody id="result-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="section fade-up">
+        <h2>仕組み（要約）</h2>
+        <p class="sub">
+          <a href="https://jrm-demo.2-38.com/">JRM デモ</a>と同系統：
+          候補生成 → 文脈で選択 → 低確信は辞書へ → ユーザー辞書が最優先。
+          LLM に自由生成で読ませません。
+        </p>
+        <ol class="steps">
+          <li>user_dict / trust（慣用句）</li>
+          <li>UniDic + 同形異音ラティス（候補外禁止）</li>
+          <li>ModernBERT rerank（あれば）／cue</li>
+          <li>閾値未満は base へフォールバック</li>
+        </ol>
+        <pre class="run-hint">export YT_FURIGANA_RERANKER_PATH=reading-engine/train/artifacts/reranker-prod
+npm run reading-engine
+npm run demo:site</pre>
+      </section>
+
+      <footer class="site-footer">
+        <a href="./">ホーム</a>
+        <a href="./privacy.html">プライバシー</a>
+        <a href="https://github.com/Blackphi6/yt-furigana-extension">GitHub</a>
+      </footer>
+    </div>
+    <script src="./reading-demo.js" type="module"></script>
+  </body>
+</html>

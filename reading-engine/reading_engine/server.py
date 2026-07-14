@@ -4,6 +4,7 @@ import os
 from typing import Any
 
 from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from reading_engine import get_engine
@@ -24,6 +25,20 @@ from reading_engine.stripe_billing import (
 )
 
 app = FastAPI(title="YT Furigana Reading Engine", version="0.3.0")
+
+# Local / Pages demo (site/reading-demo.html). Tighten in production if needed.
+_cors = os.environ.get(
+    "YT_FURIGANA_CORS_ORIGINS",
+    "http://127.0.0.1:4173,http://localhost:4173,http://127.0.0.1:5500,http://localhost:5500,"
+    "https://blackphi6.github.io,null",
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[o.strip() for o in _cors.split(",") if o.strip()],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["*"],
+)
 
 
 class UserDictEntry(BaseModel):
