@@ -78,20 +78,18 @@ npm run learn:gate -- --write-baseline
 | トリガ | Runner | 内容 |
 |--------|--------|------|
 | `mode=smoke` | ubuntu-latest | dry + 3ベンチ |
-| cron 毎日 04:00 UTC / `mode=synth` | ubuntu-latest | Cloudflare Workers AI 無料枠で合成 |
+| cron 毎日 04:00 UTC / `mode=synth` | ubuntu-latest | Groq 無料枠で合成 |
 | cron 月曜 03:00 UTC / `mode=retrain` | ubuntu-latest | merge + ルール学習 + 3ベンチ |
 
-1日あたり想定呼び出し ~100回・枠の数%〜2割程度。Workers **Free** のまま（Paid に上げない）。
+1日あたり想定呼び出し ~100回・無料枠のごく一部。Paid 不要。
 
 ### 一回だけ（無料アカウント）
 
-1. [Cloudflare](https://dash.cloudflare.com/) 無料登録  
-2. Account ID（Overview）と Workers AI 用 API Token  
-3. secrets:
+1. [Groq Console](https://console.groq.com/keys) で API Key 作成  
+2. secrets:
 
 ```bash
-gh secret set CLOUDFLARE_ACCOUNT_ID
-gh secret set CLOUDFLARE_API_TOKEN
+gh secret set GROQ_API_KEY
 gh workflow run learning-loop.yml -f mode=smoke
 gh workflow run learning-loop.yml -f mode=synth -f per_target=1
 ```
