@@ -7,6 +7,7 @@
 | [TERMS.md](TERMS.md) | 利用条件・免責（補足） |
 | [OPEN-SOURCE-LICENSES.md](OPEN-SOURCE-LICENSES.md) | OSS / 辞書の帰属（詳細） |
 | [READING-PIPELINE.md](READING-PIPELINE.md) | 候補制約型読みパイプライン（内部設計） |
+| [TRADEMARK-AND-ATTRIBUTION.md](TRADEMARK-AND-ATTRIBUTION.md) | 商標・帰属・第三者コンテンツ |
 | [FREEMIUM.md](FREEMIUM.md) | Free / Premium / Stripe |
 | [RELEASE.md](RELEASE.md) | 完成範囲とあとからでよいもの |
 | [../site/README.md](../site/README.md) | GitHub Pages サイト |

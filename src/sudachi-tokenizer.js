@@ -5,7 +5,7 @@ let initPromise = null;
 /** @type {{ phase: string, loadedBytes: number, totalBytes: number, percent: number, message: string } | null} */
 let lastProgress = null;
 
-function toKuromojiCompatible(morpheme) {
+function toLegacyTokenShape(morpheme) {
   return {
     surface_form: morpheme.surface,
     reading: morpheme.reading_form || "",
@@ -97,7 +97,7 @@ function formatMb(bytes) {
 }
 
 /**
- * SudachiDict (small) を読み込み、Kuromoji 互換の tokenize を返す。
+ * SudachiDict (small) を読み込み、既存トークン形式に合わせた tokenize を返す。
  * Mode C = 長いまとまり（1人→ひとり など複合に強い）
  */
 export async function initSudachiTokenizer({ dictUrl, onProgress } = {}) {
@@ -151,7 +151,7 @@ export async function initSudachiTokenizer({ dictUrl, onProgress } = {}) {
 export function createSudachiTokenize(instance, mode = TokenizeMode.C) {
   return (text) => {
     const morphemes = instance.tokenize_raw(text, mode);
-    return morphemes.map(toKuromojiCompatible);
+    return morphemes.map(toLegacyTokenShape);
   };
 }
 

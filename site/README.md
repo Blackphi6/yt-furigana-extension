@@ -6,6 +6,8 @@
 
 初回のみ GitHub リポジトリ設定で **Settings → Pages → Source: GitHub Actions** を選んでください。
 
+フッターの商標注記は `site/partials/trademark-footer.html` と同内容を各 HTML に記載しています（Pages は include 不可）。
+
 `config.js` の `readingApiUrl` を読みエンジン URL に合わせてください。
 
 ## 読みデモ（学習確認）

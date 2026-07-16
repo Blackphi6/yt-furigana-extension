@@ -4,7 +4,7 @@ YouTube / TVer の日本語字幕にひらがなルビを表示する Chrome 拡
 
 字幕・歌詞などの著作権は各権利者に帰属します。本拡張は画面上の表示加工であり、コンテンツの再配布を目的としません。
 
-**商標:** YouTube、TVer、Google Chrome は各社の商標です。Kuromoji、Sudachi、NEologd 等は各プロジェクトの名称です。
+**商標:** YouTube、TVer、Google Chrome は各社の商標です。**「YT」は製品名の略称であり、YouTube の商標ではありません。** Kuromoji、Sudachi、NEologd 等は各プロジェクトの名称です。詳細は [`docs/TRADEMARK-AND-ATTRIBUTION.md`](docs/TRADEMARK-AND-ATTRIBUTION.md)。
 
 **サイト**: https://blackphi6.github.io/yt-furigana-extension/  
 **インストール**: https://blackphi6.github.io/yt-furigana-extension/install.html  

@@ -64,4 +64,5 @@
 
 - [利用条件・免責](TERMS.md)
 - [オープンソースライセンス](OPEN-SOURCE-LICENSES.md)
+- [商標・帰属](TRADEMARK-AND-ATTRIBUTION.md)
 - [NOTICE](../NOTICE)

@@ -11,6 +11,10 @@ Do **not** contribute:
 - Copyrighted lyrics/subtitle dumps scraped for redistribution
 - Proprietary dictionary data you are not allowed to relicense
 - Secrets, API keys, or personal data
+- Wording that implies endorsement by YouTube, TVer, Google, or other third-party brands
+- Third-party **product or service names** used as if this project were official, affiliated, or “compatible with” that brand in user-facing text
+
+See `docs/TRADEMARK-AND-ATTRIBUTION.md` and `docs/TERMS.md`.
 
 ## Development
 

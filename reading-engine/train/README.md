@@ -4,7 +4,7 @@ Yomikata is the best *ready* open heteronym model, but it pins `torch==1.13.1`
 and does not install cleanly on current macOS ARM + Python 3.11/3.12.
 
 This repo follows the [candidate-constrained reading pipeline](https://zenn.dev/nixo/articles/3139042d4034f2)
-described in a third-party Zenn article (no affiliation with any commercial product):
+described in a third-party Zenn article (no affiliation with any commercial product or service named therein):
 candidate lattice → rerank → confidence fallback. Readings never leave the lattice.
 
 ## Data (legal / redistributable)

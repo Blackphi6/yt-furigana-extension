@@ -57,3 +57,4 @@
 - [`third_party/BSD-CMUdict.txt`](../third_party/BSD-CMUdict.txt)
 - [`third_party/NOTICE-kuromoji.md`](../third_party/NOTICE-kuromoji.md)
 - [`licenses/licenses.html`](../licenses/licenses.html) — 拡張内表示用
+- [`docs/TRADEMARK-AND-ATTRIBUTION.md`](TRADEMARK-AND-ATTRIBUTION.md) — 商標・帰属

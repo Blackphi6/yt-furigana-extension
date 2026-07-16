@@ -24,7 +24,8 @@ const vendorDir = path.join(root, "data", "vendor");
 const outDir = path.join(root, "data", "generated");
 const cmudictPath = path.join(vendorDir, "cmudict.dict");
 const outJson = path.join(outDir, "english-katakana.json");
-const outGz = path.join(outDir, "english-katakana.json.gz");
+  const outGz = path.join(outDir, "english-katakana.json.gz");
+  const outMeta = path.join(outDir, "english-katakana.meta.json");
 
 const CMUDICT_URL =
   "https://raw.githubusercontent.com/cmusphinx/cmudict/master/cmudict.dict";
@@ -83,6 +84,17 @@ async function main() {
     createGzip({ level: 9 }),
     createWriteStream(outGz)
   );
+
+  const meta = {
+    source: "CMU Pronouncing Dictionary (cmusphinx/cmudict)",
+    license: "BSD-2-Clause",
+    attribution: "Copyright (C) 1993-2015 Carnegie Mellon University",
+    licenseFile: "third_party/BSD-CMUdict.txt",
+    conversion: "src/arpabet-katakana.js (MIT)",
+    count: Object.keys(dict).length,
+    generatedAt: new Date().toISOString()
+  };
+  await writeFile(outMeta, `${JSON.stringify(meta, null, 2)}\n`, "utf8");
 
   const { statSync } = await import("node:fs");
   const mb = statSync(outGz).size / (1024 * 1024);
