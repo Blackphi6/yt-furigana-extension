@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * JRM-style open-weight synthetic labeling:
+ * Candidate-constrained open-weight synthetic labeling:
  *   generate (family A) → blind verify (family B) → arbitrate (family C)
  * + Sudachi token-boundary gate (never accept「預金」中の「金」)
  *

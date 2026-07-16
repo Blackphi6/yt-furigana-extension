@@ -1,6 +1,6 @@
-"""Local JRM-shaped reading engine.
+"""Local candidate-constrained reading engine.
 
-Pipeline (hallucination-proof; matches Zenn JRM article order):
+Pipeline (hallucination-proof; see docs/READING-PIPELINE.md):
   1. user_dict (highest priority)
   2. trust regex patterns (idioms LLM judges get wrong)
   3. UniDic + heteronym lattice (candidates only; gold must be in set)

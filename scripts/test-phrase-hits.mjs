@@ -48,4 +48,4 @@ const html = readingApiSpansToHtml(
 assert.match(html, /data-surface="鬼滅の刃"/);
 assert.match(html, /data-reading="きめつのやいば"/);
 
-console.log("phrase-hits / dict+JRM combo tests passed.");
+console.log("phrase-hits / dict+API combo tests passed.");

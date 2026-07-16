@@ -12,16 +12,16 @@ import {
 
 assert.equal(normalizeReadingApiUrl(""), "");
 assert.equal(
-  normalizeReadingApiUrl("https://ja.2-38.com"),
-  "https://ja.2-38.com/v1/readings"
+  normalizeReadingApiUrl("https://readings.example.com"),
+  "https://readings.example.com/v1/readings"
 );
 assert.equal(
-  normalizeReadingApiUrl("https://ja.2-38.com/"),
-  "https://ja.2-38.com/v1/readings"
+  normalizeReadingApiUrl("https://readings.example.com/"),
+  "https://readings.example.com/v1/readings"
 );
 assert.equal(
-  normalizeReadingApiUrl("https://ja.2-38.com/v1/readings"),
-  "https://ja.2-38.com/v1/readings"
+  normalizeReadingApiUrl("https://readings.example.com/v1/readings"),
+  "https://readings.example.com/v1/readings"
 );
 assert.equal(
   normalizeReadingApiUrl("http://127.0.0.1:8080/v1/readings/"),
@@ -52,7 +52,7 @@ assert.match(html, /data-reading="からい"/);
 assert.match(html, /<ruby>辛<rt>から<\/rt><\/ruby>い/);
 assert.match(html, /ラーメン/);
 
-// JRM public API returns span-only tokens (not full coverage)
+// Span-only partial tokens (not full coverage)
 const original = "東海林さんが辛いラーメンを食べた。";
 const spanTokens = [
   {
@@ -87,8 +87,8 @@ const parsed = parseReadingApiResponse({ tokens: spanTokens }, original);
 assert.equal(parsed, spanHtml);
 
 assert.equal(
-  readingApiOriginPattern("https://ja.2-38.com/v1/readings"),
-  "https://ja.2-38.com/*"
+  readingApiOriginPattern("https://readings.example.com/v1/readings"),
+  "https://readings.example.com/*"
 );
 assert.equal(readingApiOriginPattern(""), null);
 

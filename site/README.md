@@ -10,7 +10,7 @@
 
 ## 読みデモ（学習確認）
 
-[JRM デモ](https://jrm-demo.2-38.com/) 相当のローカル確認用 UI:
+候補制約型読み API のローカル確認用 UI:
 
 1. ターミナル A: `export YT_FURIGANA_RERANKER_PATH=reading-engine/train/artifacts/reranker-prod`（任意）→ `npm run reading-engine`
 2. ターミナル B: `npm run demo:site` → http://127.0.0.1:4173/reading-demo.html

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Candidate-constrained ModernBERT train + eval gate (JRM Phase 2).
+"""Candidate-constrained ModernBERT train + eval gate (pipeline phase 2).
 
 Loss: softmax over *candidates only* for each (text, surface) — never free-form.
 Eval / promote: seed smoke accuracy + NDL holdout floor; refuse regression.

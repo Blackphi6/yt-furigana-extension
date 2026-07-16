@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Minimal candidate-constrained ModernBERT reranker smoke trainer.
 
-Design (JRM / g2pW style):
+Design (candidate-constrained / g2p-style selection):
   lattice of readings from dict → classify among candidates only
   → low confidence falls back to dictionary reading
   → never free-form LLM generation

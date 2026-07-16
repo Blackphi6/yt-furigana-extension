@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build candidate-constrained reranker JSONL from NDL hurigana corpora.
 
-JRM article gates applied here:
+Zenn article gates applied here (see docs/READING-PIPELINE.md):
   1. Token-boundary only — use corpus wakachi tokens as-is (never substring「金」in「預金」)
   2. Gold must already sit in the heteronym candidate lattice (no free-form labels)
   3. Dakuten-only reading pairs are dropped (NDL fuzzy-match noise)
@@ -133,7 +133,7 @@ def load_heteronyms(path: Path) -> dict[str, list[str]]:
             n = normalize_reading(c)
             if n and n not in norms:
                 norms.append(n)
-        # drop dakuten-only lattices (JRM discovery #4)
+        # drop dakuten-only lattices (pipeline discovery #4)
         if len(norms) == 2 and dakuten_only_pair(norms[0], norms[1]):
             continue
         filtered = []
@@ -322,7 +322,7 @@ def main() -> None:
         )
         print(f"  {path.name}: +{len(corpus_rows) - before} (total={len(corpus_rows)})")
 
-    # Deduplicate corpus triples, then upsample modern seed (JRM discovery #3)
+    # Deduplicate corpus triples, then upsample modern seed (pipeline discovery #3)
     uniq: list[dict] = []
     seen: set[tuple] = set()
     for row in corpus_rows:

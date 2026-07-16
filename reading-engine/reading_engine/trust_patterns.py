@@ -1,4 +1,7 @@
-"""Idiom / minority-reading trust patterns (JRM article discovery #1).
+"""Idiom / minority-reading trust patterns.
+
+See docs/READING-PIPELINE.md (idiom trust list; inspired by public write-ups on
+candidate-constrained Japanese reading — no affiliation with any commercial product).
 
 LLM judges fail on these; never leave them to free-form models.
 Patterns force a reading only when the surface token aligns and the

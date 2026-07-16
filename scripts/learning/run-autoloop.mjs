@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * JRM-style autoloop.
+ * Candidate-constrained pipeline autoloop.
  * Default cloud path is ¥0: Cloudflare Workers AI + ubuntu (no Mac).
  *
  *   --phase=smoke|synth|retrain|retrain-lite|full

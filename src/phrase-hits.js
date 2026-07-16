@@ -13,7 +13,7 @@ function normalizePhraseReading(reading, source) {
 
 /**
  * テキスト上で、辞書系フレーズ（NEologd・手動・学習）の非重複最長一致を集める。
- * JRM の user_dict 優先枠に載せて「辞書＋JRM」併用する。
+ * 読み API の user_dict 優先枠に載せて「辞書＋API」併用する。
  *
  * @param {string} text
  * @param {Record<string, string>} [extraPhrases] 学習 phrases など

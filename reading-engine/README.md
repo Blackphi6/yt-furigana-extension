@@ -1,8 +1,8 @@
-# YT Furigana local reading engine (JRM-compatible)
+# YT Furigana local reading engine
 
 Local-first reading API for the Chrome extension. No cloud fee.
 
-設計は [JRM 記事（Zenn）](https://zenn.dev/nixo/articles/3139042d4034f2) と同じく
+設計は [候補制約型読み付けの技術記事（Zenn）](https://zenn.dev/nixo/articles/3139042d4034f2) で紹介されている考え方に着想を得ています（当該製品・サービスとの提携・互換表明ではありません）。
 **「LLM に自由に読ませない」** です。出力は常に候補ラティス内に制約されます。
 
 ## 推論パイプライン（幻覚が構造的に起きない順）
@@ -22,9 +22,9 @@ Local-first reading API for the Chrome extension. No cloud fee.
 
 | Option | Status | Notes |
 |--------|--------|-------|
-| **JRM** (2-38.com) | Closed weights | Strong; API/commercial |
-| **Yomikata** | Open (~94%, 130 heteronyms) | Pins `torch==1.13.1` — hard on modern macOS ARM |
-| **ModernBERT-Ja** (SB Intuitions 30m–310m) | Best open encoder base | Needs fine-tune for readings (JRM-style) |
+| **商用読み API（例）** | 各社提供 | 参照用。本エンジンは独立実装 |
+| **Yomikata**（第三者 OSS） | Open (~94%, 130 heteronyms) | 参考比較。本エンジンとは無関係 |
+| **ModernBERT-Ja** (SB Intuitions 30m–310m) | Best open encoder base | Needs fine-tune for readings |
 | **llm-jp-modernbert** | Open | Similar; not SOTA over SB Intuitions on JGLUE |
 
 **This MVP** = lattice + trust + NDL-trained ModernBERT (optional) + cue fallback + creative-ruby.

@@ -1,7 +1,7 @@
 export const DEFAULT_SETTINGS = {
   enabled: true,
   engine: "kuromoji",
-  /** JRM互換読みAPIのベースURL（空＝未設定）。例: https://ja.2-38.com / http://127.0.0.1:8765 */
+  /** 読み推定 API のベース URL（空＝未設定）。例: http://127.0.0.1:8765 */
   readingApiUrl: "",
   /** ホスト読みAPI用キー（Premium）。空なら localhost は認証なし可 */
   readingApiKey: "",

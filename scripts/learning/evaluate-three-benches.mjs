@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Three-bench eval gate (JRM-style).
+ * Three-bench eval gate (candidate-constrained pipeline).
  * 1) seed-bench  2) hard-heteronym  3) easy-regression
  * Compares against data/learning/gate-baseline.json; refuses to update baseline on drop.
  *

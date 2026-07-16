@@ -299,7 +299,7 @@ async function convertWithReadingApi(text) {
 
   const store = await ensureDictionarySideReady();
   const userPhrases = { ...(store.phrases || {}) };
-  // NEologd/固定句ヒット + 学習 phrases → JRM user_dict（固有名詞は辞書、異読みは JRM）
+  // NEologd/固定句ヒット + 学習 phrases → 読み API の user_dict（固有名詞は辞書、文脈依存は API）
   const userDict = buildCombinedUserDict(text, userPhrases);
   const html = await callReadingApi(text, settings, userDict, userPhrases);
   setCache(cacheKey, html);

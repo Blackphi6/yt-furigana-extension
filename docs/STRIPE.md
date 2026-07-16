@@ -1,7 +1,7 @@
 # Stripe（YT Furigana）
 
 同じ Stripe アカウント（メール共通）内に、**別 Product** として切り分けています。  
-SecurData / 説明文エディタとは `metadata.app=yt-furigana-extension` で区別します（別会社アカウントではない）。
+`metadata.app=yt-furigana-extension` で他 Product と区別します。
 
 ## 作成済み（テストモード）
 

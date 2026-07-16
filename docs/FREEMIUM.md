@@ -31,7 +31,7 @@ npm run reading-engine
 
 ## Stripe（アカウント内の別サービス）
 
-同じ Stripe アカウント（説明文エディタ / SecurData と共通メール）に **Product を分けて**作成しています。
+同じ Stripe アカウント（運営者の既存 Product とメール共通）内に **別 Product** として作成しています。
 
 | モード | Product | Price (¥980 買い切り) |
 |--------|---------|------------------------|

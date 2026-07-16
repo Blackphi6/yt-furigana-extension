@@ -17,10 +17,10 @@ import { mergeSpansWithLocalPhrases } from "./phrase-hits.js";
 import { applyEnglishKatakanaReadings } from "./english-katakana-reading.js";
 
 /**
- * JRM 互換の読み推定 API（BYO）。
+ * ユーザー指定の読み推定 API（BYO）。`POST /v1/readings` 形式。
  * 既定エンジンは Kuromoji。ここはユーザーが URL を指定したときだけ使う。
  *
- * 公開 JRM は全文トークンではなく、読み付き箇所だけを span 付きで返す。
+ * 一部の読み API は全文トークンではなく、読み付き箇所だけを span 付きで返す。
  */
 
 export function normalizeReadingApiUrl(url) {
@@ -54,7 +54,7 @@ export function userDictToApiEntries(dict) {
 export function buildReadingApiRequest(text, userDict = {}) {
   return {
     text: String(text ?? ""),
-    // 辞書系（学習・NEologd ヒット）を user_dict 最優先枠へ。JRM が異読み、辞書が固有名詞。
+    // 辞書系（学習・NEologd ヒット）を user_dict 最優先枠へ。API は文脈依存読み、辞書は固有名詞。
     user_dict: userDictToApiEntries(userDict),
     return_candidates: true
   };
@@ -184,8 +184,8 @@ function renderSurface(surface, reading) {
 }
 
 /**
- * JRM の span 応答を原文に合成してルビ HTML にする。
- * ローカル句（NEologd / 学習）を優先して上書きし、辞書＋JRM 併用にする。
+ * 読み API の span 応答を原文に合成してルビ HTML にする。
+ * ローカル句（NEologd / 学習）を優先して上書きし、辞書＋API 併用にする。
  * @param {string} originalText
  * @param {Array<object>} tokens
  * @param {Record<string, string>} [userPhrases]
