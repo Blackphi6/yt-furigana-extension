@@ -165,6 +165,10 @@
           曖昧語のサンプル（字幕断片・ページ URL）も端末内に自動蓄積されます（上限あり・開発者サーバーへは送らない）。書き出して
           <code>data/learning/inbox.jsonl</code> に置き、<code>npm run learn</code> で辞書を自動更新できます。
         </p>
+        <label class="row">
+          <input type="checkbox" id="learningInboxEnabled" checked />
+          <span>曖昧語サンプルを端末内に自動蓄積する（オフで停止。手動の読み選択は継続）</span>
+        </label>
         <button type="button" id="exportLearning" class="button">学習ログを書き出し</button>
         <button type="button" id="clearLearning" class="button secondary">学習ログを消去</button>
         <p class="status" id="learningStatus" hidden></p>

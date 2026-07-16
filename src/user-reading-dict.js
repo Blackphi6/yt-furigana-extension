@@ -118,7 +118,7 @@ export async function loadUserReadingStore() {
 }
 
 /**
- * 同期・API 向け: フレーズ辞書のみ（旧 API 互換）。
+ * 同期・API 向け: フレーズ辞書のみ（旧レスポンス形式）。
  * @returns {Promise<Record<string, string>>}
  */
 export async function loadUserReadingDict() {

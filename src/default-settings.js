@@ -23,7 +23,9 @@ export const DEFAULT_SETTINGS = {
   termsUrl: "https://blackphi6.github.io/yt-furigana-extension/terms.html",
   installUrl: "https://blackphi6.github.io/yt-furigana-extension/install.html",
   ollamaUrl: "http://localhost:11434",
-  ollamaModel: ""
+  ollamaModel: "",
+  /** 曖昧語サンプル（字幕断片・URL）の端末内自動蓄積。オフで停止（手動選択の辞書学習は継続） */
+  learningInboxEnabled: true
 };
 
 /** ふりがな用途で推奨するモデル（軽い・速い順） */

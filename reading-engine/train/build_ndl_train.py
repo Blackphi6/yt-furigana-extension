@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build candidate-constrained reranker JSONL from NDL hurigana corpora.
 
-Zenn article gates applied here (see docs/READING-PIPELINE.md):
+Pipeline training gates applied here (see docs/READING-PIPELINE.md):
   1. Token-boundary only — use corpus wakachi tokens as-is (never substring「金」in「預金」)
   2. Gold must already sit in the heteronym candidate lattice (no free-form labels)
   3. Dakuten-only reading pairs are dropped (NDL fuzzy-match noise)

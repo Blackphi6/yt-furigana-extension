@@ -7,17 +7,34 @@ import {
   extractReadingsFromRubyHtml
 } from "./reading-learning.js";
 import { CONTEXT_READING_RULES } from "./reading-context.js";
+import { DEFAULT_SETTINGS } from "./default-settings.js";
 
 const AMBIGUOUS = ambiguousSurfacesFromRules(CONTEXT_READING_RULES);
 
 /**
+ * 曖昧語サンプルの自動蓄積が有効か（ポップアップでオプトアウト可）。
+ * @returns {Promise<boolean>}
+ */
+export async function isLearningInboxEnabled() {
+  if (typeof chrome === "undefined" || !chrome?.storage?.sync) {
+    return DEFAULT_SETTINGS.learningInboxEnabled;
+  }
+  const stored = await chrome.storage.sync.get({
+    learningInboxEnabled: DEFAULT_SETTINGS.learningInboxEnabled
+  });
+  return stored.learningInboxEnabled !== false;
+}
+
+/**
  * 変換結果のうち曖昧語を chrome.storage.local に溜める。
+ * ユーザーがオプトアウトした場合は何もしない（手動の読み選択学習は別経路）。
  * @param {string} text
  * @param {string} html
  * @param {{ videoUrl?: string }} [meta]
  */
 export async function recordLearningSample(text, html, meta = {}) {
   if (typeof chrome === "undefined" || !chrome?.storage?.local) return;
+  if (!(await isLearningInboxEnabled())) return;
 
   const readingMap = extractReadingsFromRubyHtml(html);
   // フレーズ強制は surface が ruby 分割とずれることがあるので、全文一致も見る

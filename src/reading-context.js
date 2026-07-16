@@ -264,7 +264,7 @@ export function resolveContextualReading(surface, preferredReading, contextText)
 
 /**
  * @deprecated 原文の先切りは「何」→「何故か」分断の原因。buildFuriganaHtml では使わない。
- * 互換・テスト用に残す（最長一致のみ）。
+ * 後方互換テスト用に残す（最長一致のみ）。
  */
 export function segmentWithOverrides(text) {
   const segments = [];

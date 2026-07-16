@@ -1,4 +1,5 @@
 import {
+  DEFAULT_SETTINGS,
   isLlmEngine,
   isReadingApiEngine,
   isRemoteEngine,
@@ -46,6 +47,10 @@ if (
   isRemoteEngine("kuromoji")
 ) {
   throw new Error("isRemoteEngine mismatch");
+}
+
+if (DEFAULT_SETTINGS.learningInboxEnabled !== true) {
+  throw new Error("learningInboxEnabled should default to true (opt-out model)");
 }
 
 console.log("Default settings tests passed.");

@@ -27,7 +27,7 @@ const KANJI = /[\u3400-\u9fff\uF900-\uFAFF]/;
 const READING_OK = /^[\u30a1-\u30f6\u3041-\u309fーｰ]+$/;
 const ASCII = /[A-Za-z0-9]/;
 
-/** コストが高くて自動枠から落ちやすい高需要語 */
+/** 固有名詞の強制採用（NEologd シード由来。権利者との提携・後援を意味しない） */
 const FORCE_SURFACES = [
   "呪術廻戦",
   "東京スカイツリー",
@@ -142,6 +142,8 @@ async function main() {
   const meta = {
     source: "mecab-ipadic-NEologd seed mecab-user-dict-seed.20200910.csv.xz",
     license: "Apache-2.0",
+    contentNotice:
+      "Entries may include proper nouns (titles, names, places) from NEologd for reading support only. No affiliation with or endorsement by rights holders.",
     count: Object.keys(phrases).length,
     bytesUncompressed: Buffer.byteLength(json),
     generatedAt: new Date().toISOString(),

@@ -199,12 +199,17 @@ function normalizeStoredEngine(engine) {
   return engine || DEFAULT_SETTINGS.engine;
 }
 
+const learningInboxEnabledInput = document.getElementById("learningInboxEnabled");
+
 async function loadSettings() {
   const result = await getMergedSettings();
   enabledInput.checked = result.enabled;
   readingApiUrlInput.value = result.readingApiUrl || "";
   if (readingApiKeyInput) readingApiKeyInput.value = result.readingApiKey || "";
   if (licenseKeyInput) licenseKeyInput.value = result.licenseKey || "";
+  if (learningInboxEnabledInput) {
+    learningInboxEnabledInput.checked = result.learningInboxEnabled !== false;
+  }
   ollamaUrlInput.value = result.ollamaUrl;
   setModelField(result.ollamaModel, []);
   updatePlanUi(result);
@@ -249,12 +254,16 @@ async function saveSettings() {
     dictRevisedAt: current.dictRevisedAt || "",
     sharedDictEnabled:
       current.sharedDictEnabled ?? DEFAULT_SETTINGS.sharedDictEnabled,
+    learningInboxEnabled: learningInboxEnabledInput
+      ? learningInboxEnabledInput.checked
+      : DEFAULT_SETTINGS.learningInboxEnabled,
     ollamaUrl: ollamaUrlInput.value.trim() || DEFAULT_SETTINGS.ollamaUrl,
     ollamaModel: getSelectedModelName() || DEFAULT_SETTINGS.ollamaModel
   });
 }
 
 enabledInput.addEventListener("change", saveSettings);
+learningInboxEnabledInput?.addEventListener("change", saveSettings);
 readingApiUrlInput.addEventListener("change", saveSettings);
 readingApiUrlInput.addEventListener("blur", saveSettings);
 readingApiKeyInput?.addEventListener("change", saveSettings);

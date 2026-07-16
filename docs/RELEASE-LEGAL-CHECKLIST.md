@@ -12,13 +12,15 @@
 | プライバシー | Free 既定で開発者サーバーへ字幕を送らない | 実装どおり |
 | プライバシー | 秘密キーは `chrome.storage.local` | `settings-storage.js` |
 | プライバシー | 学習ログの端末内自動蓄積を開示 | PRIVACY / popup |
+| プライバシー | 学習ログのオプトアウト UI | popup `learningInboxEnabled` |
 | セキュリティ | 広告・トラッキング SDK なし | 実装どおり |
 | セキュリティ | リモートコード実行なし（MV3） | 実装どおり |
 | OSS 帰属 | kuromoji / IPADIC / NEologd / Sudachi / BudouX / CMUdict | NOTICE / COPYING / licenses |
 | 配布物 | store zip に `third_party/`・LICENSE・NOTICE・COPYING | `pack:store` |
 | 商標 | 非公式表明（manifest / popup / site / store 文面） | 済 |
 | 商標 | 「YT」≠ YouTube の明記 | TERMS / site フッター / popup |
-| 商標 | 第三者製品名の提携暗示を除去（例: 旧 JRM 表記） | 済 |
+| 商標 | 第三者製品名の提携暗示を除去 | 済 |
+| 監査 | `npm run audit:legal` を `npm test` に組み込み | 済 |
 | コンテンツ | 再配布しない・歌詞スクレイピング禁止 | TERMS / CONTRIBUTING |
 | データ | JMdict / Wiktionary SA を英カタカナに使わない | ENGLISH-KATAKANA.md |
 | サイト | Google Fonts 利用の注記（拡張本体とは別） | privacy / 各ページフッター |
@@ -27,8 +29,9 @@
 
 ```bash
 # 第三者製品名・旧表記が残っていないか
-rg -i 'JRM|jrm|2-38|ja\.2-38|jrm-demo|同系統|公式機能|SecurData|説明文エディタ' \
+rg -i 'JRM|jrm|2-38|ja\.2-38|jrm-demo|zenn\.dev/nixo|同系統|公式機能|SecurData|説明文エディタ' \
   --glob '!{.agents,node_modules,dist,dist-store}/**'
+npm run audit:legal
 
 npm test
 npm run build
@@ -70,8 +73,8 @@ Default processing is local; remote APIs only when the user configures them.
 |------|------|
 | YouTube / TVer ToS | オーバーレイの契約上の位置づけは各社判断 |
 | 製品名の「YT」 | 非公式表明済み。CWS で名称変更を求められたら「Furigana for JP Captions」等を検討 |
-| 学習ログ | 端末内のみだが開示対象。オプトアウト UI は未実装 |
-| GDPR / 児童 | 13 歳未満対象外と記載。EEA 本格対応は未実装 |
+| 学習ログ | 端末内のみ。ポップアップでオプトアウト・消去可 |
+| GDPR / 児童 | 13 歳未満対象外と記載。EEA は端末内削除＋Issues。DPA 本格対応は未 |
 
 ## 技術手順
 
