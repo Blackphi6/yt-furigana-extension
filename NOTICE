@@ -39,6 +39,46 @@ Based on sudachi.rs / SudachiDict (Works Applications / contributors).
 Full license text: third_party/Apache-2.0.txt
 
 -------------------------------------------------------------------------------
+mecab-ipadic-NEologd phrases (Apache License 2.0)
+-------------------------------------------------------------------------------
+Copyright (C) 2015-2019 Toshinori Sato (@overlast)
+https://github.com/neologd/mecab-ipadic-neologd
+
+Bundled as a filtered phrase list (surface → reading), not the full MeCab system dictionary:
+  data/generated/neologd-phrases.json.gz
+
+Upstream COPYING notes additional language-resource attributions
+(Hatena keywords, Japan Post zip data, etc.).
+Full license text: third_party/Apache-2.0.txt
+
+-------------------------------------------------------------------------------
+CMU Pronouncing Dictionary → English katakana readings (BSD-2-Clause)
+-------------------------------------------------------------------------------
+Copyright (C) 1993-2015 Carnegie Mellon University.
+https://github.com/cmusphinx/cmudict
+
+Use of this dictionary for any research or commercial purpose is completely
+unrestricted, provided the copyright notice and disclaimer are retained.
+
+Bundled as a precomputed English → katakana map (not raw ARPAbet):
+  data/generated/english-katakana.json.gz
+
+Conversion rules: src/arpabet-katakana.js (project MIT).
+Build: npm run dict:english
+
+Full license text: third_party/BSD-CMUdict.txt
+
+-------------------------------------------------------------------------------
+BudouX (Apache License 2.0)
+-------------------------------------------------------------------------------
+Copyright Google LLC and contributors.
+https://github.com/google/budoux
+
+Used for natural line-break hints in caption HTML (bundled into dist via esbuild).
+
+Full license text: third_party/Apache-2.0.txt
+
+-------------------------------------------------------------------------------
 Optional local reading-engine dependencies
 -------------------------------------------------------------------------------
 - fugashi — MIT AND BSD-3-Clause

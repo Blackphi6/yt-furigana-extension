@@ -21,8 +21,11 @@
 |--------|------------|------|------|
 | [kuromoji.js](https://github.com/takuyaa/kuromoji.js) | Apache-2.0 | 形態素解析（既定） | [NOTICE](../NOTICE) / [Apache-2.0](../third_party/Apache-2.0.txt) |
 | mecab-ipadic（kuromoji 経由） | NAIST / ICOT 条件付き | 日本語辞書データ | [NOTICE-kuromoji.md](../third_party/NOTICE-kuromoji.md) |
+| [mecab-ipadic-NEologd](https://github.com/neologd/mecab-ipadic-neologd) | Apache-2.0 | 固有名詞フレーズ（抽出・圧縮同梱） | [NOTICE](../NOTICE) / 上流 COPYING |
 | [sudachi-wasm333](https://github.com/Benjas333/sudachi-wasm333) | Apache-2.0 | Sudachi 解析 | [NOTICE](../NOTICE) |
 | SudachiDict | Apache-2.0（上流） | Sudachi 辞書 | 上流プロジェクトの NOTICE を参照 |
+| [BudouX](https://github.com/google/budoux) | Apache-2.0 | 字幕の自然な折り返し（句境界） | [NOTICE](../NOTICE) |
+| [CMUdict](https://github.com/cmusphinx/cmudict) | BSD-2-Clause | 英単語→カタカナ読み（事前変換データ） | [BSD-CMUdict.txt](../third_party/BSD-CMUdict.txt) |
 
 **IPADIC:** 奈良先端科学技術大学院大学（NAIST）の著作物を含み、ICOT Free Software 由来のエントリもあります。再配布時は著作権表示と無保証条項の添付が必要です（全文は `third_party/NOTICE-kuromoji.md`）。
 
@@ -50,5 +53,6 @@
 - [`LICENSE`](../LICENSE) — 本プロジェクト（MIT）
 - [`NOTICE`](../NOTICE) — 第三者帰属の要約
 - [`third_party/Apache-2.0.txt`](../third_party/Apache-2.0.txt)
+- [`third_party/BSD-CMUdict.txt`](../third_party/BSD-CMUdict.txt)
 - [`third_party/NOTICE-kuromoji.md`](../third_party/NOTICE-kuromoji.md)
 - [`licenses/licenses.html`](../licenses/licenses.html) — 拡張内表示用

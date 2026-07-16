@@ -1,10 +1,20 @@
-import { buildRuby, wrapFuriganaWord } from "./furigana.js";
-import { normalizeReading } from "./reading-normalize.js";
+import {
+  buildRuby,
+  wrapFuriganaWord,
+  hasKanji,
+  isRegisterableSurface,
+  isLatinWord,
+  isUsefulLatinReading
+} from "./furigana.js";
+import { normalizeReading, normalizeUserReading, toKatakana } from "./reading-normalize.js";
 import { mergeTokensForRuby } from "./token-merge.js";
 import {
   applyManualPhraseReadings,
   MANUAL_PHRASE_READINGS
 } from "./reading-context.js";
+import { getNeologdPhraseTrie } from "./neologd-phrases.js";
+import { mergeSpansWithLocalPhrases } from "./phrase-hits.js";
+import { applyEnglishKatakanaReadings } from "./english-katakana-reading.js";
 
 /**
  * JRM 互換の読み推定 API（BYO）。
@@ -44,6 +54,7 @@ export function userDictToApiEntries(dict) {
 export function buildReadingApiRequest(text, userDict = {}) {
   return {
     text: String(text ?? ""),
+    // 辞書系（学習・NEologd ヒット）を user_dict 最優先枠へ。JRM が異読み、辞書が固有名詞。
     user_dict: userDictToApiEntries(userDict),
     return_candidates: true
   };
@@ -112,53 +123,90 @@ export function validateReadingApiTokens(original, tokens) {
  * @param {Array<{ surface?: string, reading?: string, pos?: string }>} tokens
  */
 export function readingApiTokensToHtml(tokens) {
-  const normalizedTokens = (tokens || []).map((token) => ({
-    surface_form: String(token?.surface ?? ""),
-    reading: normalizeReading(token?.reading || ""),
-    pronunciation: normalizeReading(token?.reading || ""),
-    pos: token?.pos || ""
-  }));
+  // API のカタカナは形態素読み。ひらがな化してから、手動句でユーザーカタカナを上書き。
+  const normalizedTokens = (tokens || []).map((token) => {
+    const reading = normalizeReading(String(token?.reading || ""));
+    return {
+      surface_form: String(token?.surface ?? ""),
+      reading,
+      pronunciation: reading,
+      pos: token?.pos || ""
+    };
+  });
   const merged = applyManualPhraseReadings(
-    mergeTokensForRuby(normalizedTokens, {
-      extraSurfaces: MANUAL_PHRASE_READINGS.keys()
-    })
+    applyEnglishKatakanaReadings(
+      mergeTokensForRuby(normalizedTokens, {
+        extraSurfaces: MANUAL_PHRASE_READINGS.keys(),
+        phraseTrie: getNeologdPhraseTrie()
+      })
+    )
   );
 
   return merged
     .map((token) => {
       const surface = token.surface_form || "";
       if (!surface) return "";
-      const reading = normalizeReading(token.reading || "");
-      const ruby = buildRuby(surface, reading);
-      if (!reading || ruby === surface) return ruby;
-      return wrapFuriganaWord(surface, reading, ruby);
+      let preserveKatakana = token.preserveKatakana === true;
+      let reading = preserveKatakana
+        ? normalizeUserReading(token.reading || "")
+        : normalizeReading(token.reading || "");
+      if (isLatinWord(surface)) {
+        if (!isUsefulLatinReading(reading)) {
+          reading = "";
+        } else {
+          reading = toKatakana(reading);
+          preserveKatakana = true;
+        }
+      }
+      const ruby = buildRuby(surface, reading, { preserveKatakana });
+      if (!isRegisterableSurface(surface)) return ruby;
+      return wrapFuriganaWord(surface, reading, ruby, { preserveKatakana });
     })
     .join("");
 }
 
 function renderSurface(surface, reading) {
-  const normalized = normalizeReading(reading || "");
-  const ruby = buildRuby(surface, normalized);
-  if (!normalized || ruby === surface) return surface;
-  return wrapFuriganaWord(surface, normalized, ruby);
+  let preserveKatakana = /[\u30a1-\u30f6]/.test(reading || "");
+  let normalized = preserveKatakana
+    ? normalizeUserReading(reading || "")
+    : normalizeReading(reading || "");
+  if (isLatinWord(surface)) {
+    if (!isUsefulLatinReading(normalized)) {
+      normalized = "";
+    } else {
+      normalized = toKatakana(normalized);
+      preserveKatakana = true;
+    }
+  }
+  const ruby = buildRuby(surface, normalized, { preserveKatakana });
+  if (!isRegisterableSurface(surface)) return surface;
+  return wrapFuriganaWord(surface, normalized, ruby, { preserveKatakana });
 }
 
 /**
  * JRM の span 応答を原文に合成してルビ HTML にする。
+ * ローカル句（NEologd / 学習）を優先して上書きし、辞書＋JRM 併用にする。
+ * @param {string} originalText
+ * @param {Array<object>} tokens
+ * @param {Record<string, string>} [userPhrases]
  */
-export function readingApiSpansToHtml(originalText, tokens) {
+export function readingApiSpansToHtml(originalText, tokens, userPhrases = {}) {
   const text = String(originalText ?? "");
-  const spans = (tokens || [])
+  const apiSpans = (tokens || [])
     .map((token) => {
       const span = tokenSpan(token, text);
       if (!span) return null;
       return {
         ...span,
-        reading: normalizeReading(token?.reading || "")
+        reading: normalizeReading(token?.reading || ""),
+        source: token?.source || "api"
       };
     })
-    .filter(Boolean)
-    .sort((a, b) => a.start - b.start || b.end - a.end);
+    .filter(Boolean);
+
+  const spans = mergeSpansWithLocalPhrases(text, apiSpans, userPhrases).sort(
+    (a, b) => a.start - b.start || b.end - a.end
+  );
 
   let cursor = 0;
   let html = "";
@@ -176,7 +224,7 @@ export function readingApiSpansToHtml(originalText, tokens) {
   return html;
 }
 
-export function parseReadingApiResponse(payload, originalText) {
+export function parseReadingApiResponse(payload, originalText, userPhrases = {}) {
   const tokens = payload?.tokens;
   if (!validateReadingApiTokens(originalText, tokens)) {
     throw new Error("Reading API response failed surface validation");
@@ -191,5 +239,5 @@ export function parseReadingApiResponse(payload, originalText) {
   if (coversAll) {
     return readingApiTokensToHtml(tokens);
   }
-  return readingApiSpansToHtml(text, tokens);
+  return readingApiSpansToHtml(text, tokens, userPhrases);
 }

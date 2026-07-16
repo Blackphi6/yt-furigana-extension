@@ -10,7 +10,7 @@
     "pack:store": "node scripts/pack-chrome-store.mjs",
     "stripe:setup": "bash scripts/setup-stripe-product.sh",
     "store:upload": "bash scripts/upload-chrome-store.sh",
-    "test": "node scripts/test-furigana.mjs && node scripts/test-sudachi.mjs && node scripts/test-reading-context.mjs && node scripts/test-hybrid-tokenizer.mjs && node scripts/test-default-settings.mjs && node scripts/test-reading-api.mjs && node scripts/test-youtube-captions.mjs && node scripts/test-caption-prefetch.mjs && node scripts/test-youtube-transcript-dom.mjs && node scripts/test-segment-html.mjs && node scripts/test-caption-source-text.mjs && node scripts/test-reading-learning.mjs && node scripts/test-reading-candidates.mjs && node scripts/test-token-merge.mjs && node scripts/test-ruby-layout.mjs && node scripts/test-caption-background.mjs && node scripts/test-reading-picker-hit.mjs && node scripts/test-dictionary-match.mjs && node scripts/test-premium.mjs && node scripts/test-dict-sync-headers.mjs && node scripts/test-stripe-billing.mjs && node scripts/test-user-reading-dict.mjs",
+    "test": "node scripts/test-furigana.mjs && node scripts/test-sudachi.mjs && node scripts/test-reading-context.mjs && node scripts/test-hybrid-tokenizer.mjs && node scripts/test-default-settings.mjs && node scripts/test-reading-api.mjs && node scripts/test-youtube-captions.mjs && node scripts/test-caption-prefetch.mjs && node scripts/test-youtube-transcript-dom.mjs && node scripts/test-segment-html.mjs && node scripts/test-caption-source-text.mjs && node scripts/test-reading-learning.mjs && node scripts/test-reading-candidates.mjs && node scripts/test-token-merge.mjs && node scripts/test-ruby-layout.mjs && node scripts/test-caption-background.mjs && node scripts/test-reading-picker-hit.mjs && node scripts/test-dictionary-match.mjs && node scripts/test-premium.mjs && node scripts/test-dict-sync-headers.mjs && node scripts/test-stripe-billing.mjs && node scripts/test-user-reading-dict.mjs && node scripts/test-neologd-phrases.mjs && node scripts/test-phrase-hits.mjs && node scripts/test-katakana-reading.mjs && node scripts/test-number-unit-reading.mjs && node scripts/test-caption-line-break.mjs && node scripts/test-english-katakana.mjs && node scripts/test-inline-paren-reading.mjs",
     "learn": "node scripts/learning/run-loop.mjs",
     "learn:bench": "node scripts/learning/evaluate-seed-bench.mjs",
     "learn:label": "node scripts/learning/auto-label.mjs",
@@ -33,7 +33,8 @@
     "learn:autoloop:synth": "node scripts/learning/run-autoloop.mjs --phase=synth --provider groq",
     "learn:autoloop:retrain": "node scripts/learning/run-autoloop.mjs --phase=retrain-lite",
     "learn:autoloop:full": "node scripts/learning/run-autoloop.mjs --phase=full --provider groq",
-
+    "dict:neologd": "node scripts/build-neologd-phrases.mjs",
+    "dict:english": "node scripts/build-english-katakana.mjs",
     "demo:site": "python3 -m http.server 4173 --directory site",
     "reading-engine": "cd reading-engine && ../.venv-reading/bin/uvicorn reading_engine.server:app --host 127.0.0.1 --port 8765",
     "reading-engine:test": "node scripts/test-reading-engine.mjs",
@@ -42,6 +43,7 @@
     "watch": "node scripts/build.mjs --watch"
   },
   "dependencies": {
+    "budoux": "^0.8.4",
     "kuromoji": "^0.1.2",
     "sudachi-wasm333": "^1.0.4"
   },

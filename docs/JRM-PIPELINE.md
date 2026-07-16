@@ -28,13 +28,23 @@
 
 ## 実装上の順序（推論）
 
-1. **user_dict** — リクエスト単位（人名など）。最優先。
+1. **user_dict** — リクエスト単位（人名など）。最優先。  
+   拡張側では **NEologd／学習フレーズの文中ヒット** もここに載せて送る（辞書＋JRM 併用）。
 2. **trust_patterns** — `下手に出る`→`したて`、`市場規模`→`しじょう`、`ただ永遠に`→`とわ` …
 3. **ラティス** — UniDic base + `heteronym-candidates.json` + cue/creative（候補外禁止）
 4. **rerank** — `YT_FURIGANA_RERANKER_PATH` があれば ModernBERT pair、なければ cue
 5. **閾値** — `YT_FURIGANA_RERANKER_THRESHOLD`（既定 0.55）未満は base
+6. **クライアント後処理** — span 応答にローカル句を再合成（`phrase-hits.js`）
 
-コード: `reading-engine/reading_engine/{__init__,trust_patterns,reranker}.py`
+### 併用の役割分担
+
+| 層 | 担当 | 例 |
+|----|------|-----|
+| NEologd／学習／MANUAL | 読みがほぼ一意の固有名詞・固定句 | 鬼滅の刃、随に |
+| JRM（読みAPI） | 同形異音・文脈依存 | 辛い、市場、下手に出る |
+| ローカル Kuromoji 既定 | APIなしでも動くベース | 日常字幕 |
+
+ポップアップの「読みAPI（JRM＋辞書併用）」がこの経路。失敗時はローカル辞書へフォールバック。
 
 ## 学習オートループ
 

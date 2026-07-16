@@ -15,8 +15,19 @@ import {
   USER_READING_DICT_KEY,
   loadUserReadingDict,
   loadUserReadingStore,
-  normalizeUserReadingStore
+  normalizeUserReadingStore,
+  applyUserReadingLearning
 } from "./user-reading-dict.js";
+import {
+  MANUAL_PHRASE_READINGS,
+  CONTEXT_READING_RULES,
+  rebuildManualPhraseIndex
+} from "./reading-context.js";
+import {
+  loadNeologdPhrases,
+  getNeologdPhraseCount
+} from "./neologd-phrases.js";
+import { buildCombinedUserDict } from "./phrase-hits.js";
 import {
   verifyLicense,
   pullAndMergeDict,
@@ -24,6 +35,7 @@ import {
   fetchSharedDict
 } from "./dict-sync.js";
 import { PLAN_FREE, resolveEntitlement } from "./premium.js";
+import { getMergedSettings } from "./settings-storage.js";
 import {
   describeSegmentMismatch,
   parseLlmSegments,
@@ -40,11 +52,41 @@ export function normalizeOllamaUrl(url) {
 }
 
 async function getSettings() {
-  return chrome.storage.sync.get(DEFAULT_SETTINGS);
+  return getMergedSettings();
 }
 
 async function loadUserDict() {
   return loadUserReadingDict();
+}
+
+let neologdReadyPromise = null;
+
+async function ensureDictionarySideReady() {
+  if (!neologdReadyPromise) {
+    neologdReadyPromise = loadNeologdPhrases()
+      .then(() => {
+        console.log(
+          `[YT Furigana] SW NEologd phrases ready (${getNeologdPhraseCount()})`
+        );
+      })
+      .catch((error) => {
+        neologdReadyPromise = null;
+        console.warn(
+          "[YT Furigana] SW NEologd skipped:",
+          error?.message || error
+        );
+      });
+  }
+  await neologdReadyPromise;
+
+  const store = await loadUserReadingStore();
+  applyUserReadingLearning(
+    MANUAL_PHRASE_READINGS,
+    CONTEXT_READING_RULES,
+    rebuildManualPhraseIndex,
+    store
+  );
+  return store;
 }
 
 async function resolveOllamaModel(settings) {
@@ -144,7 +186,7 @@ export async function callOllama(text, settings, resolvedModel) {
   }
 }
 
-export async function callReadingApi(text, settings, userDict) {
+export async function callReadingApi(text, settings, userDict, userPhrases = {}) {
   const endpoint = normalizeReadingApiUrl(settings.readingApiUrl);
   if (!endpoint) {
     throw new Error(
@@ -169,7 +211,7 @@ export async function callReadingApi(text, settings, userDict) {
     }
 
     const payload = await response.json();
-    return parseReadingApiResponse(payload, text);
+    return parseReadingApiResponse(payload, text, userPhrases);
   } catch (error) {
     if (error.name === "AbortError") {
       throw new Error(
@@ -255,8 +297,11 @@ async function convertWithReadingApi(text) {
     return llmCache.get(cacheKey);
   }
 
-  const userDict = await loadUserDict();
-  const html = await callReadingApi(text, settings, userDict);
+  const store = await ensureDictionarySideReady();
+  const userPhrases = { ...(store.phrases || {}) };
+  // NEologd/固定句ヒット + 学習 phrases → JRM user_dict（固有名詞は辞書、異読みは JRM）
+  const userDict = buildCombinedUserDict(text, userPhrases);
+  const html = await callReadingApi(text, settings, userDict, userPhrases);
   setCache(cacheKey, html);
   return html;
 }
@@ -340,9 +385,12 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
           ...settings,
           licenseKey: message.licenseKey || settings.licenseKey
         });
+        await chrome.storage.local.set({
+          licenseKey: verified.licenseKey || ""
+        });
         await chrome.storage.sync.set({
           plan: verified.plan,
-          licenseKey: verified.licenseKey,
+          licenseKey: "",
           premiumExpiresAt: verified.premiumExpiresAt || ""
         });
         return verified;
@@ -412,7 +460,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area !== "sync") return;
+  if (area !== "sync" && area !== "local") return;
   if (
     changes.engine ||
     changes.ollamaUrl ||

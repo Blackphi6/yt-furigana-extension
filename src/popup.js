@@ -12,6 +12,7 @@ import {
   normalizePlan,
   resolveEntitlement
 } from "./premium.js";
+import { getMergedSettings, saveMergedSettings } from "./settings-storage.js";
 
 const enabledInput = document.getElementById("enabled");
 const readingApiUrlInput = document.getElementById("readingApiUrl");
@@ -199,7 +200,7 @@ function normalizeStoredEngine(engine) {
 }
 
 async function loadSettings() {
-  const result = await chrome.storage.sync.get(DEFAULT_SETTINGS);
+  const result = await getMergedSettings();
   enabledInput.checked = result.enabled;
   readingApiUrlInput.value = result.readingApiUrl || "";
   if (readingApiKeyInput) readingApiKeyInput.value = result.readingApiKey || "";
@@ -235,8 +236,9 @@ async function saveSettings() {
     }
   }
 
-  const current = await chrome.storage.sync.get(DEFAULT_SETTINGS);
-  await chrome.storage.sync.set({
+  const current = await getMergedSettings();
+  await saveMergedSettings({
+    ...current,
     enabled: enabledInput.checked,
     engine,
     readingApiUrl,
@@ -245,15 +247,10 @@ async function saveSettings() {
     plan: normalizePlan(current.plan),
     premiumExpiresAt: current.premiumExpiresAt || "",
     dictRevisedAt: current.dictRevisedAt || "",
-    sharedDictEnabled: current.sharedDictEnabled !== false,
-    sponsorsUrl: current.sponsorsUrl || DEFAULT_SPONSORS_URL,
-    siteUrl: current.siteUrl || DEFAULT_SETTINGS.siteUrl,
-    pricingUrl: current.pricingUrl || DEFAULT_SETTINGS.pricingUrl,
-    privacyUrl: current.privacyUrl || DEFAULT_SETTINGS.privacyUrl,
-    termsUrl: current.termsUrl || DEFAULT_SETTINGS.termsUrl,
-    installUrl: current.installUrl || DEFAULT_SETTINGS.installUrl,
+    sharedDictEnabled:
+      current.sharedDictEnabled ?? DEFAULT_SETTINGS.sharedDictEnabled,
     ollamaUrl: ollamaUrlInput.value.trim() || DEFAULT_SETTINGS.ollamaUrl,
-    ollamaModel: getSelectedModelName()
+    ollamaModel: getSelectedModelName() || DEFAULT_SETTINGS.ollamaModel
   });
 }
 

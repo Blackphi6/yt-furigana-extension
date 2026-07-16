@@ -25,6 +25,17 @@ for (const testCase of cases) {
   assertEqual(actual, testCase.expected, testCase.surface);
 }
 
+assertEqual(
+  buildRuby("時々", "ときどき"),
+  "<ruby>時々<rt>ときどき</rt></ruby>",
+  "時々"
+);
+assertEqual(
+  buildRuby("人々", "ひとびと"),
+  "<ruby>人々<rt>ひとびと</rt></ruby>",
+  "人々"
+);
+
 const tokenizer = await new Promise((resolve, reject) => {
   kuromoji.builder({ dicPath: dictPath }).build((error, built) => {
     if (error) reject(error);
@@ -41,5 +52,20 @@ if (!html.includes("<ruby>食<rt>た</rt></ruby>べる") || !html.includes("yt-f
   throw new Error(`sentence conversion failed: ${html}`);
 }
 
+// 読みが無くても漢字はクリック登録できる（辞書結合で「随に」単位になる想定）
+const unsetHtml = buildFuriganaHtml("随に生きる", () => [
+  { surface_form: "随", reading: "", pronunciation: "" },
+  { surface_form: "に", reading: "ニ", pronunciation: "ニ" },
+  { surface_form: "生きる", reading: "イキル", pronunciation: "イキル" }
+]);
+if (
+  !unsetHtml.includes('data-surface="随に"') ||
+  !unsetHtml.includes("yt-furigana-word--unset") ||
+  !unsetHtml.includes('data-reading=""')
+) {
+  throw new Error(`unset kanji should be wrap-clickable: ${unsetHtml}`);
+}
+
 console.log("All furigana tests passed.");
 console.log(html);
+console.log(unsetHtml);

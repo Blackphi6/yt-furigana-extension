@@ -3,6 +3,9 @@ import {
   getDictionarySurfaces,
   findLongestDictionaryMatchAt
 } from "./dictionary-match.js";
+import { getNeologdReading } from "./neologd-phrases.js";
+import { findLongestPhraseAt } from "./phrase-trie.js";
+import { applyNumberUnitReadings } from "./number-unit-reading.js";
 
 function toHiragana(text) {
   return normalizeReading(text);
@@ -51,7 +54,27 @@ function dictionaryReadingFor(surface) {
     何倍: "なんばい",
     直書き: "じかがき"
   };
-  return fallback[surface] || "";
+  return fallback[surface] || getNeologdReading(surface) || "";
+}
+
+/**
+ * 小さな複合語セット + NEologd Trie の最長一致。
+ * @param {string} text
+ * @param {number} index
+ * @param {Set<string>} surfaces
+ * @param {import("./phrase-trie.js").buildPhraseTrie extends Function ? any : any} [phraseTrie]
+ */
+function findBestMatchAt(text, index, surfaces, phraseTrie) {
+  const neo = phraseTrie ? findLongestPhraseAt(phraseTrie, text, index) : null;
+  const dict = findLongestDictionaryMatchAt(text, index, surfaces);
+  if (neo && dict) {
+    return neo.surface.length >= dict.length
+      ? { surface: neo.surface, reading: neo.reading }
+      : { surface: dict, reading: dictionaryReadingFor(dict) };
+  }
+  if (neo) return { surface: neo.surface, reading: neo.reading };
+  if (dict) return { surface: dict, reading: dictionaryReadingFor(dict) };
+  return null;
 }
 
 function isNoun(token) {
@@ -118,12 +141,25 @@ function isNaruVerb(token) {
 }
 
 function mergeTokenPair(left, right, { useDictionaryReading = false } = {}) {
-  const surface = `${left.surface_form || ""}${right.surface_form || ""}`;
-  const concatenated = `${readingOf(left)}${readingOf(right)}`;
+  const leftSurface = left.surface_form || "";
+  const rightSurface = right.surface_form || "";
+  const surface = `${leftSurface}${rightSurface}`;
+  const leftReading = readingOf(left);
+  const rightReading = readingOf(right);
   const dictReading = useDictionaryReading
     ? dictionaryReadingFor(surface)
     : "";
-  const reading = dictReading || concatenated;
+
+  // 漢字側の読みが欠ける結合では「に」だけ残る部分読みを作らない
+  // （随+に → 「に」など）。未登録のままにしてピッカーで選ばせる。
+  const hasKanjiChar = (value) =>
+    /[\u3400-\u9fff\uF900-\uFAFF]/.test(value || "");
+  const incomplete =
+    (hasKanjiChar(leftSurface) && !leftReading) ||
+    (hasKanjiChar(rightSurface) && !rightReading);
+
+  const reading =
+    dictReading || (incomplete ? "" : `${leftReading}${rightReading}`);
   return {
     ...left,
     surface_form: surface,
@@ -172,8 +208,9 @@ function matchExplicitCompound(tokens, index) {
 
 /**
  * 辞書最長一致。トークン境界で覆えない場合は短い候補へ落とす。
+ * NEologd は Trie、その他は小さな表層セットで照合する。
  */
-function mergeByDictionaryLongestMatch(tokens, surfaces) {
+function mergeByDictionaryLongestMatch(tokens, surfaces, phraseTrie = null) {
   if (!Array.isArray(tokens) || tokens.length === 0) return [];
 
   const fullText = tokens.map((token) => token.surface_form || "").join("");
@@ -185,37 +222,46 @@ function mergeByDictionaryLongestMatch(tokens, surfaces) {
     const currentSurface = tokens[tokenIndex].surface_form || "";
     let merged = false;
 
-    // 長い順に試す。境界不一致なら短い表層へ
+    /** @type {Array<{ surface: string, reading: string }>} */
     const candidates = [];
-    const longest = findLongestDictionaryMatchAt(fullText, charIndex, surfaces);
-    if (longest) candidates.push(longest);
+    const best = findBestMatchAt(fullText, charIndex, surfaces, phraseTrie);
+    if (best) candidates.push(best);
+
     // 何故 / 何故か など短い候補も明示的に足す
     for (const fallback of ["何故か", "何故に", "何故"]) {
       if (
         fullText.startsWith(fallback, charIndex) &&
         fallback.length > currentSurface.length &&
-        !candidates.includes(fallback)
+        !candidates.some((c) => c.surface === fallback)
       ) {
-        candidates.push(fallback);
+        candidates.push({
+          surface: fallback,
+          reading: dictionaryReadingFor(fallback)
+        });
       }
     }
-    candidates.sort((a, b) => b.length - a.length);
+    candidates.sort((a, b) => b.surface.length - a.surface.length);
 
     for (const match of candidates) {
-      if (match.length <= currentSurface.length) continue;
+      if (match.surface.length <= currentSurface.length) continue;
       let covered = "";
       let end = tokenIndex;
-      while (end < tokens.length && covered.length < match.length) {
+      while (end < tokens.length && covered.length < match.surface.length) {
         covered += tokens[end].surface_form || "";
         end += 1;
       }
-      if (covered !== match) continue;
+      if (covered !== match.surface) continue;
 
       result.push(
-        mergeTokenRange(tokens, tokenIndex, end, dictionaryReadingFor(match))
+        mergeTokenRange(
+          tokens,
+          tokenIndex,
+          end,
+          match.reading || dictionaryReadingFor(match.surface)
+        )
       );
       tokenIndex = end;
-      charIndex += match.length;
+      charIndex += match.surface.length;
       merged = true;
       break;
     }
@@ -235,32 +281,41 @@ function mergeByDictionaryLongestMatch(tokens, surfaces) {
  * 形態素そのものではなく、読み登録しやすい語・句単位。
  * 例: 何+故+か → 何故か、遠く+なる → 遠くなる
  * @param {Array<object>} tokens
- * @param {{ extraSurfaces?: Iterable<string> }} [options]
+ * @param {{ extraSurfaces?: Iterable<string>, phraseTrie?: object | null }} [options]
  */
 export function mergeTokensForRuby(tokens, options = {}) {
   if (!Array.isArray(tokens) || tokens.length === 0) return [];
 
+  // 0) 数字＋単位（0時 / 7,000円 / 1人）を規則読みで固める
+  const numbered = applyNumberUnitReadings(tokens);
+
   // 1) 明示ルール（何+故+か など）を先に適用
   const explicitMerged = [];
   let index = 0;
-  while (index < tokens.length) {
-    const rule = matchExplicitCompound(tokens, index);
+  while (index < numbered.length) {
+    const rule = matchExplicitCompound(numbered, index);
     if (rule) {
       explicitMerged.push(
-        mergeTokenRange(tokens, index, index + rule.parts.length, rule.reading)
+        mergeTokenRange(
+          numbered,
+          index,
+          index + rule.parts.length,
+          rule.reading
+        )
       );
       index += rule.parts.length;
       continue;
     }
-    explicitMerged.push(tokens[index]);
+    explicitMerged.push(numbered[index]);
     index += 1;
   }
 
-  // 2) 辞書最長一致
+  // 2) 辞書最長一致（NEologd Trie + 小規模セット）
   const surfaces = getDictionarySurfaces(options.extraSurfaces || []);
   const dictionaryMerged = mergeByDictionaryLongestMatch(
     explicitMerged,
-    surfaces
+    surfaces,
+    options.phraseTrie || null
   );
 
   // 3) 汎用ルール

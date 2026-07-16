@@ -5,6 +5,7 @@ const styleGuards = new WeakMap();
 
 const FONT_SIZE_ATTR = "data-yt-furigana-font-size";
 const BACKGROUND_ATTR = "data-yt-furigana-bg";
+const LINE_WIDTH_ATTR = "data-yt-furigana-line-width";
 
 /** YouTube の Background 既定（Window 0% で見える文字帯） */
 const YT_DEFAULT_BACKGROUND = "rgba(8, 8, 8, 0.75)";
@@ -131,6 +132,19 @@ export function captureCaptionStyles(element) {
 
   const fontSize = lockFontSize(element, getMaxFontSizeInTree(element));
 
+  // ルビ余白追加前の行幅／窓幅を記録 → 1行維持の縮小基準
+  if (!element.getAttribute(LINE_WIDTH_ATTR)) {
+    const win = element.closest(
+      ".caption-window, .captions-text, .vjs-text-track-cue, .vjs-text-track-window"
+    );
+    const winW = win instanceof HTMLElement ? win.clientWidth : 0;
+    const selfW = Math.ceil(element.getBoundingClientRect().width);
+    const available = Math.max(selfW, winW > 12 ? winW - 12 : 0);
+    if (available > 0) {
+      element.setAttribute(LINE_WIDTH_ATTR, String(available));
+    }
+  }
+
   if (styleSnapshots.has(element)) {
     const existing = styleSnapshots.get(element);
     existing.segment.backgroundColor = backgroundColor;
@@ -253,6 +267,7 @@ export function releaseCaptionStyles(element) {
 
   styleSnapshots.delete(element);
   element.removeAttribute("data-yt-furigana-styled");
+  element.removeAttribute(LINE_WIDTH_ATTR);
 
   for (const prop of [
     "font-size",
@@ -261,6 +276,7 @@ export function releaseCaptionStyles(element) {
     "text-shadow",
     "background-color",
     "padding-top",
+    "white-space",
     "box-decoration-break",
     "-webkit-box-decoration-break"
   ]) {

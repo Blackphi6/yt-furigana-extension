@@ -12,6 +12,7 @@ data/learning/inbox-from-chrome.jsonl
 data/learning/user-dict-from-chrome.json
 reading-engine/train/artifacts/
 data/generated/learned-overrides.bak.json
+data/generated/english-katakana.json
 data/creative-ruby/harvested.jsonl
 data/dictionary-readings.json
 data/learning/reranker-ndl.jsonl
@@ -25,7 +26,9 @@ data/learning/synth-log.jsonl
 # Tracked forever: data/learning/corpus/synth-open.jsonl
 # Tracked forever: data/learning/gate-baseline.json
 # Tracked forever: data/learning/benches/*.jsonl
+.cache/
 data/.cache/
+data/vendor/
 **/__pycache__/
 *.pyc
 reading-engine/data/premium/sync/

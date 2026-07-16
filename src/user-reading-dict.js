@@ -1,4 +1,4 @@
-import { normalizeReading } from "./reading-normalize.js";
+import { normalizeReading, normalizeUserReading } from "./reading-normalize.js";
 
 export const USER_READING_DICT_KEY = "userReadingDict";
 
@@ -70,7 +70,7 @@ export function normalizeUserReadingStore(raw) {
     const phrases = {};
     for (const [surface, reading] of Object.entries(obj)) {
       if (typeof reading !== "string" || !surface) continue;
-      phrases[surface] = normalizeReading(reading);
+      phrases[surface] = normalizeUserReading(reading);
     }
     return { version: 2, phrases, contextRules: [] };
   }
@@ -82,7 +82,7 @@ export function normalizeUserReadingStore(raw) {
       : {};
   for (const [surface, reading] of Object.entries(rawPhrases)) {
     if (typeof reading !== "string" || !surface) continue;
-    phrases[surface] = normalizeReading(reading);
+    phrases[surface] = normalizeUserReading(reading);
   }
 
   const contextRules = [];
@@ -90,7 +90,7 @@ export function normalizeUserReadingStore(raw) {
   for (const rule of rawRules) {
     if (!rule || typeof rule !== "object") continue;
     const surface = String(rule.surface || "");
-    const reading = normalizeReading(rule.reading || "");
+    const reading = normalizeUserReading(rule.reading || "");
     const cues = Array.isArray(rule.cues)
       ? rule.cues.map((c) => String(c || "")).filter(Boolean)
       : [];
@@ -143,7 +143,7 @@ async function persistUserReadingStore(store) {
 export async function saveUserReading(surface, reading) {
   if (!surface || !reading) return null;
   const store = await loadUserReadingStore();
-  store.phrases[surface] = normalizeReading(reading);
+  store.phrases[surface] = normalizeUserReading(reading);
   // 同表層の文脈ルールは残す（別文脈用）
   return persistUserReadingStore(store);
 }
@@ -157,7 +157,7 @@ export async function saveUserReading(surface, reading) {
  */
 export async function saveUserReadingChoice(input) {
   const surface = String(input?.surface || "");
-  const reading = normalizeReading(input?.reading || "");
+  const reading = normalizeUserReading(input?.reading || "");
   const contextText = String(input?.contextText || "");
   if (!surface || !reading) return null;
 
@@ -217,7 +217,7 @@ export function applyUserReadingDictToManual(manualMap, rebuildIndex, dictOrStor
   let count = 0;
   for (const [surface, reading] of Object.entries(store.phrases)) {
     if (!surface || !reading) continue;
-    manualMap.set(surface, normalizeReading(reading));
+    manualMap.set(surface, normalizeUserReading(reading));
     count += 1;
   }
   if (count > 0) rebuildIndex();
@@ -255,7 +255,7 @@ export function applyUserReadingLearning(
   for (const rule of store.contextRules) {
     contextRules.push({
       surface: rule.surface,
-      reading: normalizeReading(rule.reading),
+      reading: normalizeUserReading(rule.reading),
       weight: rule.weight ?? 5,
       cues: [...rule.cues]
     });
@@ -284,5 +284,5 @@ export function matchUserContextualReadings(surface, contextText, store) {
   if (normalized.phrases[surface]) {
     hits.push(normalized.phrases[surface]);
   }
-  return [...new Set(hits.map((r) => normalizeReading(r)).filter(Boolean))];
+  return [...new Set(hits.map((r) => normalizeUserReading(r)).filter(Boolean))];
 }

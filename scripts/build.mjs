@@ -21,6 +21,36 @@ async function copyKuromojiDict() {
   await cp(source, target, { recursive: true, force: true });
 }
 
+async function copyNeologdPhrases() {
+  const source = path.join(root, "data", "generated", "neologd-phrases.json.gz");
+  const target = path.join(root, "dict", "neologd-phrases.json.gz");
+  if (!existsSync(source)) {
+    console.warn(
+      "NEologd phrases missing. Run: node scripts/build-neologd-phrases.mjs"
+    );
+    return;
+  }
+  await mkdir(path.dirname(target), { recursive: true });
+  await cp(source, target, { force: true });
+  const sizeMb = statSync(target).size / (1024 * 1024);
+  console.log(`NEologd phrases ready (${sizeMb.toFixed(2)} MB gz)`);
+}
+
+async function copyEnglishKatakana() {
+  const source = path.join(root, "data", "generated", "english-katakana.json.gz");
+  const target = path.join(root, "dict", "english-katakana.json.gz");
+  if (!existsSync(source)) {
+    console.warn(
+      "English katakana dict missing. Run: node scripts/build-english-katakana.mjs"
+    );
+    return;
+  }
+  await mkdir(path.dirname(target), { recursive: true });
+  await cp(source, target, { force: true });
+  const sizeMb = statSync(target).size / (1024 * 1024);
+  console.log(`English katakana dict ready (${sizeMb.toFixed(2)} MB gz)`);
+}
+
 async function copySudachiDict() {
   const source = path.join(
     root,
@@ -233,6 +263,8 @@ async function buildPopupScript() {
 async function run() {
   await mkdir(path.join(root, "dist"), { recursive: true });
   await copyKuromojiDict();
+  await copyNeologdPhrases();
+  await copyEnglishKatakana();
   await copySudachiDict();
   await generateIcons();
   await buildBackgroundScript();

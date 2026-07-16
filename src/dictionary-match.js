@@ -1,6 +1,7 @@
 import heteronymCandidates from "../data/generated/heteronym-candidates.json" with {
   type: "json"
 };
+import { findNeologdMatchAt } from "./neologd-phrases.js";
 
 /** 形態素がバラけやすい複合語の保険 */
 const EXTRA_COMPOUND_SURFACES = [
@@ -66,12 +67,20 @@ function getSortedSurfaces(surfaces) {
  */
 export function findLongestDictionaryMatchAt(text, index, surfaces = getDictionarySurfaces()) {
   if (!text || index < 0 || index >= text.length) return null;
+  const neo = findNeologdMatchAt(text, index);
   const sorted = getSortedSurfaces(surfaces);
+  let dictBest = null;
   for (const surface of sorted) {
     if (surface.length <= 1) continue;
-    if (text.startsWith(surface, index)) return surface;
+    if (text.startsWith(surface, index)) {
+      dictBest = surface;
+      break;
+    }
   }
-  return null;
+  if (neo && dictBest) {
+    return neo.surface.length >= dictBest.length ? neo.surface : dictBest;
+  }
+  return neo?.surface || dictBest;
 }
 
 /**

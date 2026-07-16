@@ -30,6 +30,7 @@ const INCLUDE = [
   "dict",
   "rules",
   "licenses",
+  "third_party",
   "COPYING",
   "LICENSE",
   "NOTICE"

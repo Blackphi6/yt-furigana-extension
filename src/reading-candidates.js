@@ -1,4 +1,4 @@
-import { normalizeReading } from "./reading-normalize.js";
+import { normalizeReading, normalizeUserReading } from "./reading-normalize.js";
 import {
   CONTEXT_READING_RULES,
   MANUAL_PHRASE_READINGS
@@ -10,6 +10,7 @@ import {
 import heteronymCandidates from "../data/generated/heteronym-candidates.json" with {
   type: "json"
 };
+import { getNeologdReading } from "./neologd-phrases.js";
 
 const MAX_CANDIDATES = 8;
 
@@ -51,14 +52,20 @@ export function collectReadingCandidates(
   const map = new Map();
 
   function add(reading, source, label, score = 1) {
-    const normalized = normalizeReading(reading);
+    // ユーザー由来はカタカナ保持。その他はひらがなキーで重複排除。
+    const normalized =
+      source === "user" || source === "current" || source === "manual"
+        ? normalizeUserReading(reading)
+        : normalizeReading(reading);
     if (!normalized) return;
-    const prev = map.get(normalized);
+    const key = normalizeReading(normalized);
+    const prev = map.get(key);
     if (prev && prev.score >= score) return;
-    map.set(normalized, { reading: normalized, source, label, score });
+    // 同じ音でカタカナ版が新しく来たら表示を更新
+    map.set(key, { reading: normalized, source, label, score });
   }
 
-  const current = normalizeReading(currentReading);
+  const current = normalizeUserReading(currentReading);
   if (current) add(current, "current", "現在", 10);
 
   const store = normalizeUserReadingStore(
@@ -93,6 +100,9 @@ export function collectReadingCandidates(
   if (MANUAL_PHRASE_READINGS.has(surface)) {
     add(MANUAL_PHRASE_READINGS.get(surface), "manual", "固定", 8);
   }
+
+  const neo = getNeologdReading(surface);
+  if (neo) add(neo, "neologd", "固有名詞", 7.5);
 
   for (const [phrase, reading] of MANUAL_PHRASE_READINGS) {
     if (phrase === surface) continue;

@@ -1,4 +1,4 @@
-import { normalizeReading } from "./reading-normalize.js";
+import { normalizeReading, normalizeUserReading } from "./reading-normalize.js";
 import learnedOverrides from "../data/generated/learned-overrides.json" with {
   type: "json"
 };
@@ -310,10 +310,13 @@ export function applyContextualReadings(tokens, contextText) {
     const resolved = resolveContextualReading(surface, preferred, contextText);
     if (!resolved) return token;
 
+    const reading = normalizeUserReading(resolved.reading);
+    const preserveKatakana = /[\u30a1-\u30f6]/.test(reading);
     return {
       ...token,
-      reading: resolved.reading,
-      pronunciation: resolved.reading
+      reading,
+      pronunciation: reading,
+      preserveKatakana
     };
   });
 }
@@ -328,12 +331,14 @@ export function applyManualPhraseReadings(tokens) {
   return tokens.map((token) => {
     const surface = token.surface_form || "";
     if (!surface || !MANUAL_PHRASE_READINGS.has(surface)) return token;
-    const reading = normalizeReading(MANUAL_PHRASE_READINGS.get(surface));
+    const reading = normalizeUserReading(MANUAL_PHRASE_READINGS.get(surface));
     if (!reading) return token;
+    const preserveKatakana = /[\u30a1-\u30f6]/.test(reading);
     return {
       ...token,
       reading,
-      pronunciation: reading
+      pronunciation: reading,
+      preserveKatakana
     };
   });
 }

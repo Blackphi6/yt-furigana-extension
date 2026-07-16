@@ -15,6 +15,7 @@ import {
   isRemoteEngine
 } from "./default-settings.js";
 import { buildFuriganaHtml } from "./furigana.js";
+import { insertCaptionSoftBreaks, maxLineCharsFromElement } from "./caption-line-break.js";
 import { recordLearningSample } from "./learning-inbox.js";
 import { installReadingPicker } from "./reading-picker.js";
 import {
@@ -29,6 +30,11 @@ import {
 import { initSudachiTokenizer } from "./sudachi-tokenizer.js";
 import { showProgress, showSudachiProgress } from "./sudachi-progress-ui.js";
 import { createHybridTokenize } from "./hybrid-tokenizer.js";
+import { loadNeologdPhrases, getNeologdPhraseCount } from "./neologd-phrases.js";
+import {
+  loadEnglishKatakanaDict,
+  getEnglishKatakanaDictCount
+} from "./english-katakana-reading.js";
 import { getYouTubeVideoId } from "./youtube-captions.js";
 
 const PROCESSED_ATTR = "data-yt-furigana-done";
@@ -85,17 +91,48 @@ const inflight = new Map();
 async function initTokenizer() {
   if (initPromise) return initPromise;
 
-  initPromise = new Promise((resolve, reject) => {
-    kuromoji
-      .builder({ dicPath: chrome.runtime.getURL("dict/") })
-      .build((error, builtTokenizer) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-        tokenizer = builtTokenizer;
-        resolve(builtTokenizer);
+  initPromise = (async () => {
+    // 固有名詞 Trie は解析器と並行ロード（失敗しても本体は動く）
+    const neologdReady = loadNeologdPhrases()
+      .then(() => {
+        console.log(
+          `[YT Furigana] NEologd phrases ready (${getNeologdPhraseCount()})`
+        );
+      })
+      .catch((error) => {
+        console.warn("[YT Furigana] NEologd phrases skipped:", error?.message || error);
       });
+
+    const englishReady = loadEnglishKatakanaDict()
+      .then(() => {
+        console.log(
+          `[YT Furigana] English katakana dict ready (${getEnglishKatakanaDictCount()})`
+        );
+      })
+      .catch((error) => {
+        console.warn(
+          "[YT Furigana] English katakana dict skipped:",
+          error?.message || error
+        );
+      });
+
+    const builtTokenizer = await new Promise((resolve, reject) => {
+      kuromoji
+        .builder({ dicPath: chrome.runtime.getURL("dict/") })
+        .build((error, built) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+          resolve(built);
+        });
+    });
+    tokenizer = builtTokenizer;
+    await Promise.all([neologdReady, englishReady]);
+    return builtTokenizer;
+  })().catch((error) => {
+    initPromise = null;
+    throw error;
   });
 
   return initPromise;
@@ -395,7 +432,9 @@ function ensureOriginalText(element, normalized) {
 function applyFuriganaHtml(element, html, processingKey) {
   // 必ずルビ化「前」にフォントと背景を固定する
   captureCaptionStyles(element);
-  element.innerHTML = html;
+  // ルビ HTML 確定後に BudouX 句境界へ ZWSP（字幕幅の目安文字数付近のみ）
+  const maxLineChars = maxLineCharsFromElement(element);
+  element.innerHTML = insertCaptionSoftBreaks(html, { maxLineChars });
   applyCaptionStyles(element);
   startCaptionStyleGuard(element);
   element.setAttribute(PROCESSED_ATTR, processingKey);
@@ -734,13 +773,42 @@ async function bootstrap() {
   startObserver();
   startVideoNavigationWatch();
 
+  // エンジンによらず辞書側を常に準備 → 読みAPI併用でも固有名詞／英語読みを守る
+  void loadNeologdPhrases()
+    .then(() => {
+      console.log(
+        `[YT Furigana] NEologd phrases ready (${getNeologdPhraseCount()})`
+      );
+    })
+    .catch((error) => {
+      console.warn("[YT Furigana] NEologd phrases skipped:", error?.message || error);
+    });
+  void loadEnglishKatakanaDict()
+    .then(() => {
+      console.log(
+        `[YT Furigana] English katakana dict ready (${getEnglishKatakanaDictCount()})`
+      );
+    })
+    .catch((error) => {
+      console.warn(
+        "[YT Furigana] English katakana dict skipped:",
+        error?.message || error
+      );
+    });
+
   if (enabled) {
     if (
       settings.engine === "kuromoji" ||
       settings.engine === "sudachi" ||
-      settings.engine === "hybrid"
+      settings.engine === "hybrid" ||
+      settings.engine === "reading-api"
     ) {
-      await ensureLocalTokenizer();
+      // reading-api でもフォールバック用にローカル解析器を暖機（失敗は無視）
+      if (settings.engine !== "reading-api") {
+        await ensureLocalTokenizer();
+      } else {
+        void ensureLocalTokenizer().catch(() => {});
+      }
     }
     scheduleProcess();
     currentVideoId = getSiteVideoKey();

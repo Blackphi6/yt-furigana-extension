@@ -1,9 +1,7 @@
-import { wrapFuriganaWord } from "./furigana.js";
+import { wrapFuriganaWord, hasKanji } from "./furigana.js";
 import { normalizeReading } from "./reading-normalize.js";
 
-export function hasKanji(text) {
-  return /[\u3400-\u9fff\uF900-\uFAFF]/.test(text);
-}
+export { hasKanji };
 
 export function escapeHtml(text) {
   return text
@@ -16,15 +14,12 @@ export function segmentsToHtml(segments) {
   return segments
     .map((segment) => {
       const text = escapeHtml(segment.t);
-      if (segment.r && hasKanji(segment.t)) {
-        const ruby = `<ruby>${text}<rt>${escapeHtml(segment.r)}</rt></ruby>`;
-        return wrapFuriganaWord(
-          segment.t,
-          normalizeReading(segment.r),
-          ruby
-        );
-      }
-      return text;
+      if (!hasKanji(segment.t)) return text;
+      const reading = segment.r ? normalizeReading(segment.r) : "";
+      const ruby = reading
+        ? `<ruby>${text}<rt>${escapeHtml(reading)}</rt></ruby>`
+        : text;
+      return wrapFuriganaWord(segment.t, reading, ruby);
     })
     .join("");
 }

@@ -1,4 +1,4 @@
-import { buildRuby } from "./furigana.js";
+import { buildRuby, isNumberReadingTipSurface } from "./furigana.js";
 import { collectReadingCandidates } from "./reading-candidates.js";
 import {
   saveUserReadingChoice,
@@ -10,7 +10,7 @@ import {
   CONTEXT_READING_RULES,
   rebuildManualPhraseIndex
 } from "./reading-context.js";
-import { normalizeReading } from "./reading-normalize.js";
+import { normalizeReading, normalizeUserReading, isValidUserReading } from "./reading-normalize.js";
 import {
   LEARNING_INBOX_KEY,
   LEARNING_INBOX_LIMIT,
@@ -33,8 +33,7 @@ export function closeReadingPicker() {
 }
 
 function isKanaOnlyReading(value) {
-  const reading = normalizeReading(value);
-  return Boolean(reading) && /^[\u3040-\u309fー・]+$/.test(reading);
+  return isValidUserReading(value);
 }
 
 /**
@@ -66,6 +65,13 @@ export async function openReadingPicker(wordEl, options = {}) {
     userStore
   );
 
+  const customLabel = currentReading
+    ? "候補にない読み"
+    : "読みを入力（未登録）";
+  const customHint = currentReading
+    ? "例: とわ / ウィークエンド。ひらがな・カタカナ可。"
+    : "ひらがなまたはカタカナで入力（例: おんりー / オンリー）。";
+
   const popup = document.createElement("div");
   popup.id = POPUP_ID;
   popup.className = "yt-furigana-picker";
@@ -79,7 +85,10 @@ export async function openReadingPicker(wordEl, options = {}) {
           (c, index) => `
         <li>
           <button type="button" class="yt-furigana-picker__item${
-            c.reading === normalizeReading(currentReading) ? " is-current" : ""
+            c.reading === normalizeUserReading(currentReading) ||
+            normalizeReading(c.reading) === normalizeReading(currentReading)
+              ? " is-current"
+              : ""
           }" data-reading="${escapeAttr(c.reading)}" data-index="${index}" role="option">
             <span class="yt-furigana-picker__reading">${escapeAttr(c.reading)}</span>
             <span class="yt-furigana-picker__label">${escapeAttr(c.label)}</span>
@@ -89,20 +98,20 @@ export async function openReadingPicker(wordEl, options = {}) {
         .join("")}
     </ul>
     <form class="yt-furigana-picker__custom" autocomplete="off">
-      <label class="yt-furigana-picker__custom-label" for="${POPUP_ID}-input">候補にない読み</label>
+      <label class="yt-furigana-picker__custom-label" for="${POPUP_ID}-input">${customLabel}</label>
       <div class="yt-furigana-picker__custom-row">
         <input
           id="${POPUP_ID}-input"
           class="yt-furigana-picker__input"
           type="text"
           inputmode="kana"
-          placeholder="ひらがなで入力"
+          placeholder="ひらがな・カタカナ"
           value=""
           maxlength="40"
         />
         <button type="submit" class="yt-furigana-picker__submit">保存</button>
       </div>
-      <p class="yt-furigana-picker__hint">例: とわ。文脈付きで学習（デフォルトはえいえん、とわは愛・誓いなど感情寄り）。</p>
+      <p class="yt-furigana-picker__hint">${customHint}</p>
     </form>
   `;
 
@@ -137,7 +146,7 @@ export async function openReadingPicker(wordEl, options = {}) {
     const raw = input?.value?.trim() || "";
     if (!isKanaOnlyReading(raw)) {
       if (input) {
-        input.setCustomValidity("ひらがな（ー・可）で入力してください");
+        input.setCustomValidity("ひらがなまたはカタカナ（ー・可）で入力してください");
         input.reportValidity();
       }
       return;
@@ -146,7 +155,7 @@ export async function openReadingPicker(wordEl, options = {}) {
     await applyReadingChoice(
       wordEl,
       surface,
-      normalizeReading(raw),
+      normalizeUserReading(raw),
       contextText
     );
     closeReadingPicker();
@@ -159,10 +168,26 @@ export async function openReadingPicker(wordEl, options = {}) {
 }
 
 async function applyReadingChoice(wordEl, surface, reading, contextText) {
-  const normalized = normalizeReading(reading);
+  // ユーザー入力はカタカナ保持済みの想定。既存候補はひらがなのまま可。
+  const normalized = /[\u30a1-\u30f6]/.test(reading)
+    ? normalizeUserReading(reading)
+    : normalizeReading(reading) || normalizeUserReading(reading);
   wordEl.setAttribute("data-surface", surface);
   wordEl.setAttribute("data-reading", normalized);
-  wordEl.innerHTML = buildRuby(surface, normalized);
+  wordEl.classList.remove("yt-furigana-word--unset");
+  const preserveKatakana = /[\u30a1-\u30f6]/.test(normalized);
+  wordEl.innerHTML = buildRuby(surface, normalized, { preserveKatakana });
+
+  // 数字系はルビではなくツールチップ
+  if (isNumberReadingTipSurface(surface) && normalized) {
+    wordEl.classList.add("yt-furigana-word--tip");
+    wordEl.setAttribute("data-tip", normalized);
+    wordEl.title = normalized;
+  } else {
+    wordEl.classList.remove("yt-furigana-word--tip");
+    wordEl.removeAttribute("data-tip");
+    wordEl.title = "クリックで読み候補";
+  }
   requestAnimationFrame(() => fitRubyReadings(wordEl));
 
   const cues = buildLearningCues(surface, contextText);

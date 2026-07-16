@@ -26,7 +26,7 @@
           <input type="radio" name="engine" value="kuromoji" checked />
           <span>
             <strong>Kuromoji（推奨・既定）</strong>
-            <small>完全ローカル・無料。複合語は結合して候補表示。クリックで学習</small>
+            <small>完全ローカル。NEologd固有名詞＋クリック学習。同形異音は文脈ルールで補完</small>
           </span>
         </label>
 
@@ -49,8 +49,8 @@
         <label class="radio">
           <input type="radio" name="engine" value="reading-api" />
           <span>
-            <strong>読みAPI（任意・BYO）</strong>
-            <small>JRM互換。自分のURL／公開APIを指定。失敗時はローカルにフォールバック</small>
+            <strong>読みAPI（JRM＋辞書併用）</strong>
+            <small>異読みはJRM、固有名詞はNEologd/学習を user_dict で優先。失敗時はローカルへ</small>
           </span>
         </label>
       </section>
@@ -162,7 +162,7 @@
         <p class="hint">
           字幕の漢字を押すと読み候補が出ます。選ぶと端末内に学習されます。
           Free ではクラウド送信しません。Premium の「辞書を同期」で端末間共有できます。
-          曖昧な読みのログも端末内に溜められます。書き出して
+          曖昧語のサンプル（字幕断片・ページ URL）も端末内に自動蓄積されます（上限あり・開発者サーバーへは送らない）。書き出して
           <code>data/learning/inbox.jsonl</code> に置き、<code>npm run learn</code> で辞書を自動更新できます。
         </p>
         <button type="button" id="exportLearning" class="button">学習ログを書き出し</button>
