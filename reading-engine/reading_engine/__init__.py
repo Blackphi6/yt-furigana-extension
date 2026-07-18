@@ -38,16 +38,45 @@ def normalize_reading(text: str) -> str:
     return to_hiragana(unicodedata.normalize("NFKC", text or ""))
 
 
+_CLAUSE_SEPS = frozenset("。！？\n、")
+
+
+def clause_context(text: str, span: tuple[int, int] | None) -> str:
+    """Limit cue matching to the clause around this token (、。 etc.).
+
+    Dual-reading demos put opposite senses in different clauses; whole-text
+    cues otherwise bleed across both occurrences.
+    """
+    if not text:
+        return ""
+    if not span:
+        return text
+    start, end = span
+    start = max(0, min(start, len(text)))
+    end = max(start, min(end, len(text)))
+    left = 0
+    for i in range(start - 1, -1, -1):
+        if text[i] in _CLAUSE_SEPS:
+            left = i + 1
+            break
+    right = len(text)
+    for i in range(end, len(text)):
+        if text[i] in _CLAUSE_SEPS:
+            right = i
+            break
+    return text[left:right]
+
+
 CONTEXT_RULES: list[dict[str, Any]] = [
     {"surface": "忙しい", "reading": "せわしい", "weight": 3, "cues": ["暇もない", "世界", "恋", "心", "胸", "街", "夜", "夢", "涙", "君", "僕"]},
-    {"surface": "忙しい", "reading": "いそがしい", "weight": 1, "cues": ["仕事", "予定", "会議", "残業"]},
+    {"surface": "忙しい", "reading": "いそがしい", "weight": 3, "cues": ["仕事", "予定", "会議", "残業"]},
     {"surface": "辛い", "reading": "からい", "weight": 3, "cues": ["ラーメン", "カレー", "味", "食べ", "料理", "唐辛子"]},
     {"surface": "辛い", "reading": "つらい", "weight": 3, "cues": ["経験", "出来事", "思い", "過去", "気持ち", "人生"]},
     {"surface": "空", "reading": "くう", "weight": 3, "cues": ["空を切", "空中", "空間", "空港", "空気", "真空", "空席"]},
     {"surface": "空", "reading": "そら", "weight": 2, "cues": ["青空", "夜空", "雲", "星", "晴れた空"]},
     {"surface": "空", "reading": "から", "weight": 2, "cues": ["空手", "空振り", "空っぽ", "空にする"]},
-    {"surface": "表", "reading": "おもて", "weight": 2, "cues": ["裏", "畳", "顔", "出る", "立つ", "玄関"]},
-    {"surface": "表", "reading": "ひょう", "weight": 2, "cues": ["グラフ", "データ", "一覧", "表を見", "成績"]},
+    {"surface": "表", "reading": "おもて", "weight": 3, "cues": ["裏", "畳", "顔", "出る", "出て", "表に出", "立つ", "玄関"]},
+    {"surface": "表", "reading": "ひょう", "weight": 3, "cues": ["グラフ", "データ", "一覧", "表を見", "表にまとめ", "成績"]},
     {"surface": "方", "reading": "かた", "weight": 3, "cues": ["伝え方", "やり方", "読み方", "考え方", "仕方", "見方", "聞き方", "愛し方"]},
     {"surface": "方", "reading": "ほう", "weight": 2, "cues": ["の方", "方向", "一方", "両方", "方へ"]},
     {"surface": "大事", "reading": "おおごと", "weight": 3, "cues": ["誤解", "なる", "騒ぎ", "事件", "問題に"]},
@@ -60,9 +89,9 @@ CONTEXT_RULES: list[dict[str, Any]] = [
     {"surface": "下手", "reading": "へた", "weight": 3, "cues": ["下手だ", "絵が下手", "字が下手"]},
     {"surface": "今日", "reading": "きょう", "weight": 2, "cues": ["明日", "昨日", "今日は", "今日も"]},
     {"surface": "今日", "reading": "こんにち", "weight": 3, "cues": ["今日この頃", "今日では", "今日において"]},
-    {"surface": "風", "reading": "かぜ", "weight": 2, "cues": ["吹", "強風", "風が"]},
-    {"surface": "風", "reading": "ふう", "weight": 2, "cues": ["こんなふう", "どういうふう", "ふうに"]},
-    {"surface": "博士", "reading": "はかせ", "weight": 2, "cues": ["物知り", "博士だ"]},
+    {"surface": "風", "reading": "かぜ", "weight": 3, "cues": ["吹", "強風", "風が", "風で", "風強"]},
+    {"surface": "風", "reading": "ふう", "weight": 3, "cues": ["こんな風", "どういう風", "風に書", "風にやっ", "ああいう風"]},
+    {"surface": "博士", "reading": "はかせ", "weight": 3, "cues": ["物知り", "博士だ", "物知り博士"]},
     {"surface": "博士", "reading": "はくし", "weight": 3, "cues": ["博士号", "学位", "論文"]},
     # 同表層の二重出現デモ用
     {"surface": "町中", "reading": "まちなか", "weight": 4, "cues": ["町中の", "町中のカフェ", "市街"]},
@@ -184,7 +213,12 @@ class ReadingEngine:
         return cands
 
     def _score_cue(
-        self, surface: str, reading: str, full_text: str, base: str
+        self,
+        surface: str,
+        reading: str,
+        full_text: str,
+        base: str,
+        span: tuple[int, int] | None = None,
     ) -> tuple[float, str]:
         best = 0.0
         source = "base_engine"
@@ -192,40 +226,43 @@ class ReadingEngine:
             best = 0.55
             source = "base_engine"
 
+        local = clause_context(full_text, span)
+
         for rule in CONTEXT_RULES:
             if rule["surface"] != surface or rule["reading"] != reading:
                 continue
-            hits = [c for c in rule["cues"] if c in full_text]
+            hits = [c for c in rule["cues"] if c in local]
             if hits:
                 longest = max(len(h) for h in hits)
                 score = 0.7 + 0.05 * min(len(hits), 4) + 0.02 * rule.get("weight", 1)
                 score += min(longest, 8) * 0.01
                 if score > best:
                     best = min(score, 0.99)
-                    source = "reranker"
+                    source = "cue"
 
         for entry in self._creative_by_surface.get(surface, []):
             if entry.reading != reading:
                 continue
-            hits = [c for c in entry.cues if c in full_text]
+            hits = [c for c in entry.cues if c in local]
             if hits:
                 score = 0.85 + 0.03 * min(len(hits), 3)
                 if score > best:
                     best = min(score, 0.995)
                     source = "creative_ruby"
             elif entry.genre in ("lyric", "novel") and any(
-                k in full_text for k in ("夏", "君", "恋", "夢", "夜", "風", "歌")
+                k in local for k in ("夏", "君", "恋", "夢", "夜", "歌")
             ):
+                # Do not use bare 「風」 as a creative boost — conflicts with かぜ/ふう demos.
                 score = 0.72
                 if score > best:
                     best = score
                     source = "creative_ruby"
 
-        if surface == "方" and reading == "かた" and re.search(r".+方", full_text):
-            if any(p in full_text for p in ("伝え方", "やり方", "考え方", "愛し方")):
+        if surface == "方" and reading == "かた" and re.search(r".+方", local):
+            if any(p in local for p in ("伝え方", "やり方", "考え方", "愛し方")):
                 if 0.9 > best:
                     best = 0.92
-                    source = "reranker"
+                    source = "cue"
 
         return best, source
 
@@ -255,10 +292,10 @@ class ReadingEngine:
             except Exception as exc:  # noqa: BLE001
                 print(f"[reading_engine] reranker score failed: {exc}")
 
-        # Cue rules fallback (still lattice-only)
+        # Cue rules fallback (still lattice-only), scoped to clause
         scored = []
         for cand in cands:
-            conf, source = self._score_cue(surface, cand, full_text, base)
+            conf, source = self._score_cue(surface, cand, full_text, base, span)
             scored.append((conf, cand, source))
         reading, conf, source = _pick_constrained(
             cands, scored, base, self._threshold

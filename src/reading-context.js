@@ -36,19 +36,19 @@ export const CONTEXT_READING_RULES = [
   {
     surface: "忙しい",
     reading: "いそがしい",
-    weight: 1,
+    weight: 3,
     cues: ["仕事", "予定", "会議", "残業", "スケジュール", "忙しい人", "お忙しい"]
   },
   {
     surface: "表",
     reading: "おもて",
-    weight: 2,
-    cues: ["裏", "畳", "顔", "出る", "立つ", "通り", "玄関", "表紙"]
+    weight: 3,
+    cues: ["裏", "畳", "顔", "出る", "出て", "表に出", "立つ", "通り", "玄関", "表紙"]
   },
   {
     surface: "表",
     reading: "ひょう",
-    weight: 2,
+    weight: 3,
     cues: ["グラフ", "データ", "一覧", "表にまとめ", "表を見", "表計算", "成績"]
   },
   {
@@ -173,6 +173,30 @@ export const CONTEXT_READING_RULES = [
     reading: "まちじゅう",
     weight: 5,
     cues: ["町中に広", "噂が町中", "町中に知れ", "町中で噂"]
+  },
+  {
+    surface: "風",
+    reading: "かぜ",
+    weight: 3,
+    cues: ["吹", "強風", "風が", "風で", "風強"]
+  },
+  {
+    surface: "風",
+    reading: "ふう",
+    weight: 3,
+    cues: ["こんな風", "どういう風", "風に書", "風にやっ", "ああいう風"]
+  },
+  {
+    surface: "博士",
+    reading: "はかせ",
+    weight: 3,
+    cues: ["物知り", "博士だ", "物知り博士"]
+  },
+  {
+    surface: "博士",
+    reading: "はくし",
+    weight: 3,
+    cues: ["博士号", "学位", "論文"]
   }
 ];
 
@@ -314,12 +338,45 @@ export function segmentWithOverrides(text) {
   return segments;
 }
 
+/**
+ * Cue matching limited to the clause around a token (、。！？).
+ * Prevents opposite-sense cues in the same caption from bleeding across.
+ */
+export function clauseContext(text, start, end) {
+  const src = String(text || "");
+  if (!src) return "";
+  const s = Math.max(0, Math.min(Number(start) || 0, src.length));
+  const e = Math.max(s, Math.min(Number(end) || s, src.length));
+  const seps = "。！？\n、";
+  let left = 0;
+  for (let i = s - 1; i >= 0; i -= 1) {
+    if (seps.includes(src[i])) {
+      left = i + 1;
+      break;
+    }
+  }
+  let right = src.length;
+  for (let i = e; i < src.length; i += 1) {
+    if (seps.includes(src[i])) {
+      right = i;
+      break;
+    }
+  }
+  return src.slice(left, right);
+}
+
 /** トークン列の読みを文脈で補正 */
 export function applyContextualReadings(tokens, contextText) {
+  let cursor = 0;
   return tokens.map((token) => {
     const surface = token.surface_form;
+    const start = contextText.indexOf(surface, cursor);
+    const end = start >= 0 ? start + surface.length : cursor;
+    if (start >= 0) cursor = end;
+    const local =
+      start >= 0 ? clauseContext(contextText, start, end) : contextText ?? "";
     const preferred = token.reading || token.pronunciation || "";
-    const resolved = resolveContextualReading(surface, preferred, contextText);
+    const resolved = resolveContextualReading(surface, preferred, local);
     if (!resolved) return token;
 
     const reading = normalizeUserReading(resolved.reading);

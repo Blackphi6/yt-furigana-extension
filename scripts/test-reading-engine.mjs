@@ -90,6 +90,37 @@ assert.equal(
   "えいえん"
 );
 
+function readingsFor(result, surface) {
+  return result.tokens.filter((t) => t.surface === surface).map((t) => t.reading);
+}
+
+const wind = await runEngine("風が強くて帽子が飛んだ。こんな風に書いてみた。");
+assert.deepEqual(readingsFor(wind, "風"), ["かぜ", "ふう"], JSON.stringify(wind.tokens));
+
+const hyou = await runEngine("成績を表にまとめた。表に出て説明した。");
+assert.deepEqual(readingsFor(hyou, "表"), ["ひょう", "おもて"], JSON.stringify(hyou.tokens));
+
+const busy = await runEngine("よそ見する暇もない忙しい世界で、仕事の予定で忙しい。");
+assert.deepEqual(
+  readingsFor(busy, "忙しい"),
+  ["せわしい", "いそがしい"],
+  JSON.stringify(busy.tokens)
+);
+
+const hakase = await runEngine("博士号の話をしたら、物知り博士だと言われた。");
+assert.deepEqual(
+  readingsFor(hakase, "博士"),
+  ["はくし", "はかせ"],
+  JSON.stringify(hakase.tokens)
+);
+
+const machi = await runEngine("町中のカフェに入ると、その噂が町中に広まった。");
+assert.deepEqual(
+  readingsFor(machi, "町中"),
+  ["まちなか", "まちじゅう"],
+  JSON.stringify(machi.tokens)
+);
+
 // Hallucination guard: chosen reading must be in candidates
 for (const sample of [
   spicy,
@@ -102,6 +133,11 @@ for (const sample of [
   towa,
   eienCasual,
   eienTheme,
+  wind,
+  hyou,
+  busy,
+  hakase,
+  machi,
 ]) {
   for (const token of sample.tokens) {
     assert.ok(
