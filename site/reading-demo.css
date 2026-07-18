@@ -119,10 +119,17 @@
   padding-top: 0.75rem;
 }
 
-.user-dict-panel summary {
+.user-dict-panel summary,
+.api-advanced summary {
   cursor: pointer;
   color: var(--sumi-soft);
   font-size: 0.92rem;
+}
+
+.api-advanced {
+  margin: 1rem 0;
+  border-top: 1px dashed var(--line);
+  padding-top: 0.75rem;
 }
 
 .user-dict-rows {

@@ -87,10 +87,7 @@
         </p>
         <p class="engine-status" id="engine-status" role="status">エンジンを確認中…</p>
         <p class="hint" id="api-setup-hint">
-          公開 API は <a href="https://render.com" target="_blank" rel="noreferrer">Render</a>
-          の無料枠です。未接続のときは
-          <a href="https://github.com/Blackphi6/yt-furigana-extension/blob/main/site/README.md" target="_blank" rel="noreferrer">site/README.md</a>
-          の Blueprint 手順を一度だけ実行してください。初回はスリープ解除で数十秒かかることがあります。
+          公開 API は Render の無料枠です。しばらく使っていないとスリープし、最初の一回だけ遅くなることがあります。
         </p>
 
         <div class="demo-workbench">
@@ -151,10 +148,15 @@
             <button type="button" class="btn ghost small" id="add-dict-row">＋ 語を追加</button>
           </details>
 
-          <div class="api-row">
+          <details class="api-advanced">
+            <summary>上級者向け — API URL を変更</summary>
+            <p class="hint">
+              通常はそのままで使えます。ローカル検証時だけ
+              <code>http://127.0.0.1:8765</code> などに差し替えてください。
+            </p>
             <label class="field-label" for="api-url">API URL</label>
             <input id="api-url" type="url" spellcheck="false" />
-          </div>
+          </details>
 
           <div class="cta-row">
             <button type="button" class="btn" id="run-btn">ルビを付ける</button>
