@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>学習レポート — YT Furigana</title>
+    <meta
+      name="description"
+      content="日次の合成学習と固定ベンチ正答率。精度の推移を公開レポートで確認できます。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./learning-report.css" />
+  </head>
+  <body class="report-page">
+    <div class="wrap">
+      <header class="site-header">
+        <a class="brand" href="./">YT Furigana</a>
+        <nav class="nav" aria-label="主要ナビ">
+          <a href="./reading-demo.html">読みデモ</a>
+          <a href="./learning-report.html" aria-current="page">学習レポート</a>
+          <a href="./install.html">インストール</a>
+          <a href="./pricing.html">料金</a>
+          <a href="https://github.com/Blackphi6/yt-furigana-extension">GitHub</a>
+        </nav>
+      </header>
+
+      <section class="report-hero fade-up">
+        <p class="eyebrow">公開ベンチ · 日次更新</p>
+        <h1>学習レポート</h1>
+        <p class="lead">
+          固定ベンチの正答率と合成コーパスの増分です。日次は主に<strong>素材集め</strong>、
+          本体ルールの昇格は主に週次です。
+        </p>
+        <p class="report-status" id="report-status" role="status">読み込み中…</p>
+      </section>
+
+      <section class="score-grid fade-up delay" aria-label="直近スコア">
+        <article class="score-card" id="card-seed">
+          <h2>seed</h2>
+          <p class="score-value">—</p>
+          <p class="score-meta"></p>
+        </article>
+        <article class="score-card" id="card-hard">
+          <h2>hard（同形異音）</h2>
+          <p class="score-value">—</p>
+          <p class="score-meta"></p>
+        </article>
+        <article class="score-card" id="card-easy">
+          <h2>easy</h2>
+          <p class="score-value">—</p>
+          <p class="score-meta"></p>
+        </article>
+        <article class="score-card" id="card-corpus">
+          <h2>コーパス</h2>
+          <p class="score-value">—</p>
+          <p class="score-meta"></p>
+        </article>
+      </section>
+
+      <section class="panel fade-up" aria-labelledby="spark-heading">
+        <h2 id="spark-heading">hard 正答率の推移</h2>
+        <div class="spark" id="spark" role="img" aria-label="hardベンチ推移"></div>
+        <p class="hint" id="spark-hint"></p>
+      </section>
+
+      <section class="panel fade-up" aria-labelledby="samples-heading">
+        <h2 id="samples-heading">直近の合成サンプル</h2>
+        <p class="hint">期待読みをクリックして読みデモで検証できます（要ローカル reading-engine）。</p>
+        <ul class="sample-list" id="sample-list"></ul>
+      </section>
+
+      <section class="panel fade-up" aria-labelledby="note-heading">
+        <h2 id="note-heading">今回の注記</h2>
+        <p id="report-note" class="report-note">—</p>
+        <p class="hint">
+          データ: <code>site/data/learning-report.json</code> ·
+          履歴: <code>site/data/learning-history.json</code>
+        </p>
+      </section>
+
+      <footer class="site-footer">
+        <p>
+          <a href="./reading-demo.html">読みデモ</a>
+          ·
+          <a href="./privacy.html">プライバシー</a>
+          ·
+          <a href="https://github.com/Blackphi6/yt-furigana-extension">GitHub</a>
+        </p>
+      </footer>
+    </div>
+    <script src="./learning-report.js" type="module"></script>
+  </body>
+</html>

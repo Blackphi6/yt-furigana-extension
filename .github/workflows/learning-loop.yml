@@ -100,16 +100,21 @@ jobs:
           PER="${{ github.event.inputs.per_target }}"
           PER="${PER:-1}"
           npm run learn:autoloop -- --phase=synth --provider groq --per-target "$PER"
-      - name: Commit corpus
+      - name: Commit corpus + daily report
         run: |
           git config user.name "yt-furigana-learning-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git pull --rebase origin "$(git rev-parse --abbrev-ref HEAD)" || true
-          git add data/learning/corpus/synth-open.jsonl data/learning/gate-baseline.json || true
+          git add \
+            data/learning/corpus/synth-open.jsonl \
+            data/learning/gate-baseline.json \
+            data/learning/reports/ \
+            site/data/ \
+            || true
           if git diff --staged --quiet; then
-            echo "No corpus changes"
+            echo "No corpus/report changes"
           else
-            git commit -m "chore(learning): append Groq free-tier synth corpus"
+            git commit -m "chore(learning): append synth corpus and daily accuracy report"
             git push
           fi
 
@@ -130,7 +135,7 @@ jobs:
       - run: npm ci || npm install
       - name: Merge + rule learn + 3-bench gate
         run: npm run learn:autoloop -- --phase=retrain-lite --write-baseline
-      - name: Commit gate baseline + overrides
+      - name: Commit gate baseline + overrides + report
         run: |
           git config user.name "yt-furigana-learning-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -139,6 +144,8 @@ jobs:
             data/learning/gate-baseline.json \
             data/learning/corpus/synth-open.jsonl \
             data/generated/learned-overrides.json \
+            data/learning/reports/ \
+            site/data/ \
             || true
           if git diff --staged --quiet; then
             echo "No promote artifacts to commit"

@@ -180,6 +180,13 @@ inputEl.addEventListener("keydown", (e) => {
 });
 
 addDictRow();
+
+const params = new URLSearchParams(location.search);
+const qText = params.get("text");
+if (qText) {
+  inputEl.value = qText;
+}
+
 checkHealth().then((ok) => {
   if (ok) runAnalyze();
 });

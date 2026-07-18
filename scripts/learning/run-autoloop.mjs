@@ -72,6 +72,10 @@ async function phaseSmoke(args) {
   const benchArgs = ["scripts/learning/evaluate-three-benches.mjs"];
   if (args.writeBaseline) benchArgs.push("--write-baseline");
   await run("node", benchArgs);
+  await run("node", [
+    "scripts/learning/write-daily-report.mjs",
+    "--mode=smoke",
+  ]);
 }
 
 async function phaseSynth(args) {
@@ -85,6 +89,11 @@ async function phaseSynth(args) {
   if (args.fast) synthArgs.push("--fast");
   await run("node", synthArgs, { LEARN_PROVIDER: args.provider });
   await run("node", ["scripts/learning/merge-synth-corpus.mjs"]);
+  // Gate + site report (never fail the synth job on gate alone)
+  await run("node", [
+    "scripts/learning/write-daily-report.mjs",
+    "--mode=synth",
+  ]);
 }
 
 async function phaseRetrainLite(args) {
@@ -93,6 +102,10 @@ async function phaseRetrainLite(args) {
   const benchArgs = ["scripts/learning/evaluate-three-benches.mjs"];
   if (args.writeBaseline) benchArgs.push("--write-baseline");
   await run("node", benchArgs);
+  await run("node", [
+    "scripts/learning/write-daily-report.mjs",
+    "--mode=retrain",
+  ]);
 }
 
 async function phaseRetrain(args) {

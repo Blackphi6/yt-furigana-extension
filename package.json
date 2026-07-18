@@ -41,7 +41,8 @@
     "reading-engine:test": "node scripts/test-reading-engine.mjs",
     "mint-license": "node scripts/mint-license.mjs",
     "harvest-ruby": ".venv-reading/bin/python reading-engine/harvest_ruby.py",
-    "watch": "node scripts/build.mjs --watch"
+    "watch": "node scripts/build.mjs --watch",
+    "learn:report": "node scripts/learning/write-daily-report.mjs"
   },
   "dependencies": {
     "budoux": "^0.8.4",

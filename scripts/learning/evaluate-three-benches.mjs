@@ -107,14 +107,10 @@ const payload = {
 
 console.log(gateOk ? "GATE PASS" : "GATE FAIL");
 
-if (gateOk && (writeBaseline || !baseline)) {
+if (gateOk && writeBaseline) {
   await mkdir(path.dirname(baselinePath), { recursive: true });
   await writeFile(baselinePath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
   console.log(`wrote baseline → ${baselinePath}`);
-} else if (gateOk && baseline) {
-  // refresh baseline (monotonic via regress check above)
-  await writeFile(baselinePath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
-  console.log(`updated baseline → ${baselinePath}`);
 }
 
 if (!gateOk) process.exitCode = 1;

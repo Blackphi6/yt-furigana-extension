@@ -88,8 +88,8 @@ npm run learn:gate -- --write-baseline
 | トリガ | Runner | 内容 |
 |--------|--------|------|
 | `mode=smoke` | ubuntu-latest | dry + 3ベンチ |
-| cron 毎日 04:00 UTC / `mode=synth` | ubuntu-latest | Groq 無料枠で合成 |
-| cron 月曜 03:00 UTC / `mode=retrain` | ubuntu-latest | merge + ルール学習 + 3ベンチ |
+| cron 毎日 04:00 UTC / `mode=synth` | ubuntu-latest | Groq 合成 + ゲート計測 + [学習レポート](../site/learning-report.html) 更新 |
+| cron 月曜 03:00 UTC / `mode=retrain` | ubuntu-latest | merge + ルール学習 + 3ベンチ（baseline 更新） |
 
 1日あたり想定呼び出し ~100回・無料枠のごく一部。Paid 不要。
 
