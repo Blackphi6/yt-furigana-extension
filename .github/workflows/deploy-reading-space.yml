@@ -4,7 +4,7 @@
 #   HF_TOKEN  — write token with permission to push to the Space
 #
 # Optional vars (repo Settings → Variables):
-#   HF_SPACE_ID  — e.g. Blackphi6/yt-furigana-readings (default below)
+#   HF_SPACE_ID  — e.g. Blackphil/yt-furigana-readings (default below)
 
 name: Deploy reading Space
 
@@ -45,7 +45,7 @@ jobs:
             echo "::error::Set repository secret HF_TOKEN (Hugging Face write token)"
             exit 1
           fi
-          export HF_SPACE_ID="${HF_SPACE_ID:-Blackphi6/yt-furigana-readings}"
+          export HF_SPACE_ID="${HF_SPACE_ID:-Blackphil/yt-furigana-readings}"
           python <<'PY'
           import os
           import shutil

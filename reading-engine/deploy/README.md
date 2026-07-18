@@ -33,4 +33,4 @@ docker run --rm -p 7860:7860 yt-furigana-readings
 
 Expected public URL after Space create:
 
-`https://blackphi6-yt-furigana-readings.hf.space`
+`https://blackphil-yt-furigana-readings.hf.space`

@@ -10,8 +10,8 @@ JRM デモと同様、**静的サイト（常時）＋ 読み API（無料 Space
 | 層 | URL |
 |----|-----|
 | UI | https://blackphi6.github.io/yt-furigana-extension/ |
-| 読み API | https://blackphi6-yt-furigana-readings.hf.space |
-| OpenAPI | https://blackphi6-yt-furigana-readings.hf.space/docs |
+| 読み API | https://blackphil-yt-furigana-readings.hf.space |
+| OpenAPI | https://blackphil-yt-furigana-readings.hf.space/docs |
 | 学習レポート | ./learning-report.html |
 
 `config.js` の `readingApiUrl` がデモの接続先です。
@@ -22,7 +22,7 @@ JRM デモと同様、**静的サイト（常時）＋ 読み API（無料 Space
 2. https://huggingface.co/settings/tokens で **Write** トークン作成
 3. GitHub リポジトリ Secrets に `HF_TOKEN` を登録
 4. Actions → **Deploy reading Space** → Run workflow  
-   （または手動で Space `Blackphi6/yt-furigana-readings` を Docker SDK で作成し、`reading-engine/deploy` の手順で同期）
+   （または手動で Space `Blackphil/yt-furigana-readings` を Docker SDK で作成し、`reading-engine/deploy` の手順で同期）
 
 Space が sleep から起きると初回だけ数十秒かかることがあります。
 

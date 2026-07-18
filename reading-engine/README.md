@@ -83,7 +83,7 @@ docker run --rm -p 7860:7860 yt-furigana-readings
 
 GitHub Action: `.github/workflows/deploy-reading-space.yml`（secret `HF_TOKEN`）。
 
-Expected URL: `https://blackphi6-yt-furigana-readings.hf.space`  
+Expected URL: `https://blackphil-yt-furigana-readings.hf.space`  
 Site: https://blackphi6.github.io/yt-furigana-extension/
 
 ```bash
