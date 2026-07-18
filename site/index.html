@@ -86,6 +86,12 @@
           公開デモ API に文を送ります。チップを押すか、字幕っぽい短文を貼り付けてください。
         </p>
         <p class="engine-status" id="engine-status" role="status">エンジンを確認中…</p>
+        <p class="hint" id="api-setup-hint">
+          公開 API は Hugging Face Spaces 上です。まだ 404 のときは
+          <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noreferrer">Write トークン</a>
+          を GitHub Secret <code>HF_TOKEN</code> に入れ、Actions の
+          <strong>Deploy reading Space</strong> を実行してください。
+        </p>
 
         <div class="demo-workbench">
           <div class="sample-row" role="group" aria-label="サンプル文">

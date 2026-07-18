@@ -128,8 +128,21 @@ async function checkHealth() {
 
   statusEl.dataset.state = "down";
   statusEl.textContent =
-    "エンジン未接続 — 公開 Space の起動待ち、または npm run reading-engine";
+    "エンジン未接続 — Hugging Face Space 未作成（HF_TOKEN で Deploy reading Space）、または npm run reading-engine";
   return false;
+}
+
+function friendlyHttpError(status, body) {
+  const text = String(body || "");
+  if (status === 404 || /<html[\s>]/i.test(text) || /Sorry, we can't find the page/i.test(text)) {
+    return (
+      `${status}: 公開 API（Hugging Face Space）がまだありません。\n` +
+      `リポジトリに HF_TOKEN（Write）を登録し、Actions「Deploy reading Space」を実行してください。\n` +
+      `手順: site/README.md`
+    );
+  }
+  const clipped = text.replace(/\s+/g, " ").trim().slice(0, 180);
+  return clipped ? `${status}: ${clipped}` : String(status);
 }
 
 async function runAnalyze() {
@@ -155,14 +168,18 @@ async function runAnalyze() {
     });
     if (!res.ok) {
       const detail = await res.text();
-      throw new Error(`${res.status}: ${detail}`);
+      throw new Error(friendlyHttpError(res.status, detail));
     }
     const data = await res.json();
     renderResult(text, data);
     statusEl.dataset.state = "ok";
   } catch (err) {
+    const msg = String(err.message || err);
+    const isNetwork = /Failed to fetch|NetworkError|Load failed/i.test(msg);
     showError(
-      `リクエスト失敗: ${err.message}\n公開 API（Hugging Face Space）の起動待ちか、ローカルで npm run reading-engine を確認してください。`
+      isNetwork
+        ? `リクエスト失敗: 接続できませんでした。\n公開 Space 未作成、またはローカルで npm run reading-engine を起動してください。`
+        : `リクエスト失敗: ${msg}`
     );
     resultBlock.hidden = true;
     await checkHealth();
