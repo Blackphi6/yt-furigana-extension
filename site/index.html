@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>YT Furigana — YouTube / TVer 字幕にふりがな</title>
+    <title>YT Furigana — 文脈で読み分ける日本語読みデモ</title>
     <meta
       name="description"
-      content="YouTube・TVerの日本語字幕にふりがなを付与する非公式Chrome拡張。無料のローカル読みと、Premiumの辞書同期・共有辞書・ホストAPI。"
+      content="同じ漢字でも読みは文脈で変わる。候補制約型の公開読みAPIと、YouTube / TVer 字幕ふりがな拡張。"
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,117 +15,232 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./reading-demo.css" />
+    <link rel="stylesheet" href="./home.css" />
     <script src="./config.js"></script>
   </head>
-  <body>
+  <body class="home-page demo-page">
     <div class="wrap">
       <header class="site-header">
         <a class="brand" href="./">YT Furigana</a>
         <nav class="nav" aria-label="主要ナビ">
-          <a href="./reading-demo.html">読みデモ</a>
+          <a href="#demo">デモ</a>
+          <a href="#accuracy">精度</a>
+          <a href="#how">仕組み</a>
+          <a href="#api">API</a>
           <a href="./learning-report.html">学習レポート</a>
-          <a href="./install.html">インストール</a>
-          <a href="./pricing.html">料金</a>
-          <a href="./privacy.html">プライバシー</a>
-          <a href="./terms.html">利用規約</a>
+          <a href="./install.html">拡張</a>
           <a href="https://github.com/Blackphi6/yt-furigana-extension">GitHub</a>
         </nav>
       </header>
 
-      <section class="hero">
-        <div class="fade-up">
-          <h1>YT Furigana</h1>
+      <section class="hero home-hero fade-up">
+        <div>
+          <p class="pill-row" aria-label="特徴">
+            <span class="pill">API 公開</span>
+            <span class="pill">候補制約 · 幻覚しない</span>
+            <span class="pill">ユーザー辞書対応</span>
+          </p>
+          <h1>
+            同じ漢字でも、<em>読みは文脈で変わる</em>。<br />
+            正しい読みを返すデモです。
+          </h1>
           <p class="lead">
-            YouTube と TVer の日本語字幕に、読みやすいふりがなを重ねる<strong>非公式</strong>の
-            Chrome 拡張です。無料プランは端末内だけで完結。Premium は辞書の同期と共有、ホスト API
-            を解放します。
+            「<strong>辛い</strong>ラーメン（からい）」と「<strong>辛い</strong>経験（つらい）」。
+            同形異音は辞書だけでは読めません。候補を列挙し、文脈ルールで選び、
+            <strong>確信度と根拠つき</strong>で返します。字幕拡張・TTS 前処理に。
           </p>
           <div class="cta-row">
-            <a class="btn" id="cta-primary" href="./install.html">インストール</a>
-            <a class="btn ghost" href="./reading-demo.html">読みエンジンを試す</a>
-            <a class="btn ghost" href="./pricing.html">Premium を見る</a>
+            <a class="btn" href="#demo">いますぐ試す（無料）</a>
+            <a class="btn ghost" href="#accuracy">精度を見る</a>
           </div>
         </div>
-        <aside class="hero-aside fade-up delay" aria-label="デモ">
+        <aside class="hero-aside fade-up delay" aria-label="同形異音の例">
           <p class="ruby-demo">
-            <ruby>何故<rt>なぜ</rt></ruby>か
-            <ruby>直書き<rt>じかがき</rt></ruby>の
-            <ruby>字幕<rt>じまく</rt></ruby>に、
-            <ruby>振り仮名<rt>ふりがな</rt></ruby>を。
+            <ruby>辛い<rt>からい</rt></ruby>ラーメンを注文した。<br />
+            <ruby>辛い<rt>つらい</rt></ruby>経験を思い出した。
           </p>
+          <p class="aside-note">市場 / 下手 / 永遠 / 忙しい など、文脈でルビが変わります</p>
         </aside>
       </section>
 
-      <section class="section" id="features">
-        <h2>できること</h2>
-        <p class="sub">字幕の漢字に ruby を付け、読みの単位を自然な塊にまとめます。</p>
-        <div class="plan-grid">
-          <article class="plan">
-            <h3>Free</h3>
-            <p class="price">¥0</p>
-            <ul>
-              <li>ローカル辞書・形態素ベースの読み付け</li>
-              <li>手動読み・ユーザー辞書</li>
-              <li>オフラインでも動作</li>
-            </ul>
-          </article>
-          <article class="plan featured">
-            <h3>Premium</h3>
-            <p class="price">買い切り</p>
-            <ul>
-              <li>端末間の辞書同期</li>
-              <li>共有辞書の取り込み</li>
-              <li>ホスト型読み API</li>
-            </ul>
-            <p style="margin: 1rem 0 0">
-              <a class="btn" href="./pricing.html">料金と購入</a>
-            </p>
-          </article>
+      <section class="stats-strip fade-up" aria-label="公開ベンチ概要" id="stats-strip">
+        <article>
+          <p class="stat-value" id="stat-hard">—</p>
+          <p class="stat-label">hard 同形異音（固定ベンチ）</p>
+        </article>
+        <article>
+          <p class="stat-value" id="stat-seed">—</p>
+          <p class="stat-label">seed ベンチ正解率</p>
+        </article>
+        <article>
+          <p class="stat-value" id="stat-corpus">—</p>
+          <p class="stat-label">合成コーパス件数</p>
+        </article>
+      </section>
+
+      <section class="section demo-embed" id="demo" aria-labelledby="demo-title">
+        <h2 id="demo-title">その場で試せます</h2>
+        <p class="sub">
+          公開読み API を呼び出します。サンプルを選ぶか、自由に文章を入力してください。
+        </p>
+        <p class="engine-status" id="engine-status" role="status">エンジンを確認中…</p>
+
+        <div class="demo-workbench">
+          <div class="sample-row" role="group" aria-label="サンプル文">
+            <button type="button" class="chip" data-sample="辛いラーメンを食べた後、辛い経験を思い出した。">辛い×2</button>
+            <button type="button" class="chip" data-sample="市場規模が拡大した。朝の市場で魚を買った。">市場</button>
+            <button type="button" class="chip" data-sample="交渉では下手に出る。絵が下手だと笑われた。">下手</button>
+            <button type="button" class="chip" data-sample="ただ永遠に愛。永遠のテーマを議論した。お前の話は永遠に終わらない。">永遠</button>
+            <button type="button" class="chip" data-sample="馬鹿みたいに空を切った手で。大事になる前に止めた。">空・大事</button>
+          </div>
+
+          <label class="field-label" for="input-text">入力テキスト（500文字まで）</label>
+          <textarea
+            id="input-text"
+            maxlength="500"
+            rows="4"
+            placeholder="ここに日本語の文を入力…"
+          >辛いラーメンを食べた後、辛い経験を思い出した。</textarea>
+
+          <details class="user-dict-panel">
+            <summary>ユーザー辞書（任意）— 人名など、AIより優先</summary>
+            <div id="user-dict-rows" class="user-dict-rows"></div>
+            <button type="button" class="btn ghost small" id="add-dict-row">＋ 語を追加</button>
+          </details>
+
+          <div class="api-row">
+            <label class="field-label" for="api-url">API URL</label>
+            <input id="api-url" type="url" spellcheck="false" />
+          </div>
+
+          <div class="cta-row">
+            <button type="button" class="btn" id="run-btn">読みを判定する</button>
+            <span class="hint">⌘/Ctrl + Enter</span>
+          </div>
+
+          <p class="error" id="error" hidden></p>
+
+          <div class="result-block" id="result-block" hidden>
+            <h3>判定結果（ルビ）</h3>
+            <div class="ruby-out" id="ruby-out" lang="ja"></div>
+            <p class="full-reading" id="full-reading"></p>
+            <div class="legend">
+              <span data-source="trust_pattern">trust</span>
+              <span data-source="reranker">reranker</span>
+              <span data-source="cue">cue</span>
+              <span data-source="user_dict">user_dict</span>
+              <span data-source="base_engine">base</span>
+              <span data-source="creative_ruby">creative</span>
+            </div>
+            <div class="table-wrap">
+              <table class="result-table">
+                <thead>
+                  <tr>
+                    <th>表記</th>
+                    <th>読み</th>
+                    <th>確信度</th>
+                    <th>根拠</th>
+                    <th>候補</th>
+                  </tr>
+                </thead>
+                <tbody id="result-body"></tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section class="section">
-        <h2>オープンソース</h2>
+      <section class="section" id="accuracy" aria-labelledby="accuracy-title">
+        <h2 id="accuracy-title">公開ベンチの精度</h2>
         <p class="sub">
-          ソースは GitHub で公開。辞書由来の帰属は
-          <a href="https://github.com/Blackphi6/yt-furigana-extension/blob/main/COPYING">COPYING</a>
-          と
-          <a href="https://github.com/Blackphi6/yt-furigana-extension/blob/main/NOTICE">NOTICE</a>
-          を参照してください。
+          自前の固定ベンチです（他社数値の転載ではありません）。日次学習レポートでも推移を公開しています。
+        </p>
+        <div class="score-grid home-scores" id="accuracy-cards">
+          <article class="score-card">
+            <h3>seed</h3>
+            <p class="score-value" id="acc-seed">—</p>
+            <p class="score-meta" id="acc-seed-meta"></p>
+          </article>
+          <article class="score-card">
+            <h3>hard（同形異音）</h3>
+            <p class="score-value" id="acc-hard">—</p>
+            <p class="score-meta" id="acc-hard-meta"></p>
+          </article>
+          <article class="score-card">
+            <h3>easy</h3>
+            <p class="score-value" id="acc-easy">—</p>
+            <p class="score-meta" id="acc-easy-meta"></p>
+          </article>
+        </div>
+        <p class="hint">
+          詳細・サンプル検証:
+          <a href="./learning-report.html">学習レポート</a>
+        </p>
+      </section>
+
+      <section class="section" id="how" aria-labelledby="how-title">
+        <h2 id="how-title">幻覚しない設計</h2>
+        <p class="sub">自由生成の AI ではなく、「候補の中から文脈で選ぶ」構成のため、読みが壊れません。</p>
+        <ol class="how-steps">
+          <li>
+            <strong>読み候補を生成</strong>
+            <span>UniDic・同形異音辞書・専用句から候補を列挙。正解は候補内に閉じます。</span>
+          </li>
+          <li>
+            <strong>trust / cue で選択</strong>
+            <span>慣用句は trust、文脈キューで読み分け。候補外は採用しません。</span>
+          </li>
+          <li>
+            <strong>確信度を付与</strong>
+            <span>判定に根拠を添付。低確信は辞書（base）へ安全フォールバック。</span>
+          </li>
+          <li>
+            <strong>ユーザー辞書</strong>
+            <span>人名などはリクエストごとに指定でき、AI 判定より優先されます。</span>
+          </li>
+        </ol>
+      </section>
+
+      <section class="section" id="api" aria-labelledby="api-title">
+        <h2 id="api-title">1 リクエストで導入できます</h2>
+        <p class="sub">JSON を送るだけ。OpenAPI はエンジンの <code>/docs</code> にあります。</p>
+        <pre class="api-snippet" id="api-snippet"></pre>
+        <ul class="api-list">
+          <li><code>GET /health</code> — 稼働確認</li>
+          <li><code>POST /v1/readings</code> — 読み推定（候補・確信度）</li>
+          <li><code>GET /docs</code> — Swagger UI</li>
+        </ul>
+        <p class="hint">
+          公開デモ API（無料・レート制限あり）。拡張のローカル利用は
+          <code>http://127.0.0.1:8765</code> でも可。
+        </p>
+      </section>
+
+      <section class="section" id="extension" aria-labelledby="ext-title">
+        <h2 id="ext-title">Chrome 拡張</h2>
+        <p class="sub">
+          YouTube / TVer の日本語字幕にふりがなを重ねる非公式拡張です。Free は端末内だけで完結します。
         </p>
         <div class="cta-row">
-          <a class="btn ghost" href="https://github.com/Blackphi6/yt-furigana-extension">リポジトリを開く</a>
-          <a class="btn ghost" href="./privacy.html">プライバシーポリシー</a>
+          <a class="btn" href="./install.html">インストール</a>
+          <a class="btn ghost" href="./pricing.html">Premium</a>
+          <a class="btn ghost" href="./privacy.html">プライバシー</a>
         </div>
       </section>
 
       <footer class="site-footer">
-        <nav aria-label="フッタ">
-          <a href="./install.html">インストール</a>
-          <a href="./pricing.html">料金</a>
-          <a href="./privacy.html">プライバシー</a>
-          <a href="./terms.html">利用規約</a>
-          <a href="https://github.com/Blackphi6/yt-furigana-extension/blob/main/docs/OPEN-SOURCE-LICENSES.md"
-            >OSS ライセンス</a
-          >
-        </nav>
-        <p>© YT Furigana — MIT License</p>
+        <a href="./learning-report.html">学習レポート</a>
+        <a href="./privacy.html">プライバシー</a>
+        <a href="./terms.html">利用規約</a>
+        <a href="https://github.com/Blackphi6/yt-furigana-extension">GitHub</a>
         <p class="trademark-note">
-          YouTube、TVer、Google Chrome、GitHub、Stripe、Ollama 等の名称・ロゴは各社の商標です。
+          YouTube、TVer、Google Chrome、GitHub、Stripe、Ollama、Hugging Face 等の名称・ロゴは各社の商標です。
           「YT Furigana」の「YT」は製品名の略称であり、YouTube の商標ではありません。
-          本サイトは表示用に Google Fonts を読み込むことがあります（拡張本体とは別）。
         </p>
       </footer>
     </div>
-    <script>
-      const cfg = window.YT_FURIGANA_SITE || {};
-      const primary = document.getElementById("cta-primary");
-      if (cfg.chromeStoreUrl) {
-        primary.href = cfg.chromeStoreUrl;
-        primary.textContent = "Chrome に追加";
-      } else if (cfg.installUrl) {
-        primary.href = cfg.installUrl;
-      }
-    </script>
+    <script src="./home-metrics.js" type="module"></script>
+    <script src="./reading-demo.js" type="module"></script>
   </body>
 </html>

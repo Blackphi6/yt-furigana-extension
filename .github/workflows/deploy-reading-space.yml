@@ -1,0 +1,96 @@
+# Deploy reading-engine Docker image to Hugging Face Spaces (¥0 CPU).
+#
+# Secrets:
+#   HF_TOKEN  — write token with permission to push to the Space
+#
+# Optional vars (repo Settings → Variables):
+#   HF_SPACE_ID  — e.g. Blackphi6/yt-furigana-readings (default below)
+
+name: Deploy reading Space
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "reading-engine/**"
+      - "data/generated/heteronym-candidates.json"
+      - "data/creative-ruby/**"
+      - ".github/workflows/deploy-reading-space.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-reading-space
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install huggingface_hub
+        run: pip install "huggingface_hub[cli]>=0.26.0"
+      - name: Sync Space files
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE_ID: ${{ vars.HF_SPACE_ID }}
+        run: |
+          if [ -z "$HF_TOKEN" ]; then
+            echo "::error::Set repository secret HF_TOKEN (Hugging Face write token)"
+            exit 1
+          fi
+          export HF_SPACE_ID="${HF_SPACE_ID:-Blackphi6/yt-furigana-readings}"
+          python <<'PY'
+          import os
+          import shutil
+          from pathlib import Path
+          from huggingface_hub import HfApi, create_repo
+
+          space_id = os.environ["HF_SPACE_ID"]
+          token = os.environ["HF_TOKEN"]
+          root = Path(".").resolve()
+          staging = root / ".hf-space-staging"
+          if staging.exists():
+              shutil.rmtree(staging)
+          staging.mkdir(parents=True)
+
+          # Space root = Docker build context (repo subset)
+          pairs = [
+              ("reading-engine/deploy/Dockerfile", "Dockerfile"),
+              ("reading-engine/deploy/README.md", "README.md"),
+              ("reading-engine/requirements.txt", "reading-engine/requirements.txt"),
+              ("reading-engine/reading_engine", "reading-engine/reading_engine"),
+              ("reading-engine/data", "reading-engine/data"),
+              ("data/generated/heteronym-candidates.json", "data/generated/heteronym-candidates.json"),
+              ("data/creative-ruby", "data/creative-ruby"),
+          ]
+          for src, dst in pairs:
+              s = root / src
+              d = staging / dst
+              d.parent.mkdir(parents=True, exist_ok=True)
+              if s.is_dir():
+                  shutil.copytree(s, d, dirs_exist_ok=True)
+              else:
+                  shutil.copy2(s, d)
+
+          # Dockerfile paths assume repo-root context; Space root IS that context
+          api = HfApi(token=token)
+          try:
+              create_repo(space_id, repo_type="space", space_sdk="docker", exist_ok=True, token=token)
+          except Exception as exc:
+              print("create_repo:", exc)
+          api.upload_folder(
+              folder_path=str(staging),
+              repo_id=space_id,
+              repo_type="space",
+              commit_message="deploy: sync reading-engine Space",
+          )
+          print(f"Uploaded to https://huggingface.co/spaces/{space_id}")
+          print(f"API: https://{space_id.replace('/', '-').lower()}.hf.space")
+          PY

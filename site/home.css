@@ -1,0 +1,157 @@
+.home-page .home-hero {
+  align-items: start;
+}
+
+.home-page .home-hero h1 {
+  font-size: clamp(1.85rem, 4.5vw, 3.1rem);
+}
+
+.home-page .home-hero h1 em {
+  font-style: normal;
+  border-bottom: 0.1em solid color-mix(in oklab, var(--vermilion) 50%, transparent);
+}
+
+.pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0 0 1rem;
+}
+
+.pill {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  padding: 0.28rem 0.65rem;
+  border: 1px solid var(--line);
+  color: var(--sumi-soft);
+  background: color-mix(in oklab, white 45%, transparent);
+}
+
+.aside-note {
+  margin: 0.85rem 0 0;
+  font-family: var(--body);
+  font-size: 0.85rem;
+  color: var(--sumi-soft);
+}
+
+.stats-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  padding: 1.25rem 0 2rem;
+  border-bottom: 1px solid var(--line);
+}
+
+@media (max-width: 720px) {
+  .stats-strip {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stats-strip article {
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  background: color-mix(in oklab, white 50%, var(--paper));
+}
+
+.stat-value {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.stat-label {
+  margin: 0.35rem 0 0;
+  font-size: 0.82rem;
+  color: var(--sumi-soft);
+}
+
+.demo-embed .engine-status {
+  margin-bottom: 1rem;
+}
+
+.home-scores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.85rem;
+  margin: 0 0 1rem;
+}
+
+.home-scores .score-card {
+  background: color-mix(in oklab, white 55%, var(--paper));
+  border: 1px solid var(--line);
+  border-radius: 0.35rem;
+  padding: 1rem 1.1rem;
+}
+
+.home-scores h3 {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--sumi-soft);
+}
+
+.home-scores .score-value {
+  margin: 0.35rem 0 0.15rem;
+  font-family: var(--display);
+  font-size: 1.85rem;
+  font-weight: 600;
+}
+
+.home-scores .score-meta {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--sumi-soft);
+}
+
+.how-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.how-steps li {
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  background: color-mix(in oklab, white 45%, transparent);
+}
+
+.how-steps strong {
+  font-family: var(--display);
+  font-size: 1.05rem;
+}
+
+.how-steps span {
+  color: var(--sumi-soft);
+  font-size: 0.95rem;
+}
+
+.api-snippet {
+  margin: 0 0 1rem;
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  border: 1px solid var(--line);
+  background: color-mix(in oklab, var(--sumi) 92%, black);
+  color: var(--paper);
+  border-radius: 0.3rem;
+}
+
+.api-list {
+  margin: 0 0 1rem;
+  padding-left: 1.2rem;
+  color: var(--sumi-soft);
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--sumi-soft);
+}

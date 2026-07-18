@@ -17,6 +17,7 @@ from reading_engine.premium import (
     require_auth_for_readings,
     verify_license_key,
 )
+from reading_engine.rate_limit import RateLimitMiddleware
 from reading_engine.stripe_billing import (
     create_checkout_session,
     get_order,
@@ -26,7 +27,7 @@ from reading_engine.stripe_billing import (
 
 app = FastAPI(title="YT Furigana Reading Engine", version="0.3.0")
 
-# Local / Pages demo (site/reading-demo.html). Tighten in production if needed.
+# Local / Pages demo. Public Space should set YT_FURIGANA_CORS_ORIGINS explicitly.
 _cors = os.environ.get(
     "YT_FURIGANA_CORS_ORIGINS",
     "http://127.0.0.1:4173,http://localhost:4173,http://127.0.0.1:5500,http://localhost:5500,"
@@ -39,6 +40,7 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
+app.add_middleware(RateLimitMiddleware)
 
 
 class UserDictEntry(BaseModel):

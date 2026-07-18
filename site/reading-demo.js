@@ -1,6 +1,7 @@
 const DEFAULT_API =
   (window.YT_FURIGANA_SITE && window.YT_FURIGANA_SITE.readingApiUrl) ||
   "http://127.0.0.1:8765";
+const LOCAL_FALLBACK = "http://127.0.0.1:8765";
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -103,20 +104,32 @@ function showError(msg) {
 }
 
 async function checkHealth() {
-  const base = apiEl.value.replace(/\/$/, "");
-  try {
+  const tryBase = async (base) => {
     const res = await fetch(`${base}/health`, { method: "GET" });
     if (!res.ok) throw new Error(String(res.status));
-    const data = await res.json();
-    statusEl.dataset.state = "ok";
-    statusEl.textContent = `エンジン稼働中（${base}）${data.readingsAuth ? " · APIキー要" : ""}`;
-    return true;
-  } catch {
-    statusEl.dataset.state = "down";
-    statusEl.textContent =
-      "エンジン未接続 — npm run reading-engine のあと、このページを開いてください";
-    return false;
+    return res.json();
+  };
+
+  const preferred = apiEl.value.replace(/\/$/, "");
+  const candidates = [preferred];
+  if (preferred !== LOCAL_FALLBACK) candidates.push(LOCAL_FALLBACK);
+
+  for (const base of candidates) {
+    try {
+      const data = await tryBase(base);
+      apiEl.value = base;
+      statusEl.dataset.state = "ok";
+      statusEl.textContent = `エンジン稼働中（${base}）${data.readingsAuth ? " · APIキー要" : ""}`;
+      return true;
+    } catch {
+      /* try next */
+    }
   }
+
+  statusEl.dataset.state = "down";
+  statusEl.textContent =
+    "エンジン未接続 — 公開 Space の起動待ち、または npm run reading-engine";
+  return false;
 }
 
 async function runAnalyze() {
@@ -149,7 +162,7 @@ async function runAnalyze() {
     statusEl.dataset.state = "ok";
   } catch (err) {
     showError(
-      `リクエスト失敗: ${err.message}\nローカルで npm run reading-engine を起動し、CORS が許可されているか確認してください。`
+      `リクエスト失敗: ${err.message}\n公開 API（Hugging Face Space）の起動待ちか、ローカルで npm run reading-engine を確認してください。`
     );
     resultBlock.hidden = true;
     await checkHealth();
