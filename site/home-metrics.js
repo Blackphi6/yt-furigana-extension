@@ -17,14 +17,22 @@ function renderSnippet() {
   const base = apiBase();
   const el = document.getElementById("api-snippet");
   if (!el) return;
-  // Caption-oriented sample (not a clone of third-party API docs).
-  el.textContent = `# 字幕デモ向け — 町中の読み分け
+  // Keep HTML fallback; only refresh host if config differs.
+  const text = el.textContent || "";
+  if (text.includes("東海林") || text.includes("しょうじ") || !text.trim()) {
+    el.textContent = `# 字幕デモ向け — 町中の読み分け
 curl -s ${base}/v1/readings \\
   -H 'Content-Type: application/json' \\
   -d '{
     "text": "町中のカフェに入ると、その噂が町中に広まった。",
     "return_candidates": true
   }'`;
+    return;
+  }
+  el.textContent = text.replace(
+    /https?:\/\/[^\s/]+(?:\/[^\s]*)?\/v1\/readings/g,
+    `${base}/v1/readings`
+  );
 }
 
 async function loadMetrics() {
