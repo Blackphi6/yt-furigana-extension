@@ -86,6 +86,18 @@ TRUST_PATTERNS: list[TrustPattern] = [
         surface="大事",
         reading="おおごと",
     ),
+    TrustPattern(
+        name="machinaka-no",
+        pattern=re.compile(r"町中の"),
+        surface="町中",
+        reading="まちなか",
+    ),
+    TrustPattern(
+        name="machijuu-hiromaru",
+        pattern=re.compile(r"町中に(?:広|知れ)|噂が町中|町中で噂|町中に広まる"),
+        surface="町中",
+        reading="まちじゅう",
+    ),
 ]
 
 

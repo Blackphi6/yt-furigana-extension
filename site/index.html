@@ -47,8 +47,8 @@
           </h1>
           <p class="lead">
             YT Furigana は YouTube / TVer の日本語字幕向けの<strong>非公式</strong> Chrome 拡張です。
-            ここでは同じ読みエンジンを公開デモとして呼べます。表層が同じでも文脈が違えば読みが変わる語
-            （方・今日・表など）を、候補の外側には出さずに返します。
+            ここでは同じ読みエンジンを公開デモとして呼べます。同じ表記でも文脈で読みが分かれる語
+            （町中・忙しい・風など）を、候補の外側には出さずに返します。
           </p>
           <div class="cta-row">
             <a class="btn" href="#demo">デモを開く</a>
@@ -58,10 +58,10 @@
         </div>
         <aside class="hero-aside fade-up delay" aria-label="字幕イメージ">
           <p class="ruby-demo">
-            この<ruby>伝え方<rt>つたえかた</rt></ruby>でいい？<br />
-            駅の<ruby>方<rt>ほう</rt></ruby>へ歩いた。
+            <ruby>町中<rt>まちなか</rt></ruby>のカフェに入り、<br />
+            噂が<ruby>町中<rt>まちじゅう</rt></ruby>に広まった。
           </p>
-          <p class="aside-note">字幕断片でも、近くの語句で読みを切り替えます</p>
+          <p class="aside-note">同じ「町中」でも、近くの語句で読みが分かれます</p>
         </aside>
       </section>
 
@@ -89,11 +89,41 @@
 
         <div class="demo-workbench">
           <div class="sample-row" role="group" aria-label="サンプル文">
-            <button type="button" class="chip" data-sample="この伝え方で伝わるかな。駅の方へ歩いてみた。">方</button>
-            <button type="button" class="chip" data-sample="今日この頃は雨が多い。今日は朝から会議だ。">今日</button>
-            <button type="button" class="chip" data-sample="成績を表にまとめた。表に出て挨拶した。">表</button>
-            <button type="button" class="chip" data-sample="よそ見する暇もない忙しい世界を。今日は仕事の予定で忙しい。">忙しい</button>
-            <button type="button" class="chip" data-sample="博士号を取った話をした。物知り博士だと言われた。こんなふうに書いてみた。">博士・風</button>
+            <button
+              type="button"
+              class="chip"
+              data-sample="町中のカフェに入ると、その噂が町中に広まった。"
+            >
+              町中
+            </button>
+            <button
+              type="button"
+              class="chip"
+              data-sample="風が強くて帽子が飛んだ。こんなふうに書いてみた。"
+            >
+              風
+            </button>
+            <button
+              type="button"
+              class="chip"
+              data-sample="成績を表にまとめた。表に出て説明した。"
+            >
+              表
+            </button>
+            <button
+              type="button"
+              class="chip"
+              data-sample="よそ見する暇もない忙しい世界で、仕事の予定で忙しい。"
+            >
+              忙しい
+            </button>
+            <button
+              type="button"
+              class="chip"
+              data-sample="博士号の話をしたら、物知り博士だと言われた。"
+            >
+              博士
+            </button>
           </div>
 
           <label class="field-label" for="input-text">字幕風テキスト（500文字まで）</label>
@@ -101,8 +131,8 @@
             id="input-text"
             maxlength="500"
             rows="4"
-            placeholder="動画の字幕や短い日本語を貼り付け…"
-          >この伝え方で伝わるかな。駅の方へ歩いてみた。</textarea>
+            placeholder="同じ漢字が二通りの読みになる短文を…"
+          >町中のカフェに入ると、その噂が町中に広まった。</textarea>
 
           <details class="user-dict-panel">
             <summary>個人辞書（任意）— 固有名詞の読みを固定</summary>
@@ -193,7 +223,7 @@
           </li>
           <li>
             <strong>慣用句は trust</strong>
-            <span>「下手に出る」など、審判モデルが崩れやすい句を正規表現で固定します。</span>
+            <span>「一日中」「何度も」など、崩れやすい句を trust / 固定読みで守ります。</span>
           </li>
           <li>
             <strong>ラティス＋文脈キュー</strong>

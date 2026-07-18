@@ -64,6 +64,9 @@ CONTEXT_RULES: list[dict[str, Any]] = [
     {"surface": "風", "reading": "ふう", "weight": 2, "cues": ["こんなふう", "どういうふう", "ふうに"]},
     {"surface": "博士", "reading": "はかせ", "weight": 2, "cues": ["物知り", "博士だ"]},
     {"surface": "博士", "reading": "はくし", "weight": 3, "cues": ["博士号", "学位", "論文"]},
+    # 同表層の二重出現デモ用
+    {"surface": "町中", "reading": "まちなか", "weight": 4, "cues": ["町中の", "町中のカフェ", "市街"]},
+    {"surface": "町中", "reading": "まちじゅう", "weight": 4, "cues": ["町中に広", "噂が町中", "町中に知れ", "町中で噂"]},
 ]
 
 

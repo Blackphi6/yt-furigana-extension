@@ -161,6 +161,18 @@ export const CONTEXT_READING_RULES = [
     reading: "だいじ",
     weight: 2,
     cues: ["大事な", "大事です", "大事だ", "大事に思", "大事にして"]
+  },
+  {
+    surface: "町中",
+    reading: "まちなか",
+    weight: 5,
+    cues: ["町中の", "町中のカフェ", "町中に入"]
+  },
+  {
+    surface: "町中",
+    reading: "まちじゅう",
+    weight: 5,
+    cues: ["町中に広", "噂が町中", "町中に知れ", "町中で噂"]
   }
 ];
 
