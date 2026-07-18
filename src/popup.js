@@ -65,13 +65,13 @@ function updatePlanUi(settings) {
   const entitlement = resolveEntitlement(settings);
   const premium = isPremiumPlan(entitlement.plan);
   if (planBadge) {
-    planBadge.textContent = premium ? "Premium" : "Free";
+    planBadge.textContent = premium ? "有料" : "無料";
     planBadge.classList.toggle("is-premium", premium);
   }
   if (planHint) {
     planHint.innerHTML = premium
-      ? "Premium 有効: 辞書同期・共有辞書が使えます。"
-      : "Free: ローカルふりがな・クリック学習は無制限（クラウド送信なし）。<br />Premium: 辞書クラウド同期・共有辞書。";
+      ? "有料が有効です。読み辞書の移動や、みんな用辞書が使えます。"
+      : "無料：ふりがなと、読みの覚え直しは制限なし（外には送りません）。<br />有料：直した読みを別のパソコンにも移す／みんな用の読み辞書を受け取る、などができます。";
   }
   if (sponsorsLink) {
     sponsorsLink.href = settings.sponsorsUrl || DEFAULT_SPONSORS_URL;
@@ -356,45 +356,45 @@ verifyLicenseButton?.addEventListener("click", async () => {
     setStatus(premiumStatus, "サーバーへのアクセス許可が必要です", false);
     return;
   }
-  setStatus(premiumStatus, "ライセンス検証中...", true);
+  setStatus(premiumStatus, "キーを確認しています…", true);
   const response = await sendMessage("VERIFY_LICENSE", {
     licenseKey: licenseKeyInput?.value.trim() || ""
   });
   if (!response.ok) {
-    setStatus(premiumStatus, response.error ?? "検証に失敗しました", false);
+    setStatus(premiumStatus, response.error ?? "キーの確認に失敗しました", false);
     return;
   }
   const settings = await chrome.storage.sync.get(DEFAULT_SETTINGS);
   updatePlanUi(settings);
-  setStatus(premiumStatus, `Premium 有効（${response.licenseKey}）`, true);
+  setStatus(premiumStatus, `有料が有効になりました`, true);
 });
 
 syncDictButton?.addEventListener("click", async () => {
   await saveSettings();
-  setStatus(premiumStatus, "辞書を同期中...", true);
+  setStatus(premiumStatus, "読み辞書を移しています…", true);
   const response = await sendMessage("SYNC_USER_DICT");
   if (!response.ok) {
-    setStatus(premiumStatus, response.error ?? "同期に失敗しました", false);
+    setStatus(premiumStatus, response.error ?? "移動に失敗しました", false);
     return;
   }
   setStatus(
     premiumStatus,
-    `同期完了（${response.count} 語 / ${response.revisedAt || ""}）`,
+    `移動できました（${response.count} 語）`,
     true
   );
 });
 
 fetchSharedDictButton?.addEventListener("click", async () => {
   await saveSettings();
-  setStatus(premiumStatus, "共有辞書を取得中...", true);
+  setStatus(premiumStatus, "みんな用辞書を取り込んでいます…", true);
   const response = await sendMessage("FETCH_SHARED_DICT");
   if (!response.ok) {
-    setStatus(premiumStatus, response.error ?? "取得に失敗しました", false);
+    setStatus(premiumStatus, response.error ?? "取り込みに失敗しました", false);
     return;
   }
   setStatus(
     premiumStatus,
-    `共有辞書 ${response.count} 語を取り込みました（ページ再読込で反映）`,
+    `みんな用辞書 ${response.count} 語を取り込みました（ページを再読み込みすると反映）`,
     true
   );
 });
@@ -428,7 +428,7 @@ exportLearningButton?.addEventListener("click", async () => {
   anchor.download = `yt-furigana-inbox-${stamp}.jsonl`;
   anchor.click();
   URL.revokeObjectURL(url);
-  setLearningStatus(`${inbox.length} 件を書き出しました（inbox.jsonl に追記して npm run learn）`, true);
+  setLearningStatus(`${inbox.length} 件のメモをファイルに出しました`, true);
 });
 
 clearLearningButton?.addEventListener("click", async () => {
@@ -437,7 +437,7 @@ clearLearningButton?.addEventListener("click", async () => {
     setLearningStatus(response.error ?? "消去に失敗しました", false);
     return;
   }
-  setLearningStatus("学習ログを消去しました", true);
+  setLearningStatus("メモを消しました", true);
 });
 
 document.getElementById("openLicenses")?.addEventListener("click", (event) => {
