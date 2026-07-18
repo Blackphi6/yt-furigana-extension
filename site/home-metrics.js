@@ -17,11 +17,11 @@ function renderSnippet() {
   const base = apiBase();
   const el = document.getElementById("api-snippet");
   if (!el) return;
-  el.textContent = `# 読み推定 — user_dict で固有名詞も指定できます
+  el.textContent = `# YT Furigana demo — 固有名詞は user_dict で固定
 curl -s ${base}/v1/readings \\
   -H 'Content-Type: application/json' \\
   -d '{
-    "text": "東海林さんが辛いラーメンを食べた。",
+    "text": "東海林さんが市場規模の話をした。",
     "user_dict": [{"surface": "東海林", "reading": "しょうじ"}],
     "return_candidates": true
   }'`;

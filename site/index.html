@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>YT Furigana — 文脈で読み分ける日本語読みデモ</title>
+    <title>YT Furigana — 字幕向けふりがな＆読みAPI</title>
     <meta
       name="description"
-      content="同じ漢字でも読みは文脈で変わる。候補制約型の公開読みAPIと、YouTube / TVer 字幕ふりがな拡張。"
+      content="YouTube / TVer 字幕にふりがなを重ねる非公式拡張と、候補内だけから読みを返す公開デモAPI。"
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -24,11 +24,11 @@
       <header class="site-header">
         <a class="brand" href="./">YT Furigana</a>
         <nav class="nav" aria-label="主要ナビ">
-          <a href="#demo">デモ</a>
-          <a href="#accuracy">精度</a>
-          <a href="#how">仕組み</a>
-          <a href="#api">API</a>
-          <a href="./learning-report.html">学習レポート</a>
+          <a href="#demo">試す</a>
+          <a href="#accuracy">ベンチ</a>
+          <a href="#how">パイプライン</a>
+          <a href="#api">エンドポイント</a>
+          <a href="./learning-report.html">学習ログ</a>
           <a href="./install.html">拡張</a>
           <a href="https://github.com/Blackphi6/yt-furigana-extension">GitHub</a>
         </nav>
@@ -37,41 +37,42 @@
       <section class="hero home-hero fade-up">
         <div>
           <p class="pill-row" aria-label="特徴">
-            <span class="pill">API 公開</span>
-            <span class="pill">候補制約 · 幻覚しない</span>
-            <span class="pill">ユーザー辞書対応</span>
+            <span class="pill">字幕向け拡張</span>
+            <span class="pill">候補ラティス内のみ</span>
+            <span class="pill">クリック学習</span>
           </p>
           <h1>
-            同じ漢字でも、<em>読みは文脈で変わる</em>。<br />
-            正しい読みを返すデモです。
+            字幕の漢字に、<em>読めるルビ</em>を。<br />
+            まずブラウザで読み分けを確認できます。
           </h1>
           <p class="lead">
-            「<strong>辛い</strong>ラーメン（からい）」と「<strong>辛い</strong>経験（つらい）」。
-            同形異音は辞書だけでは読めません。候補を列挙し、文脈ルールで選び、
-            <strong>確信度と根拠つき</strong>で返します。字幕拡張・TTS 前処理に。
+            YT Furigana は YouTube / TVer の日本語字幕向けの<strong>非公式</strong> Chrome 拡張です。
+            ここでは同じ読みエンジンを公開デモとして呼べます。表層が同じでも文脈が違えば読みが変わる語
+            （市場・下手・永遠など）を、候補の外側には出さずに返します。
           </p>
           <div class="cta-row">
-            <a class="btn" href="#demo">いますぐ試す（無料）</a>
-            <a class="btn ghost" href="#accuracy">精度を見る</a>
+            <a class="btn" href="#demo">デモを開く</a>
+            <a class="btn ghost" href="#accuracy">ベンチを見る</a>
+            <a class="btn ghost" href="./install.html">拡張を入れる</a>
           </div>
         </div>
-        <aside class="hero-aside fade-up delay" aria-label="同形異音の例">
+        <aside class="hero-aside fade-up delay" aria-label="字幕イメージ">
           <p class="ruby-demo">
-            <ruby>辛い<rt>からい</rt></ruby>ラーメンを注文した。<br />
-            <ruby>辛い<rt>つらい</rt></ruby>経験を思い出した。
+            <ruby>市場<rt>しじょう</rt></ruby>規模が拡大した。<br />
+            朝の<ruby>市場<rt>いちば</rt></ruby>で魚を買った。
           </p>
-          <p class="aside-note">市場 / 下手 / 永遠 / 忙しい など、文脈でルビが変わります</p>
+          <p class="aside-note">字幕断片でも、近くの語句で読みを切り替えます</p>
         </aside>
       </section>
 
       <section class="stats-strip fade-up" aria-label="公開ベンチ概要" id="stats-strip">
         <article>
           <p class="stat-value" id="stat-hard">—</p>
-          <p class="stat-label">hard 同形異音（固定ベンチ）</p>
+          <p class="stat-label">hard（同形異音）正答率</p>
         </article>
         <article>
           <p class="stat-value" id="stat-seed">—</p>
-          <p class="stat-label">seed ベンチ正解率</p>
+          <p class="stat-label">seed ベンチ正答率</p>
         </article>
         <article>
           <p class="stat-value" id="stat-corpus">—</p>
@@ -80,31 +81,31 @@
       </section>
 
       <section class="section demo-embed" id="demo" aria-labelledby="demo-title">
-        <h2 id="demo-title">その場で試せます</h2>
+        <h2 id="demo-title">読みエンジンを試す</h2>
         <p class="sub">
-          公開読み API を呼び出します。サンプルを選ぶか、自由に文章を入力してください。
+          公開デモ API に文を送ります。チップを押すか、字幕っぽい短文を貼り付けてください。
         </p>
         <p class="engine-status" id="engine-status" role="status">エンジンを確認中…</p>
 
         <div class="demo-workbench">
           <div class="sample-row" role="group" aria-label="サンプル文">
-            <button type="button" class="chip" data-sample="辛いラーメンを食べた後、辛い経験を思い出した。">辛い×2</button>
             <button type="button" class="chip" data-sample="市場規模が拡大した。朝の市場で魚を買った。">市場</button>
             <button type="button" class="chip" data-sample="交渉では下手に出る。絵が下手だと笑われた。">下手</button>
             <button type="button" class="chip" data-sample="ただ永遠に愛。永遠のテーマを議論した。お前の話は永遠に終わらない。">永遠</button>
-            <button type="button" class="chip" data-sample="馬鹿みたいに空を切った手で。大事になる前に止めた。">空・大事</button>
+            <button type="button" class="chip" data-sample="よそ見する暇もない忙しい世界を。今日は仕事の予定で忙しい。">忙しい</button>
+            <button type="button" class="chip" data-sample="辛いラーメンを食べた後、辛い経験を思い出した。">辛い</button>
           </div>
 
-          <label class="field-label" for="input-text">入力テキスト（500文字まで）</label>
+          <label class="field-label" for="input-text">テキスト（500文字まで）</label>
           <textarea
             id="input-text"
             maxlength="500"
             rows="4"
-            placeholder="ここに日本語の文を入力…"
-          >辛いラーメンを食べた後、辛い経験を思い出した。</textarea>
+            placeholder="字幕や短い日本語を入力…"
+          >市場規模が拡大した。朝の市場で魚を買った。</textarea>
 
           <details class="user-dict-panel">
-            <summary>ユーザー辞書（任意）— 人名など、AIより優先</summary>
+            <summary>個人辞書（任意）— 固有名詞の読みを固定</summary>
             <div id="user-dict-rows" class="user-dict-rows"></div>
             <button type="button" class="btn ghost small" id="add-dict-row">＋ 語を追加</button>
           </details>
@@ -115,14 +116,14 @@
           </div>
 
           <div class="cta-row">
-            <button type="button" class="btn" id="run-btn">読みを判定する</button>
+            <button type="button" class="btn" id="run-btn">ルビを付ける</button>
             <span class="hint">⌘/Ctrl + Enter</span>
           </div>
 
           <p class="error" id="error" hidden></p>
 
           <div class="result-block" id="result-block" hidden>
-            <h3>判定結果（ルビ）</h3>
+            <h3>結果</h3>
             <div class="ruby-out" id="ruby-out" lang="ja"></div>
             <p class="full-reading" id="full-reading"></p>
             <div class="legend">
@@ -152,9 +153,10 @@
       </section>
 
       <section class="section" id="accuracy" aria-labelledby="accuracy-title">
-        <h2 id="accuracy-title">公開ベンチの精度</h2>
+        <h2 id="accuracy-title">固定ベンチ（自前）</h2>
         <p class="sub">
-          自前の固定ベンチです（他社数値の転載ではありません）。日次学習レポートでも推移を公開しています。
+          リポジトリ内の seed / hard / easy セットです。外部サービスのスコア表ではありません。
+          日次の増減は学習ログで追えます。
         </p>
         <div class="score-grid home-scores" id="accuracy-cards">
           <article class="score-card">
@@ -174,63 +176,67 @@
           </article>
         </div>
         <p class="hint">
-          詳細・サンプル検証:
-          <a href="./learning-report.html">学習レポート</a>
+          推移とサンプル:
+          <a href="./learning-report.html">学習ログ</a>
         </p>
       </section>
 
       <section class="section" id="how" aria-labelledby="how-title">
-        <h2 id="how-title">幻覚しない設計</h2>
-        <p class="sub">自由生成の AI ではなく、「候補の中から文脈で選ぶ」構成のため、読みが壊れません。</p>
+        <h2 id="how-title">読みが壊れにくい順</h2>
+        <p class="sub">
+          LLM に自由に読ませるのではなく、候補ラティスの内側だけで決めます。拡張のローカル変換と同じ考え方です。
+        </p>
         <ol class="how-steps">
           <li>
-            <strong>読み候補を生成</strong>
-            <span>UniDic・同形異音辞書・専用句から候補を列挙。正解は候補内に閉じます。</span>
+            <strong>個人辞書を最優先</strong>
+            <span>リクエストの user_dict、拡張のクリック学習が最上位です。</span>
           </li>
           <li>
-            <strong>trust / cue で選択</strong>
-            <span>慣用句は trust、文脈キューで読み分け。候補外は採用しません。</span>
+            <strong>慣用句は trust</strong>
+            <span>「下手に出る」など、審判モデルが崩れやすい句を正規表現で固定します。</span>
           </li>
           <li>
-            <strong>確信度を付与</strong>
-            <span>判定に根拠を添付。低確信は辞書（base）へ安全フォールバック。</span>
+            <strong>ラティス＋文脈キュー</strong>
+            <span>形態素と辞書から候補を作り、近くの語句で読みを選びます。候補外は捨てます。</span>
           </li>
           <li>
-            <strong>ユーザー辞書</strong>
-            <span>人名などはリクエストごとに指定でき、AI 判定より優先されます。</span>
+            <strong>低確信は辞書へ戻す</strong>
+            <span>確信度が低いときは base 読みに倒し、変な読みを字幕に載せにくくします。</span>
           </li>
         </ol>
       </section>
 
       <section class="section" id="api" aria-labelledby="api-title">
-        <h2 id="api-title">1 リクエストで導入できます</h2>
-        <p class="sub">JSON を送るだけ。OpenAPI はエンジンの <code>/docs</code> にあります。</p>
+        <h2 id="api-title">デモ API</h2>
+        <p class="sub">
+          サイト用の軽量エンドポイントです（無料・レート制限あり）。本番の字幕拡張は端末内エンジンが既定です。
+        </p>
         <pre class="api-snippet" id="api-snippet"></pre>
         <ul class="api-list">
-          <li><code>GET /health</code> — 稼働確認</li>
-          <li><code>POST /v1/readings</code> — 読み推定（候補・確信度）</li>
-          <li><code>GET /docs</code> — Swagger UI</li>
+          <li><code>GET /health</code> — 生存確認</li>
+          <li><code>POST /v1/readings</code> — 読み＋候補＋根拠</li>
+          <li><code>GET /docs</code> — OpenAPI UI</li>
         </ul>
         <p class="hint">
-          公開デモ API（無料・レート制限あり）。拡張のローカル利用は
-          <code>http://127.0.0.1:8765</code> でも可。
+          自分のマシンでは <code>npm run reading-engine</code> →
+          <code>http://127.0.0.1:8765</code> でも同じ契約です。
         </p>
       </section>
 
       <section class="section" id="extension" aria-labelledby="ext-title">
-        <h2 id="ext-title">Chrome 拡張</h2>
+        <h2 id="ext-title">Chrome 拡張本体</h2>
         <p class="sub">
-          YouTube / TVer の日本語字幕にふりがなを重ねる非公式拡張です。Free は端末内だけで完結します。
+          動画プレイヤー上の日本語字幕に ruby を重ねます。Free はクラウド送信なし。読みの訂正は端末内に学習されます。
         </p>
         <div class="cta-row">
-          <a class="btn" href="./install.html">インストール</a>
+          <a class="btn" href="./install.html">インストール手順</a>
           <a class="btn ghost" href="./pricing.html">Premium</a>
           <a class="btn ghost" href="./privacy.html">プライバシー</a>
         </div>
       </section>
 
       <footer class="site-footer">
-        <a href="./learning-report.html">学習レポート</a>
+        <a href="./learning-report.html">学習ログ</a>
         <a href="./privacy.html">プライバシー</a>
         <a href="./terms.html">利用規約</a>
         <a href="https://github.com/Blackphi6/yt-furigana-extension">GitHub</a>

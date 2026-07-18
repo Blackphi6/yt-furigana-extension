@@ -168,7 +168,7 @@ async function runAnalyze() {
     await checkHealth();
   } finally {
     btn.disabled = false;
-    btn.textContent = "読みを判定する";
+    btn.textContent = "ルビを付ける";
   }
 }
 
