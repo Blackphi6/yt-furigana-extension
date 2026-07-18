@@ -142,10 +142,25 @@
             placeholder="同じ漢字が二通りの読みになる短文を…"
           >町中のカフェに入ると、その噂が町中に広まった。</textarea>
 
-          <details class="user-dict-panel">
-            <summary>個人辞書（任意）— 固有名詞の読みを固定</summary>
-            <div id="user-dict-rows" class="user-dict-rows"></div>
-            <button type="button" class="btn ghost small" id="add-dict-row">＋ 語を追加</button>
+          <details class="reading-pins">
+            <summary>この文だけ読みを固定（任意）</summary>
+            <p class="hint">
+              拡張でクリックして直すのと同じ優先です。下に
+              <strong>漢字（空白）かな</strong> を1行ずつ書いてください。このリクエスト以外には残りません。
+            </p>
+            <label class="field-label" for="reading-pins">固定リスト</label>
+            <textarea
+              id="reading-pins"
+              rows="3"
+              spellcheck="false"
+              placeholder="東海林　しょうじ&#10;葛飾　かつしか"
+            ></textarea>
+            <div class="pin-actions">
+              <button type="button" class="btn ghost small" id="pin-example">
+                例を入れる（東海林）
+              </button>
+              <button type="button" class="btn ghost small" id="pin-clear">クリア</button>
+            </div>
           </details>
 
           <details class="api-advanced">

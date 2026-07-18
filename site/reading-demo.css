@@ -94,8 +94,7 @@
 
 #input-text,
 #api-url,
-.dict-surface,
-.dict-reading {
+#reading-pins {
   width: 100%;
   font: inherit;
   color: var(--sumi);
@@ -107,41 +106,41 @@
 
 #input-text:focus,
 #api-url:focus,
-.dict-surface:focus,
-.dict-reading:focus {
+#reading-pins:focus {
   outline: 2px solid color-mix(in oklab, var(--vermilion) 45%, transparent);
   outline-offset: 1px;
 }
 
-.user-dict-panel {
-  margin: 1rem 0;
-  border-top: 1px dashed var(--line);
-  padding-top: 0.75rem;
-}
-
-.user-dict-panel summary,
-.api-advanced summary {
-  cursor: pointer;
-  color: var(--sumi-soft);
-  font-size: 0.92rem;
-}
-
+.reading-pins,
 .api-advanced {
   margin: 1rem 0;
   border-top: 1px dashed var(--line);
   padding-top: 0.75rem;
 }
 
-.user-dict-rows {
-  display: grid;
-  gap: 0.5rem;
-  margin: 0.75rem 0;
+.reading-pins summary,
+.api-advanced summary {
+  cursor: pointer;
+  color: var(--sumi-soft);
+  font-size: 0.92rem;
 }
 
-.dict-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr auto;
+.reading-pins .hint {
+  margin: 0.65rem 0 0.35rem;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--sumi-soft);
+}
+
+#reading-pins {
+  line-height: 1.6;
+}
+
+.pin-actions {
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
+  margin-top: 0.55rem;
 }
 
 .btn.small {

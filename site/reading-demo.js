@@ -13,7 +13,7 @@ const resultBlock = $("#result-block");
 const rubyOut = $("#ruby-out");
 const fullReading = $("#full-reading");
 const resultBody = $("#result-body");
-const dictRows = $("#user-dict-rows");
+const pinsEl = $("#reading-pins");
 
 apiEl.value = DEFAULT_API;
 
@@ -25,25 +25,28 @@ function escapeHtml(s) {
     .replace(/"/g, "&quot;");
 }
 
-function addDictRow(surface = "", reading = "") {
-  const row = document.createElement("div");
-  row.className = "dict-row";
-  row.innerHTML = `
-    <input class="dict-surface" placeholder="表層（例: 東海林）" value="${escapeHtml(surface)}" />
-    <input class="dict-reading" placeholder="読み（例: しょうじ）" value="${escapeHtml(reading)}" />
-    <button type="button" class="btn ghost small dict-remove" aria-label="削除">削除</button>
-  `;
-  row.querySelector(".dict-remove").addEventListener("click", () => row.remove());
-  dictRows.appendChild(row);
-}
-
+/** Parse "surface reading" / "surface=reading" / "surface　reading" lines. */
 function collectUserDict() {
-  return [...dictRows.querySelectorAll(".dict-row")]
-    .map((row) => ({
-      surface: row.querySelector(".dict-surface").value.trim(),
-      reading: row.querySelector(".dict-reading").value.trim(),
-    }))
-    .filter((e) => e.surface && e.reading);
+  const raw = pinsEl?.value || "";
+  const out = [];
+  for (const line of raw.split(/\n+/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    let surface = "";
+    let reading = "";
+    if (trimmed.includes("=")) {
+      const i = trimmed.indexOf("=");
+      surface = trimmed.slice(0, i).trim();
+      reading = trimmed.slice(i + 1).trim();
+    } else {
+      const parts = trimmed.split(/[\s　]+/).filter(Boolean);
+      if (parts.length < 2) continue;
+      reading = parts.pop();
+      surface = parts.join("");
+    }
+    if (surface && reading) out.push({ surface, reading });
+  }
+  return out;
 }
 
 function sourceLabel(source) {
@@ -225,7 +228,16 @@ async function runAnalyze() {
   }
 }
 
-$("#add-dict-row").addEventListener("click", () => addDictRow());
+$("#pin-example")?.addEventListener("click", () => {
+  const line = "東海林　しょうじ";
+  const cur = (pinsEl.value || "").trim();
+  pinsEl.value = cur ? `${cur}\n${line}` : line;
+  const panel = pinsEl.closest("details");
+  if (panel) panel.open = true;
+});
+$("#pin-clear")?.addEventListener("click", () => {
+  pinsEl.value = "";
+});
 $("#run-btn").addEventListener("click", runAnalyze);
 apiEl.addEventListener("change", checkHealth);
 
@@ -244,8 +256,6 @@ inputEl.addEventListener("keydown", (e) => {
     runAnalyze();
   }
 });
-
-addDictRow();
 
 const params = new URLSearchParams(location.search);
 const qText = params.get("text");
