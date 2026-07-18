@@ -1,6 +1,6 @@
 # Chrome Web Store / リリース前チェック（法務・プライバシー）
 
-最終更新: 2026-07-16  
+最終更新: 2026-07-19  
 **法的助言ではありません。** ストア審査・各国法の最終判断は運営者自身（必要なら弁護士）で行ってください。
 
 索引: [`TRADEMARK-AND-ATTRIBUTION.md`](TRADEMARK-AND-ATTRIBUTION.md)
@@ -24,6 +24,7 @@
 | コンテンツ | 再配布しない・歌詞スクレイピング禁止 | TERMS / CONTRIBUTING |
 | データ | JMdict / Wiktionary SA を英カタカナに使わない | ENGLISH-KATAKANA.md |
 | サイト | Google Fonts 利用の注記（拡張本体とは別） | privacy / 各ページフッター |
+| リリース | v1.8.0 GitHub Release + store zip | 2026-07-19 済 |
 
 ## 自動監査コマンド（リリース前）
 
@@ -43,7 +44,7 @@ npm run pack:store
 ### Privacy practices
 
 1. **単一用途** — YouTube / TVer の日本語字幕にふりがな（ルビ）を表示（**非公式**）。
-2. **データ** — 既定は端末内のみ。任意で読み API / Ollama / Premium 同期。
+2. **データ** — 既定は端末内のみ。任意で Premium 辞書同期 / 共有辞書。
 3. **リモートコード** → No
 4. **データ販売・広告** → No
 5. **ポリシー URL** — `https://blackphi6.github.io/yt-furigana-extension/privacy.html`
