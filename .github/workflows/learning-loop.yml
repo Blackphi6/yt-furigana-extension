@@ -116,7 +116,13 @@ jobs:
           else
             git commit -m "chore(learning): append synth corpus and daily accuracy report"
             git push
+            echo "pages_refresh=1" >> "$GITHUB_ENV"
           fi
+      - name: Refresh GitHub Pages
+        if: env.pages_refresh == '1'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run pages.yml --ref "$(git rev-parse --abbrev-ref HEAD)"
 
   retrain:
     name: Retrain-lite weekly (ubuntu ¥0)
@@ -152,4 +158,10 @@ jobs:
           else
             git commit -m "chore(learning): promote after free eval gate"
             git push
+            echo "pages_refresh=1" >> "$GITHUB_ENV"
           fi
+      - name: Refresh GitHub Pages
+        if: env.pages_refresh == '1'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run pages.yml --ref "$(git rev-parse --abbrev-ref HEAD)"
