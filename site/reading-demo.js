@@ -228,13 +228,6 @@ async function runAnalyze() {
   }
 }
 
-$("#pin-example")?.addEventListener("click", () => {
-  const line = "東海林　しょうじ";
-  const cur = (pinsEl.value || "").trim();
-  pinsEl.value = cur ? `${cur}\n${line}` : line;
-  const panel = pinsEl.closest("details");
-  if (panel) panel.open = true;
-});
 $("#pin-clear")?.addEventListener("click", () => {
   pinsEl.value = "";
 });

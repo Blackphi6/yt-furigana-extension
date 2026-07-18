@@ -21,8 +21,8 @@ function renderSnippet() {
 curl -s ${base}/v1/readings \\
   -H 'Content-Type: application/json' \\
   -d '{
-    "text": "東海林さんが市場規模の話をした。",
-    "user_dict": [{"surface": "東海林", "reading": "しょうじ"}],
+    "text": "葛飾の市場規模の話をした。",
+    "user_dict": [{"surface": "葛飾", "reading": "かつしか"}],
     "return_candidates": true
   }'`;
 }
