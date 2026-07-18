@@ -18,6 +18,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createBenchTokenizer } from "./bench-utils.mjs";
+import { resolveGroqModelSet } from "./groq-models.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "../..");
@@ -201,6 +202,28 @@ async function groqChat(apiKey, model, messages, { temperature }) {
   return data?.choices?.[0]?.message?.content || "";
 }
 
+/**
+ * @param {string} apiKey
+ * @returns {Promise<Set<string>>}
+ */
+async function listGroqModelIds(apiKey) {
+  const res = await fetch("https://api.groq.com/openai/v1/models", {
+    headers: { Authorization: `Bearer ${apiKey}` },
+  });
+  const raw = await res.text();
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    throw new Error(`groq models list: ${res.status} ${raw.slice(0, 200)}`);
+  }
+  if (!res.ok) {
+    const err = data?.error?.message || raw.slice(0, 300) || res.statusText;
+    throw new Error(`groq models list: ${res.status} ${err}`);
+  }
+  return new Set((data?.data || []).map((m) => m.id).filter(Boolean));
+}
+
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
@@ -242,16 +265,16 @@ async function main() {
 
   if (provider === "groq") {
     const g = config.groq || {};
-    const modelSet = cli.fast ? g.fallback_models || g.models : g.models;
-    if (!modelSet?.generator) {
-      throw new Error("synth-config.json に groq.models がありません");
-    }
-    generator = modelSet.generator.id;
-    verifier = modelSet.verifier.id;
-    arbitrator = modelSet.arbitrator.id;
     genTemp = g.temperature ?? 0.7;
     judgeTemp = g.judge_temperature ?? 0.1;
     groqKey = process.env.GROQ_API_KEY || "";
+    // IDs are resolved after key check (see resolveGroqModelSet below)
+    generator = g.models?.generator?.id || "";
+    verifier = g.models?.verifier?.id || "";
+    arbitrator = g.models?.arbitrator?.id || "";
+    if (!generator) {
+      throw new Error("synth-config.json に groq.models がありません");
+    }
   } else if (provider === "cloudflare") {
     const cf = config.cloudflare || {};
     const modelSet = cli.fast ? cf.fallback_models || cf.models : cf.models;
@@ -354,6 +377,19 @@ async function main() {
           "  gh secret set GROQ_API_KEY"
       );
     }
+    const available = await listGroqModelIds(groqKey);
+    const resolved = resolveGroqModelSet(config.groq || {}, available, {
+      fast: cli.fast,
+    });
+    generator = resolved.generator;
+    verifier = resolved.verifier;
+    arbitrator = resolved.arbitrator;
+    if (resolved.swapped.length) {
+      console.log(`Groq model fallback: ${resolved.swapped.join("; ")}`);
+    }
+    console.log(
+      `Groq models OK: gen=${generator}  verify=${verifier}  arbitrate=${arbitrator}`
+    );
   } else if (provider === "cloudflare") {
     if (!cfAccountId || !cfToken) {
       throw new Error(
@@ -558,7 +594,9 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith("llm-synth.mjs")) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

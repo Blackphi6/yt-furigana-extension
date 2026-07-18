@@ -18,6 +18,21 @@ MacBook Pro **M3 Pro / 36GB** unified memory.
 
 `--fast` swaps verify/arbitrate to `qwen2.5-coder:7b` + `gemma3:4b`.
 
+## Groq (CI / ¥0 unattended)
+
+| Role | Model ID |
+|------|----------|
+| generate | `llama-3.1-8b-instant` |
+| verify | `qwen/qwen3.6-27b` (fallback: `llama-3.3-70b-versatile`) |
+| arbitrate | `openai/gpt-oss-20b` |
+
+`scripts/learning/groq-models.mjs` probes `/v1/models` and swaps missing IDs automatically.
+
+```bash
+export GROQ_API_KEY=…   # or Actions secret
+npm run learn:synth:groq -- --per-target 1
+```
+
 Never load all three at once (`keep_alive: 0`).
 
 ## Commands

@@ -72,7 +72,9 @@
     "notes": [
       "Default ¥0 path: free tier, no Mac, OpenAI-format chat API",
       "Create key at https://console.groq.com/keys — no credit card",
-      "3 open-weight families: Llama / Qwen / GPT-OSS"
+      "Preferred 3 families: Llama / Qwen / GPT-OSS",
+      "qwen/qwen3-32b was removed from Groq → use qwen/qwen3.6-27b",
+      "If Qwen preview is unavailable on the key, resolveGroqModels falls back to Llama 3.3 70B verifier"
     ],
     "temperature": 0.7,
     "judge_temperature": 0.1,
@@ -82,7 +84,7 @@
         "family": "llama"
       },
       "verifier": {
-        "id": "qwen/qwen3-32b",
+        "id": "qwen/qwen3.6-27b",
         "family": "qwen"
       },
       "arbitrator": {
@@ -93,7 +95,7 @@
     "fallback_models": {
       "generator": { "id": "llama-3.1-8b-instant", "family": "llama" },
       "verifier": { "id": "llama-3.3-70b-versatile", "family": "llama" },
-      "arbitrator": { "id": "openai/gpt-oss-20b", "family": "gpt-oss" }
+      "arbitrator": { "id": "openai/gpt-oss-120b", "family": "gpt-oss" }
     }
   },
   "per_target": 1,

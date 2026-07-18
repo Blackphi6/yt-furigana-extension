@@ -90,6 +90,28 @@ jobs:
             head -c 300 /tmp/groq-verify.json || true
             exit 1
           fi
+          echo "Available chat models (sample):"
+          node <<'NODE'
+const fs = require("fs");
+const d = JSON.parse(fs.readFileSync("/tmp/groq-verify.json", "utf8"));
+const ids = (d.data || [])
+  .map((m) => m.id)
+  .filter((id) => !/whisper|prompt-guard|orpheus/i.test(id))
+  .sort();
+console.log(ids.join("\n"));
+const need = ["llama-3.1-8b-instant", "openai/gpt-oss-20b"];
+const missing = need.filter((id) => !ids.includes(id));
+if (missing.length) {
+  console.error("Missing required:", missing.join(", "));
+  process.exit(1);
+}
+const hasQwen = ids.some((id) => id.startsWith("qwen/"));
+console.log(
+  hasQwen
+    ? "Qwen family: present"
+    : "Qwen family: absent (will use Llama verifier fallback)"
+);
+NODE
       - name: Generate × blind verify × arbitrate
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
