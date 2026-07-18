@@ -89,6 +89,6 @@ Site: https://blackphi6.github.io/yt-furigana-extension/
 ```bash
 npm run reading-engine:test
 curl -s http://127.0.0.1:8765/v1/readings -H 'content-type: application/json' \
-  -d '{"text":"交渉では下手に出る。市場規模を見た。","user_dict":[{"surface":"東海林","reading":"しょうじ"}]}' \
+  -d '{"text":"町中のカフェに入ると、その噂が町中に広まった。","return_candidates":true}' \
   | python3 -m json.tool
 ```

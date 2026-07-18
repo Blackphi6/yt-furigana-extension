@@ -19,7 +19,8 @@ function renderSnippet() {
   if (!el) return;
   // Keep HTML fallback; only refresh host if config differs.
   const text = el.textContent || "";
-  if (text.includes("東海林") || text.includes("しょうじ") || !text.trim()) {
+  // Wipe any stale cached snippet that still looks like old third-party demos.
+  if (text.includes("user_dict") || text.includes("固有名詞は") || !text.trim()) {
     el.textContent = `# 字幕デモ向け — 町中の読み分け
 curl -s ${base}/v1/readings \\
   -H 'Content-Type: application/json' \\

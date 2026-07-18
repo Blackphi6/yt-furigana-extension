@@ -28,8 +28,8 @@ assert.equal(
   "http://127.0.0.1:8080/v1/readings"
 );
 
-assert.deepEqual(userDictToApiEntries({ 東海林: "しょうじ", 忙しい: "せわしい" }), [
-  { surface: "東海林", reading: "しょうじ" },
+assert.deepEqual(userDictToApiEntries({ 葛飾: "かつしか", 忙しい: "せわしい" }), [
+  { surface: "葛飾", reading: "かつしか" },
   { surface: "忙しい", reading: "せわしい" }
 ]);
 
@@ -53,23 +53,23 @@ assert.match(html, /<ruby>辛<rt>から<\/rt><\/ruby>い/);
 assert.match(html, /ラーメン/);
 
 // Span-only partial tokens (not full coverage)
-const original = "東海林さんが辛いラーメンを食べた。";
+const original = "葛飾で辛いラーメンを食べた。";
 const spanTokens = [
   {
-    surface: "東海林",
-    span: [0, 3],
-    reading: "しょうじ",
+    surface: "葛飾",
+    span: [0, 2],
+    reading: "かつしか",
     source: "user_dict"
   },
   {
     surface: "辛い",
-    span: [6, 8],
+    span: [3, 5],
     reading: "からい",
     source: "reranker"
   },
   {
     surface: "食べ",
-    span: [13, 15],
+    span: [10, 12],
     reading: "たべ",
     source: "base_engine"
   }
@@ -77,9 +77,9 @@ const spanTokens = [
 assert.equal(validateReadingApiTokens(original, spanTokens), true);
 
 const spanHtml = readingApiSpansToHtml(original, spanTokens);
-assert.match(spanHtml, /data-surface="東海林"/);
-assert.match(spanHtml, /data-reading="しょうじ"/);
-assert.match(spanHtml, /さんが/);
+assert.match(spanHtml, /data-surface="葛飾"/);
+assert.match(spanHtml, /data-reading="かつしか"/);
+assert.match(spanHtml, /で/);
 assert.match(spanHtml, /ラーメンを/);
 assert.match(spanHtml, /た。$/);
 

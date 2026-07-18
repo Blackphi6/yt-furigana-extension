@@ -24,10 +24,10 @@ const hits = collectLocalPhraseHits(text, { 辛い: "からい" });
 assert.ok(hits.some((h) => h.surface === "鬼滅の刃"));
 assert.ok(hits.some((h) => h.surface === "辛い" && h.reading === "からい"));
 
-const dict = buildCombinedUserDict(text, { 辛い: "からい", 東海林: "しょうじ" });
+const dict = buildCombinedUserDict(text, { 辛い: "からい", 葛飾: "かつしか" });
 assert.equal(dict["鬼滅の刃"], "きめつのやいば");
 assert.equal(dict["辛い"], "からい");
-assert.equal(dict["東海林"], "しょうじ");
+assert.equal(dict["葛飾"], "かつしか");
 
 const original = "今日は鬼滅の刃を見た";
 const apiSpans = [
