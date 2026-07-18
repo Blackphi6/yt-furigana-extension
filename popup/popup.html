@@ -20,13 +20,23 @@
       </label>
 
       <section class="panel">
-        <h2>変換エンジン</h2>
+        <h2>ふりがな</h2>
+        <p class="hint">
+          標準は端末内の <strong>Kuromoji</strong>（設定不要）。固有名詞辞書とクリック学習に対応しています。
+        </p>
+      </section>
+
+      <details class="panel advanced" id="advanced-engine-settings">
+        <summary>上級者向け（エンジン切替）</summary>
+        <p class="hint">
+          通常は Kuromoji のままで大丈夫です。分割を強化したいときだけ Hybrid、自前サーバーがあるときだけ読みAPIを使います。
+        </p>
 
         <label class="radio">
           <input type="radio" name="engine" value="kuromoji" checked />
           <span>
-            <strong>Kuromoji（推奨・既定）</strong>
-            <small>完全ローカル。NEologd固有名詞＋クリック学習。同形異音は文脈ルールで補完</small>
+            <strong>Kuromoji（推奨）</strong>
+            <small>完全ローカル。NEologd＋クリック学習</small>
           </span>
         </label>
 
@@ -34,15 +44,7 @@
           <input type="radio" name="engine" value="hybrid" />
           <span>
             <strong>Hybrid（Sudachi + Kuromoji）</strong>
-            <small>分割は Sudachi、読みは両方で補完。1人→ひとり に強い</small>
-          </span>
-        </label>
-
-        <label class="radio">
-          <input type="radio" name="engine" value="sudachi" />
-          <span>
-            <strong>Sudachi のみ</strong>
-            <small>現代語辞書（初回読込やや重い）</small>
+            <small>分割は Sudachi。1人→ひとり に強い（初回読込あり）</small>
           </span>
         </label>
 
@@ -50,57 +52,19 @@
           <input type="radio" name="engine" value="reading-api" />
           <span>
             <strong>読みAPI（外部・辞書併用）</strong>
-            <small>文脈依存の読みは API、固有名詞は NEologd/学習を user_dict で優先。失敗時はローカルへ</small>
-          </span>
-        </label>
-      </section>
-
-      <section class="panel" id="reading-api-settings" hidden>
-        <button type="button" id="testReadingApi" class="button">接続テスト</button>
-        <p class="status" id="readingApiStatus" hidden></p>
-        <p class="hint">
-          サーバーURLは上の「プラン」欄で設定します。ローカル:
-          <code>npm run reading-engine</code> →
-          <code>http://127.0.0.1:8765</code>。<br />
-          個人辞書は <code>user_dict</code> として送信されます。
-        </p>
-      </section>
-
-      <details class="panel advanced" id="ollama-settings">
-        <summary>上級者向け（ローカル LLM / Ollama）</summary>
-        <p class="hint">
-          自由生成LLMは本文を書き換えやすいため、通常は推奨しません。読みAPIやKuromojiの方が安定です。
-        </p>
-        <label class="radio ollama-enable">
-          <input type="radio" name="engine" value="ollama" />
-          <span>
-            <strong>Ollama を使う</strong>
-            <small>要ローカル Ollama。失敗時は辞書にフォールバック</small>
+            <small>要サーバーURL。失敗時はローカルへ</small>
           </span>
         </label>
 
-        <label class="field" for="ollamaUrl">
-          <span>Ollama URL</span>
-          <input type="text" id="ollamaUrl" value="http://localhost:11434" />
-        </label>
-
-        <label class="field" for="ollamaModel">
-          <span>モデル名</span>
-          <select id="ollamaModel"></select>
-          <input
-            type="text"
-            id="ollamaModelCustom"
-            hidden
-            placeholder="例: gemma3:4b"
-          />
-        </label>
-
-        <button type="button" id="testOllama" class="button">接続テスト</button>
-        <p class="status" id="ollamaStatus" hidden></p>
-
-        <p class="hint">
-          推奨（軽い）: <code>ollama pull gemma3:4b</code>
-        </p>
+        <div id="reading-api-settings" hidden>
+          <button type="button" id="testReadingApi" class="button">接続テスト</button>
+          <p class="status" id="readingApiStatus" hidden></p>
+          <p class="hint">
+            サーバーURLは下の「プラン」欄。ローカル例:
+            <code>npm run reading-engine</code> →
+            <code>http://127.0.0.1:8765</code>
+          </p>
+        </div>
       </details>
 
       <section class="panel">
@@ -176,7 +140,7 @@
 
       <p class="hint">
         字幕が表示されない場合は、YouTubeの字幕設定で日本語を有効にしてください。<br />
-        通常利用は Kuromoji（自己負担0・ローカル）を推奨します。
+        通常利用は Kuromoji（端末内・設定不要）で十分です。
       </p>
 
       <footer class="legal">

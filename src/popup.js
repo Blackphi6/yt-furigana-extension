@@ -37,7 +37,8 @@ const ollamaModelCustom = document.getElementById("ollamaModelCustom");
 const testOllamaButton = document.getElementById("testOllama");
 const ollamaStatus = document.getElementById("ollamaStatus");
 const engineInputs = document.querySelectorAll('input[name="engine"]');
-const ollamaSettings = document.getElementById("ollama-settings");
+const ollamaSettings = document.getElementById("advanced-engine-settings");
+const ollamaSettingsFields = document.getElementById("ollama-settings-fields");
 
 const CUSTOM_MODEL_VALUE = "__custom__";
 
@@ -47,9 +48,23 @@ function selectedEngine() {
 
 function updateEnginePanels() {
   const engine = selectedEngine();
-  readingApiSettings.hidden = engine !== "reading-api";
-  if (engine === "ollama") {
-    ollamaSettings.open = true;
+  if (readingApiSettings) {
+    readingApiSettings.hidden = engine !== "reading-api";
+  }
+  const advanced = document.getElementById("advanced-engine-settings");
+  if (advanced && engine !== "kuromoji") {
+    advanced.open = true;
+  }
+  if (engine === "reading-api" && !readingApiUrlInput.value.trim()) {
+    setStatus(
+      readingApiStatus,
+      "URL未設定のためローカル辞書で変換します。下の「プラン」にサーバーURLを入れてください。",
+      true
+    );
+  } else if (readingApiStatus && !readingApiStatus.classList.contains("error")) {
+    if (engine !== "reading-api") {
+      readingApiStatus.hidden = true;
+    }
   }
 }
 
@@ -87,13 +102,15 @@ function updatePlanUi(settings) {
 }
 
 function getSelectedModelName() {
+  if (!ollamaModelSelect) return "";
   if (ollamaModelSelect.value === CUSTOM_MODEL_VALUE) {
-    return ollamaModelCustom.value.trim();
+    return ollamaModelCustom?.value.trim() || "";
   }
   return ollamaModelSelect.value.trim();
 }
 
 function setModelField(modelName, models = []) {
+  if (!ollamaModelSelect) return;
   const trimmed = modelName?.trim() ?? "";
   const installed = models.map((model) => model.name ?? model);
 
@@ -120,28 +137,34 @@ function setModelField(modelName, models = []) {
 
   if (trimmed && installed.includes(trimmed)) {
     ollamaModelSelect.value = trimmed;
-    ollamaModelCustom.hidden = true;
-    ollamaModelCustom.value = "";
+    if (ollamaModelCustom) {
+      ollamaModelCustom.hidden = true;
+      ollamaModelCustom.value = "";
+    }
     return;
   }
 
   if (trimmed) {
     ollamaModelSelect.value = CUSTOM_MODEL_VALUE;
-    ollamaModelCustom.hidden = false;
-    ollamaModelCustom.value = trimmed;
+    if (ollamaModelCustom) {
+      ollamaModelCustom.hidden = false;
+      ollamaModelCustom.value = trimmed;
+    }
     return;
   }
 
   const preferred = pickPreferredOllamaModel(installed, "");
   if (preferred) {
     ollamaModelSelect.value = preferred;
-    ollamaModelCustom.hidden = true;
-    ollamaModelCustom.value = "";
+    if (ollamaModelCustom) {
+      ollamaModelCustom.hidden = true;
+      ollamaModelCustom.value = "";
+    }
     return;
   }
 
   ollamaModelSelect.value = CUSTOM_MODEL_VALUE;
-  ollamaModelCustom.hidden = false;
+  if (ollamaModelCustom) ollamaModelCustom.hidden = false;
 }
 
 function sendMessage(type, extra = {}) {
@@ -195,7 +218,9 @@ async function refreshInstalledModels({ autoFix = false } = {}) {
 }
 
 function normalizeStoredEngine(engine) {
-  if (engine === "groq") return "hybrid";
+  // UI no longer offers these; migrate quietly.
+  if (engine === "groq" || engine === "sudachi") return "hybrid";
+  if (engine === "ollama") return "kuromoji";
   return engine || DEFAULT_SETTINGS.engine;
 }
 
@@ -210,7 +235,7 @@ async function loadSettings() {
   if (learningInboxEnabledInput) {
     learningInboxEnabledInput.checked = result.learningInboxEnabled !== false;
   }
-  ollamaUrlInput.value = result.ollamaUrl;
+  if (ollamaUrlInput) ollamaUrlInput.value = result.ollamaUrl;
   setModelField(result.ollamaModel, []);
   updatePlanUi(result);
 
@@ -220,10 +245,6 @@ async function loadSettings() {
   });
 
   updateEnginePanels();
-
-  if (engine === "ollama") {
-    await refreshInstalledModels({ autoFix: true });
-  }
 }
 
 async function saveSettings() {
@@ -257,8 +278,8 @@ async function saveSettings() {
     learningInboxEnabled: learningInboxEnabledInput
       ? learningInboxEnabledInput.checked
       : DEFAULT_SETTINGS.learningInboxEnabled,
-    ollamaUrl: ollamaUrlInput.value.trim() || DEFAULT_SETTINGS.ollamaUrl,
-    ollamaModel: getSelectedModelName() || DEFAULT_SETTINGS.ollamaModel
+    ollamaUrl: ollamaUrlInput?.value.trim() || current.ollamaUrl || DEFAULT_SETTINGS.ollamaUrl,
+    ollamaModel: getSelectedModelName() || current.ollamaModel || DEFAULT_SETTINGS.ollamaModel
   });
 }
 
@@ -271,42 +292,36 @@ readingApiKeyInput?.addEventListener("blur", saveSettings);
 licenseKeyInput?.addEventListener("change", saveSettings);
 licenseKeyInput?.addEventListener("blur", saveSettings);
 
-ollamaUrlInput.addEventListener("change", async () => {
+ollamaUrlInput?.addEventListener("change", async () => {
   await saveSettings();
-  if (selectedEngine() === "ollama") {
-    await refreshInstalledModels({ autoFix: true });
-  }
 });
-ollamaUrlInput.addEventListener("blur", async () => {
+ollamaUrlInput?.addEventListener("blur", async () => {
   await saveSettings();
-  if (selectedEngine() === "ollama") {
-    await refreshInstalledModels({ autoFix: true });
-  }
 });
 
-ollamaModelSelect.addEventListener("change", async () => {
+ollamaModelSelect?.addEventListener("change", async () => {
   const isCustom = ollamaModelSelect.value === CUSTOM_MODEL_VALUE;
-  ollamaModelCustom.hidden = !isCustom;
-  if (!isCustom) {
-    ollamaModelCustom.value = "";
+  if (ollamaModelCustom) {
+    ollamaModelCustom.hidden = !isCustom;
+    if (!isCustom) ollamaModelCustom.value = "";
   }
   await saveSettings();
 });
 
-ollamaModelCustom.addEventListener("change", saveSettings);
-ollamaModelCustom.addEventListener("blur", saveSettings);
+ollamaModelCustom?.addEventListener("change", saveSettings);
+ollamaModelCustom?.addEventListener("blur", saveSettings);
 
 engineInputs.forEach((input) => {
   input.addEventListener("change", async () => {
     updateEnginePanels();
     await saveSettings();
-    if (input.value === "ollama") {
-      await refreshInstalledModels({ autoFix: true });
-    }
   });
 });
 
 testReadingApiButton?.addEventListener("click", async () => {
+  if (!readingApiUrlInput.value.trim()) {
+    readingApiUrlInput.value = "http://127.0.0.1:8765";
+  }
   await saveSettings();
   setStatus(readingApiStatus, "接続確認中...", true);
   const granted = await ensureReadingApiPermission(readingApiUrlInput.value.trim());
@@ -322,7 +337,7 @@ testReadingApiButton?.addEventListener("click", async () => {
   setStatus(readingApiStatus, `接続OK（${response.endpoint}）`, true);
 });
 
-testOllamaButton.addEventListener("click", async () => {
+testOllamaButton?.addEventListener("click", async () => {
   await saveSettings();
   setStatus(ollamaStatus, "接続確認中...", true);
 
