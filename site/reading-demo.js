@@ -104,10 +104,16 @@ function showError(msg) {
 }
 
 async function checkHealth() {
-  const tryBase = async (base) => {
-    const res = await fetch(`${base}/health`, { method: "GET" });
-    if (!res.ok) throw new Error(String(res.status));
-    return res.json();
+  const tryBase = async (base, timeoutMs = 8000) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(`${base}/health`, { method: "GET", signal: controller.signal });
+      if (!res.ok) throw new Error(String(res.status));
+      return res.json();
+    } finally {
+      clearTimeout(timer);
+    }
   };
 
   const preferred = apiEl.value.replace(/\/$/, "");
@@ -115,8 +121,12 @@ async function checkHealth() {
   if (preferred !== LOCAL_FALLBACK) candidates.push(LOCAL_FALLBACK);
 
   for (const base of candidates) {
+    const timeoutMs = base === LOCAL_FALLBACK ? 3000 : 90000;
     try {
-      const data = await tryBase(base);
+      if (base !== LOCAL_FALLBACK) {
+        statusEl.textContent = "エンジンを確認中…（無料枠は起動に時間がかかることがあります）";
+      }
+      const data = await tryBase(base, timeoutMs);
       apiEl.value = base;
       statusEl.dataset.state = "ok";
       statusEl.textContent = `エンジン稼働中（${base}）${data.readingsAuth ? " · APIキー要" : ""}`;
@@ -128,7 +138,7 @@ async function checkHealth() {
 
   statusEl.dataset.state = "down";
   statusEl.textContent =
-    "エンジン未接続 — Hugging Face Space 未作成（HF_TOKEN で Deploy reading Space）、または npm run reading-engine";
+    "エンジン未接続 — Render 未デプロイ（site/README.md）、スリープ中、または npm run reading-engine";
   return false;
 }
 
@@ -136,13 +146,35 @@ function friendlyHttpError(status, body) {
   const text = String(body || "");
   if (status === 404 || /<html[\s>]/i.test(text) || /Sorry, we can't find the page/i.test(text)) {
     return (
-      `${status}: 公開 API（Hugging Face Space）がまだありません。\n` +
-      `リポジトリに HF_TOKEN（Write）を登録し、Actions「Deploy reading Space」を実行してください。\n` +
-      `手順: site/README.md`
+      `${status}: 公開 API（Render）がまだありません。\n` +
+      `Render で Blueprint（render.yaml）を適用してください。手順: site/README.md`
     );
   }
   const clipped = text.replace(/\s+/g, " ").trim().slice(0, 180);
   return clipped ? `${status}: ${clipped}` : String(status);
+}
+
+async function fetchWithColdStart(url, options = {}, { attempts = 3, label = "接続" } = {}) {
+  let lastErr;
+  for (let i = 0; i < attempts; i += 1) {
+    if (i > 0) {
+      statusEl.dataset.state = "down";
+      statusEl.textContent = `スリープ解除中…（${label} 再試行 ${i + 1}/${attempts}）`;
+    }
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 90000);
+      const res = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(timer);
+      return res;
+    } catch (err) {
+      lastErr = err;
+      if (err?.name === "AbortError") {
+        lastErr = new Error("タイムアウト（無料枠の起動待ち）。もう一度試してください。");
+      }
+    }
+  }
+  throw lastErr || new Error("接続失敗");
 }
 
 async function runAnalyze() {
@@ -157,15 +189,19 @@ async function runAnalyze() {
   btn.disabled = true;
   btn.textContent = "判定中…";
   try {
-    const res = await fetch(`${base}/v1/readings`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        text,
-        user_dict: collectUserDict(),
-        return_candidates: true,
-      }),
-    });
+    const res = await fetchWithColdStart(
+      `${base}/v1/readings`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text,
+          user_dict: collectUserDict(),
+          return_candidates: true,
+        }),
+      },
+      { attempts: 3, label: "読み" }
+    );
     if (!res.ok) {
       const detail = await res.text();
       throw new Error(friendlyHttpError(res.status, detail));
@@ -175,10 +211,10 @@ async function runAnalyze() {
     statusEl.dataset.state = "ok";
   } catch (err) {
     const msg = String(err.message || err);
-    const isNetwork = /Failed to fetch|NetworkError|Load failed/i.test(msg);
+    const isNetwork = /Failed to fetch|NetworkError|Load failed|AbortError/i.test(msg);
     showError(
       isNetwork
-        ? `リクエスト失敗: 接続できませんでした。\n公開 Space 未作成、またはローカルで npm run reading-engine を起動してください。`
+        ? `リクエスト失敗: 接続できませんでした。\nRender 未デプロイ／スリープ中、またはローカルで npm run reading-engine を起動してください。`
         : `リクエスト失敗: ${msg}`
     );
     resultBlock.hidden = true;

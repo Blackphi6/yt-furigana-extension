@@ -1,4 +1,5 @@
-# Deploy reading-engine Docker image to Hugging Face Spaces (¥0 CPU).
+# Optional: Hugging Face Spaces (Docker now often requires HF PRO — prefer Render).
+# Primary free host: render.yaml → https://yt-furigana-readings.onrender.com
 #
 # Secrets:
 #   HF_TOKEN  — write token with permission to push to the Space
@@ -10,13 +11,6 @@ name: Deploy reading Space
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "reading-engine/**"
-      - "data/generated/heteronym-candidates.json"
-      - "data/creative-ruby/**"
-      - ".github/workflows/deploy-reading-space.yml"
 
 permissions:
   contents: read

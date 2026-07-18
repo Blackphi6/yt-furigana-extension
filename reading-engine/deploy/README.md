@@ -1,36 +1,24 @@
----
-title: YT Furigana Readings
-emoji: 📖
-colorFrom: red
-colorTo: gray
-sdk: docker
-app_port: 7860
-pinned: false
-license: mit
-short_description: Candidate-constrained Japanese reading API (CPU, free demo)
----
-
-# YT Furigana public reading API
+# Public reading API image (Render / Docker)
 
 Lightweight **candidate-constrained** Japanese reading engine for the
 [YT Furigana demo site](https://blackphi6.github.io/yt-furigana-extension/).
 
-- No free-form LLM readings (lattice / trust / cue only on this Space)
+- No free-form LLM readings (lattice / trust / cue only)
 - `GET /health` · `POST /v1/readings` · OpenAPI at `/docs`
 - CORS: GitHub Pages
 
-## Deploy
+## Deploy (free): Render
 
-This folder is the Space card. Build context is the **repository root**
-(see `Dockerfile` comments). Prefer the GitHub Action
-`deploy-reading-space.yml` with secret `HF_TOKEN`, or:
+Repo root `render.yaml` → Render Dashboard → **New** → **Blueprint**.
+
+Expected URL: `https://yt-furigana-readings.onrender.com`
+
+Hugging Face Docker Spaces currently often require PRO; prefer Render free.
+
+## Local Docker
 
 ```bash
 # from repo root
 docker build -f reading-engine/deploy/Dockerfile -t yt-furigana-readings .
 docker run --rm -p 7860:7860 yt-furigana-readings
 ```
-
-Expected public URL after Space create:
-
-`https://blackphil-yt-furigana-readings.hf.space`

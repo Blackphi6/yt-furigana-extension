@@ -1,8 +1,8 @@
-# サイト（GitHub Pages）+ 公開読み API（Hugging Face Spaces）
+# サイト（GitHub Pages）+ 公開読み API（Render）
 
 公開 URL: https://blackphi6.github.io/yt-furigana-extension/
 
-JRM デモと同様、**静的サイト（常時）＋ 読み API（無料 Space）** です。
+JRM デモと同様、**静的サイト（常時）＋ 読み API（無料ホスト）** です。
 ローカルでエンジンを立てなくても、トップのデモから公開 API を呼べます。
 
 ## 構成
@@ -10,21 +10,25 @@ JRM デモと同様、**静的サイト（常時）＋ 読み API（無料 Space
 | 層 | URL |
 |----|-----|
 | UI | https://blackphi6.github.io/yt-furigana-extension/ |
-| 読み API | https://blackphil-yt-furigana-readings.hf.space |
-| OpenAPI | https://blackphil-yt-furigana-readings.hf.space/docs |
+| 読み API | https://yt-furigana-readings.onrender.com |
+| OpenAPI | https://yt-furigana-readings.onrender.com/docs |
 | 学習レポート | ./learning-report.html |
 
 `config.js` の `readingApiUrl` がデモの接続先です。
 
-## 初回のみ: Hugging Face Space を作る
+## 初回のみ: Render に無料 Web Service を作る
 
-1. https://huggingface.co/join でアカウント作成
-2. https://huggingface.co/settings/tokens で **Write** トークン作成
-3. GitHub リポジトリ Secrets に `HF_TOKEN` を登録
-4. Actions → **Deploy reading Space** → Run workflow  
-   （または手動で Space `Blackphil/yt-furigana-readings` を Docker SDK で作成し、`reading-engine/deploy` の手順で同期）
+Hugging Face の無料 Docker Space は 2026 年時点で PRO 必須のため、**Render free** を使います。
 
-Space が sleep から起きると初回だけ数十秒かかることがあります。
+1. https://render.com で GitHub アカウント連携（無料プラン）
+2. Dashboard → **New** → **Blueprint**
+3. このリポジトリ `Blackphi6/yt-furigana-extension` を選び、ルートの `render.yaml` を適用
+4. サービス名 `yt-furigana-readings` → URL は `https://yt-furigana-readings.onrender.com`
+5. 初回ビルドが終わるまで数分待つ
+
+無料枠はアイドルでスリープします。デモの最初のリクエストだけ数十秒かかることがあります。
+
+サービス名を変えた場合は `site/config.js` の `readingApiUrl` を合わせてください。
 
 ## ローカル確認
 

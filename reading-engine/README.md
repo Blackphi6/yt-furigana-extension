@@ -71,9 +71,9 @@ npm run reading-engine
 
 Extension: engine **読みAPI** → URL `http://127.0.0.1:8765`
 
-## Public demo (Hugging Face Spaces · ¥0)
+## Public demo (Render · ¥0)
 
-Docker image for always-on CPU demo (no ModernBERT):
+Docker image for the site demo API (no ModernBERT). Free tier may sleep when idle.
 
 ```bash
 # from repo root
@@ -81,9 +81,9 @@ docker build -f reading-engine/deploy/Dockerfile -t yt-furigana-readings .
 docker run --rm -p 7860:7860 yt-furigana-readings
 ```
 
-GitHub Action: `.github/workflows/deploy-reading-space.yml`（secret `HF_TOKEN`）。
+Deploy: repo root `render.yaml` → Render Blueprint（手順は `site/README.md`）。
 
-Expected URL: `https://blackphil-yt-furigana-readings.hf.space`  
+Expected URL: `https://yt-furigana-readings.onrender.com`  
 Site: https://blackphi6.github.io/yt-furigana-extension/
 
 ```bash
