@@ -4,7 +4,8 @@ import {
   isReadingApiEngine,
   isRemoteEngine,
   listInstalledModelNames,
-  pickPreferredOllamaModel
+  pickPreferredOllamaModel,
+  shouldUseRemoteConversion
 } from "../src/default-settings.js";
 
 const sampleTags = {
@@ -47,6 +48,30 @@ if (
   isRemoteEngine("kuromoji")
 ) {
   throw new Error("isRemoteEngine mismatch");
+}
+
+if (
+  shouldUseRemoteConversion({ engine: "reading-api", readingApiUrl: "" }) ||
+  shouldUseRemoteConversion({ engine: "reading-api" })
+) {
+  throw new Error("reading-api without URL must stay local");
+}
+
+if (
+  !shouldUseRemoteConversion({
+    engine: "reading-api",
+    readingApiUrl: "http://127.0.0.1:8765"
+  })
+) {
+  throw new Error("reading-api with URL should use remote");
+}
+
+if (!shouldUseRemoteConversion({ engine: "ollama" })) {
+  throw new Error("ollama should use remote conversion");
+}
+
+if (shouldUseRemoteConversion({ engine: "kuromoji" })) {
+  throw new Error("kuromoji must stay local");
 }
 
 if (DEFAULT_SETTINGS.learningInboxEnabled !== true) {

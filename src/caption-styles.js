@@ -28,6 +28,41 @@ export function hasVisibleBackground(color) {
   return parseBackgroundAlpha(color) > 0.01;
 }
 
+/**
+ * MV 歌詞など、縁取り／影だけで読ませる透過字幕か。
+ * ここに黒帯を被せると公式デザインが潰れる。
+ * @param {HTMLElement} element
+ */
+export function isOutlineOnlyCaption(element) {
+  if (typeof HTMLElement === "undefined") return false;
+  if (!(element instanceof HTMLElement)) return false;
+
+  const nodes = [element];
+  const win = element.closest?.(
+    ".caption-window, .captions-text, .ytp-caption-segment"
+  );
+  if (win instanceof HTMLElement && win !== element) nodes.push(win);
+
+  let sawTransparentHost = false;
+  for (const node of nodes) {
+    const style = getComputedStyle(node);
+    if (hasVisibleBackground(style.backgroundColor)) return false;
+    sawTransparentHost = true;
+    const shadow = style.textShadow || "";
+    if (shadow && shadow !== "none") return true;
+    const stroke =
+      style.webkitTextStrokeWidth ||
+      style.getPropertyValue("-webkit-text-stroke-width") ||
+      "";
+    if (stroke && stroke !== "0px" && Number.parseFloat(stroke) > 0) return true;
+  }
+
+  return (
+    sawTransparentHost &&
+    Boolean(element.closest?.(".ytp-caption-window-container"))
+  );
+}
+
 function captureNodeStyle(node) {
   const computed = getComputedStyle(node);
   return {
@@ -127,8 +162,20 @@ export function resolveCaptionBackgroundColor(element) {
 
 export function captureCaptionStyles(element) {
   const liveBg = resolveCaptionBackgroundColor(element);
-  const backgroundColor = liveBg || YT_DEFAULT_BACKGROUND;
+  const outlineOnly = !liveBg && isOutlineOnlyCaption(element);
+  // 縁取りだけの歌詞字幕のみ白黒強制。通常の YouTube 字幕は設定どおり残す。
+  const forceReadable = outlineOnly;
+  const backgroundColor = forceReadable
+    ? YT_DEFAULT_BACKGROUND
+    : liveBg || "transparent";
   element.setAttribute(BACKGROUND_ATTR, backgroundColor);
+  if (forceReadable) {
+    element.setAttribute("data-yt-furigana-readable", "1");
+    element.removeAttribute("data-yt-furigana-outline");
+  } else {
+    element.removeAttribute("data-yt-furigana-readable");
+    element.removeAttribute("data-yt-furigana-outline");
+  }
 
   const fontSize = lockFontSize(element, getMaxFontSizeInTree(element));
 
@@ -151,6 +198,11 @@ export function captureCaptionStyles(element) {
     existing.backgroundColor = backgroundColor;
     existing.segmentFontSize = fontSize;
     existing.segment.fontSize = fontSize;
+    if (forceReadable) {
+      existing.segment.color = "#ffffff";
+      existing.segment.textShadow = "none";
+      existing.forceReadable = true;
+    }
     return existing;
   }
 
@@ -160,13 +212,18 @@ export function captureCaptionStyles(element) {
   const segmentStyle = captureNodeStyle(element);
   segmentStyle.backgroundColor = backgroundColor;
   segmentStyle.fontSize = fontSize;
+  if (forceReadable) {
+    segmentStyle.color = "#ffffff";
+    segmentStyle.textShadow = "none";
+  }
 
   const snapshot = {
     segmentFontSize: fontSize,
     segment: segmentStyle,
     window: captionWindow ? captureNodeStyle(captionWindow) : null,
     windowNode: captionWindow,
-    backgroundColor
+    backgroundColor,
+    forceReadable
   };
 
   styleSnapshots.set(element, snapshot);
@@ -178,11 +235,17 @@ function applyBaseStyles(element, snapshot) {
   if (fontSize && parseFontSizePx(fontSize) > 0) {
     element.style.setProperty("font-size", fontSize, "important");
   }
-  if (snapshot.segment?.color) {
-    element.style.setProperty("color", snapshot.segment.color, "important");
-  }
-  if (snapshot.segment?.textShadow && snapshot.segment.textShadow !== "none") {
-    element.style.setProperty("text-shadow", snapshot.segment.textShadow, "important");
+  if (snapshot.forceReadable || element.getAttribute("data-yt-furigana-readable") === "1") {
+    element.style.setProperty("color", "#ffffff", "important");
+    element.style.setProperty("fill", "#ffffff", "important");
+    element.style.setProperty("text-shadow", "none", "important");
+  } else {
+    if (snapshot.segment?.color) {
+      element.style.setProperty("color", snapshot.segment.color, "important");
+    }
+    if (snapshot.segment?.textShadow && snapshot.segment.textShadow !== "none") {
+      element.style.setProperty("text-shadow", snapshot.segment.textShadow, "important");
+    }
   }
   // line-height / transform は YouTube の自動縮小に使われるので復元しない
 }
@@ -205,12 +268,351 @@ export function paintCaptionBackground(element, snapshot) {
   element.style.setProperty("box-decoration-break", "clone", "important");
   element.style.setProperty("-webkit-box-decoration-break", "clone", "important");
 
+  // 透過の縁取り字幕は黒帯を塗らない
+  if (!hasVisibleBackground(bg)) {
+    element.style.setProperty("background-color", "transparent", "important");
+  }
+
+  // MV 歌詞: YouTube が height:52px 固定にするためルビが全部消える
+  expandYouTubeCaptionWindow(element);
+
+  // TVer: 親の overflow:hidden でルビ／本文が切れるのを防ぐ
+  ensureTVerCaptionOverflow(element);
+  liftTVerRubyCaption(element);
+
   for (const ruby of element.querySelectorAll("ruby")) {
     ruby.style.removeProperty("background-color");
     ruby.style.removeProperty("box-decoration-break");
     ruby.style.removeProperty("-webkit-box-decoration-break");
     const rt = ruby.querySelector("rt");
     if (rt) rt.style.removeProperty("background-color");
+  }
+}
+
+/**
+ * YouTube の caption-window は触りすぎると字幕自体が出なくなる。
+ * ルビが切れないよう overflow だけ見えるようにする。
+ * @param {HTMLElement} element
+ */
+export function expandYouTubeCaptionWindow(element) {
+  if (typeof HTMLElement === "undefined") return;
+  if (!(element instanceof HTMLElement)) return;
+
+  const win = element.closest(".caption-window");
+  if (!(win instanceof HTMLElement)) return;
+
+  win.style.setProperty("overflow", "visible", "important");
+
+  const text = win.querySelector(".captions-text");
+  if (text instanceof HTMLElement) {
+    text.style.setProperty("overflow", "visible", "important");
+  }
+  const line = win.querySelector(".caption-visual-line");
+  if (line instanceof HTMLElement) {
+    line.style.setProperty("overflow", "visible", "important");
+  }
+}
+
+/**
+ * 次行のルビ高さから、前行に必要な下余白 (px) を決める。
+ * @param {number} nextRubyRoomPx
+ * @param {{ minGapPx?: number, padPx?: number }} [options]
+ */
+export function computeTVerLineGapPx(
+  nextRubyRoomPx,
+  { minGapPx = 10, padPx = 8 } = {}
+) {
+  const room = Math.max(0, Number(nextRubyRoomPx) || 0);
+  return Math.max(minGapPx, Math.ceil(room + padPx));
+}
+
+/**
+ * 字幕スタックがプレイヤー下端をはみ出すとき、上へ逃がす量 (px)。
+ * 上端もはみ出さないよう上限を掛ける。
+ * @param {{ stackTop: number, stackBottom: number, safeTop: number, safeBottom: number }} box
+ */
+export function computeTVerViewportLiftPx({
+  stackTop,
+  stackBottom,
+  safeTop,
+  safeBottom
+}) {
+  const overflowBottom = stackBottom - safeBottom;
+  if (!(overflowBottom > 0.5)) return 0;
+  const maxLift = Math.max(0, stackTop - safeTop);
+  return Math.min(Math.ceil(overflowBottom), Math.ceil(maxLift));
+}
+
+/**
+ * Video.js 字幕ツリーの overflow を visible にそろえる。
+ * @param {HTMLElement} element
+ */
+export function ensureTVerCaptionOverflow(element) {
+  if (typeof HTMLElement === "undefined") return;
+  if (!(element instanceof HTMLElement)) return;
+  const display = element.closest(".vjs-text-track-display");
+  if (!(display instanceof HTMLElement)) return;
+
+  let node = element;
+  while (node instanceof HTMLElement) {
+    node.style.setProperty("overflow", "visible", "important");
+    if (node === display) break;
+    node = node.parentElement;
+  }
+}
+
+/**
+ * 1行分のルビ占有高さ（本文上に出る分）を実測。
+ * @param {HTMLElement} line
+ */
+export function measureTVerRubyRoomPx(line) {
+  if (typeof HTMLElement === "undefined") return 0;
+  if (!(line instanceof HTMLElement)) return 0;
+
+  let max = 0;
+  for (const ruby of line.querySelectorAll("ruby")) {
+    const rt = ruby.querySelector("rt");
+    const pad = Number.parseFloat(getComputedStyle(ruby).paddingTop) || 0;
+    const rtH = rt ? rt.getBoundingClientRect().height : 0;
+    max = Math.max(max, pad, rtH * 1.05);
+  }
+  return max;
+}
+
+/**
+ * ルビ分だけ本文が下に押し出されないよう、帯ごとわずかに持ち上げる。
+ * 行間は fitTVerCaptionViewport 側で実測調整する。
+ * @param {HTMLElement} element
+ */
+export function liftTVerRubyCaption(element) {
+  if (typeof HTMLElement === "undefined") return;
+  if (!(element instanceof HTMLElement)) return;
+  const display = element.closest(".vjs-text-track-display");
+  if (!(display instanceof HTMLElement)) return;
+
+  const hasRuby = Boolean(element.querySelector("ruby"));
+  if (!hasRuby) {
+    element.style.removeProperty("margin-top");
+    element.style.removeProperty("padding-bottom");
+    return;
+  }
+
+  element.style.setProperty("margin-top", "-0.82em", "important");
+  element.style.setProperty("padding-bottom", "0.22em", "important");
+  element.style.setProperty("line-height", "1.2", "important");
+}
+
+/** @type {WeakMap<Element, boolean>} */
+const tverFitScheduled = new WeakMap();
+
+/**
+ * 同一 display への連打をまとめ、レイアウト確定後に実測フィットする。
+ * @param {HTMLElement} element
+ */
+export function scheduleTVerCaptionFit(element) {
+  if (typeof HTMLElement === "undefined") return;
+  if (!(element instanceof HTMLElement)) return;
+  const display = element.closest(".vjs-text-track-display");
+  if (!(display instanceof HTMLElement)) return;
+  if (tverFitScheduled.get(display)) return;
+  tverFitScheduled.set(display, true);
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      tverFitScheduled.delete(display);
+      fitTVerCaptionViewport(display);
+    });
+  });
+}
+
+/** @type {WeakMap<Element, boolean>} */
+const youtubeFitScheduled = new WeakMap();
+
+/**
+ * YouTube 字幕窓の見切れを実測して上へ逃がす（MV の長い歌詞行向け）。
+ * @param {HTMLElement} element
+ */
+export function scheduleYouTubeCaptionFit(element) {
+  if (typeof HTMLElement === "undefined") return;
+  if (!(element instanceof HTMLElement)) return;
+  const host =
+    element.closest(".caption-window") ||
+    element.closest(".ytp-caption-window-container") ||
+    element.closest(".captions-text");
+  if (!(host instanceof HTMLElement)) return;
+  if (youtubeFitScheduled.get(host)) return;
+  youtubeFitScheduled.set(host, true);
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      youtubeFitScheduled.delete(host);
+      fitYouTubeCaptionViewport(host);
+    });
+  });
+}
+
+/**
+ * @param {HTMLElement} host caption-window など
+ */
+export function fitYouTubeCaptionViewport(host) {
+  if (typeof HTMLElement === "undefined") return;
+  if (!(host instanceof HTMLElement)) return;
+  if (!host.isConnected) return;
+
+  host.style.removeProperty("transform");
+  host.style.removeProperty("--ytf-yt-lift");
+
+  const styled = host.matches("[data-yt-furigana-styled]")
+    ? [host]
+    : Array.from(host.querySelectorAll("[data-yt-furigana-styled]"));
+  const targets = styled.length
+    ? styled
+    : Array.from(
+        host.querySelectorAll(".ytp-caption-segment, .caption-visual-line")
+      );
+
+  if (targets.length === 0) return;
+
+  let stackTop = Infinity;
+  let stackBottom = -Infinity;
+  for (const node of targets) {
+    if (!(node instanceof HTMLElement)) continue;
+    const rect = node.getBoundingClientRect();
+    if (!(rect.width > 0 || rect.height > 0)) continue;
+    stackTop = Math.min(stackTop, rect.top);
+    stackBottom = Math.max(stackBottom, rect.bottom);
+  }
+  if (!Number.isFinite(stackTop) || !Number.isFinite(stackBottom)) return;
+
+  // ルビ分の上余白もスタックに含める
+  for (const node of targets) {
+    if (!(node instanceof HTMLElement)) continue;
+    for (const rt of node.querySelectorAll("rt")) {
+      const rect = rt.getBoundingClientRect();
+      stackTop = Math.min(stackTop, rect.top);
+      stackBottom = Math.max(stackBottom, rect.bottom);
+    }
+  }
+
+  const player =
+    host.closest(".html5-video-player") ||
+    host.closest(".ytp-fullscreen") ||
+    document.querySelector(".html5-video-player");
+  const playerRect =
+    player instanceof HTMLElement
+      ? player.getBoundingClientRect()
+      : host.getBoundingClientRect();
+
+  const safeTop = playerRect.top + 8;
+  const safeBottom = playerRect.bottom - 16;
+  const lift = computeTVerViewportLiftPx({
+    stackTop,
+    stackBottom,
+    safeTop,
+    safeBottom
+  });
+
+  if (lift > 0) {
+    host.style.setProperty("--ytf-yt-lift", `${lift}px`);
+    host.style.setProperty("transform", `translateY(-${lift}px)`, "important");
+  }
+}
+
+/**
+ * TVer / YouTube 共通の見切れ補正スケジュール。
+ * @param {HTMLElement} element
+ */
+export function scheduleCaptionViewportFit(element) {
+  scheduleTVerCaptionFit(element);
+  scheduleYouTubeCaptionFit(element);
+}
+
+/**
+ * TVer 字幕を実測して:
+ * 1) 行間を次行ルビ高さに合わせる
+ * 2) プレイヤー下端からはみ出す分だけスタックを上へ逃がす
+ * @param {HTMLElement} display
+ */
+export function fitTVerCaptionViewport(display) {
+  if (typeof HTMLElement === "undefined") return;
+  if (!(display instanceof HTMLElement)) return;
+  if (!display.isConnected) return;
+  if (!display.classList.contains("vjs-text-track-display")) {
+    const found = display.closest?.(".vjs-text-track-display");
+    if (!(found instanceof HTMLElement)) return;
+    display = found;
+  }
+
+  ensureTVerCaptionOverflow(display);
+
+  // 前回の持ち上げを外してから測る（二重適用防止）
+  display.style.removeProperty("transform");
+  display.style.removeProperty("--ytf-tver-lift");
+
+  const lines = Array.from(
+    display.querySelectorAll(".vjs-text-track-cue-line")
+  ).filter((node) => node instanceof HTMLElement && node.getClientRects().length);
+
+  // 行間: 次行のルビ実測に合わせる（動画・フォントサイズ依存）
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    const next = lines[i + 1];
+    if (!next) {
+      line.style.removeProperty("margin-bottom");
+      continue;
+    }
+    const room = measureTVerRubyRoomPx(next);
+    const gap = computeTVerLineGapPx(room);
+    line.style.setProperty("margin-bottom", `${gap}px`, "important");
+  }
+
+  // 強制 reflow 後にスタック矩形を測る
+  void display.offsetHeight;
+
+  if (lines.length === 0) {
+    display.style.removeProperty("transform");
+    display.style.removeProperty("--ytf-tver-lift");
+    return;
+  }
+
+  let stackTop = Infinity;
+  let stackBottom = -Infinity;
+  for (const line of lines) {
+    const rect = line.getBoundingClientRect();
+    if (!(rect.width > 0 || rect.height > 0)) continue;
+    stackTop = Math.min(stackTop, rect.top);
+    stackBottom = Math.max(stackBottom, rect.bottom);
+  }
+  if (!Number.isFinite(stackTop) || !Number.isFinite(stackBottom)) return;
+
+  const player =
+    display.closest(".video-js") ||
+    display.closest(".vjs-tech")?.parentElement ||
+    display.parentElement;
+  const playerRect =
+    player instanceof HTMLElement
+      ? player.getBoundingClientRect()
+      : display.getBoundingClientRect();
+
+  const safeTop = playerRect.top + 8;
+  const safeBottom = playerRect.bottom - 14;
+  const lift = computeTVerViewportLiftPx({
+    stackTop,
+    stackBottom,
+    safeTop,
+    safeBottom
+  });
+
+  if (lift > 0) {
+    display.style.setProperty("--ytf-tver-lift", `${lift}px`);
+    display.style.setProperty(
+      "transform",
+      `translateY(-${lift}px)`,
+      "important"
+    );
+  } else {
+    display.style.removeProperty("--ytf-tver-lift");
+    display.style.removeProperty("transform");
   }
 }
 
@@ -225,9 +627,11 @@ export function applyCaptionStyles(element) {
   element.setAttribute("data-yt-furigana-styled", "1");
 
   requestAnimationFrame(() => {
-    fitRubyReadings(element);
-    paintCaptionBackground(element, snapshot);
     applyBaseStyles(element, snapshot);
+    paintCaptionBackground(element, snapshot);
+    // フォント確定後にルビ縦積みを適用（逆順だと余白計測がずれる）
+    fitRubyReadings(element);
+    scheduleCaptionViewportFit(element);
   });
 }
 
@@ -238,10 +642,11 @@ export function startCaptionStyleGuard(element) {
   if (!snapshot) return;
 
   let applying = false;
-  const guard = new MutationObserver(() => {
+  const apply = () => {
     if (applying) return;
     if (!element.isConnected) {
       guard.disconnect();
+      winGuard?.disconnect();
       styleGuards.delete(element);
       return;
     }
@@ -249,15 +654,33 @@ export function startCaptionStyleGuard(element) {
     try {
       applyBaseStyles(element, snapshot);
       paintCaptionBackground(element, snapshot);
+      expandYouTubeCaptionWindow(element);
+      // YouTube が style を書き戻してもルビ縦積みを維持
+      fitRubyReadings(element);
     } finally {
       queueMicrotask(() => {
         applying = false;
       });
     }
-  });
+  };
 
+  const guard = new MutationObserver(apply);
   guard.observe(element, { attributes: true, attributeFilter: ["style", "class"] });
-  styleGuards.set(element, guard);
+
+  // YouTube が caption-window の height を毎フレーム書き戻す対策
+  const win = element.closest(".caption-window");
+  let winGuard = null;
+  if (win instanceof HTMLElement) {
+    winGuard = new MutationObserver(apply);
+    winGuard.observe(win, { attributes: true, attributeFilter: ["style", "class"] });
+  }
+
+  styleGuards.set(element, {
+    disconnect() {
+      guard.disconnect();
+      winGuard?.disconnect();
+    }
+  });
 }
 
 export function releaseCaptionStyles(element) {
@@ -268,6 +691,17 @@ export function releaseCaptionStyles(element) {
   styleSnapshots.delete(element);
   element.removeAttribute("data-yt-furigana-styled");
   element.removeAttribute(LINE_WIDTH_ATTR);
+  element.removeAttribute("data-yt-furigana-outline");
+  element.removeAttribute("data-yt-furigana-readable");
+  element.removeAttribute(BACKGROUND_ATTR);
+
+  const line = element.closest?.(".vjs-text-track-cue-line");
+  if (line instanceof HTMLElement) {
+    line.style.removeProperty("margin-bottom");
+    line.style.removeProperty("margin-top");
+    line.style.removeProperty("padding-bottom");
+    line.style.removeProperty("overflow");
+  }
 
   for (const prop of [
     "font-size",
@@ -276,6 +710,9 @@ export function releaseCaptionStyles(element) {
     "text-shadow",
     "background-color",
     "padding-top",
+    "padding-bottom",
+    "margin-top",
+    "overflow",
     "white-space",
     "box-decoration-break",
     "-webkit-box-decoration-break"

@@ -25,3 +25,12 @@ npm run build
 ```
 
 See `README.md`, `docs/OPEN-SOURCE-LICENSES.md`, and `docs/TERMS.md`.
+
+## 禁止: YouTube timedtext の連打（429 / 自宅IP制限）
+
+**通常の字幕表示は、ネイティブ字幕DOMへのルビ差し込みだけにすること。**  
+` /api/timedtext ` や page-caption-bridge / 字幕プリフェッチを、起動時や再生ループで自動連打しない。
+
+開発中の連打で YouTube が回線IPを一時制限すると、拡張OFFでも Wi‑Fi 上の全端末で本体字幕が出なくなる（モバイル回線では出る）。公式の解除手段はなく、復旧は待ちか別IPのみ。IPoE ではIPを変えにくい。
+
+詳細・エージェント向け拘束は `.cursor/rules/youtube-timedtext-429.mdc` を参照。

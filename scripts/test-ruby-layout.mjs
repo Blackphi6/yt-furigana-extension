@@ -2,16 +2,25 @@ import assert from "node:assert/strict";
 import {
   MAX_RT_TIGHTEN_EM,
   MIN_CAPTION_SCALE,
+  RUBY_RT_CLEARANCE_PX,
   computeRubyFit,
+  computeRubyNeighborGapPx,
+  computeRubyPadTopPx,
+  computeRubyRtFontScale,
+  computeRubySeparatePushPx,
   computeLineShrinkScale
 } from "../src/ruby-layout.js";
 
+assert.equal(MAX_RT_TIGHTEN_EM, 0);
+assert.equal(computeRubyRtFontScale(4, 1), 1);
+assert.ok(RUBY_RT_CLEARANCE_PX >= 6);
+
 assert.deepEqual(
   computeRubyFit({
-    rubyWidth: 100,
-    rtNaturalWidth: 80,
+    rubyWidth: 40,
+    rtNaturalWidth: 100,
     rtLength: 4,
-    baseLength: 2,
+    baseLength: 1,
     rtFontSizePx: 10
   }),
   {
@@ -23,55 +32,48 @@ assert.deepEqual(
   }
 );
 
-// 余白: 圧縮なし・読み幅まで本文を広げる（隣接衝突防止）
-{
-  const fit = computeRubyFit({
-    rubyWidth: 40,
-    rtNaturalWidth: 100,
-    rtLength: 3,
-    baseLength: 1,
-    rtFontSizePx: 10
-  });
-  assert.equal(fit.rtScaleX, 1);
-  assert.equal(fit.baseLetterSpacingPx, 0);
-  assert.ok(fit.paddingInlinePx > 0);
-  assert.ok(fit.minWidthPx >= 98);
-  assert.ok(fit.minWidthPx <= 100);
-}
-
-// 極端に長い読みもほぼ全幅分の余白（上限キャップなし）
-{
-  const fit = computeRubyFit({
-    rubyWidth: 40,
-    rtNaturalWidth: 200,
-    rtLength: 13,
-    baseLength: 3,
-    rtFontSizePx: 10
-  });
-  assert.equal(fit.rtScaleX, 1);
-  assert.ok(fit.minWidthPx >= 190);
-  assert.ok(fit.paddingInlinePx * 2 >= 140);
-}
-
-// 1行維持: はみ出し分だけ全体スケール（下限あり）
+assert.ok(computeRubyNeighborGapPx(4, 1, 12) >= 1);
 assert.equal(computeLineShrinkScale(100, 120), 1);
 assert.equal(computeLineShrinkScale(200, 100), MIN_CAPTION_SCALE);
-assert.ok(
-  Math.abs(computeLineShrinkScale(120, 100) - (100 / 120) * 0.985) < 1e-9
+
+// 別行は押し広げない（長文折り返し崩壊防止）
+assert.equal(
+  computeRubySeparatePushPx({
+    leftTop: 10,
+    rightTop: 50,
+    leftHeight: 12,
+    rightHeight: 12,
+    gapPx: -200,
+    minGapPx: 1,
+    maxPushPx: 6
+  }),
+  0
 );
 
-// 詰めのみ
+// 同一行の軽い重なりは上限付き
 {
-  const fit = computeRubyFit({
-    rubyWidth: 105,
-    rtNaturalWidth: 108,
-    rtLength: 5,
-    baseLength: 2,
-    rtFontSizePx: 10
+  const push = computeRubySeparatePushPx({
+    leftTop: 10,
+    rightTop: 11,
+    leftHeight: 12,
+    rightHeight: 12,
+    gapPx: -20,
+    minGapPx: 1,
+    maxPushPx: 6
   });
-  assert.ok(fit.rtLetterSpacingPx < 0);
-  assert.ok(fit.rtLetterSpacingPx > MAX_RT_TIGHTEN_EM * 10);
-  assert.equal(fit.paddingInlinePx, 0);
+  assert.ok(push > 0);
+  assert.ok(push <= 6);
+}
+
+{
+  const pad = computeRubyPadTopPx({
+    rtHeightPx: 10,
+    rtFontSizePx: 10,
+    baseFontSizePx: 20
+  });
+  // rt 10 + clearance + 漢字はみ出し(0.22*20) 以上
+  assert.ok(pad >= 10 + RUBY_RT_CLEARANCE_PX + Math.ceil(20 * 0.22));
+  assert.ok(pad > 10 + 2, "must be looser than the old rtHeight+2 padding");
 }
 
 console.log("Ruby layout tests passed.");

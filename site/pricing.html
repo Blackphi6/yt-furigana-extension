@@ -28,16 +28,16 @@
       <section class="section" style="border-top: none; padding-top: 2.5rem">
         <h2>料金</h2>
         <p class="sub">
-          Free は端末内の読み付けが無制限。Premium は辞書同期・共有辞書・ホスト API を解放します。
+          Free は端末内の読み付けが無制限。Premium は読み辞書の端末間移動・共有辞書パック向けの任意オプションです。
         </p>
         <div class="plan-grid">
           <article class="plan">
             <h3>Free</h3>
             <p class="price">¥0</p>
             <ul>
-              <li>ローカル読み付け（無制限）</li>
-              <li>端末内の読み辞書・手動修正</li>
-              <li>クラウド同期なし</li>
+              <li>端末内の読み付け（無制限）</li>
+              <li>クリックで読みを覚え直す</li>
+              <li>クラウドへ字幕を送らない（既定）</li>
             </ul>
             <p style="margin: 1.25rem 0 0">
               <a class="btn ghost" href="./install.html">インストール</a>
@@ -47,9 +47,8 @@
             <h3>Premium</h3>
             <p class="price">支援 / 買い切り</p>
             <ul>
-              <li>辞書の端末間同期</li>
-              <li>共有辞書</li>
-              <li>ホスト型読み API</li>
+              <li>直した読み辞書を別のパソコンへ</li>
+              <li>みんな用の読み辞書パック</li>
             </ul>
 
             <h3 style="margin-top: 1.35rem; font-size: 1.05rem">1. GitHub Sponsors（いま使える）</h3>
@@ -60,9 +59,9 @@
               >Sponsors で支援</a
             >
 
-            <h3 style="margin-top: 1.5rem; font-size: 1.05rem">2. Stripe（ホスト API 接続時）</h3>
+            <h3 style="margin-top: 1.5rem; font-size: 1.05rem">2. Stripe（同期サーバー接続時）</h3>
             <p class="sub" style="margin-bottom: 0.5rem">
-              読みエンジンを公開し Stripe を設定すると、下のボタンで自動購入できます。
+              辞書同期用の読みエンジンを公開し Stripe を設定すると、下のボタンで自動購入できます。
             </p>
             <form id="checkout-form" class="field-row">
               <input

@@ -1,4 +1,43 @@
-/** @typedef {{ baseUrl: string, languageCode?: string, kind?: string, name?: { simpleText?: string } }} CaptionTrack */
+/**
+ * @typedef {{ baseUrl: string, languageCode?: string, kind?: string, name?: { simpleText?: string } }} CaptionTrack
+ */
+
+/** @type {Map<string, { videoId: string, track: CaptionTrack, lines: string[], cues: TimedCaptionCue[], styled: boolean, source: string, at: number }>} */
+const captionResultCache = new Map();
+const CAPTION_CACHE_TTL_MS = 10 * 60 * 1000;
+let timedTextCooldownUntil = 0;
+
+export function isTimedTextRateLimited() {
+  return Date.now() < timedTextCooldownUntil;
+}
+
+export function noteTimedTextRateLimit(cooldownMs = 90_000) {
+  timedTextCooldownUntil = Math.max(
+    timedTextCooldownUntil,
+    Date.now() + cooldownMs
+  );
+}
+
+export function isTimedTextRateLimitError(error) {
+  const msg = String(error?.message || error || "");
+  return /\b429\b/.test(msg);
+}
+
+function getCachedCaptionResult(videoId) {
+  const hit = captionResultCache.get(videoId);
+  if (!hit) return null;
+  if (Date.now() - hit.at > CAPTION_CACHE_TTL_MS) {
+    captionResultCache.delete(videoId);
+    return null;
+  }
+  return hit;
+}
+
+function setCachedCaptionResult(result) {
+  if (!result?.videoId) return result;
+  captionResultCache.set(result.videoId, { ...result, at: Date.now() });
+  return result;
+}
 
 export function getYouTubeVideoId(href = globalThis.location?.href ?? "") {
   try {
@@ -99,22 +138,74 @@ export function buildTimedTextJson3Url(baseUrl) {
   return url.toString();
 }
 
-export function parseTimedTextJson3(data) {
+/**
+ * @typedef {{ startMs: number, endMs: number, text: string }} TimedCaptionCue
+ */
+
+/**
+ * json3 timedtext → 時刻付きキュー。
+ * duration が無いイベントは次キュー開始を終端にする。
+ * @param {unknown} data
+ * @returns {TimedCaptionCue[]}
+ */
+export function parseTimedTextJson3Cues(data) {
   const events = Array.isArray(data?.events) ? data.events : [];
-  const lines = [];
+  /** @type {{ startMs: number, durationMs: number | null, text: string }[]} */
+  const raw = [];
 
   for (const event of events) {
     if (!Array.isArray(event?.segs) || event.segs.length === 0) continue;
     const text = event.segs
       .map((seg) => seg?.utf8 ?? "")
       .join("")
+      // カラオケ字幕に多いゼロ幅文字
+      .replace(/[\u200b\u200c\u200d\ufeff]/g, "")
       .replace(/\n+/g, " ")
       .replace(/\s+/g, " ")
       .trim();
-    if (text) lines.push(text);
+    if (!text) continue;
+    const startMs = Number(event.tStartMs) || 0;
+    const durationMs = Number(event.dDurationMs);
+    raw.push({
+      startMs,
+      durationMs:
+        Number.isFinite(durationMs) && durationMs > 0 ? durationMs : null,
+      text
+    });
   }
 
-  return lines;
+  return raw.map((cue, index) => {
+    let endMs;
+    if (cue.durationMs != null) {
+      endMs = cue.startMs + cue.durationMs;
+    } else if (index + 1 < raw.length) {
+      endMs = raw[index + 1].startMs;
+    } else {
+      endMs = cue.startMs + 5000;
+    }
+    return { startMs: cue.startMs, endMs, text: cue.text };
+  });
+}
+
+/**
+ * @param {unknown} data
+ * @returns {string[]}
+ */
+export function parseTimedTextJson3(data) {
+  return parseTimedTextJson3Cues(data).map((cue) => cue.text);
+}
+
+/**
+ * 再生時刻に該当するキュー（重なりうるので複数可）。
+ * @param {TimedCaptionCue[]} cues
+ * @param {number} timeMs
+ * @returns {TimedCaptionCue[]}
+ */
+export function findActiveTimedCaptionCues(cues, timeMs) {
+  const list = Array.isArray(cues) ? cues : [];
+  const t = Number(timeMs);
+  if (!Number.isFinite(t)) return [];
+  return list.filter((cue) => t >= cue.startMs && t < cue.endMs);
 }
 
 export function uniqueCaptionTexts(lines, normalize = (text) => text) {
@@ -147,13 +238,36 @@ export async function fetchPlayerResponseFromWatchPage(videoId, fetchImpl = fetc
   return playerResponse;
 }
 
-export async function fetchCaptionLinesFromTrack(track, fetchImpl = fetch) {
+/**
+ * カラオケ／paint-on（色が変わる）字幕トラックか。
+ * pens 定義が多く、かつ実際に pPenId 付きイベントがあるときだけ true。
+ * @param {unknown} data
+ */
+export function isStyledPaintOnCaptionData(data) {
+  const pens = Array.isArray(data?.pens) ? data.pens : [];
+  const events = Array.isArray(data?.events) ? data.events : [];
+  let withPen = 0;
+  for (const event of events) {
+    if (event?.pPenId != null) withPen += 1;
+    if (withPen >= 8 && pens.length >= 8) return true;
+  }
+  return withPen >= 8 && pens.length >= 8;
+}
+
+async function fetchTimedTextJson3(track, fetchImpl = fetch) {
   if (!track?.baseUrl) {
     throw new Error("caption track has no baseUrl");
+  }
+  if (isTimedTextRateLimited()) {
+    throw new Error("timedtext fetch cooling down after 429");
   }
 
   const url = buildTimedTextJson3Url(track.baseUrl);
   const response = await fetchImpl(url, { credentials: "include" });
+  if (response.status === 429) {
+    noteTimedTextRateLimit();
+    throw new Error("timedtext fetch failed (429)");
+  }
   if (!response.ok) {
     throw new Error(`timedtext fetch failed (${response.status})`);
   }
@@ -163,20 +277,60 @@ export async function fetchCaptionLinesFromTrack(track, fetchImpl = fetch) {
     throw new Error("timedtext returned empty body");
   }
 
-  let data;
   try {
-    data = JSON.parse(body);
+    return JSON.parse(body);
   } catch {
     throw new Error("timedtext was not JSON3");
   }
-
-  return parseTimedTextJson3(data);
 }
 
 /**
- * WEB timedtext often returns empty (PoToken). ANDROID Innertube player URLs still work.
+ * @param {CaptionTrack} track
+ * @param {typeof fetch} [fetchImpl]
+ * @returns {Promise<{ cues: TimedCaptionCue[], styled: boolean }>}
  */
-export async function fetchAndroidPlayerResponse(videoId, fetchImpl = fetch) {
+export async function fetchCaptionTrackData(track, fetchImpl = fetch) {
+  const data = await fetchTimedTextJson3(track, fetchImpl);
+  return {
+    cues: parseTimedTextJson3Cues(data),
+    styled: isStyledPaintOnCaptionData(data)
+  };
+}
+
+/**
+ * @param {CaptionTrack} track
+ * @param {typeof fetch} [fetchImpl]
+ * @returns {Promise<TimedCaptionCue[]>}
+ */
+export async function fetchCaptionCuesFromTrack(track, fetchImpl = fetch) {
+  const { cues } = await fetchCaptionTrackData(track, fetchImpl);
+  return cues;
+}
+
+export async function fetchCaptionLinesFromTrack(track, fetchImpl = fetch) {
+  const cues = await fetchCaptionCuesFromTrack(track, fetchImpl);
+  return cues.map((cue) => cue.text);
+}
+
+/**
+ * Innertube player. ANDROID は速いが、MV などでは日本語トラックが欠けることがある。
+ * IOS はスタイル付き歌詞トラックを返しやすい。
+ */
+export const INNERTUBE_CLIENTS = [
+  { name: "ANDROID", version: "20.10.38", source: "android" },
+  { name: "IOS", version: "20.10.4", source: "ios" }
+];
+
+/**
+ * @param {string} videoId
+ * @param {{ clientName: string, clientVersion: string }} client
+ * @param {typeof fetch} [fetchImpl]
+ */
+export async function fetchInnertubePlayerResponse(
+  videoId,
+  client,
+  fetchImpl = fetch
+) {
   const response = await fetchImpl(
     "https://www.youtube.com/youtubei/v1/player?prettyPrint=false",
     {
@@ -186,8 +340,8 @@ export async function fetchAndroidPlayerResponse(videoId, fetchImpl = fetch) {
       body: JSON.stringify({
         context: {
           client: {
-            clientName: "ANDROID",
-            clientVersion: "20.10.38",
+            clientName: client.clientName,
+            clientVersion: client.clientVersion,
             hl: "ja",
             gl: "JP"
           }
@@ -198,24 +352,59 @@ export async function fetchAndroidPlayerResponse(videoId, fetchImpl = fetch) {
   );
 
   if (!response.ok) {
-    throw new Error(`ANDROID player failed (${response.status})`);
+    throw new Error(`${client.clientName} player failed (${response.status})`);
   }
 
   const data = await response.json();
   if (!data || typeof data !== "object") {
-    throw new Error("ANDROID player returned invalid JSON");
+    throw new Error(`${client.clientName} player returned invalid JSON`);
   }
   return data;
 }
 
 /**
+ * WEB timedtext often returns empty (PoToken). ANDROID Innertube player URLs still work.
+ * @deprecated Prefer fetchInnertubePlayerResponse with INNERTUBE_CLIENTS
+ */
+export async function fetchAndroidPlayerResponse(videoId, fetchImpl = fetch) {
+  return fetchInnertubePlayerResponse(
+    videoId,
+    { clientName: "ANDROID", clientVersion: "20.10.38" },
+    fetchImpl
+  );
+}
+
+/**
  * Fetch unique Japanese caption lines for a video.
- * Tries ANDROID Innertube first (avoids empty WEB timedtext), then watch-page WEB tracks.
- * @returns {Promise<{ videoId: string, track: CaptionTrack, lines: string[], source: string }>}
+ * Tries ANDROID → IOS Innertube, then watch-page WEB tracks.
+ * 429 が出たら以降のクライアントは試さない（連打で悪化するため）。
+ * @returns {Promise<{ videoId: string, track: CaptionTrack, lines: string[], cues: TimedCaptionCue[], styled: boolean, source: string }>}
  */
 export async function fetchJapaneseCaptionLines(videoId, options = {}) {
+  const cached = getCachedCaptionResult(videoId);
+  if (cached) {
+    return {
+      videoId: cached.videoId,
+      track: cached.track,
+      lines: cached.lines,
+      cues: cached.cues,
+      styled: cached.styled,
+      source: `${cached.source}+cache`
+    };
+  }
+
+  if (isTimedTextRateLimited()) {
+    throw new Error("timedtext fetch cooling down after 429");
+  }
+
   const fetchImpl = options.fetchImpl ?? fetch;
-  const normalize = options.normalize ?? ((text) => text.replace(/\s+/g, " ").trim());
+  const normalize =
+    options.normalize ??
+    ((text) =>
+      text
+        .replace(/[\u200b\u200c\u200d\ufeff]/g, "")
+        .replace(/\s+/g, " ")
+        .trim());
   const errors = [];
 
   const tryFromPlayerResponse = async (playerResponse, source) => {
@@ -224,21 +413,46 @@ export async function fetchJapaneseCaptionLines(videoId, options = {}) {
     if (!track) {
       throw new Error("日本語字幕トラックが見つかりません");
     }
-    const rawLines = await fetchCaptionLinesFromTrack(track, fetchImpl);
-    const lines = uniqueCaptionTexts(rawLines, normalize);
+    const { cues, styled } = await fetchCaptionTrackData(track, fetchImpl);
+    const lines = uniqueCaptionTexts(
+      cues.map((cue) => cue.text),
+      normalize
+    );
     if (lines.length === 0) {
       throw new Error("字幕テキストが空です");
     }
-    return { videoId, track, lines, source };
+    return setCachedCaptionResult({
+      videoId,
+      track,
+      lines,
+      cues,
+      styled,
+      source
+    });
   };
 
   if (!options.playerResponse) {
-    try {
-      const androidResponse = await fetchAndroidPlayerResponse(videoId, fetchImpl);
-      return await tryFromPlayerResponse(androidResponse, "android");
-    } catch (error) {
-      errors.push(`android: ${error.message}`);
+    for (const client of INNERTUBE_CLIENTS) {
+      if (isTimedTextRateLimited()) break;
+      try {
+        const playerResponse = await fetchInnertubePlayerResponse(
+          videoId,
+          { clientName: client.name, clientVersion: client.version },
+          fetchImpl
+        );
+        return await tryFromPlayerResponse(playerResponse, client.source);
+      } catch (error) {
+        errors.push(`${client.source}: ${error.message}`);
+        if (isTimedTextRateLimitError(error)) {
+          noteTimedTextRateLimit();
+          break;
+        }
+      }
     }
+  }
+
+  if (isTimedTextRateLimited()) {
+    throw new Error(errors.join(" / ") || "timedtext fetch cooling down after 429");
   }
 
   try {
@@ -251,6 +465,7 @@ export async function fetchJapaneseCaptionLines(videoId, options = {}) {
     );
   } catch (error) {
     errors.push(`watch: ${error.message}`);
+    if (isTimedTextRateLimitError(error)) noteTimedTextRateLimit();
     throw new Error(errors.join(" / ") || error.message);
   }
 }

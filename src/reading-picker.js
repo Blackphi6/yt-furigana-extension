@@ -350,3 +350,98 @@ export function installReadingPicker(root = document) {
     true
   );
 }
+
+const HOVER_CLASS = "yt-furigana-word--hover";
+const FLOATING_TIP_ID = "yt-furigana-floating-tip";
+
+function removeFloatingTip() {
+  document.getElementById(FLOATING_TIP_ID)?.remove();
+}
+
+/**
+ * 数字チップなど、親の overflow で ::after が切れうる環境向けに fixed で出す。
+ * @param {HTMLElement} wordEl
+ */
+function showFloatingTip(wordEl) {
+  const tip = wordEl.getAttribute("data-tip")?.trim();
+  if (!tip || !wordEl.classList.contains("yt-furigana-word--tip")) {
+    removeFloatingTip();
+    return;
+  }
+
+  let el = document.getElementById(FLOATING_TIP_ID);
+  if (!el) {
+    el = document.createElement("div");
+    el.id = FLOATING_TIP_ID;
+    el.className = "yt-furigana-floating-tip";
+    document.documentElement.appendChild(el);
+  }
+  el.textContent = tip;
+
+  // ふりがな (rt) と同じ: 本文フォントの 0.55em
+  const basePx = Number.parseFloat(getComputedStyle(wordEl).fontSize) || 16;
+  const tipPx = Math.max(11, Math.round(basePx * 0.55 * 10) / 10);
+  el.style.fontSize = `${tipPx}px`;
+
+  const rect = wordEl.getBoundingClientRect();
+  // いったん反映して実寸を測る
+  el.style.left = "0px";
+  el.style.top = "0px";
+  const tipRect = el.getBoundingClientRect();
+  const width = tipRect.width || el.offsetWidth || 40;
+  const height = tipRect.height || 24;
+  const left = Math.min(
+    Math.max(8, rect.left + rect.width / 2 - width / 2),
+    window.innerWidth - width - 8
+  );
+  const top = Math.max(8, rect.top - height - 8);
+  el.style.left = `${left}px`;
+  el.style.top = `${top}px`;
+}
+
+/**
+ * TVer のように操作レイヤーが字幕の上に乗るサイトでも、
+ * 座標ヒットで薄白ホバー／数字ツールチップを出せるようにする。
+ * @param {ParentNode} [root]
+ */
+export function installFuriganaHoverHighlight(root = document) {
+  /** @type {HTMLElement | null} */
+  let hovered = null;
+
+  const clear = () => {
+    if (hovered) {
+      hovered.classList.remove(HOVER_CLASS);
+      hovered = null;
+    }
+    removeFloatingTip();
+  };
+
+  const onMove = (event) => {
+    if (event.target?.closest?.(`#${POPUP_ID}`)) return;
+    const word = findFuriganaWordAtPoint(event.clientX, event.clientY, root);
+    if (word === hovered) {
+      if (word) showFloatingTip(word);
+      return;
+    }
+    clear();
+    if (!word) return;
+    word.classList.add(HOVER_CLASS);
+    hovered = word;
+    showFloatingTip(word);
+  };
+
+  root.addEventListener("pointermove", onMove, true);
+  root.addEventListener(
+    "pointerleave",
+    (event) => {
+      if (event.target === root || event.target === document.documentElement) {
+        clear();
+      }
+    },
+    true
+  );
+  window.addEventListener("blur", clear);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible") clear();
+  });
+}

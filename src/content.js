@@ -3,21 +3,30 @@ import {
   applyCaptionStyles,
   captureCaptionStyles,
   releaseCaptionStyles,
-  startCaptionStyleGuard
+  startCaptionStyleGuard,
+  scheduleCaptionViewportFit
 } from "./caption-styles.js";
 import {
-  injectPageCaptionBridge,
   prefetchCaptionFurigana
 } from "./caption-prefetch.js";
 import {
   DEFAULT_SETTINGS,
   isReadingApiEngine,
-  isRemoteEngine
+  shouldUseRemoteConversion
 } from "./default-settings.js";
 import { buildFuriganaHtml } from "./furigana.js";
-import { insertCaptionSoftBreaks, maxLineCharsFromElement } from "./caption-line-break.js";
+import { insertCaptionSoftBreaks, maxLineCharsFromElement, estimateMaxLineChars } from "./caption-line-break.js";
 import { recordLearningSample } from "./learning-inbox.js";
-import { installReadingPicker } from "./reading-picker.js";
+import { installReadingPicker, installFuriganaHoverHighlight } from "./reading-picker.js";
+import {
+  applyYouTubeFuriganaOverlay,
+  blankYouTubeFuriganaOverlay,
+  clearYouTubeFuriganaOverlays,
+  restoreYouTubeNativeCaptionsVisible,
+  setYouTubeNativeCaptionHidden,
+  startYouTubeOverlayPositionLoop,
+  stopYouTubeOverlayPositionLoop
+} from "./youtube-caption-overlay.js";
 import {
   applyUserReadingLearning,
   loadUserReadingStore
@@ -35,7 +44,11 @@ import {
   loadEnglishKatakanaDict,
   getEnglishKatakanaDictCount
 } from "./english-katakana-reading.js";
-import { getYouTubeVideoId } from "./youtube-captions.js";
+import {
+  findActiveTimedCaptionCues,
+  getYouTubeVideoId,
+  isTimedTextRateLimited
+} from "./youtube-captions.js";
 
 const PROCESSED_ATTR = "data-yt-furigana-done";
 const PROCESSING_ATTR = "data-yt-furigana-processing";
@@ -85,6 +98,13 @@ let currentVideoId = null;
 let prefetchController = null;
 let prefetchPromise = null;
 let processTimer = null;
+/** @type {import("./youtube-captions.js").TimedCaptionCue[]} */
+let timedCues = [];
+/**
+ * 色替わり（karaoke / paint-on）字幕のときだけ true。
+ * false の通常字幕は YouTube ネイティブにルビを差し込む。
+ */
+let youtubeOverlayMode = false;
 const cache = new Map();
 const inflight = new Map();
 
@@ -236,15 +256,8 @@ function noteLearningSample(text, html) {
 
 async function convertText(text) {
   const normalized = normalizeText(text);
-  if (!isRemoteEngine(settings.engine)) {
+  if (!shouldUseRemoteConversion(settings)) {
     const html = await convertWithLocalDictionary(normalized);
-    noteLearningSample(normalized, html);
-    return html;
-  }
-
-  // 読みAPIなのに URL 未設定 → 警告を出さずローカルへ
-  if (isReadingApiEngine(settings.engine) && !String(settings.readingApiUrl || "").trim()) {
-    const html = await convertWithLocalFallback(normalized);
     noteLearningSample(normalized, html);
     return html;
   }
@@ -279,24 +292,75 @@ function cancelPrefetch() {
   prefetchPromise = null;
 }
 
+/**
+ * 通常字幕モードへ強制（オーバーレイ停止・ネイティブ再表示）。
+ */
+function useNativeYouTubeCaptions() {
+  youtubeOverlayMode = false;
+  timedCues = [];
+  stopYouTubeOverlaySyncLoop();
+  stopYouTubeOverlayPositionLoop();
+  clearYouTubeFuriganaOverlays();
+  restoreYouTubeNativeCaptionsVisible();
+}
+
+/**
+ * 色替わり字幕 → オーバーレイ…は一旦無効。
+ * ネイティブ非表示が全言語字幕を消す事故を起こしたため、
+ * 当面は常に YouTube 標準＋ルビ差し込みのみ。
+ * @param {boolean} [_enabledOverlay]
+ */
+function setYouTubeOverlayMode(_enabledOverlay) {
+  useNativeYouTubeCaptions();
+}
+
+function maybeEnableOverlayFromLiveDom() {
+  // 当面オーバーレイ自動切替なし
+}
+
 async function startCaptionPrefetch(reason = "manual") {
+  // 通常字幕は DOM 都度変換だけで足りる。
+  // timedtext 連打は YouTube 本体の字幕取得まで 429 で潰すので、
+  // カラオケ確定後（overlay モード）以外は走らせない。
+  if (!youtubeOverlayMode && reason !== "karaoke") {
+    scheduleProcess();
+    return null;
+  }
+
   if (!enabled) return null;
-  // Local engines are fast enough on visible captions; full-track prefetch freezes YouTube.
-  // Remote engines benefit from prefetching the whole timedtext track once.
-  if (!isRemoteEngine(settings.engine)) return null;
 
   const videoId = getYouTubeVideoId();
   if (!videoId) return null;
 
+  // 429 クールダウン中は API を叩かず、DOM 字幕の都度変換だけで進める
+  if (isTimedTextRateLimited()) {
+    scheduleProcess();
+    return null;
+  }
+
+  // カラオケ／paint-on 字幕は表示中に変換が間に合わないため暖機する
   cancelPrefetch();
   const controller = new AbortController();
   prefetchController = controller;
 
   const run = (async () => {
     try {
-      if (!tokenizer) await initTokenizer();
-      rebuildHybridTokenize();
-      startSudachiInBackground();
+      await new Promise((resolve) => {
+        window.setTimeout(resolve, 2500);
+      });
+      if (controller.signal.aborted) return null;
+      if (isTimedTextRateLimited()) {
+        scheduleProcess();
+        return null;
+      }
+
+      if (!shouldUseRemoteConversion(settings)) {
+        await ensureLocalTokenizer();
+      } else {
+        if (!tokenizer) await initTokenizer();
+        rebuildHybridTokenize();
+        startSudachiInBackground();
+      }
 
       const result = await prefetchCaptionFurigana({
         videoId,
@@ -311,23 +375,23 @@ async function startCaptionPrefetch(reason = "manual") {
         }
       });
 
+      timedCues = Array.isArray(result?.cues) ? result.cues : [];
+      if (result?.styled) setYouTubeOverlayMode(true);
       console.log(
         `[YT Furigana] prefetch ${reason}: ${result.lines.length} lines` +
-          ` (converted=${result.converted}, source=${result.source})`
+          ` (converted=${result.converted}, source=${result.source}` +
+          `, cues=${timedCues.length}, styled=${Boolean(result?.styled)})`
       );
       scheduleProcess();
       return result;
     } catch (error) {
       if (error?.name === "AbortError") return null;
-      console.warn("[YT Furigana] prefetch failed:", error.message);
-      showProgress(
-        {
-          phase: "ready",
-          percent: 100,
-          message: "一括取得できず、表示時に処理します"
-        },
-        "YT Furigana · 字幕プリフェッチ"
-      );
+      timedCues = [];
+      scheduleProcess();
+      const rateLimited = /\b429\b|cooling down/i.test(String(error?.message || ""));
+      if (!rateLimited) {
+        console.warn("[YT Furigana] prefetch skipped:", error.message);
+      }
       return null;
     } finally {
       if (prefetchController === controller) {
@@ -346,9 +410,9 @@ function handleVideoNavigation() {
   if (!videoKey || videoKey === currentVideoId) return;
   currentVideoId = videoKey;
   clearCache();
-  if (isYouTubeHost()) {
-    void startCaptionPrefetch("navigate");
-  }
+  timedCues = [];
+  useNativeYouTubeCaptions();
+  scheduleProcess();
 }
 
 async function loadSettings() {
@@ -358,7 +422,10 @@ async function loadSettings() {
 }
 
 function normalizeText(text) {
-  return text.replace(/\s+/g, " ").trim();
+  return String(text || "")
+    .replace(/[\u200b\u200c\u200d\ufeff]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /** textContent of ruby includes <rt>, which must never be sent to converters. */
@@ -429,19 +496,205 @@ function ensureOriginalText(element, normalized) {
   }
 }
 
-function applyFuriganaHtml(element, html, processingKey) {
-  // 必ずルビ化「前」にフォントと背景を固定する
-  captureCaptionStyles(element);
-  // ルビ HTML 確定後に BudouX 句境界へ ZWSP（字幕幅の目安文字数付近のみ）
-  const maxLineChars = maxLineCharsFromElement(element);
-  element.innerHTML = insertCaptionSoftBreaks(html, { maxLineChars });
-  applyCaptionStyles(element);
-  startCaptionStyleGuard(element);
-  element.setAttribute(PROCESSED_ATTR, processingKey);
+function maxLineCharsForYouTubeOverlay(element) {
+  const player =
+    element?.closest?.(".html5-video-player") ||
+    document.querySelector(".html5-video-player");
+  const playerW =
+    player instanceof HTMLElement ? player.getBoundingClientRect().width : 0;
+  const fontPx =
+    (element instanceof HTMLElement &&
+      Number.parseFloat(getComputedStyle(element).fontSize)) ||
+    32;
+  if (playerW > 0) {
+    // オーバーレイはプレイヤー幅の約 90%。狭い caption-window 基準だと早割れする
+    return estimateMaxLineChars({
+      lineWidthPx: playerW * 0.88,
+      fontSizePx: Math.max(fontPx, 28)
+    });
+  }
+  return maxLineCharsFromElement(element);
 }
 
-function isStillCurrentCaption(element, normalized) {
-  return element.getAttribute(ORIGINAL_ATTR) === normalized;
+function escapeCaptionPlainHtml(text) {
+  return String(text || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/**
+ * 表示中の全 .ytp-caption-segment を1つのオーバーレイにまとめる。
+ * （1行ずつ上書きすると2行字幕の1行目が消える）
+ * @param {HTMLElement} anchorSegment
+ */
+function syncYouTubeOverlayFromLiveCaptions(anchorSegment) {
+  const segments = findCaptionElements(document);
+  if (segments.length === 0) return;
+
+  const maxLineChars = maxLineCharsForYouTubeOverlay(anchorSegment);
+  /** @type {string[]} */
+  const lines = [];
+  /** @type {string[]} */
+  const keys = [];
+
+  for (const el of segments) {
+    const text = getCaptionSourceText(el);
+    if (!text) continue;
+    const cacheKey = getCacheKey(text);
+    keys.push(cacheKey);
+
+    const cached = cache.get(cacheKey);
+    if (cached) {
+      lines.push(insertCaptionSoftBreaks(cached, { maxLineChars }));
+      continue;
+    }
+    if (el.querySelector("ruby, rt")) {
+      lines.push(el.innerHTML);
+      continue;
+    }
+    // 未変換でも行は残す（後でキャッシュが埋まれば差し替え）
+    lines.push(escapeCaptionPlainHtml(text));
+  }
+
+  if (lines.length === 0) return;
+
+  const combined = lines
+    .map((html) => `<div class="yt-furigana-yt-overlay-line">${html}</div>`)
+    .join("");
+  const textKey = keys.join("\n");
+  applyYouTubeFuriganaOverlay(anchorSegment, combined, textKey);
+  startYouTubeOverlayPositionLoop();
+}
+
+function getYouTubePlayerVideo() {
+  return (
+    document.querySelector(".html5-video-player video.html5-main-video") ||
+    document.querySelector(".html5-video-player video") ||
+    document.querySelector("video.html5-main-video")
+  );
+}
+
+function getYouTubeOverlayAnchor() {
+  const segments = findCaptionElements(document);
+  if (segments[0] instanceof HTMLElement) return segments[0];
+  const player = document.querySelector(".html5-video-player");
+  return player instanceof HTMLElement ? player : null;
+}
+
+/**
+ * timedtext の時刻付きキューでオーバーレイを同期する。
+ * 色替わり字幕モード専用。
+ * @returns {boolean} timed キューで処理したか
+ */
+function syncYouTubeOverlayFromTimedCues() {
+  if (!youtubeOverlayMode) return false;
+  if (timedCues.length === 0) return false;
+  const video = getYouTubePlayerVideo();
+  if (!(video instanceof HTMLVideoElement)) return false;
+
+  const nowMs = Math.floor((video.currentTime || 0) * 1000);
+  const active = findActiveTimedCaptionCues(timedCues, nowMs);
+  const anchor = getYouTubeOverlayAnchor();
+  if (!(anchor instanceof HTMLElement)) return true;
+
+  if (active.length === 0) {
+    // timed に該当が無くても、YouTube DOM に字幕があればそれを表示
+    const segments = findCaptionElements(document);
+    if (segments.length > 0) {
+      syncYouTubeOverlayFromLiveCaptions(segments[0]);
+      return true;
+    }
+    blankYouTubeFuriganaOverlay();
+    return true;
+  }
+
+  const maxLineChars = maxLineCharsForYouTubeOverlay(anchor);
+  /** @type {string[]} */
+  const lines = [];
+  /** @type {string[]} */
+  const keys = [];
+
+  for (const cue of active) {
+    const text = normalizeText(cue.text);
+    if (!text) continue;
+    keys.push(`${cue.startMs}:${text}`);
+    const cached = cache.get(getCacheKey(text));
+    if (cached) {
+      lines.push(insertCaptionSoftBreaks(cached, { maxLineChars }));
+    } else {
+      lines.push(escapeCaptionPlainHtml(text));
+      void convertText(text)
+        .then((html) => {
+          cache.set(getCacheKey(text), html);
+        })
+        .catch(() => {
+          /* ignore */
+        });
+    }
+  }
+
+  if (lines.length === 0) {
+    blankYouTubeFuriganaOverlay();
+    return true;
+  }
+
+  const combined = lines
+    .map((html) => `<div class="yt-furigana-yt-overlay-line">${html}</div>`)
+    .join("");
+  applyYouTubeFuriganaOverlay(anchor, combined, keys.join("\n"));
+  startYouTubeOverlayPositionLoop();
+  return true;
+}
+
+// 色替わり字幕モード専用の定期同期
+let youtubeOverlaySyncTimer = null;
+function startYouTubeOverlaySyncLoop() {
+  if (!isYouTubeHost() || !youtubeOverlayMode || youtubeOverlaySyncTimer != null) {
+    return;
+  }
+  youtubeOverlaySyncTimer = window.setInterval(() => {
+    if (!enabled || !youtubeOverlayMode) return;
+    if (syncYouTubeOverlayFromTimedCues()) return;
+    const segments = findCaptionElements(document);
+    if (segments.length === 0) return;
+    syncYouTubeOverlayFromLiveCaptions(segments[0]);
+  }, 100);
+}
+
+function stopYouTubeOverlaySyncLoop() {
+  if (youtubeOverlaySyncTimer != null) {
+    window.clearInterval(youtubeOverlaySyncTimer);
+    youtubeOverlaySyncTimer = null;
+  }
+}
+
+function applyFuriganaHtml(element, html, processingKey) {
+  // 色替わり以外は、以前どおり YouTube / TVer 標準字幕へルビを差し込むだけ
+  if (!(isYouTubeHost() && youtubeOverlayMode)) {
+    captureCaptionStyles(element);
+    const maxLineChars = maxLineCharsFromElement(element);
+    element.innerHTML = insertCaptionSoftBreaks(html, { maxLineChars });
+    applyCaptionStyles(element);
+    startCaptionStyleGuard(element);
+    element.setAttribute(PROCESSED_ATTR, processingKey);
+    return;
+  }
+
+  // 色替わり字幕のみオーバーレイ
+  captureCaptionStyles(element);
+  const maxLineChars = maxLineCharsForYouTubeOverlay(element);
+  const broken = insertCaptionSoftBreaks(html, { maxLineChars });
+  element.innerHTML = broken;
+  applyCaptionStyles(element);
+  startCaptionStyleGuard(element);
+  if (timedCues.length > 0) {
+    syncYouTubeOverlayFromTimedCues();
+  } else {
+    syncYouTubeOverlayFromLiveCaptions(element);
+  }
+  element.setAttribute(PROCESSED_ATTR, processingKey);
 }
 
 async function fetchRemoteHtml(normalized, requestFn) {
@@ -476,25 +729,53 @@ async function fetchReadingApiHtml(normalized) {
   return fetchRemoteHtml(normalized, requestReadingApiFurigana);
 }
 
-async function applyRemoteFurigana(element, normalized, processingKey) {
-  if (element.getAttribute(PROCESSING_ATTR) === processingKey) return;
-  element.setAttribute(PROCESSING_ATTR, processingKey);
+/**
+ * 変換結果を「今画面にある」同一テキストの字幕へ適用する。
+ * カラオケは変換中に DOM が差し替わるため、開始時の element だけ見てはいけない。
+ */
+function applyFuriganaToLiveCaptions(normalized, html, processingKey) {
+  const targetKey = getCacheKey(normalized);
+  for (const el of findCaptionElements(document)) {
+    const text = getCaptionSourceText(el);
+    if (!text || getCacheKey(text) !== targetKey) continue;
+    ensureOriginalText(el, text);
+    if (el.getAttribute(PROCESSED_ATTR) === processingKey) continue;
+    applyFuriganaHtml(el, html, processingKey);
+  }
+}
 
+/** ローカル変換を cacheKey 単位で重複排除し、成功したら必ず cache に載せる。 */
+async function convertLocalAndCache(normalized) {
+  const cacheKey = getCacheKey(normalized);
+  if (cache.has(cacheKey)) return cache.get(cacheKey);
+
+  let promise = inflight.get(cacheKey);
+  if (!promise) {
+    promise = convertWithLocalDictionary(normalized)
+      .then((html) => {
+        cache.set(cacheKey, html);
+        noteLearningSample(normalized, html);
+        inflight.delete(cacheKey);
+        return html;
+      })
+      .catch((error) => {
+        inflight.delete(cacheKey);
+        throw error;
+      });
+    inflight.set(cacheKey, promise);
+  }
+  return promise;
+}
+
+async function applyRemoteFurigana(normalized, processingKey) {
+  const cacheKey = getCacheKey(normalized);
   try {
     const html = await convertText(normalized);
-    if (!isStillCurrentCaption(element, normalized)) return;
-
-    applyFuriganaHtml(element, html, processingKey);
+    // 変換完了時点の DOM が別ノードでも、キャッシュしてから現字幕へ適用
+    cache.set(cacheKey, html);
+    applyFuriganaToLiveCaptions(normalized, html, processingKey);
   } catch (error) {
     console.warn("[YT Furigana] conversion failed:", error.message);
-    if (isStillCurrentCaption(element, normalized)) {
-      element.textContent = normalized;
-      element.removeAttribute(PROCESSED_ATTR);
-    }
-  } finally {
-    if (element.getAttribute(PROCESSING_ATTR) === processingKey) {
-      element.removeAttribute(PROCESSING_ATTR);
-    }
   }
 }
 
@@ -509,38 +790,32 @@ async function processElement(element) {
   const processingKey = getProcessingKey(normalized);
   if (element.getAttribute(PROCESSED_ATTR) === processingKey) return;
 
-  if (isRemoteEngine(settings.engine)) {
-    const cacheKey = getCacheKey(normalized);
-    if (cache.has(cacheKey)) {
-      applyFuriganaHtml(element, cache.get(cacheKey), processingKey);
-      return;
-    }
-
-    captureCaptionStyles(element);
-    void applyRemoteFurigana(element, normalized, processingKey);
+  // カラオケ字幕は DOM が頻繁に作り直されるので、キャッシュがあれば即適用
+  const cacheKey = getCacheKey(normalized);
+  if (cache.has(cacheKey)) {
+    applyFuriganaHtml(element, cache.get(cacheKey), processingKey);
     return;
   }
 
-  if (element.hasAttribute(PROCESSING_ATTR)) return;
-  element.setAttribute(PROCESSING_ATTR, "1");
+  if (shouldUseRemoteConversion(settings)) {
+    captureCaptionStyles(element);
+    void applyRemoteFurigana(normalized, processingKey);
+    return;
+  }
 
+  // ノード単位の PROCESSING_ATTR は差し替えで無効になるため、inflight Map で重複排除
   try {
-    const html = await convertWithLocalDictionary(normalized);
-    if (!isStillCurrentCaption(element, normalized)) return;
-
-    applyFuriganaHtml(element, html, processingKey);
-    cache.set(getCacheKey(normalized), html);
-    noteLearningSample(normalized, html);
+    const html = await convertLocalAndCache(normalized);
+    applyFuriganaToLiveCaptions(normalized, html, processingKey);
   } catch (error) {
     console.error("[YT Furigana] conversion failed:", error);
-  } finally {
-    element.removeAttribute(PROCESSING_ATTR);
   }
 }
 
 async function processCaptions(root = document) {
   if (!enabled) return;
 
+  maybeEnableOverlayFromLiveDom();
   const elements = findCaptionElements(root);
   for (const element of elements) {
     await processElement(element);
@@ -557,6 +832,13 @@ function scheduleProcess(root = document) {
 
 function isCaptionElement(node) {
   if (!(node instanceof HTMLElement)) return false;
+  // 自前オーバーレイ（Stylus 用に ytp-caption-segment クラスを持つ）は処理対象外
+  if (
+    node.classList.contains("yt-furigana-yt-overlay") ||
+    node.closest("#yt-furigana-yt-overlay-root")
+  ) {
+    return false;
+  }
   if (YOUTUBE_CAPTION_SELECTORS.some((selector) => node.matches(selector))) {
     return true;
   }
@@ -566,6 +848,42 @@ function isCaptionElement(node) {
     (node.tagName === "SPAN" &&
       node.parentElement?.classList?.contains("vjs-text-track-cue-line"))
   );
+}
+
+/**
+ * キャッシュ済みなら debounce せず即ルビ化（MV カラオケの高速上書き対策）。
+ * @param {ParentNode|Element|null|undefined} root
+ */
+function tryApplyCachedFurigana(root) {
+  if (!enabled || !root) return false;
+  /** @type {HTMLElement[]} */
+  const targets = [];
+  if (root instanceof HTMLElement && isCaptionElement(root)) {
+    targets.push(root);
+  }
+  if (root && typeof root.querySelectorAll === "function") {
+    for (const node of root.querySelectorAll(
+      ".ytp-caption-segment, .caption-visual-line, .vjs-text-track-cue-line > span"
+    )) {
+      if (node instanceof HTMLElement && isCaptionElement(node)) targets.push(node);
+    }
+  }
+
+  let applied = false;
+  for (const target of targets) {
+    const normalized = getCaptionSourceText(target);
+    if (!normalized) continue;
+    const cacheKey = getCacheKey(normalized);
+    if (!cache.has(cacheKey)) continue;
+    const processingKey = getProcessingKey(normalized);
+    if (target.getAttribute(PROCESSED_ATTR) === processingKey) {
+      applied = true;
+      continue;
+    }
+    applyFuriganaHtml(target, cache.get(cacheKey), processingKey);
+    applied = true;
+  }
+  return applied;
 }
 
 function nodeMayContainCaptions(node) {
@@ -583,7 +901,14 @@ function findCaptionElements(root = document) {
 
   // visual-line と segment の両方を処理すると、line 側の innerHTML 差し替えで
   // segment の Background（Window 0% 時の文字帯）が消える。
-  const segments = Array.from(youtubeScope.querySelectorAll(".ytp-caption-segment"));
+  const segments = Array.from(
+    youtubeScope.querySelectorAll(".ytp-caption-segment")
+  ).filter(
+    (el) =>
+      el instanceof HTMLElement &&
+      !el.classList.contains("yt-furigana-yt-overlay") &&
+      !el.closest("#yt-furigana-yt-overlay-root")
+  );
   if (segments.length > 0) return segments;
 
   const youtubeLines = Array.from(
@@ -617,7 +942,9 @@ function startObserver() {
           releaseCaptionStyles(caption);
           caption.removeAttribute(PROCESSED_ATTR);
           caption.removeAttribute(ORIGINAL_ATTR);
-          scheduleProcess(caption);
+          if (!tryApplyCachedFurigana(caption)) {
+            scheduleProcess(caption);
+          }
         }
         continue;
       }
@@ -625,7 +952,9 @@ function startObserver() {
       if (mutation.type === "childList") {
         for (const node of mutation.addedNodes) {
           if (nodeMayContainCaptions(node)) {
-            scheduleProcess(node);
+            if (!tryApplyCachedFurigana(node)) {
+              scheduleProcess(node);
+            }
           }
         }
       }
@@ -640,6 +969,12 @@ function startObserver() {
 }
 
 function restoreOriginalText() {
+  stopYouTubeOverlaySyncLoop();
+  stopYouTubeOverlayPositionLoop();
+  clearYouTubeFuriganaOverlays();
+  youtubeOverlayMode = false;
+  timedCues = [];
+  restoreYouTubeNativeCaptionsVisible();
   CAPTION_SELECTORS.forEach((selector) => {
     document.querySelectorAll(selector).forEach((element) => {
       releaseCaptionStyles(element);
@@ -676,11 +1011,18 @@ async function applySettings() {
   await loadSettings();
   cancelPrefetch();
   clearCache();
+  timedCues = [];
+  setYouTubeOverlayMode(false);
   chrome.runtime.sendMessage({ type: "CLEAR_LLM_CACHE" });
 
   if (!enabled) {
     restoreOriginalText();
     return;
+  }
+
+  // 通常はネイティブ表示。色替わり判定後に overlay へ切替
+  if (isYouTubeHost()) {
+    restoreYouTubeNativeCaptionsVisible();
   }
 
   resetProcessedCaptions();
@@ -695,9 +1037,6 @@ async function applySettings() {
 
   scheduleProcess();
   currentVideoId = getSiteVideoKey();
-  if (isYouTubeHost()) {
-    void startCaptionPrefetch("settings");
-  }
 }
 
 async function setEnabled(value) {
@@ -767,8 +1106,32 @@ async function bootstrap() {
   }
 
   installReadingPicker(document);
+  installFuriganaHoverHighlight(document);
+  if (isTVerHost()) {
+    window.addEventListener(
+      "resize",
+      () => {
+        const display = document.querySelector(".vjs-text-track-display");
+        if (display instanceof HTMLElement) scheduleCaptionViewportFit(display);
+      },
+      { passive: true }
+    );
+  }
   if (isYouTubeHost()) {
-    injectPageCaptionBridge();
+    window.addEventListener(
+      "resize",
+      () => {
+        const win =
+          document.querySelector(".caption-window") ||
+          document.querySelector(".ytp-caption-window-container");
+        if (win instanceof HTMLElement) scheduleCaptionViewportFit(win);
+      },
+      { passive: true }
+    );
+  }
+  if (isYouTubeHost()) {
+    // page bridge（timedtext）は通常再生では不要。429 で本体字幕も潰すので入れない。
+    useNativeYouTubeCaptions();
   }
   startObserver();
   startVideoNavigationWatch();
@@ -797,24 +1160,20 @@ async function bootstrap() {
     });
 
   if (enabled) {
-    if (
+    const useLocal =
       settings.engine === "kuromoji" ||
       settings.engine === "sudachi" ||
       settings.engine === "hybrid" ||
-      settings.engine === "reading-api"
-    ) {
-      // reading-api でもフォールバック用にローカル解析器を暖機（失敗は無視）
-      if (settings.engine !== "reading-api") {
-        await ensureLocalTokenizer();
-      } else {
-        void ensureLocalTokenizer().catch(() => {});
-      }
+      (settings.engine === "reading-api" &&
+        !shouldUseRemoteConversion(settings));
+    if (useLocal) {
+      await ensureLocalTokenizer();
+    } else if (settings.engine === "reading-api") {
+      // URL あり: フォールバック用に裏で暖機
+      void ensureLocalTokenizer().catch(() => {});
     }
     scheduleProcess();
     currentVideoId = getSiteVideoKey();
-    if (isYouTubeHost()) {
-      void startCaptionPrefetch("bootstrap");
-    }
   }
 }
 

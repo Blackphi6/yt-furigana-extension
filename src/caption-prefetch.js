@@ -1,6 +1,9 @@
 import {
   fetchJapaneseCaptionLines,
   getYouTubeVideoId,
+  isTimedTextRateLimitError,
+  isTimedTextRateLimited,
+  noteTimedTextRateLimit,
   uniqueCaptionTexts
 } from "./youtube-captions.js";
 
@@ -41,7 +44,10 @@ function requestCaptionsFromPage(videoId, timeoutMs = 8000) {
       }
       resolve({
         lines: event.data.lines || [],
-        track: event.data.track || null
+        cues: event.data.cues || [],
+        styled: Boolean(event.data.styled),
+        track: event.data.track || null,
+        source: event.data.source || "page"
       });
     }
 
@@ -75,7 +81,6 @@ async function mapPool(items, concurrency, mapper, signal) {
       const current = nextIndex;
       nextIndex += 1;
       results[current] = await mapper(items[current], current);
-      // Keep the YouTube UI responsive during long prefetch runs.
       await yieldToMain();
     }
   }
@@ -90,26 +95,17 @@ async function mapPool(items, concurrency, mapper, signal) {
 
 /**
  * Load unique caption lines for the current video.
- * Prefer ANDROID timedtext (no UI). Skip transcript-panel DOM open — it freezes YouTube.
+ * 1) ページ内 WEB トラック（リクエスト最少）
+ * 2) Innertube（429 中はスキップ）
  */
 export async function loadVideoCaptionTexts(videoId, normalize) {
   const errors = [];
 
-  try {
-    const fromAndroid = await fetchJapaneseCaptionLines(videoId, { normalize });
-    if (fromAndroid.lines.length > 0) {
-      return {
-        videoId,
-        lines: fromAndroid.lines,
-        source: fromAndroid.source || "android",
-        track: fromAndroid.track
-      };
-    }
-  } catch (error) {
-    errors.push(`android: ${error.message}`);
-    console.warn("[YT Furigana] ANDROID caption fetch failed:", error.message);
+  if (isTimedTextRateLimited()) {
+    throw new Error("timedtext fetch cooling down after 429");
   }
 
+  // 先にページコンテキスト（追加 Innertube なし）を試す
   injectPageCaptionBridge();
   try {
     const fromPage = await requestCaptionsFromPage(videoId);
@@ -118,13 +114,39 @@ export async function loadVideoCaptionTexts(videoId, normalize) {
       return {
         videoId,
         lines,
-        source: "page",
+        cues: Array.isArray(fromPage.cues) ? fromPage.cues : [],
+        styled: Boolean(fromPage.styled),
+        source: fromPage.source || "page",
         track: fromPage.track
       };
     }
   } catch (error) {
     errors.push(`page: ${error.message}`);
-    console.warn("[YT Furigana] page caption fetch failed:", error.message);
+    if (isTimedTextRateLimitError(error)) {
+      noteTimedTextRateLimit();
+      throw new Error(errors.join(" / "));
+    }
+  }
+
+  if (isTimedTextRateLimited()) {
+    throw new Error(errors.join(" / ") || "timedtext fetch cooling down after 429");
+  }
+
+  try {
+    const fromInnertube = await fetchJapaneseCaptionLines(videoId, { normalize });
+    if (fromInnertube.lines.length > 0) {
+      return {
+        videoId,
+        lines: fromInnertube.lines,
+        cues: fromInnertube.cues || [],
+        styled: Boolean(fromInnertube.styled),
+        source: fromInnertube.source || "android",
+        track: fromInnertube.track
+      };
+    }
+  } catch (error) {
+    errors.push(`innertube: ${error.message}`);
+    if (isTimedTextRateLimitError(error)) noteTimedTextRateLimit();
   }
 
   throw new Error(
@@ -192,7 +214,16 @@ export async function prefetchCaptionFurigana({
       total,
       source: loaded.source
     });
-    return { videoId: id, lines, converted: 0, skipped: total, source: loaded.source };
+    return {
+      videoId: id,
+      lines,
+      cues: loaded.cues || [],
+      styled: Boolean(loaded.styled),
+      converted: 0,
+      skipped: total,
+      source: loaded.source,
+      track: loaded.track
+    };
   }
 
   let done = already;
@@ -235,6 +266,8 @@ export async function prefetchCaptionFurigana({
   return {
     videoId: id,
     lines,
+    cues: loaded.cues || [],
+    styled: Boolean(loaded.styled),
     converted: pending.length,
     skipped: already,
     source: loaded.source,

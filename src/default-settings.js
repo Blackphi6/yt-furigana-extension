@@ -95,3 +95,16 @@ export function isReadingApiEngine(engine) {
 export function isRemoteEngine(engine) {
   return isLlmEngine(engine) || isReadingApiEngine(engine);
 }
+
+/**
+ * 実際にリモート変換を使うか。
+ * 読みAPIは URL 未設定ならローカル扱いにし、字幕表示を止めない。
+ * @param {{ engine?: string, readingApiUrl?: string }} settings
+ */
+export function shouldUseRemoteConversion(settings = {}) {
+  const engine = settings.engine || "";
+  if (isReadingApiEngine(engine)) {
+    return Boolean(String(settings.readingApiUrl || "").trim());
+  }
+  return isLlmEngine(engine);
+}
