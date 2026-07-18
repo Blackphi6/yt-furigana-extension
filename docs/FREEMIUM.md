@@ -4,8 +4,8 @@
 
 | プラン | 内容 | お金 |
 |--------|------|------|
-| **Free** | Kuromoji / Hybrid、クリック学習、端末内辞書、BYO localhost 読みAPI | ¥0 |
-| **Premium** | 辞書クラウド同期、共有辞書パック、ホスト読みAPI（APIキー） | 買い切り（Stripe） / Sponsors |
+| **Free** | Kuromoji / Hybrid、クリック学習、端末内辞書 | ¥0 |
+| **Premium** | 辞書クラウド同期、共有辞書パック | 買い切り（Stripe） / Sponsors |
 | **OSS支援** | [GitHub Sponsors](https://github.com/sponsors/Blackphi6) | 任意 |
 
 本体のふりがなは常に Free。課金壁で普及を止めない。

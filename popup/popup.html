@@ -29,7 +29,7 @@
       <details class="panel advanced" id="advanced-engine-settings">
         <summary>上級者向け（エンジン切替）</summary>
         <p class="hint">
-          通常は Kuromoji のままで大丈夫です。分割を強化したいときだけ Hybrid、自前サーバーがあるときだけ読みAPIを使います。
+          通常は Kuromoji のままで大丈夫です。分割を強化したいときだけ Hybrid に切り替えてください。
         </p>
 
         <label class="radio">
@@ -47,24 +47,6 @@
             <small>分割は Sudachi。1人→ひとり に強い（初回読込あり）</small>
           </span>
         </label>
-
-        <label class="radio">
-          <input type="radio" name="engine" value="reading-api" />
-          <span>
-            <strong>読みAPI（外部・辞書併用）</strong>
-            <small>要サーバーURL。失敗時はローカルへ</small>
-          </span>
-        </label>
-
-        <div id="reading-api-settings" hidden>
-          <button type="button" id="testReadingApi" class="button">接続テスト</button>
-          <p class="status" id="readingApiStatus" hidden></p>
-          <p class="hint">
-            サーバーURLは下の「プラン」欄。ローカル例:
-            <code>npm run reading-engine</code> →
-            <code>http://127.0.0.1:8765</code>
-          </p>
-        </div>
       </details>
 
       <section class="panel">
@@ -72,10 +54,10 @@
         <p class="plan-badge" id="planBadge">Free</p>
         <p class="hint" id="planHint">
           Free: ローカルふりがな・クリック学習は無制限（クラウド送信なし）。<br />
-          Premium: 辞書クラウド同期・共有辞書・ホスト読みAPI。
+          Premium: 辞書クラウド同期・共有辞書。
         </p>
         <label class="field" for="readingApiUrl">
-          <span>同期 / 読みAPI サーバー</span>
+          <span>同期サーバー（Premium）</span>
           <input
             type="text"
             id="readingApiUrl"
@@ -92,7 +74,7 @@
           />
         </label>
         <label class="field" for="readingApiKey">
-          <span>読みAPIキー（任意）</span>
+          <span>APIキー（任意）</span>
           <input
             type="password"
             id="readingApiKey"

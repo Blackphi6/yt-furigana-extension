@@ -48,23 +48,9 @@ function selectedEngine() {
 
 function updateEnginePanels() {
   const engine = selectedEngine();
-  if (readingApiSettings) {
-    readingApiSettings.hidden = engine !== "reading-api";
-  }
   const advanced = document.getElementById("advanced-engine-settings");
   if (advanced && engine !== "kuromoji") {
     advanced.open = true;
-  }
-  if (engine === "reading-api" && !readingApiUrlInput.value.trim()) {
-    setStatus(
-      readingApiStatus,
-      "URL未設定のためローカル辞書で変換します。下の「プラン」にサーバーURLを入れてください。",
-      true
-    );
-  } else if (readingApiStatus && !readingApiStatus.classList.contains("error")) {
-    if (engine !== "reading-api") {
-      readingApiStatus.hidden = true;
-    }
   }
 }
 
@@ -84,8 +70,8 @@ function updatePlanUi(settings) {
   }
   if (planHint) {
     planHint.innerHTML = premium
-      ? "Premium 有効: 辞書同期・共有辞書・ホスト読みAPIが使えます。"
-      : "Free: ローカルふりがな・クリック学習は無制限（クラウド送信なし）。<br />Premium: 辞書クラウド同期・共有辞書・ホスト読みAPI。";
+      ? "Premium 有効: 辞書同期・共有辞書が使えます。"
+      : "Free: ローカルふりがな・クリック学習は無制限（クラウド送信なし）。<br />Premium: 辞書クラウド同期・共有辞書。";
   }
   if (sponsorsLink) {
     sponsorsLink.href = settings.sponsorsUrl || DEFAULT_SPONSORS_URL;
@@ -220,7 +206,7 @@ async function refreshInstalledModels({ autoFix = false } = {}) {
 function normalizeStoredEngine(engine) {
   // UI no longer offers these; migrate quietly.
   if (engine === "groq" || engine === "sudachi") return "hybrid";
-  if (engine === "ollama") return "kuromoji";
+  if (engine === "ollama" || engine === "reading-api") return "kuromoji";
   return engine || DEFAULT_SETTINGS.engine;
 }
 
@@ -251,15 +237,8 @@ async function saveSettings() {
   const engine = selectedEngine();
   const readingApiUrl = readingApiUrlInput.value.trim();
 
-  if (engine === "reading-api" && readingApiUrl) {
-    const granted = await ensureReadingApiPermission(readingApiUrl);
-    if (!granted) {
-      setStatus(
-        readingApiStatus,
-        "このURLへのアクセス許可が必要です（ブラウザの許可ダイアログを確認）",
-        false
-      );
-    }
+  if (readingApiUrl) {
+    await ensureReadingApiPermission(readingApiUrl);
   }
 
   const current = await getMergedSettings();
