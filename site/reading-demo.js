@@ -51,12 +51,12 @@ function collectUserDict() {
 
 function sourceLabel(source) {
   const map = {
-    trust_pattern: "trust",
-    reranker: "reranker",
-    cue: "cue",
-    user_dict: "user_dict",
-    base_engine: "base",
-    creative_ruby: "creative",
+    trust_pattern: "信頼句",
+    reranker: "再ランク",
+    cue: "文脈キュー",
+    user_dict: "固定",
+    base_engine: "形態素",
+    creative_ruby: "創作",
   };
   return map[source] || source || "—";
 }
@@ -81,7 +81,7 @@ function buildRubyHtml(text, tokens) {
 function renderResult(text, data) {
   const tokens = data.tokens || [];
   rubyOut.innerHTML = buildRubyHtml(text, tokens);
-  fullReading.textContent = data.reading ? `全文読み: ${data.reading}` : "";
+  fullReading.textContent = data.reading ? `かな通し: ${data.reading}` : "";
   resultBody.innerHTML = tokens
     .map((t) => {
       const cands = (t.candidates || [])
@@ -190,7 +190,7 @@ async function runAnalyze() {
   const base = apiEl.value.replace(/\/$/, "");
   const btn = $("#run-btn");
   btn.disabled = true;
-  btn.textContent = "判定中…";
+  btn.textContent = "付けています…";
   try {
     const res = await fetchWithColdStart(
       `${base}/v1/readings`,

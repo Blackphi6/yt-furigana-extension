@@ -6,7 +6,7 @@
     <title>YT Furigana — 字幕向けふりがな＆読みAPI</title>
     <meta
       name="description"
-      content="YouTube / TVer 字幕にふりがなを重ねる非公式拡張と、候補内だけから読みを返す公開デモAPI。"
+      content="YouTube / TVer 字幕にふりがなを重ねる非公式拡張。町中・表などの読み分けをブラウザで試せます。"
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -37,18 +37,18 @@
       <section class="hero home-hero fade-up">
         <div>
           <p class="pill-row" aria-label="特徴">
-            <span class="pill">字幕向け拡張</span>
-            <span class="pill">候補ラティス内のみ</span>
-            <span class="pill">クリック学習</span>
+            <span class="pill">YouTube / TVer 字幕</span>
+            <span class="pill">端末内が既定</span>
+            <span class="pill">クリックで学習</span>
           </p>
           <h1>
             字幕の漢字に、<em>読めるルビ</em>を。<br />
             まずブラウザで読み分けを確認できます。
           </h1>
           <p class="lead">
-            YT Furigana は YouTube / TVer の日本語字幕向けの<strong>非公式</strong> Chrome 拡張です。
-            ここでは同じ読みエンジンを公開デモとして呼べます。同じ表記でも文脈で読みが分かれる語
-            （町中・忙しい・風など）を、候補の外側には出さずに返します。
+            YT Furigana は YouTube / TVer 向けの<strong>非公式</strong> Chrome 拡張です。
+            このページでは、拡張と同じ読み付けの一部を公開デモとして試せます。
+            町中・表・風のように、同じ字でも前後の語句で読みが分かれる例を中心にしています。
           </p>
           <div class="cta-row">
             <a class="btn" href="#demo">デモを開く</a>
@@ -68,22 +68,23 @@
       <section class="stats-strip fade-up" aria-label="公開ベンチ概要" id="stats-strip">
         <article>
           <p class="stat-value" id="stat-hard">—</p>
-          <p class="stat-label">hard（同形異音）正答率</p>
+          <p class="stat-label">同形異音ベンチ</p>
         </article>
         <article>
           <p class="stat-value" id="stat-seed">—</p>
-          <p class="stat-label">seed ベンチ正答率</p>
+          <p class="stat-label">seed ベンチ</p>
         </article>
         <article>
           <p class="stat-value" id="stat-corpus">—</p>
-          <p class="stat-label">合成コーパス件数</p>
+          <p class="stat-label">学習コーパス行数</p>
         </article>
       </section>
 
       <section class="section demo-embed" id="demo" aria-labelledby="demo-title">
-        <h2 id="demo-title">読みエンジンを試す</h2>
+        <h2 id="demo-title">字幕っぽい文で試す</h2>
         <p class="sub">
-          公開デモ API に文を送ります。チップを押すか、字幕っぽい短文を貼り付けてください。
+          下の語を押すか、自分の短文を貼って「ルビを付ける」を押してください。
+          拡張本体は端末内エンジンが既定で、このデモは公開サーバー経由です。
         </p>
         <p class="engine-status" id="engine-status" role="status">エンジンを確認中…</p>
         <p class="hint" id="api-setup-hint">
@@ -172,32 +173,32 @@
 
           <div class="cta-row">
             <button type="button" class="btn" id="run-btn">ルビを付ける</button>
-            <span class="hint">⌘/Ctrl + Enter</span>
+            <span class="hint">⌘ Enter / Ctrl Enter</span>
           </div>
 
           <p class="error" id="error" hidden></p>
 
           <div class="result-block" id="result-block" hidden>
-            <h3>結果</h3>
+            <h3>ルビ結果</h3>
             <div class="ruby-out" id="ruby-out" lang="ja"></div>
             <p class="full-reading" id="full-reading"></p>
             <div class="legend">
-              <span data-source="trust_pattern">trust</span>
-              <span data-source="reranker">reranker</span>
-              <span data-source="cue">cue</span>
-              <span data-source="user_dict">user_dict</span>
-              <span data-source="base_engine">base</span>
-              <span data-source="creative_ruby">creative</span>
+              <span data-source="trust_pattern">信頼句</span>
+              <span data-source="reranker">再ランク</span>
+              <span data-source="cue">文脈キュー</span>
+              <span data-source="user_dict">固定</span>
+              <span data-source="base_engine">形態素</span>
+              <span data-source="creative_ruby">創作</span>
             </div>
             <div class="table-wrap">
               <table class="result-table">
                 <thead>
                   <tr>
-                    <th>表記</th>
-                    <th>読み</th>
-                    <th>確信度</th>
-                    <th>根拠</th>
-                    <th>候補</th>
+                    <th>語</th>
+                    <th>かな</th>
+                    <th>スコア</th>
+                    <th>経路</th>
+                    <th>候補内</th>
                   </tr>
                 </thead>
                 <tbody id="result-body"></tbody>
@@ -237,44 +238,46 @@
       </section>
 
       <section class="section" id="how" aria-labelledby="how-title">
-        <h2 id="how-title">読みが壊れにくい順</h2>
+        <h2 id="how-title">字幕に載せるまでの優先順位</h2>
         <p class="sub">
-          LLM に自由に読ませるのではなく、候補ラティスの内側だけで決めます。拡張のローカル変換と同じ考え方です。
+          自由生成で読みを作らず、すでに候補にある読みからだけ選びます。
+          拡張のプレイヤー上ルビも、同じ優先順です。
         </p>
         <ol class="how-steps">
           <li>
-            <strong>個人辞書を最優先</strong>
-            <span>リクエストの user_dict、拡張のクリック学習が最上位です。</span>
+            <strong>いま直した読み</strong>
+            <span>デモの固定リストや、拡張のクリック学習が最優先です。</span>
           </li>
           <li>
-            <strong>慣用句は trust</strong>
-            <span>「一日中」「何度も」など、崩れやすい句を trust / 固定読みで守ります。</span>
+            <strong>崩れやすい句を先に守る</strong>
+            <span>「一日中」「下手に出る」など、決まった読みの句を先に当てます。</span>
           </li>
           <li>
-            <strong>ラティス＋文脈キュー</strong>
-            <span>形態素と辞書から候補を作り、近くの語句で読みを選びます。候補外は捨てます。</span>
+            <strong>近くの語句で振り分け</strong>
+            <span>同じ漢字が二回出ても、前後の節ごとにキューで読みを分けます。</span>
           </li>
           <li>
-            <strong>低確信は辞書へ戻す</strong>
-            <span>確信度が低いときは base 読みに倒し、変な読みを字幕に載せにくくします。</span>
+            <strong>あいまいなら辞書側へ</strong>
+            <span>スコアが低いときは形態素の基本読みに戻し、字幕に変なルビを載せにくくします。</span>
           </li>
         </ol>
       </section>
 
       <section class="section" id="api" aria-labelledby="api-title">
-        <h2 id="api-title">デモ API</h2>
+        <h2 id="api-title">公開デモの呼び出し方</h2>
         <p class="sub">
-          サイト用の軽量エンドポイントです（無料・レート制限あり）。本番の字幕拡張は端末内エンジンが既定です。
+          サイト試用用の HTTP です（無料・分間レート制限あり）。
+          動画プレイヤー上の本番ルビは、端末内エンジンが既定です。
         </p>
         <pre class="api-snippet" id="api-snippet"></pre>
         <ul class="api-list">
-          <li><code>GET /health</code> — 生存確認</li>
-          <li><code>POST /v1/readings</code> — 読み＋候補＋根拠</li>
-          <li><code>GET /docs</code> — OpenAPI UI</li>
+          <li><code>GET /health</code> — 起きているか</li>
+          <li><code>POST /v1/readings</code> — かな・候補・経路</li>
+          <li><code>GET /docs</code> — スキーマ UI</li>
         </ul>
         <p class="hint">
-          自分のマシンでは <code>npm run reading-engine</code> →
-          <code>http://127.0.0.1:8765</code> でも同じ契約です。
+          手元では <code>npm run reading-engine</code> →
+          <code>http://127.0.0.1:8765</code> でも同じパスです。
         </p>
       </section>
 

@@ -17,12 +17,12 @@ function renderSnippet() {
   const base = apiBase();
   const el = document.getElementById("api-snippet");
   if (!el) return;
-  el.textContent = `# YT Furigana demo — 固有名詞は user_dict で固定
+  // Caption-oriented sample (not a clone of third-party API docs).
+  el.textContent = `# 字幕デモ向け — 町中の読み分け
 curl -s ${base}/v1/readings \\
   -H 'Content-Type: application/json' \\
   -d '{
-    "text": "葛飾の市場規模の話をした。",
-    "user_dict": [{"surface": "葛飾", "reading": "かつしか"}],
+    "text": "町中のカフェに入ると、その噂が町中に広まった。",
     "return_candidates": true
   }'`;
 }

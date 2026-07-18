@@ -2,7 +2,7 @@
 
 公開 URL: https://blackphi6.github.io/yt-furigana-extension/
 
-JRM デモと同様、**静的サイト（常時）＋ 読み API（無料ホスト）** です。
+**静的サイト（GitHub Pages）＋ 読み API（Render 無料枠）** です。
 ローカルでエンジンを立てなくても、トップのデモから公開 API を呼べます。
 
 ## 構成
