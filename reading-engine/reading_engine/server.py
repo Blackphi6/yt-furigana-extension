@@ -102,6 +102,9 @@ def health() -> dict[str, Any]:
         "status": "ok",
         "readingsAuth": require_auth_for_readings(),
         "stripeConfigured": stripe_configured(),
+        # Lets us verify Render redeployed (Blueprint sync alone may skip rebuilds).
+        "buildId": os.environ.get("YT_FURIGANA_BUILD_ID") or "local",
+        "engineVersion": "0.3.1-clause-cues",
     }
 
 

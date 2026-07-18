@@ -1,11 +1,16 @@
 # Free public reading API (Render Web Service).
 # One-time: https://dashboard.render.com → New → Blueprint → this repo
+#
+# Important: Blueprint "Manual sync" only rebuilds when this file (or linked
+# config) changes. For code-only fixes, open the web service and use
+# Manual Deploy → Deploy latest commit.
 services:
   - type: web
     name: yt-furigana-readings
     runtime: docker
     plan: free
     region: singapore
+    branch: main
     dockerfilePath: reading-engine/deploy/Dockerfile
     dockerContext: .
     healthCheckPath: /health
@@ -16,3 +21,6 @@ services:
         value: "30"
       - key: YT_FURIGANA_RERANKER_PATH
         value: ""
+      # Bump this when you need Blueprint Manual sync to force a Docker rebuild
+      - key: YT_FURIGANA_BUILD_ID
+        value: "clause-cues-20260718"

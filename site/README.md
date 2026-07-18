@@ -28,6 +28,21 @@ Hugging Face の無料 Docker Space は 2026 年時点で PRO 必須のため、
 
 無料枠はアイドルでスリープします。デモの最初のリクエストだけ数十秒かかることがあります。
 
+### コードだけ直したあと（重要）
+
+Blueprint の **Manual sync は `render.yaml` が変わらないと Docker を作り直さない**ことがあります。
+次のどちらかをしてください。
+
+1. サービス `yt-furigana-readings` を開く → **Manual Deploy** → **Deploy latest commit**
+2. または `render.yaml` の `YT_FURIGANA_BUILD_ID` を上げてから Blueprint **Manual sync**
+
+反映確認:
+
+```bash
+curl -s https://yt-furigana-readings.onrender.com/health
+# buildId が clause-cues-…、engineVersion が 0.3.1-clause-cues なら新ビルド
+```
+
 サービス名を変えた場合は `site/config.js` の `readingApiUrl` を合わせてください。
 
 ## ローカル確認
