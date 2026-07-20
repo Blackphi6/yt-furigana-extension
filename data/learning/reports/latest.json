@@ -1,15 +1,15 @@
 {
-  "ts": "2026-07-19T06:29:50.140Z",
-  "mode": "synth",
-  "note": "素材 +5 / 本体ルール変化なし（日次は主に素材集め）",
+  "ts": "2026-07-20T06:09:14.575Z",
+  "mode": "retrain",
+  "note": "素材増なし / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
     "total": 54,
-    "delta": 5,
-    "acceptedThisRun": 5,
-    "rejectedThisRun": 5
+    "delta": 0,
+    "acceptedThisRun": 0,
+    "rejectedThisRun": 0
   },
   "benches": {
     "seed-bench": {
@@ -62,41 +62,5 @@
     "contextRuleCount": 7,
     "changed": false
   },
-  "newSamples": [
-    {
-      "text": "[\"株式市場の経済力は規模の大きさに比例する\"]",
-      "surface": "市場",
-      "gold": "しじょう",
-      "source": "llm-synth:groq:arbitrate_agree",
-      "note": "株式・規模・経済・金融の文脈"
-    },
-    {
-      "text": "ラーメンが辛いので、唐辛子を少なくしてください",
-      "surface": "辛い",
-      "gold": "からい",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "ラーメン・カレー・味・唐辛子"
-    },
-    {
-      "text": "彼の病気は、辛い思いを強いました。",
-      "surface": "辛い",
-      "gold": "つらい",
-      "source": "llm-synth:groq:arbitrate_agree",
-      "note": "経験・出来事・境遇（味ではない）"
-    },
-    {
-      "text": "時は永遠に終わらないから、常に進んでいくように心がけよう。",
-      "surface": "永遠",
-      "gold": "えいえん",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
-    },
-    {
-      "text": "今日は予定が多くて忙しいので、早めに寝ます。",
-      "surface": "忙しい",
-      "gold": "いそがしい",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "仕事・予定・日常の忙しさ"
-    }
-  ]
+  "newSamples": []
 }
