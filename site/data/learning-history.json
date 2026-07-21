@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-20T06:45:47.131Z",
+  "updatedAt": "2026-07-21T06:27:59.508Z",
   "entries": [
     {
       "ts": "2026-07-18T12:08:38.759Z",
@@ -418,6 +418,122 @@
         },
         {
           "text": "今日の予定が多くて、忙しい",
+          "surface": "忙しい",
+          "gold": "いそがしい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "仕事・予定・日常の忙しさ"
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-21T06:27:59.508Z",
+      "mode": "synth",
+      "note": "素材 +7 / 本体ルール変化なし（日次は主に素材集め）",
+      "gateOk": true,
+      "floorsOk": true,
+      "regress": false,
+      "corpus": {
+        "total": 65,
+        "delta": 7,
+        "acceptedThisRun": 7,
+        "rejectedThisRun": 3
+      },
+      "benches": {
+        "seed-bench": {
+          "passed": 22,
+          "total": 22,
+          "rate": 1,
+          "minPassRate": 1,
+          "failed": []
+        },
+        "hard-heteronym": {
+          "passed": 13,
+          "total": 13,
+          "rate": 1,
+          "minPassRate": 0.85,
+          "failed": []
+        },
+        "easy-regression": {
+          "passed": 8,
+          "total": 8,
+          "rate": 1,
+          "minPassRate": 0.9,
+          "failed": []
+        }
+      },
+      "vsBaseline": {
+        "seed-bench": {
+          "rate": 1,
+          "passed": 22,
+          "total": 22,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "hard-heteronym": {
+          "rate": 1,
+          "passed": 13,
+          "total": 13,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "easy-regression": {
+          "rate": 1,
+          "passed": 8,
+          "total": 8,
+          "baselineRate": 1,
+          "deltaRate": 0
+        }
+      },
+      "overrides": {
+        "phraseCount": 1,
+        "contextRuleCount": 7,
+        "changed": false
+      },
+      "newSamples": [
+        {
+          "text": "株式市場の規模は大きい",
+          "surface": "市場",
+          "gold": "しじょう",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "株式・規模・経済・金融の文脈"
+        },
+        {
+          "text": "カレーがとても辛いので、スパイスを少なくしてみよう。",
+          "surface": "辛い",
+          "gold": "からい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "ラーメン・カレー・味・唐辛子"
+        },
+        {
+          "text": "仕事が辛いので、休みの日は外で遊ぶのを心がけています。",
+          "surface": "辛い",
+          "gold": "つらい",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "経験・出来事・境遇（味ではない）"
+        },
+        {
+          "text": "時は永遠に流れ続いており、人生もまた永遠の旅となる。",
+          "surface": "永遠",
+          "gold": "えいえん",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
+        },
+        {
+          "text": "[\"私は毎日忙しい生活を送っています。\"]",
+          "surface": "忙しい",
+          "gold": "いそがしい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "仕事・予定・日常の忙しさ"
+        },
+        {
+          "text": "[\"会社の予定が多すぎて毎日忙しいです。\"]",
+          "surface": "忙しい",
+          "gold": "いそがしい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "仕事・予定・日常の忙しさ"
+        },
+        {
+          "text": "[\"毎日、家族のために忙しい仕事をしています。\"]",
           "surface": "忙しい",
           "gold": "いそがしい",
           "source": "llm-synth:groq:verify_agree",
