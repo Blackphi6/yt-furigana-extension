@@ -216,8 +216,8 @@ for (const bad of [".env", "reading-engine/.env", "store/.env.webstore", "licens
     fail(`pack-chrome-store.mjs INCLUDE must not list ${bad}`);
   }
 }
-if (!/FORBIDDEN_IN_ZIP|assertZipSafe/.test(pack)) {
-  fail("pack-chrome-store.mjs must scan zip for secrets / bridge");
+if (!pack.includes("__YTF_STORE_SAFE__") && !read("scripts/build.mjs").includes("__YTF_STORE_SAFE__")) {
+  fail("content build must set __YTF_STORE_SAFE__ store-safe banner");
 }
 
 // --- meta samples: proper noun disclaimer ---

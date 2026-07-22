@@ -7,6 +7,17 @@ const captionResultCache = new Map();
 const CAPTION_CACHE_TTL_MS = 10 * 60 * 1000;
 let timedTextCooldownUntil = 0;
 
+/** Store content build sets `globalThis.__YTF_STORE_SAFE__ = true` via esbuild banner. */
+function storeSafeTimedTextDisabled() {
+  return globalThis.__YTF_STORE_SAFE__ === true;
+}
+
+function assertTimedTextAllowed() {
+  if (storeSafeTimedTextDisabled()) {
+    throw new Error("timedtext disabled in store build");
+  }
+}
+
 export function isTimedTextRateLimited() {
   return Date.now() < timedTextCooldownUntil;
 }
@@ -255,6 +266,7 @@ export function isStyledPaintOnCaptionData(data) {
 }
 
 async function fetchTimedTextJson3(track, fetchImpl = fetch) {
+  assertTimedTextAllowed();
   if (!track?.baseUrl) {
     throw new Error("caption track has no baseUrl");
   }
@@ -381,6 +393,7 @@ export async function fetchAndroidPlayerResponse(videoId, fetchImpl = fetch) {
  * @returns {Promise<{ videoId: string, track: CaptionTrack, lines: string[], cues: TimedCaptionCue[], styled: boolean, source: string }>}
  */
 export async function fetchJapaneseCaptionLines(videoId, options = {}) {
+  assertTimedTextAllowed();
   const cached = getCachedCaptionResult(videoId);
   if (cached) {
     return {

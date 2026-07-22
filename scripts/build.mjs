@@ -216,6 +216,9 @@ async function buildContentScript() {
     mainFields: ["browser", "module", "main"],
     target: ["chrome109"],
     logLevel: "info",
+    banner: {
+      js: "globalThis.__YTF_STORE_SAFE__=true;"
+    },
     plugins: [
       {
         name: "kuromoji-browser",

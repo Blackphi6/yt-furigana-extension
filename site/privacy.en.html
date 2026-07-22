@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Privacy Policy (EN) — YT Furigana</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="site-header">
+        <a class="brand" href="./">YT Furigana</a>
+        <nav class="nav">
+          <a href="./privacy.html">日本語</a>
+          <a href="./terms.html">Terms</a>
+        </nav>
+      </header>
+      <article class="section prose" style="border-top: none; padding-top: 2rem">
+        <h1>Privacy Policy</h1>
+        <p>Last updated: 2026-07-22</p>
+        <p><strong>This is not legal advice.</strong> Japanese version:
+          <a href="./privacy.html">privacy.html</a></p>
+
+        <h2>1. Operator</h2>
+        <p>Repository: <a href="https://github.com/Blackphi6/yt-furigana-extension">GitHub</a>. Contact: GitHub Issues.</p>
+
+        <h2>2. Default (Free) data</h2>
+        <p><strong>We do not send caption body text to our servers by default.</strong></p>
+        <ul>
+          <li>Settings → <code>chrome.storage.sync</code></li>
+          <li>License / API keys, reading dictionary, learning inbox → <code>chrome.storage.local</code> (learning inbox opt-out available)</li>
+          <li>Shared readings pack <strong>receive</strong> (default on, can disable): surface→reading only from the public reading API. No caption body.</li>
+        </ul>
+        <p>On YouTube / TVer we read on-screen caption DOM only. Default playback does not call YouTube timedtext.</p>
+
+        <h2>3. Optional sends</h2>
+        <ul>
+          <li>BYO reading API / Ollama: only if you configure them</li>
+          <li>Premium sync / server shared dict: user-configured server</li>
+          <li>Anonymous corrections (opt-in): surface, reading, short context only (no video URL)</li>
+          <li>Stripe checkout (site): payment via Stripe</li>
+        </ul>
+        <p>Public API may rate-limit by IP. Opt-in votes use a non-reversible voter id derived from IP (not published in the pack).</p>
+
+        <h2>4. Ads / tracking</h2>
+        <p>No ad SDK or behavioral tracking in the extension.</p>
+
+        <h2>5. Children</h2>
+        <p>Not directed at children under 13.</p>
+
+        <h2>6. Deletion</h2>
+        <p>Uninstall the extension or clear extension storage. Disable shared pack receive in the popup. Server-hosted Premium data follows the server operator’s process.</p>
+      </article>
+      <footer class="site-footer">
+        <p class="trademark-note">
+          YouTube, TVer, Google Chrome, GitHub, Stripe, Ollama are trademarks of their owners.
+          「YT Furigana」の「YT」は製品名の略称であり、YouTube の商標ではありません。
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>
