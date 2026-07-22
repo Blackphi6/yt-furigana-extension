@@ -8,9 +8,6 @@ import {
   scheduleCaptionViewportFit
 } from "./caption-styles.js";
 import {
-  prefetchCaptionFurigana
-} from "./caption-prefetch.js";
-import {
   DEFAULT_SETTINGS,
   isReadingApiEngine,
   normalizeStoredEngine,
@@ -52,11 +49,27 @@ import {
   loadEnglishKatakanaDict,
   getEnglishKatakanaDictCount
 } from "./english-katakana-reading.js";
-import {
-  findActiveTimedCaptionCues,
-  getYouTubeVideoId,
-  isTimedTextRateLimited
-} from "./youtube-captions.js";
+
+/** Store build: no timedtext module — video id from URL only. */
+function getYouTubeVideoId(href = location.href) {
+  try {
+    const url = new URL(href);
+    if (url.hostname.includes("youtu.be")) {
+      const id = url.pathname.replace(/^\//, "").split("/")[0];
+      return id || null;
+    }
+    if (url.hostname.includes("youtube.com")) {
+      return url.searchParams.get("v");
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+function findActiveTimedCaptionCues() {
+  return [];
+}
 
 const PROCESSED_ATTR = "data-yt-furigana-done";
 const PROCESSING_ATTR = "data-yt-furigana-processing";
@@ -335,91 +348,10 @@ function maybeEnableOverlayFromLiveDom() {
   // 当面オーバーレイ自動切替なし
 }
 
-async function startCaptionPrefetch(reason = "manual") {
-  // 通常字幕は DOM 都度変換だけで足りる。
-  // timedtext 連打は YouTube 本体の字幕取得まで 429 で潰すので、
-  // カラオケ確定後（overlay モード）以外は走らせない。
-  if (!youtubeOverlayMode && reason !== "karaoke") {
-    scheduleProcess();
-    return null;
-  }
-
-  if (!enabled) return null;
-
-  const videoId = getYouTubeVideoId();
-  if (!videoId) return null;
-
-  // 429 クールダウン中は API を叩かず、DOM 字幕の都度変換だけで進める
-  if (isTimedTextRateLimited()) {
-    scheduleProcess();
-    return null;
-  }
-
-  // カラオケ／paint-on 字幕は表示中に変換が間に合わないため暖機する
-  cancelPrefetch();
-  const controller = new AbortController();
-  prefetchController = controller;
-
-  const run = (async () => {
-    try {
-      await new Promise((resolve) => {
-        window.setTimeout(resolve, 2500);
-      });
-      if (controller.signal.aborted) return null;
-      if (isTimedTextRateLimited()) {
-        scheduleProcess();
-        return null;
-      }
-
-      if (!shouldUseRemoteConversion(settings)) {
-        await ensureLocalTokenizer();
-      } else {
-        if (!tokenizer) await initTokenizer();
-        rebuildHybridTokenize();
-        startSudachiInBackground();
-      }
-
-      const result = await prefetchCaptionFurigana({
-        videoId,
-        normalize: normalizeText,
-        convert: convertText,
-        cacheHas: (line) => cache.has(getCacheKey(line)),
-        cacheSet: (line, html) => cache.set(getCacheKey(line), html),
-        concurrency: prefetchConcurrency(),
-        signal: controller.signal,
-        onProgress: (progress) => {
-          showProgress(progress, "YT Furigana · 字幕プリフェッチ");
-        }
-      });
-
-      timedCues = Array.isArray(result?.cues) ? result.cues : [];
-      if (result?.styled) setYouTubeOverlayMode(true);
-      console.log(
-        `[YT Furigana] prefetch ${reason}: ${result.lines.length} lines` +
-          ` (converted=${result.converted}, source=${result.source}` +
-          `, cues=${timedCues.length}, styled=${Boolean(result?.styled)})`
-      );
-      scheduleProcess();
-      return result;
-    } catch (error) {
-      if (error?.name === "AbortError") return null;
-      timedCues = [];
-      scheduleProcess();
-      const rateLimited = /\b429\b|cooling down/i.test(String(error?.message || ""));
-      if (!rateLimited) {
-        console.warn("[YT Furigana] prefetch skipped:", error.message);
-      }
-      return null;
-    } finally {
-      if (prefetchController === controller) {
-        prefetchController = null;
-        prefetchPromise = null;
-      }
-    }
-  })();
-
-  prefetchPromise = run;
-  return run;
+async function startCaptionPrefetch(_reason = "manual") {
+  // Store-safe: never hit timedtext / caption-prefetch. DOM conversion only.
+  scheduleProcess();
+  return null;
 }
 
 function handleVideoNavigation() {
