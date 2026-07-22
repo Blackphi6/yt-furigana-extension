@@ -25,7 +25,7 @@ from reading_engine.contributions import (
     normalize_entries,
     validate_contribution,
 )
-from reading_engine.rate_limit import RateLimitMiddleware
+from reading_engine.rate_limit import RateLimitMiddleware, client_ip_from_request
 from reading_engine.stripe_billing import (
     create_checkout_session,
     get_order,
@@ -225,7 +225,9 @@ def dict_shared(authorization: str | None = Header(default=None)) -> dict[str, A
 
 
 @app.post("/v1/contributions")
-def contributions_post(body: ContributionRequest) -> dict[str, Any]:
+def contributions_post(
+    request: Request, body: ContributionRequest
+) -> dict[str, Any]:
     """Anonymous opt-in corrections from the extension (no auth)."""
     try:
         entry = validate_contribution(
@@ -236,7 +238,14 @@ def contributions_post(body: ContributionRequest) -> dict[str, Any]:
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    return append_contribution(entry)
+    try:
+        return append_contribution(
+            entry, client_ip=client_ip_from_request(request)
+        )
+    except ValueError as exc:
+        if str(exc) == "vote_cooldown":
+            raise HTTPException(status_code=429, detail="vote_cooldown") from exc
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @app.get("/v1/shared-readings")
@@ -293,14 +302,18 @@ def billing_checkout(body: CheckoutRequest) -> dict[str, Any]:
 
 @app.get("/v1/billing/order")
 def billing_order(session_id: str = "") -> dict[str, Any]:
-    if not session_id:
+    if not session_id or len(session_id) < 12:
         raise HTTPException(status_code=400, detail="session_id required")
     order = get_order(session_id)
     if not order:
         raise HTTPException(status_code=404, detail="not_found")
+    # Dry-run licenses are for local testing only; hide key on hosted production.
+    license_key = order.get("licenseKey")
+    if order.get("mode") == "dry-run" and is_hosted_production():
+        license_key = None
     return {
         "sessionId": session_id,
-        "licenseKey": order.get("licenseKey"),
+        "licenseKey": license_key,
         "email": order.get("email") or "",
         "createdAt": order.get("createdAt"),
         "mode": order.get("mode"),

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>YT Furigana — store caption demo</title>
+    <link rel="stylesheet" href="../styles/content.css" />
+    <style>
+      :root {
+        --paper: #f3efe6;
+        --ink: #1c1917;
+        --verm: #c23b22;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #0b0b0c;
+        font-family: "Hiragino Sans", "Noto Sans JP", sans-serif;
+        color: #fff;
+      }
+      .shot {
+        width: 1280px;
+        height: 800px;
+        margin: 0 auto;
+        position: relative;
+        overflow: hidden;
+        background: radial-gradient(ellipse at 40% 30%, #2a2420 0%, #0b0b0c 70%);
+      }
+      .brand {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 56px;
+        background: var(--verm);
+        display: flex;
+        align-items: center;
+        padding: 0 28px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+      .stage {
+        position: absolute;
+        inset: 56px 0 0;
+        display: grid;
+        place-items: end center;
+        padding: 0 0 88px;
+      }
+      .caption-window {
+        max-width: 920px;
+        text-align: center;
+      }
+      .ytp-caption-segment,
+      .caption-visual-line {
+        display: inline-block;
+        background: rgba(8, 8, 8, 0.72);
+        color: #fff;
+        font-size: 42px;
+        line-height: 1.55;
+        padding: 0.35em 0.7em 0.25em;
+        border-radius: 4px;
+      }
+      ruby {
+        ruby-align: center;
+      }
+      rt {
+        font-size: 0.42em;
+        color: #ffb4a4;
+        font-weight: 600;
+      }
+      .note {
+        position: absolute;
+        left: 28px;
+        bottom: 24px;
+        font-size: 14px;
+        opacity: 0.55;
+      }
+      body.mode-close .shot {
+        background: #111;
+      }
+      body.mode-close .brand {
+        display: none;
+      }
+      body.mode-close .stage {
+        inset: 0;
+        place-items: center;
+        padding: 0;
+      }
+      body.mode-close .ytp-caption-segment {
+        font-size: 64px;
+        padding: 0.5em 0.9em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shot" id="shot">
+      <div class="brand">YT Furigana · 非公式</div>
+      <div class="stage">
+        <div class="caption-window">
+          <span class="ytp-caption-segment">
+            <span class="yt-furigana-word" data-surface="忙しい" data-reading="いそがしい"
+              ><ruby>忙<rt>いそが</rt></ruby>しい</span
+            ><span class="yt-furigana-word" data-surface="世界" data-reading="せかい"
+              ><ruby>世界<rt>せかい</rt></ruby></span
+            >を<span class="yt-furigana-word" data-surface="減らそう" data-reading="へらそう"
+              ><ruby>減<rt>へ</rt></ruby>らそう</span
+            >
+          </span>
+        </div>
+      </div>
+    </div>
+    <script>
+      const params = new URLSearchParams(location.search);
+      if (params.get("mode") === "close") {
+        document.body.classList.add("mode-close");
+        document.querySelector(".ytp-caption-segment").innerHTML = `
+          <span class="yt-furigana-word" data-surface="何故か" data-reading="なぜか"><ruby>何故<rt>なぜ</rt></ruby>か</span><span class="yt-furigana-word" data-surface="遠くなる" data-reading="とおくなる"><ruby>遠<rt>とお</rt></ruby>くなる</span>
+        `;
+      }
+    </script>
+  </body>
+</html>

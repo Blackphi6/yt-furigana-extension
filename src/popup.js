@@ -178,6 +178,25 @@ async function ensureReadingApiPermission(url) {
   }
 }
 
+async function ensureOllamaPermission(url) {
+  const raw = String(url || "").trim() || "http://127.0.0.1:11434";
+  let origin = "";
+  try {
+    const parsed = new URL(raw.includes("://") ? raw : `http://${raw}`);
+    origin = `${parsed.protocol}//${parsed.host}/*`;
+  } catch {
+    origin = "http://127.0.0.1:11434/*";
+  }
+  if (!chrome.permissions?.request) return true;
+  try {
+    const already = await chrome.permissions.contains({ origins: [origin] });
+    if (already) return true;
+    return chrome.permissions.request({ origins: [origin] });
+  } catch {
+    return false;
+  }
+}
+
 async function refreshInstalledModels({ autoFix = false } = {}) {
   await saveSettings();
   const response = await sendMessage("LIST_OLLAMA_MODELS");
@@ -303,9 +322,15 @@ licenseKeyInput?.addEventListener("change", saveSettings);
 licenseKeyInput?.addEventListener("blur", saveSettings);
 
 ollamaUrlInput?.addEventListener("change", async () => {
+  if (ollamaUrlInput?.value.trim()) {
+    await ensureOllamaPermission(ollamaUrlInput.value.trim());
+  }
   await saveSettings();
 });
 ollamaUrlInput?.addEventListener("blur", async () => {
+  if (ollamaUrlInput?.value.trim()) {
+    await ensureOllamaPermission(ollamaUrlInput.value.trim());
+  }
   await saveSettings();
 });
 
@@ -350,6 +375,11 @@ testReadingApiButton?.addEventListener("click", async () => {
 testOllamaButton?.addEventListener("click", async () => {
   await saveSettings();
   setStatus(ollamaStatus, "接続確認中...", true);
+  const granted = await ensureOllamaPermission(ollamaUrlInput?.value.trim() || "");
+  if (!granted) {
+    setStatus(ollamaStatus, "アクセス許可が拒否されました", false);
+    return;
+  }
 
   const response = await sendMessage("CHECK_OLLAMA");
   if (!response.ok) {

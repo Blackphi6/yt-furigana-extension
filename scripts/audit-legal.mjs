@@ -189,8 +189,12 @@ if (!/isLearningInboxEnabled/.test(learningInbox)) {
 if (!/content_security_policy/.test(manifest)) {
   fail("manifest.json must declare content_security_policy.extension_pages");
 }
-if (/page-caption-bridge/.test(manifest)) {
-  fail("manifest.json must not expose page-caption-bridge in store build");
+if (/localhost:11434|127\.0\.0\.1:8765/.test(manifest) && !/optional_host_permissions[\s\S]*localhost:11434/.test(manifest)) {
+  fail("localhost hosts must be optional_host_permissions, not required host_permissions");
+}
+const hostsBlock = manifest.match(/"host_permissions"\s*:\s*\[([\s\S]*?)\]/);
+if (hostsBlock && /localhost|127\.0\.0\.1/.test(hostsBlock[1])) {
+  fail("required host_permissions must not include localhost");
 }
 
 // --- shared pack always public ---

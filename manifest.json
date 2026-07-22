@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "YT Furigana",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "YouTube / TVer の日本語字幕にひらがなルビ（非公式）。端末内が既定・クリックで学習",
   "homepage_url": "https://blackphi6.github.io/yt-furigana-extension/",
   "permissions": [
@@ -12,13 +12,13 @@
   "host_permissions": [
     "*://www.youtube.com/*",
     "*://tver.jp/*",
+    "https://yt-furigana-readings.onrender.com/*"
+  ],
+  "optional_host_permissions": [
     "http://localhost:11434/*",
     "http://127.0.0.1:11434/*",
     "http://127.0.0.1:8765/*",
     "http://localhost:8765/*",
-    "https://yt-furigana-readings.onrender.com/*"
-  ],
-  "optional_host_permissions": [
     "http://*/*",
     "https://*/*"
   ],

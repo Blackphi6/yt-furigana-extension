@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>YT Furigana — close caption demo</title>
+    <link rel="stylesheet" href="../styles/content.css" />
+    <style>
+      body { margin: 0; background: #111; font-family: "Hiragino Sans", "Noto Sans JP", sans-serif; }
+      .shot { width: 1280px; height: 800px; display: grid; place-items: center; background: #111; }
+      .ytp-caption-segment {
+        display: inline-block;
+        background: rgba(8, 8, 8, 0.72);
+        color: #fff;
+        font-size: 64px;
+        line-height: 1.55;
+        padding: 0.5em 0.9em;
+        border-radius: 4px;
+      }
+      rt { font-size: 0.42em; color: #ffb4a4; font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <div class="shot">
+      <span class="ytp-caption-segment">
+        <span class="yt-furigana-word" data-surface="何故か" data-reading="なぜか"><ruby>何故<rt>なぜ</rt></ruby>か</span><span class="yt-furigana-word" data-surface="遠くなる" data-reading="とおくなる"><ruby>遠<rt>とお</rt></ruby>くなる</span>
+      </span>
+    </div>
+  </body>
+</html>

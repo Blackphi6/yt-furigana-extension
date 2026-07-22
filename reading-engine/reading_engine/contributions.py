@@ -1,17 +1,20 @@
 """Anonymous reading corrections → shared readings pack (free).
 
-Pack = curated seed (LLM/learned phrases, no subtitle text) + vote aggregation.
-Votes override curated on the same surface when they meet min_votes.
+Pack = curated seed (LLM/learned phrases, no subtitle text) + unique-voter aggregation.
+Curated entries always win over votes on the same surface.
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
+import time
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
+from threading import Lock
 from typing import Any
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "premium"
@@ -37,6 +40,9 @@ SURFACE_RE = re.compile(
 )
 READING_RE = re.compile(r"^[\u3040-\u309f\u30a0-\u30ffーゝゞヽヾ]+$")
 
+_recent_votes: dict[str, float] = {}
+_recent_lock = Lock()
+
 
 def _utcnow() -> str:
     return (
@@ -53,6 +59,21 @@ def min_votes() -> int:
         return max(1, int(raw))
     except ValueError:
         return 3
+
+
+def vote_cooldown_sec() -> float:
+    raw = os.environ.get("YT_FURIGANA_CONTRIB_COOLDOWN_SEC", "30")
+    try:
+        return max(0.0, float(raw))
+    except ValueError:
+        return 30.0
+
+
+def voter_id_from_ip(client_ip: str) -> str:
+    """Stable non-reversible voter id (not raw IP in the pack)."""
+    salt = os.environ.get("YT_FURIGANA_CONTRIB_SALT", "yt-furigana-contrib").strip()
+    raw = f"{salt}|{str(client_ip or 'unknown').strip()}"
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:20]
 
 
 def seed_path() -> Path:
@@ -206,9 +227,25 @@ def merge_curated_entries(
     return {"ok": True, "curatedCount": len(curated), "pack": pack}
 
 
-def append_contribution(entry: dict[str, str]) -> dict[str, Any]:
+def append_contribution(
+    entry: dict[str, str],
+    *,
+    client_ip: str = "",
+) -> dict[str, Any]:
+    """Append one vote. Same voter+surface counts as one unique vote (latest wins)."""
     ensure_contrib_store()
-    row = {**entry, "ts": _utcnow()}
+    voter = voter_id_from_ip(client_ip)
+    surface = str(entry.get("surface") or "")
+    cool_key = f"{voter}|{surface}"
+    cooldown = vote_cooldown_sec()
+    now = time.monotonic()
+    with _recent_lock:
+        last = _recent_votes.get(cool_key, 0.0)
+        if cooldown > 0 and now - last < cooldown:
+            raise ValueError("vote_cooldown")
+        _recent_votes[cool_key] = now
+
+    row = {**entry, "ts": _utcnow(), "voter": voter}
     line = json.dumps(row, ensure_ascii=False) + "\n"
     CONTRIBUTIONS_FILE.parent.mkdir(parents=True, exist_ok=True)
     with CONTRIBUTIONS_FILE.open("a+", encoding="utf-8") as fh:
@@ -248,19 +285,38 @@ def iter_contribution_rows() -> list[dict[str, Any]]:
     return rows
 
 
+def unique_votes_by_surface(
+    rows: list[dict[str, Any]] | None = None,
+) -> dict[str, str]:
+    """
+    One vote per (voter, surface): latest reading wins for that voter.
+    Returns map of (surface -> Counter of readings by unique voters) via aggregate.
+    """
+    latest: dict[tuple[str, str], tuple[str, str]] = {}
+    for index, row in enumerate(rows if rows is not None else iter_contribution_rows()):
+        surface = str(row.get("surface") or "").strip()
+        reading = str(row.get("reading") or "").strip()
+        if not surface or not reading:
+            continue
+        voter = str(row.get("voter") or "").strip() or f"anon:{index}"
+        ts = str(row.get("ts") or "")
+        key = (voter, surface)
+        prev = latest.get(key)
+        if prev is None or ts >= prev[0]:
+            latest[key] = (ts, reading)
+    return latest
+
+
 def aggregate_entries(
     rows: list[dict[str, Any]] | None = None,
     *,
     threshold: int | None = None,
 ) -> dict[str, str]:
-    """(surface, reading) 票数で勝ち読みを選ぶ。"""
+    """Unique voters per (surface, reading); curated merge happens in rebuild."""
     thr = min_votes() if threshold is None else max(1, int(threshold))
+    latest = unique_votes_by_surface(rows)
     counts: Counter[tuple[str, str]] = Counter()
-    for row in rows if rows is not None else iter_contribution_rows():
-        surface = str(row.get("surface") or "").strip()
-        reading = str(row.get("reading") or "").strip()
-        if not surface or not reading:
-            continue
+    for (voter, surface), (_ts, reading) in latest.items():
         counts[(surface, reading)] += 1
 
     by_surface: dict[str, list[tuple[int, str]]] = {}

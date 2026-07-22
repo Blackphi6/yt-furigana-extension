@@ -27,6 +27,8 @@ services:
         value: ""
       - key: YT_FURIGANA_CONTRIB_MIN_VOTES
         value: "3"
+      - key: YT_FURIGANA_CONTRIB_COOLDOWN_SEC
+        value: "30"
       - key: YT_FURIGANA_ENV
         value: production
       - key: YT_FURIGANA_ALLOW_DRY_RUN
