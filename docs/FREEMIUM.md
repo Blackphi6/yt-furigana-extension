@@ -4,8 +4,8 @@
 
 | プラン | 内容 | お金 |
 |--------|------|------|
-| **Free** | 標準 / Hybrid、クリック学習、端末内辞書 | ¥0 |
-| **Premium** | 読み辞書の端末間同期、共有辞書パック | 買い切り（Stripe） / Sponsors |
+| **Free** | 標準 / Hybrid、クリック学習、端末内辞書、共有読みパック受信 | ¥0 |
+| **Premium** | 読み辞書の端末間同期、指定サーバー共有辞書の手動取込 | 買い切り（Stripe） / Sponsors |
 | **OSS支援** | [GitHub Sponsors](https://github.com/sponsors/Blackphi6) | 任意 |
 
 本体のふりがなは常に Free。課金壁で普及を止めない。
@@ -25,9 +25,11 @@ npm run reading-engine
 拡張ポップアップ:
 
 1. 同期サーバー: `http://127.0.0.1:8765`
-2. ライセンス: `ytfp_live_demo_key_001`
+2. ライセンス: ローカル読みエンジン起動時のみ自動作成されるデモキー（`docs` / reading-engine README 参照。**製品 UI・公開サイトには載せない**）
 3. 「ライセンス検証」→ Premium
-4. 「辞書を同期」「共有辞書」
+4. 「辞書を同期」「サーバー共有辞書」
+
+本番（Render 等）ではデモキー自動作成と Stripe dry-run は無効です（`RENDER=true` / `YT_FURIGANA_ENV=production`）。
 
 ## Stripe（アカウント内の別サービス）
 

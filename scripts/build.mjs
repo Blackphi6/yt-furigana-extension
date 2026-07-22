@@ -72,7 +72,7 @@ async function copySudachiDict() {
   console.log(`Sudachi dictionary ready (${sizeMb.toFixed(0)} MB)`);
 }
 
-function createPng(size, rgba) {
+function createBrandIconPng(size) {
   const width = size;
   const height = size;
   const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
@@ -88,13 +88,36 @@ function createPng(size, rgba) {
 
   const rowSize = 1 + width * 4;
   const raw = Buffer.alloc(rowSize * height);
+  const cx = (width - 1) / 2;
+  const cy = (height - 1) / 2;
+  const radius = width * 0.42;
+  const paper = [248, 244, 236, 255];
+  const ink = [28, 25, 23, 255];
+  const verm = [194, 59, 34, 255];
+
   for (let y = 0; y < height; y += 1) {
     const rowStart = y * rowSize;
     raw[rowStart] = 0;
     for (let x = 0; x < width; x += 1) {
+      const dx = x - cx;
+      const dy = y - cy;
+      const dist = Math.hypot(dx, dy);
+      let color = [0, 0, 0, 0];
+      if (dist <= radius) {
+        if (dist > radius * 0.92) {
+          const a = Math.round((255 * (radius - dist)) / (radius * 0.08));
+          color = [paper[0], paper[1], paper[2], a];
+        } else if (Math.abs(dx) < width * 0.18 && dy > -height * 0.28 && dy < -height * 0.08) {
+          color = verm;
+        } else if (Math.abs(dx) < width * 0.08 && dy > -height * 0.05 && dy < height * 0.32) {
+          color = ink;
+        } else if (Math.abs(dy - height * 0.28) < height * 0.05 && Math.abs(dx) < width * 0.22) {
+          color = ink;
+        } else {
+          color = paper;
+        }
+      }
       const pixelStart = rowStart + 1 + x * 4;
-      const edge = x < 2 || y < 2 || x >= width - 2 || y >= height - 2;
-      const color = edge ? [220, 38, 38, 255] : rgba;
       raw[pixelStart] = color[0];
       raw[pixelStart + 1] = color[1];
       raw[pixelStart + 2] = color[2];
@@ -123,7 +146,6 @@ function createPng(size, rgba) {
   };
 
   const compressed = deflateSync(raw, { level: 9 });
-
   const chunk = (type, data) => {
     const length = Buffer.alloc(4);
     length.writeUInt32BE(data.length, 0);
@@ -144,11 +166,13 @@ function createPng(size, rgba) {
 async function generateIcons() {
   const iconsDir = path.join(root, "icons");
   await mkdir(iconsDir, { recursive: true });
-
-  const sizes = [16, 48, 128];
-  for (const size of sizes) {
-    const png = await createPng(size, [255, 255, 255, 255]);
-    await writeFile(path.join(iconsDir, `icon${size}.png`), png);
+  const existing = path.join(iconsDir, "icon128.png");
+  if (existsSync(existing) && statSync(existing).size > 5000 && process.env.YT_FURIGANA_FORCE_ICONS !== "1") {
+    console.log("Keeping existing brand icons");
+    return;
+  }
+  for (const size of [16, 48, 128]) {
+    await writeFile(path.join(iconsDir, `icon${size}.png`), createBrandIconPng(size));
   }
 }
 
@@ -269,7 +293,11 @@ async function run() {
   await generateIcons();
   await buildBackgroundScript();
   await buildContentScript();
-  await buildPageCaptionBridge();
+  if (process.env.YT_FURIGANA_BUILD_BRIDGE === "1") {
+    await buildPageCaptionBridge();
+  } else {
+    console.log("Skipping page-caption-bridge (set YT_FURIGANA_BUILD_BRIDGE=1 to build)");
+  }
   await buildPopupScript();
   console.log("Build complete.");
 }

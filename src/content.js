@@ -2,6 +2,7 @@ import kuromoji from "kuromoji";
 import {
   applyCaptionStyles,
   captureCaptionStyles,
+  preferNativeStyledCaption,
   releaseCaptionStyles,
   startCaptionStyleGuard,
   scheduleCaptionViewportFit
@@ -12,6 +13,7 @@ import {
 import {
   DEFAULT_SETTINGS,
   isReadingApiEngine,
+  normalizeStoredEngine,
   shouldUseRemoteConversion
 } from "./default-settings.js";
 import { buildFuriganaHtml } from "./furigana.js";
@@ -28,13 +30,19 @@ import {
   stopYouTubeOverlayPositionLoop
 } from "./youtube-caption-overlay.js";
 import {
+  applyReadingFloatsOverNative,
+  clearReadingFloats
+} from "./youtube-reading-floats.js";
+import {
   applyUserReadingLearning,
   loadUserReadingStore
 } from "./user-reading-dict.js";
+import { createCaptionProcessScheduler } from "./caption-process-schedule.js";
 import {
   MANUAL_PHRASE_READINGS,
   CONTEXT_READING_RULES,
-  rebuildManualPhraseIndex
+  rebuildManualPhraseIndex,
+  reloadBundledReadingMaps
 } from "./reading-context.js";
 import { initSudachiTokenizer } from "./sudachi-tokenizer.js";
 import { showProgress, showSudachiProgress } from "./sudachi-progress-ui.js";
@@ -56,8 +64,10 @@ const ORIGINAL_ATTR = "data-yt-furigana-original";
 /** Player captions only — transcript panel can have hundreds of nodes and freezes the page. */
 const YOUTUBE_CAPTION_SELECTORS = [".ytp-caption-segment", ".caption-visual-line"];
 /** TVer (Video.js / Streaks): colored cue text lives in direct child spans. */
-const TVER_CAPTION_SELECTOR = ".vjs-text-track-cue-line > span";
-const CAPTION_SELECTORS = [...YOUTUBE_CAPTION_SELECTORS, TVER_CAPTION_SELECTOR];
+const TVER_CAPTION_LINE_SELECTOR = ".vjs-text-track-cue-line";
+const TVER_CAPTION_TEXT_SELECTOR = `${TVER_CAPTION_LINE_SELECTOR} > span`;
+const TVER_CAPTION_SELECTORS = [TVER_CAPTION_TEXT_SELECTOR, TVER_CAPTION_LINE_SELECTOR];
+const CAPTION_SELECTORS = [...YOUTUBE_CAPTION_SELECTORS, ...TVER_CAPTION_SELECTORS];
 
 function isYouTubeHost() {
   return /(^|\.)youtube\.com$/i.test(location.hostname);
@@ -97,7 +107,10 @@ let observer = null;
 let currentVideoId = null;
 let prefetchController = null;
 let prefetchPromise = null;
-let processTimer = null;
+/** @type {ReturnType<typeof createCaptionProcessScheduler> | null} */
+let captionProcessScheduler = null;
+/** TVer: 遅れて来る2行目用の再走査世代 */
+let tverLateSweepGen = 0;
 /** @type {import("./youtube-captions.js").TimedCaptionCue[]} */
 let timedCues = [];
 /**
@@ -269,10 +282,14 @@ async function convertText(text) {
     noteLearningSample(normalized, html);
     return html;
   } catch (error) {
-    console.warn(
-      "[YT Furigana] remote engine failed, falling back to local dictionary:",
-      error.message
-    );
+    const message = error?.message || String(error);
+    // 拡張の再読込直後は content が古いまま残ることがある
+    if (!/Extension context invalidated/i.test(message)) {
+      console.warn(
+        "[YT Furigana] remote engine failed, falling back to local dictionary:",
+        message
+      );
+    }
     const html = await convertWithLocalFallback(normalized);
     cache.set(getCacheKey(normalized), html);
     noteLearningSample(normalized, html);
@@ -417,7 +434,11 @@ function handleVideoNavigation() {
 
 async function loadSettings() {
   const result = await chrome.storage.sync.get(DEFAULT_SETTINGS);
-  settings = result;
+  const engine = normalizeStoredEngine(result.engine);
+  if (engine !== result.engine) {
+    await chrome.storage.sync.set({ engine });
+  }
+  settings = { ...result, engine };
   enabled = result.enabled;
 }
 
@@ -434,7 +455,11 @@ function plainTextWithoutRuby(element) {
     return normalizeText(String(element?.textContent ?? ""));
   }
   const clone = element.cloneNode(true);
-  clone.querySelectorAll("rt, rp").forEach((node) => node.remove());
+  clone
+    .querySelectorAll(
+      "rt, rp, [data-yt-furigana-float-host], .yt-furigana-float-rt, .yt-furigana-float-host"
+    )
+    .forEach((node) => node.remove());
   return normalizeText(clone.textContent ?? "");
 }
 
@@ -671,7 +696,24 @@ function stopYouTubeOverlaySyncLoop() {
 }
 
 function applyFuriganaHtml(element, html, processingKey) {
-  // 色替わり以外は、以前どおり YouTube / TVer 標準字幕へルビを差し込むだけ
+  // 色追従・縁取り・明朝などの「デザイン字幕」は本文を触らず読みだけ浮かせる
+  if (isYouTubeHost() && preferNativeStyledCaption(element)) {
+    clearYouTubeFuriganaOverlays();
+    // visual-line と segment の二重適用を避ける（segment 優先）
+    if (
+      element.matches(".caption-visual-line") &&
+      element.querySelector(".ytp-caption-segment")
+    ) {
+      element.setAttribute(PROCESSED_ATTR, processingKey);
+      return;
+    }
+    applyReadingFloatsOverNative(element, html);
+    element.setAttribute(PROCESSED_ATTR, processingKey);
+    return;
+  }
+
+  // 通常: YouTube / TVer 標準字幕へルビを差し込む
+  clearReadingFloats(element);
   if (!(isYouTubeHost() && youtubeOverlayMode)) {
     captureCaptionStyles(element);
     const maxLineChars = maxLineCharsFromElement(element);
@@ -682,7 +724,7 @@ function applyFuriganaHtml(element, html, processingKey) {
     return;
   }
 
-  // 色替わり字幕のみオーバーレイ
+  // レガシー色替わりオーバーレイ（現行は無効化済み経路）
   captureCaptionStyles(element);
   const maxLineChars = maxLineCharsForYouTubeOverlay(element);
   const broken = insertCaptionSoftBreaks(html, { maxLineChars });
@@ -820,14 +862,36 @@ async function processCaptions(root = document) {
   for (const element of elements) {
     await processElement(element);
   }
+  // 2行字幕: 全行ルビ適用後に行間を再計測（先行行の fit が2行目ルビ前に走っても取りこぼさない）
+  if (isTVerHost() && elements.length > 0) {
+    const display =
+      elements[0]?.closest?.(".vjs-text-track-display") ||
+      document.querySelector(".vjs-text-track-display");
+    if (display instanceof HTMLElement) scheduleCaptionViewportFit(display);
+  }
 }
 
-function scheduleProcess(root = document) {
-  if (processTimer != null) return;
-  processTimer = window.setTimeout(() => {
-    processTimer = null;
-    void processCaptions(root instanceof Document ? document : root);
-  }, 80);
+function scheduleTVerLateLineSweep() {
+  if (!isTVerHost()) return;
+  const gen = ++tverLateSweepGen;
+  // 1行目処理後に2行目 cue が遅延追加されるケースを拾う
+  for (const ms of [120, 280, 500]) {
+    window.setTimeout(() => {
+      if (!enabled || gen !== tverLateSweepGen) return;
+      void processCaptions(document);
+    }, ms);
+  }
+}
+
+function scheduleProcess(_root = document) {
+  if (!captionProcessScheduler) {
+    captionProcessScheduler = createCaptionProcessScheduler(
+      (root) => processCaptions(/** @type {Document} */ (root)),
+      { delayMs: 80, broadRoot: document }
+    );
+  }
+  captionProcessScheduler.scheduleProcess(_root);
+  scheduleTVerLateLineSweep();
 }
 
 function isCaptionElement(node) {
@@ -842,17 +906,19 @@ function isCaptionElement(node) {
   if (YOUTUBE_CAPTION_SELECTORS.some((selector) => node.matches(selector))) {
     return true;
   }
-  // Avoid matching nested spans inside <ruby> after furigana injection.
-  return (
-    node.matches(TVER_CAPTION_SELECTOR) ||
-    (node.tagName === "SPAN" &&
-      node.parentElement?.classList?.contains("vjs-text-track-cue-line"))
+  if (node.matches(TVER_CAPTION_TEXT_SELECTOR)) return !node.closest("ruby");
+  if (!node.matches(TVER_CAPTION_LINE_SELECTOR)) return false;
+  // Prefer direct text spans when Video.js provides them. Fall back to the
+  // line node for cue lines that contain bare text or non-span wrappers.
+  return !Array.from(node.children).some(
+    (child) => child instanceof HTMLElement && child.tagName === "SPAN"
   );
 }
 
 /**
  * キャッシュ済みなら debounce せず即ルビ化（MV カラオケの高速上書き対策）。
  * @param {ParentNode|Element|null|undefined} root
+ * @returns {boolean} 変換待ちが残っていなければ true（スケジュール不要）
  */
 function tryApplyCachedFurigana(root) {
   if (!enabled || !root) return false;
@@ -863,33 +929,60 @@ function tryApplyCachedFurigana(root) {
   }
   if (root && typeof root.querySelectorAll === "function") {
     for (const node of root.querySelectorAll(
-      ".ytp-caption-segment, .caption-visual-line, .vjs-text-track-cue-line > span"
+      ".ytp-caption-segment, .caption-visual-line, .vjs-text-track-cue-line > span, .vjs-text-track-cue-line"
     )) {
       if (node instanceof HTMLElement && isCaptionElement(node)) targets.push(node);
     }
   }
 
-  let applied = false;
+  let handled = false;
+  let pending = false;
+  // segment があれば line は触らない（二重ルビ／帯崩れ防止）
+  const preferSegments = targets.some((t) =>
+    t.classList?.contains("ytp-caption-segment")
+  );
   for (const target of targets) {
+    if (
+      preferSegments &&
+      target.classList?.contains("caption-visual-line") &&
+      target.querySelector(".ytp-caption-segment")
+    ) {
+      continue;
+    }
     const normalized = getCaptionSourceText(target);
     if (!normalized) continue;
     const cacheKey = getCacheKey(normalized);
-    if (!cache.has(cacheKey)) continue;
     const processingKey = getProcessingKey(normalized);
     if (target.getAttribute(PROCESSED_ATTR) === processingKey) {
-      applied = true;
+      handled = true;
+      continue;
+    }
+    if (!cache.has(cacheKey)) {
+      // 1行目だけキャッシュ命中しても、2行目が未変換なら再スケジュールが必要
+      pending = true;
       continue;
     }
     applyFuriganaHtml(target, cache.get(cacheKey), processingKey);
-    applied = true;
+    handled = true;
   }
-  return applied;
+  return handled && !pending;
 }
 
 function nodeMayContainCaptions(node) {
   if (!(node instanceof HTMLElement)) return false;
   if (isCaptionElement(node)) return true;
   return CAPTION_SELECTORS.some((selector) => Boolean(node.querySelector(selector)));
+}
+
+function queryCaptionScope(root, selector) {
+  const elements = [];
+  if (root instanceof HTMLElement && root.matches(selector)) {
+    elements.push(root);
+  }
+  if (root && typeof root.querySelectorAll === "function") {
+    elements.push(...root.querySelectorAll(selector));
+  }
+  return elements;
 }
 
 function findCaptionElements(root = document) {
@@ -901,9 +994,7 @@ function findCaptionElements(root = document) {
 
   // visual-line と segment の両方を処理すると、line 側の innerHTML 差し替えで
   // segment の Background（Window 0% 時の文字帯）が消える。
-  const segments = Array.from(
-    youtubeScope.querySelectorAll(".ytp-caption-segment")
-  ).filter(
+  const segments = queryCaptionScope(youtubeScope, ".ytp-caption-segment").filter(
     (el) =>
       el instanceof HTMLElement &&
       !el.classList.contains("yt-furigana-yt-overlay") &&
@@ -911,9 +1002,7 @@ function findCaptionElements(root = document) {
   );
   if (segments.length > 0) return segments;
 
-  const youtubeLines = Array.from(
-    youtubeScope.querySelectorAll(".caption-visual-line")
-  );
+  const youtubeLines = queryCaptionScope(youtubeScope, ".caption-visual-line");
   if (youtubeLines.length > 0) return youtubeLines;
 
   const tverScope = isDocumentRoot
@@ -922,9 +1011,20 @@ function findCaptionElements(root = document) {
       root
     : root;
 
-  return Array.from(tverScope.querySelectorAll(TVER_CAPTION_SELECTOR)).filter(
-    (el) => el instanceof HTMLElement && !el.closest("ruby")
-  );
+  const tverTargets = [];
+  for (const line of queryCaptionScope(tverScope, TVER_CAPTION_LINE_SELECTOR)) {
+    if (!(line instanceof HTMLElement)) continue;
+    const directSpans = Array.from(line.children).filter(
+      (child) => child instanceof HTMLElement && child.tagName === "SPAN"
+    );
+    if (directSpans.length > 0) {
+      tverTargets.push(...directSpans);
+    } else {
+      tverTargets.push(line);
+    }
+  }
+
+  return tverTargets.filter((el) => el instanceof HTMLElement && !el.closest("ruby"));
 }
 
 function startObserver() {
@@ -977,14 +1077,22 @@ function restoreOriginalText() {
   restoreYouTubeNativeCaptionsVisible();
   CAPTION_SELECTORS.forEach((selector) => {
     document.querySelectorAll(selector).forEach((element) => {
+      const wasFloatMode =
+        element.getAttribute("data-yt-furigana-float-mode") === "1" ||
+        Boolean(element.querySelector?.("[data-yt-furigana-float-host]"));
+      clearReadingFloats(element);
       releaseCaptionStyles(element);
-      const original = element.getAttribute(ORIGINAL_ATTR);
-      if (original != null) {
-        element.textContent = original;
+      // 読みフロートモードは本文を触っていないので、textContent 復元しない
+      if (!wasFloatMode) {
+        const original = element.getAttribute(ORIGINAL_ATTR);
+        if (original != null) {
+          element.textContent = original;
+        }
       }
       element.removeAttribute(ORIGINAL_ATTR);
       element.removeAttribute(PROCESSED_ATTR);
       element.removeAttribute(PROCESSING_ATTR);
+      element.removeAttribute("data-yt-furigana-float-mode");
     });
   });
 }
@@ -992,12 +1100,19 @@ function restoreOriginalText() {
 function resetProcessedCaptions() {
   CAPTION_SELECTORS.forEach((selector) => {
     document.querySelectorAll(selector).forEach((element) => {
-      const original = element.getAttribute(ORIGINAL_ATTR);
-      if (original != null) {
-        element.textContent = original;
+      const wasFloatMode =
+        element.getAttribute("data-yt-furigana-float-mode") === "1" ||
+        Boolean(element.querySelector?.("[data-yt-furigana-float-host]"));
+      clearReadingFloats(element);
+      if (!wasFloatMode) {
+        const original = element.getAttribute(ORIGINAL_ATTR);
+        if (original != null) {
+          element.textContent = original;
+        }
       }
       element.removeAttribute(PROCESSED_ATTR);
       element.removeAttribute(PROCESSING_ATTR);
+      element.removeAttribute("data-yt-furigana-float-mode");
     });
   });
 }
@@ -1046,19 +1161,81 @@ async function setEnabled(value) {
 }
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area !== "sync") return;
+  if (area === "sync") {
+    const shouldRefresh =
+      changes.enabled ||
+      changes.engine ||
+      changes.ollamaUrl ||
+      changes.ollamaModel ||
+      changes.readingApiUrl ||
+      changes.sharedPackEnabled;
 
-  const shouldRefresh =
-    changes.enabled ||
-    changes.engine ||
-    changes.ollamaUrl ||
-    changes.ollamaModel ||
-    changes.readingApiUrl;
+    if (changes.sharedPackEnabled || shouldRefresh) {
+      void (async () => {
+        await loadSettings();
+        if (changes.sharedPackEnabled) {
+          await reapplyAllReadingLearning();
+        }
+        if (shouldRefresh) await applySettings();
+      })();
+    }
+    return;
+  }
 
-  if (shouldRefresh) {
-    void applySettings();
+  if (area === "local" && (changes.freeSharedReadingPack || changes.premiumSharedReadingDict)) {
+    void reapplyAllReadingLearning();
   }
 });
+
+async function reapplyAllReadingLearning() {
+  reloadBundledReadingMaps();
+  try {
+    if (settings.sharedPackEnabled !== false) {
+      const stored = await chrome.storage.local.get({
+        freeSharedReadingPack: {},
+        // migrate old key once
+        sharedReadingDict: {}
+      });
+      const free =
+        stored.freeSharedReadingPack && typeof stored.freeSharedReadingPack === "object"
+          ? stored.freeSharedReadingPack
+          : {};
+      const legacy =
+        stored.sharedReadingDict && typeof stored.sharedReadingDict === "object"
+          ? stored.sharedReadingDict
+          : {};
+      applyUserReadingLearning(
+        MANUAL_PHRASE_READINGS,
+        CONTEXT_READING_RULES,
+        rebuildManualPhraseIndex,
+        Object.keys(free).length ? free : legacy
+      );
+    }
+    const premiumStore = await chrome.storage.local.get({ premiumSharedReadingDict: {} });
+    const premium =
+      premiumStore.premiumSharedReadingDict &&
+      typeof premiumStore.premiumSharedReadingDict === "object"
+        ? premiumStore.premiumSharedReadingDict
+        : {};
+    if (Object.keys(premium).length) {
+      applyUserReadingLearning(
+        MANUAL_PHRASE_READINGS,
+        CONTEXT_READING_RULES,
+        rebuildManualPhraseIndex,
+        premium
+      );
+    }
+  } catch {
+    // ignore
+  }
+  const userStore = await loadUserReadingStore();
+  applyUserReadingLearning(
+    MANUAL_PHRASE_READINGS,
+    CONTEXT_READING_RULES,
+    rebuildManualPhraseIndex,
+    userStore
+  );
+}
 
 function startVideoNavigationWatch() {
   const onNavigate = () => {
@@ -1080,30 +1257,7 @@ function startVideoNavigationWatch() {
 
 async function bootstrap() {
   await loadSettings();
-  const userStore = await loadUserReadingStore();
-  applyUserReadingLearning(
-    MANUAL_PHRASE_READINGS,
-    CONTEXT_READING_RULES,
-    rebuildManualPhraseIndex,
-    userStore
-  );
-
-  // Premium 共有辞書（検証後に popup から取得して local に保存済みのもの）
-  try {
-    const stored = await chrome.storage.local.get({ sharedReadingDict: {} });
-    const shared =
-      stored.sharedReadingDict && typeof stored.sharedReadingDict === "object"
-        ? stored.sharedReadingDict
-        : {};
-    applyUserReadingLearning(
-      MANUAL_PHRASE_READINGS,
-      CONTEXT_READING_RULES,
-      rebuildManualPhraseIndex,
-      shared
-    );
-  } catch {
-    // ignore
-  }
+  await reapplyAllReadingLearning();
 
   installReadingPicker(document);
   installFuriganaHoverHighlight(document);

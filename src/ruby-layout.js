@@ -14,11 +14,11 @@ export const RUBY_READING_GAP_PX = RUBY_READING_GAP_MAX_PX;
 /** 重なり分離の最大反復回数 */
 export const RUBY_SEPARATE_MAX_PASSES = 8;
 
-/** ルビ下端〜本文上端のすき間（px）。YouTube 字幕は文字が em 箱より上にはみ出しやすい */
-export const RUBY_RT_CLEARANCE_PX = 8;
+/** ルビ下端〜本文上端のすき間（px）。詰めて読みやすく */
+export const RUBY_RT_CLEARANCE_PX = 3;
 
 /** 漢字インクのはみ出し分（本文 font-size 比） */
-export const RUBY_BASE_OVERFLOW_EM = 0.28;
+export const RUBY_BASE_OVERFLOW_EM = 0.12;
 
 /**
  * ルビ用 padding-top（px）。旧 absolute 配置用。flex でも下限の目安に使う。
@@ -33,7 +33,7 @@ export function computeRubyPadTopPx({
   const rtFs = Math.max(1, Number(rtFontSizePx) || 12);
   const baseFs = Math.max(1, Number(baseFontSizePx) || 16);
   const fromRt = Math.ceil(rtH + RUBY_RT_CLEARANCE_PX + baseFs * RUBY_BASE_OVERFLOW_EM);
-  const fromFs = Math.ceil(rtFs * 1.45);
+  const fromFs = Math.ceil(rtFs * 1.15);
   return Math.max(fromRt, fromFs);
 }
 
@@ -287,6 +287,14 @@ function resolveAvailableWidth(host) {
   return host.clientWidth || 0;
 }
 
+function isInsideTVerCaption(node) {
+  return Boolean(
+    node &&
+      typeof node.closest === "function" &&
+      node.closest(".vjs-text-track-display")
+  );
+}
+
 function applyRubyFitPass(root) {
   for (const ruby of root.querySelectorAll("ruby")) {
     const rt = ruby.querySelector(":scope > rt") || ruby.querySelector("rt");
@@ -309,18 +317,11 @@ function applyRubyFitPass(root) {
     ruby.style.removeProperty("min-width");
     ruby.style.removeProperty("letter-spacing");
 
-    // 仮余白 → 実測 → 本余白（YouTube CSS に負けないよう important）
-    ruby.style.setProperty("padding-top", "1.05em", "important");
-
     rt.style.setProperty("position", "absolute", "important");
     rt.style.setProperty("display", "block", "important");
     rt.style.setProperty("order", "unset", "important");
-    rt.style.setProperty("top", "0", "important");
     rt.style.setProperty("left", "50%", "important");
     rt.style.setProperty("right", "auto", "important");
-    rt.style.setProperty("bottom", "auto", "important");
-    rt.style.setProperty("transform", "translateX(-50%)", "important");
-    rt.style.setProperty("transform-origin", "center top", "important");
     rt.style.setProperty("font-size", "0.5em", "important");
     rt.style.setProperty("line-height", "1", "important");
     rt.style.setProperty("font-weight", "400", "important");
@@ -330,6 +331,22 @@ function applyRubyFitPass(root) {
     rt.style.setProperty("max-width", "none", "important");
     rt.style.setProperty("text-align", "center", "important");
     rt.style.setProperty("margin", "0", "important");
+    rt.style.setProperty("transform", "translateX(-50%)", "important");
+
+    // TVer: 本文位置を動かさず、読みだけ上へ浮かせる（padding-top 禁止）
+    if (isInsideTVerCaption(ruby)) {
+      ruby.style.setProperty("padding-top", "0", "important");
+      rt.style.setProperty("top", "auto", "important");
+      rt.style.setProperty("bottom", "calc(100% + 0.08em)", "important");
+      rt.style.setProperty("transform-origin", "center bottom", "important");
+      continue;
+    }
+
+    // YouTube 等: padding-top でルビ領域を確保し、rt をその中に置く
+    ruby.style.setProperty("padding-top", "0.68em", "important");
+    rt.style.setProperty("top", "0", "important");
+    rt.style.setProperty("bottom", "auto", "important");
+    rt.style.setProperty("transform-origin", "center top", "important");
 
     const baseFontSizePx =
       Number.parseFloat(getComputedStyle(ruby).fontSize) || 16;

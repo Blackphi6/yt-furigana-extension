@@ -12,8 +12,12 @@ export const DEFAULT_SETTINGS = {
   premiumExpiresAt: "",
   /** 辞書同期の最終更新（ISO） */
   dictRevisedAt: "",
-  /** Premium: 起動時に共有辞書を取り込む */
+  /** Premium: 起動時にサーバー共有辞書を取り込む（手動ボタンとは別） */
   sharedDictEnabled: true,
+  /** クリック訂正を匿名でみんなの辞書づくりに送る（オプトイン） */
+  contributionEnabled: false,
+  /** Free: 起動時に共有読みパックを受け取る（既定オン・オフ可） */
+  sharedPackEnabled: true,
   /** GitHub Sponsors URL */
   sponsorsUrl: "https://github.com/sponsors/Blackphi6",
   /** GitHub Pages サイト（料金・ポリシー） */
@@ -27,6 +31,9 @@ export const DEFAULT_SETTINGS = {
   /** 曖昧語サンプル（字幕断片・URL）の端末内自動蓄積。オフで停止（手動選択の辞書学習は継続） */
   learningInboxEnabled: true
 };
+
+/** 公開デモ／共有パック用（Render）。readingApiUrl 未設定時のフォールバック */
+export const PUBLIC_READING_API_URL = "https://yt-furigana-readings.onrender.com";
 
 /** ふりがな用途で推奨するモデル（軽い・速い順） */
 export const PREFERRED_OLLAMA_MODELS = [
@@ -91,6 +98,17 @@ export function isReadingApiEngine(engine) {
   return engine === "reading-api";
 }
 
+/**
+ * UI から外したエンジンを端末内へ寄せる。
+ * popup を開かなくても content / background が同じ値を見る。
+ * @param {string | undefined} engine
+ */
+export function normalizeStoredEngine(engine) {
+  if (engine === "groq" || engine === "sudachi") return "hybrid";
+  if (engine === "ollama" || engine === "reading-api") return "kuromoji";
+  return engine || DEFAULT_SETTINGS.engine;
+}
+
 /** ネットワーク経由の変換（プリフェッチ・非同期適用向き） */
 export function isRemoteEngine(engine) {
   return isLlmEngine(engine) || isReadingApiEngine(engine);
@@ -98,13 +116,10 @@ export function isRemoteEngine(engine) {
 
 /**
  * 実際にリモート変換を使うか。
- * 読みAPIは URL 未設定ならローカル扱いにし、字幕表示を止めない。
+ * 公開 UI はローカルのみ。旧 reading-api / ollama は normalize で寄せる。
  * @param {{ engine?: string, readingApiUrl?: string }} settings
  */
 export function shouldUseRemoteConversion(settings = {}) {
-  const engine = settings.engine || "";
-  if (isReadingApiEngine(engine)) {
-    return Boolean(String(settings.readingApiUrl || "").trim());
-  }
-  return isLlmEngine(engine);
+  void settings;
+  return false;
 }

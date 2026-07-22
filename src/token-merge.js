@@ -77,6 +77,32 @@ function findBestMatchAt(text, index, surfaces, phraseTrie) {
   return null;
 }
 
+function isPrefixToken(token) {
+  const pos = token.pos || "";
+  return pos === "接頭詞" || pos.startsWith("接頭詞");
+}
+
+/** 大/小 など短い接頭＋名詞は一塊（大正解が「大｜正解」に割れて改行するのを防ぐ） */
+const SHORT_NOUN_PREFIXES = new Set([
+  "大",
+  "小",
+  "超",
+  "未",
+  "再",
+  "新",
+  "旧",
+  "真",
+  "元",
+  "本"
+]);
+
+function isShortNounPrefix(token) {
+  return (
+    isPrefixToken(token) &&
+    SHORT_NOUN_PREFIXES.has(String(token.surface_form || ""))
+  );
+}
+
 function isNoun(token) {
   const pos = token.pos || "";
   return pos === "名詞" || pos.startsWith("名詞");
@@ -140,12 +166,22 @@ function isNaruVerb(token) {
   return pos === "動詞" || pos.startsWith("動詞");
 }
 
+function isKatakanaOnlySurface(surface) {
+  return /^[\u30a0-\u30ffー]+$/.test(String(surface || ""));
+}
+
 function mergeTokenPair(left, right, { useDictionaryReading = false } = {}) {
   const leftSurface = left.surface_form || "";
   const rightSurface = right.surface_form || "";
   const surface = `${leftSurface}${rightSurface}`;
-  const leftReading = readingOf(left);
-  const rightReading = readingOf(right);
+  // カタカナ未知語は reading が空でも表層をひらがな化して結合読みに載せる
+  // （カツアゲ+放題 → かつあげほうだい。空のままだと「放題」のルビが消える）
+  const leftReading =
+    readingOf(left) ||
+    (isKatakanaOnlySurface(leftSurface) ? toHiragana(leftSurface) : "");
+  const rightReading =
+    readingOf(right) ||
+    (isKatakanaOnlySurface(rightSurface) ? toHiragana(rightSurface) : "");
   const dictReading = useDictionaryReading
     ? dictionaryReadingFor(surface)
     : "";
@@ -334,6 +370,12 @@ export function mergeTokensForRuby(tokens, options = {}) {
       result.push(
         mergeTokenPair(current, next, { useDictionaryReading: true })
       );
+      index += 2;
+      continue;
+    }
+
+    if (next && isShortNounPrefix(current) && isNoun(next)) {
+      result.push(mergeTokenPair(current, next));
       index += 2;
       continue;
     }

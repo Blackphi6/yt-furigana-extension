@@ -80,4 +80,20 @@ const legacy = normalizeUserReadingStore({ 忙しい: "せわしい" });
 assert.equal(legacy.phrases["忙しい"], "せわしい");
 assert.equal(legacy.contextRules.length, 0);
 
+// 共有パック → ユーザー訂正の順で適用すると個人辞書が勝つ
+resetReadingOverridesToBase();
+applyUserReadingLearning(
+  MANUAL_PHRASE_READINGS,
+  CONTEXT_READING_RULES,
+  rebuildManualPhraseIndex,
+  { 表: "おもて" }
+);
+applyUserReadingLearning(
+  MANUAL_PHRASE_READINGS,
+  CONTEXT_READING_RULES,
+  rebuildManualPhraseIndex,
+  { phrases: { 表: "ひょう" }, contextRules: [] }
+);
+assert.equal(MANUAL_PHRASE_READINGS.get("表"), "ひょう");
+
 console.log("user-reading-dict contextual learning tests passed.");

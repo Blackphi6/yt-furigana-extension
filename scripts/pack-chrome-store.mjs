@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Build extension + zip for Chrome Web Store upload.
- * Also writes placeholder store screenshots (1280x800).
+ * Screenshots: keep existing real captures; only write placeholders if missing/tiny.
  */
 import { spawnSync } from "node:child_process";
 import {
@@ -34,6 +34,15 @@ const INCLUDE = [
   "COPYING",
   "LICENSE",
   "NOTICE"
+];
+
+const FORBIDDEN_IN_ZIP = [
+  ".env",
+  "licenses.json",
+  "stripe-orders.json",
+  "contributions.jsonl",
+  ".pem",
+  "id_rsa"
 ];
 
 function createPng(width, height, paint) {
@@ -100,40 +109,66 @@ function createPng(width, height, paint) {
   ]);
 }
 
+function shouldWriteShot(filePath) {
+  // Never overwrite existing screenshots once present (real or product mock).
+  return !existsSync(filePath);
+}
+
 function writeScreenshots() {
   mkdirSync(shotsDir, { recursive: true });
   const w = 1280;
   const h = 800;
   const paintHero = (x, y) => {
-    const paper = [243, 239, 230];
-    const vermilion = [194, 59, 34];
-    const inBar = y < 72;
-    const inHero = y > 180 && y < 420 && x > 80 && x < 720;
-    if (inBar) return vermilion;
-    if (inHero) return [28, 25, 23];
-    const edge = x < 4 || y < 4 || x >= w - 4 || y >= h - 4;
-    if (edge) return vermilion;
-    return paper;
+    if (y < 64) return [194, 59, 34];
+    if (y > 80 && y < 520) {
+      const t = Math.abs(x - w / 2) / (w / 2);
+      const v = Math.round(22 + 18 * t);
+      return [v, v - 2, v - 4];
+    }
+    if (y > 560 && y < 720 && x > 160 && x < 1120) {
+      if (y < 600) return [220, 90, 70];
+      return [255, 255, 255];
+    }
+    return [243, 239, 230];
   };
   const paintCaption = (x, y) => {
-    const dark = [20, 18, 16];
-    const caption = [255, 255, 255];
-    const ruby = [220, 80, 60];
-    if (y > 560 && y < 700 && x > 200 && x < 1080) {
-      if (y < 600) return ruby;
-      return caption;
+    if (y < h * 0.55) return [18, 16, 14];
+    if (y > h * 0.62 && y < h * 0.88 && x > w * 0.12 && x < w * 0.88) {
+      if (y < h * 0.7) return [210, 70, 55];
+      return [250, 250, 250];
     }
-    return dark;
+    return [18, 16, 14];
   };
-  writeFileSync(
-    path.join(shotsDir, "01-hero-1280x800.png"),
-    createPng(w, h, paintHero)
-  );
-  writeFileSync(
-    path.join(shotsDir, "02-caption-1280x800.png"),
-    createPng(w, h, paintCaption)
-  );
+  const heroPath = path.join(shotsDir, "01-hero-1280x800.png");
+  const captionPath = path.join(shotsDir, "02-caption-1280x800.png");
+  if (shouldWriteShot(heroPath)) {
+    writeFileSync(heroPath, createPng(w, h, paintHero));
+  }
+  if (shouldWriteShot(captionPath)) {
+    writeFileSync(captionPath, createPng(w, h, paintCaption));
+  }
   console.log(`Screenshots → ${shotsDir}`);
+}
+
+function assertZipSafe() {
+  const listing = spawnSync("zipinfo", ["-1", zipPath], {
+    encoding: "utf8"
+  });
+  if (listing.status !== 0) {
+    console.warn("zipinfo unavailable; skip zip secret scan");
+    return;
+  }
+  const names = String(listing.stdout || "");
+  for (const bad of FORBIDDEN_IN_ZIP) {
+    if (names.includes(bad)) {
+      console.error(`Store zip must not contain ${bad}`);
+      process.exit(1);
+    }
+  }
+  if (names.includes("page-caption-bridge.js")) {
+    console.error("Store zip must not ship page-caption-bridge.js");
+    process.exit(1);
+  }
 }
 
 function main() {
@@ -141,16 +176,32 @@ function main() {
   const build = spawnSync("node", ["scripts/build.mjs"], {
     cwd: root,
     encoding: "utf8",
-    stdio: "inherit"
+    stdio: "inherit",
+    env: { ...process.env, YT_FURIGANA_BUILD_BRIDGE: "0" }
   });
   if (build.status !== 0) process.exit(build.status || 1);
+
+  // Drop leftover bridge artifact from previous local builds
+  const bridge = path.join(root, "dist", "page-caption-bridge.js");
+  if (existsSync(bridge)) unlinkSync(bridge);
 
   writeScreenshots();
   mkdirSync(outDir, { recursive: true });
   if (existsSync(zipPath)) unlinkSync(zipPath);
 
   const entries = INCLUDE.filter((p) => existsSync(path.join(root, p)));
-  const result = spawnSync("zip", ["-r", "-q", zipPath, ...entries], {
+  // Exclude debug / non-store artifacts accidentally left in dist/
+  const zipArgs = [
+    "-r",
+    "-q",
+    zipPath,
+    ...entries,
+    "-x",
+    "dist/page-caption-bridge.js",
+    "dist/page-debug.js",
+    "dist/*.map"
+  ];
+  const result = spawnSync("zip", zipArgs, {
     cwd: root,
     encoding: "utf8"
   });
@@ -158,6 +209,8 @@ function main() {
     console.error(result.stderr || result.stdout || "zip failed");
     process.exit(result.status || 1);
   }
+
+  assertZipSafe();
 
   const mb = (statSync(zipPath).size / (1024 * 1024)).toFixed(1);
   console.log(`Store zip → ${zipPath} (${mb} MB)`);

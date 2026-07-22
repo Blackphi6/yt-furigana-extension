@@ -14,8 +14,8 @@ YouTube / TVer の日本語字幕にひらがなルビを表示する Chrome 拡
 
 ## 機能
 
-- **Free（既定）**: 端末内の読み付け（標準 / Hybrid）。クリックで読み学習
-- **Premium（任意）**: 読み辞書の端末間同期・共有辞書 — [docs/FREEMIUM.md](docs/FREEMIUM.md)
+- **Free（既定）**: 端末内の読み付け（標準 / Hybrid）。クリック学習。みんなの読みパック受信（オフ可）
+- **Premium（任意）**: 読み辞書の端末間同期・サーバー共有辞書 — [docs/FREEMIUM.md](docs/FREEMIUM.md)
 - **支援**: [GitHub Sponsors](https://github.com/sponsors/Blackphi6)
 
 ## セットアップ

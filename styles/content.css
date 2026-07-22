@@ -8,7 +8,7 @@
 
 .ytp-caption-window-container .caption-window:has([data-yt-furigana-styled]),
 .ytp-caption-window-container .captions-text:has([data-yt-furigana-styled]) {
-  padding-top: 0.35em !important;
+  padding-top: 0.12em !important;
 }
 
 .ytp-caption-window-container .caption-window:has([data-yt-furigana-styled]) .caption-visual-line,
@@ -25,7 +25,7 @@
 /* 2行目のルビが1行目本文に食い込まないよう、行同士に余裕を確保 */
 .ytp-caption-window-container .caption-window:has([data-yt-furigana-styled]) .caption-visual-line:not(:last-child),
 .ytp-caption-window-container .captions-text:has([data-yt-furigana-styled]) .caption-visual-line:not(:last-child) {
-  margin-bottom: 0.55em !important;
+  margin-bottom: 0.28em !important;
 }
 
 /* TVer (Video.js / Streaks) */
@@ -38,32 +38,41 @@
   overflow: visible !important;
 }
 
+/*
+ * TVer: 本文はネイティブ位置のまま、ルビだけ上へ絶対配置する。
+ * padding-top 方式だと帯が高さ方向に伸び、文字が下がって見える。
+ */
+.vjs-text-track-display .vjs-text-track-cue-line ruby,
+.vjs-text-track-display .vjs-text-track-cue-line > span ruby {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+.vjs-text-track-display .vjs-text-track-cue-line rt,
+.vjs-text-track-display .vjs-text-track-cue-line > span rt {
+  top: auto !important;
+  bottom: calc(100% + 0.08em) !important;
+  transform: translateX(-50%) !important;
+  /* 座標ヒット／クリック用。操作レイヤー越えでも語の祖先に届ける */
+  pointer-events: auto !important;
+}
+
 .vjs-text-track-display .vjs-text-track-cue-line:has([data-yt-furigana-styled]),
-.vjs-text-track-display .vjs-text-track-cue-line > span[data-yt-furigana-styled] {
+.vjs-text-track-display .vjs-text-track-cue-line > span[data-yt-furigana-styled],
+.vjs-text-track-display .vjs-text-track-cue-line:has(ruby),
+.vjs-text-track-display .vjs-text-track-cue-line > span:has(ruby) {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
   line-break: strict;
   word-break: keep-all;
   overflow-wrap: normal;
 }
 
 /*
- * ルビ用 padding-top で本文が下に押し出されて帯から切れるのを防ぐ。
- * 行間・画面下端の見切れは JS（fitTVerCaptionViewport）が実測で調整する。
- * ここはフォールバックのみ。
+ * 行間をルビ分だけ広げない（本文が下へ沈みシークバーに刺さる原因だった）。
+ * 次行ルビは前行との隙間／映像側へ重ねる。
  */
-.vjs-text-track-display .vjs-text-track-cue-line > span:has(ruby) {
-  margin-top: -0.82em !important;
-  padding-bottom: 0.22em !important;
-  line-height: 1.2 !important;
-}
-
-.vjs-text-track-display .vjs-text-track-cue-line:has(ruby) {
-  margin-top: -0.12em !important;
-  padding-bottom: 0.08em !important;
-}
-
-.vjs-text-track-display .vjs-text-track-cue-line:has(+ .vjs-text-track-cue-line) {
-  margin-bottom: 0.7em !important;
-}
 
 /*
  * TVer の字幕レイヤーは pointer-events:none（動画操作のため）。
@@ -84,7 +93,7 @@ ytd-transcript-segment-renderer .segment-text ruby {
   display: inline-block !important;
   position: relative !important;
   vertical-align: baseline !important;
-  padding-top: 1.05em !important;
+  padding-top: 0.68em !important;
   line-height: 1 !important;
   ruby-position: unset !important;
   overflow: visible !important;
@@ -347,7 +356,7 @@ ytd-transcript-segment-renderer .segment-text rt {
   display: inline-block !important;
   position: relative !important;
   vertical-align: baseline !important;
-  padding-top: 1.05em !important;
+  padding-top: 0.68em !important;
   line-height: 1.1 !important;
   ruby-position: unset !important;
   margin-inline: 0;
@@ -391,6 +400,47 @@ ytd-transcript-segment-renderer .segment-text rt {
 .yt-furigana-yt-overlay .yt-furigana-word:hover,
 .yt-furigana-yt-overlay .yt-furigana-word--hover {
   background: rgba(255, 255, 255, 0.18);
+}
+
+/* 色追従・縁取り字幕: ネイティブ本文の上に読みだけ */
+.yt-furigana-float-host {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+  overflow: visible !important;
+  z-index: 40 !important;
+}
+
+.yt-furigana-float-rt {
+  position: absolute !important;
+  transform: translate(-50%, -100%) !important;
+  display: block !important;
+  width: max-content !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 0.05em !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap !important;
+  font-weight: 500 !important;
+  color: #fff !important;
+  text-shadow:
+    0 0 2px rgba(0, 0, 0, 0.95),
+    0 1px 2px rgba(0, 0, 0, 0.85),
+    1px 0 1px rgba(0, 0, 0, 0.7),
+    -1px 0 1px rgba(0, 0, 0, 0.7) !important;
+  background: transparent !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.yt-furigana-float-rt:hover,
+.yt-furigana-float-rt:focus-visible,
+.yt-furigana-float-rt.yt-furigana-word--hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border-radius: 2px;
 }
 
 ytd-transcript-segment-renderer .segment-text ruby {

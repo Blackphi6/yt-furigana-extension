@@ -96,3 +96,18 @@ await appendFile(
 );
 
 console.log(`Updated ${learnedOverridesPath()}`);
+
+// Free 向け共有パック用シードも更新（字幕なし・phrases のみ）
+{
+  const { spawnSync } = await import("node:child_process");
+  const { fileURLToPath } = await import("node:url");
+  const exporter = path.join(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "..",
+    "export-shared-readings-seed.mjs"
+  );
+  const result = spawnSync(process.execPath, [exporter], { stdio: "inherit" });
+  if (result.status !== 0) {
+    console.warn("shared-readings seed export failed (non-fatal)");
+  }
+}

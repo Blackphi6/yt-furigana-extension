@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hmac
 import json
 import os
 import re
@@ -31,19 +32,35 @@ def _utcnow() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
+def _allow_demo_license() -> bool:
+    """Demo key only for local/dev. Never auto-create on Render / production."""
+    if os.environ.get("RENDER", "").lower() == "true":
+        return False
+    if os.environ.get("YT_FURIGANA_ENV", "").lower() in ("production", "prod"):
+        return False
+    if os.environ.get("YT_FURIGANA_STRICT", "").strip() in ("1", "true", "yes"):
+        return False
+    raw = os.environ.get("YT_FURIGANA_ALLOW_DEMO_KEY", "1").strip().lower()
+    return raw not in ("0", "false", "no", "off")
+
+
 def ensure_store() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     SYNC_DIR.mkdir(parents=True, exist_ok=True)
     if not LICENSES_FILE.exists():
-        # Demo key for local freemium testing
-        demo = {
-            "ytfp_live_demo_key_001": {
-                "plan": "premium",
-                "expiresAt": None,
-                "note": "local demo license",
+        if _allow_demo_license():
+            demo = {
+                "ytfp_live_demo_key_001": {
+                    "plan": "premium",
+                    "expiresAt": None,
+                    "note": "local demo license",
+                }
             }
-        }
-        LICENSES_FILE.write_text(json.dumps(demo, ensure_ascii=False, indent=2), encoding="utf-8")
+            LICENSES_FILE.write_text(
+                json.dumps(demo, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+        else:
+            LICENSES_FILE.write_text("{}", encoding="utf-8")
     if not SHARED_FILE.exists():
         SHARED_FILE.write_text(
             json.dumps({"entries": DEFAULT_SHARED, "revisedAt": _utcnow()}, ensure_ascii=False, indent=2),
@@ -74,7 +91,20 @@ def api_keys() -> set[str]:
 
 
 def require_auth_for_readings() -> bool:
-    return bool(api_keys())
+    """
+    Local: open when no API keys (dev friendly).
+    Hosted production: require keys unless YT_FURIGANA_PUBLIC_READINGS=1 (site demo).
+    """
+    if api_keys():
+        return True
+    hosted = (
+        os.environ.get("RENDER", "").lower() == "true"
+        or os.environ.get("YT_FURIGANA_ENV", "").lower() in ("production", "prod")
+    )
+    if not hosted:
+        return False
+    allow_public = os.environ.get("YT_FURIGANA_PUBLIC_READINGS", "1").strip().lower()
+    return allow_public in ("0", "false", "no", "off")
 
 
 def extract_bearer(authorization: str | None) -> str:
@@ -123,7 +153,8 @@ def authorize(authorization: str | None, *, premium_only: bool = False) -> dict[
         return {"ok": True, "plan": "free", "licenseKey": ""}
 
     # API keys count as premium auth for hosted endpoints
-    if token in api_keys():
+    keys = api_keys()
+    if keys and any(hmac.compare_digest(token, k) for k in keys):
         return {"ok": True, "plan": "premium", "licenseKey": token, "via": "api_key"}
 
     result = verify_license_key(token)

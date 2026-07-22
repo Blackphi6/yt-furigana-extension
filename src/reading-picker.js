@@ -17,6 +17,7 @@ import {
   appendLearningEvent
 } from "./reading-learning.js";
 import { fitRubyReadings } from "./ruby-layout.js";
+import { splitContributionContext } from "./contributions.js";
 
 const POPUP_ID = "yt-furigana-reading-picker";
 
@@ -30,6 +31,48 @@ function escapeAttr(value) {
 
 export function closeReadingPicker() {
   document.getElementById(POPUP_ID)?.remove();
+}
+
+/**
+ * 全画面中は fullscreenElement 配下にしか見えない。
+ * 候補ポップアップ／チップのマウント先を返す。
+ * @param {Element | null | undefined} anchor
+ * @returns {Element}
+ */
+export function resolveOverlayMountRoot(anchor) {
+  const doc = typeof document !== "undefined" ? document : null;
+  if (!doc?.documentElement) {
+    return anchor || null;
+  }
+
+  const ElementCtor = typeof Element !== "undefined" ? Element : null;
+  const fs =
+    doc.fullscreenElement ||
+    /** @type {Document & { webkitFullscreenElement?: Element | null }} */ (doc)
+      .webkitFullscreenElement ||
+    null;
+
+  if (fs && (!ElementCtor || fs instanceof ElementCtor)) {
+    if (
+      !anchor ||
+      fs === anchor ||
+      (typeof fs.contains === "function" && fs.contains(anchor))
+    ) {
+      return /** @type {Element} */ (fs);
+    }
+  }
+
+  // Video.js / YouTube: Fullscreen API なしでもクラスだけ付く場合
+  if (anchor && typeof anchor.closest === "function") {
+    const player = anchor.closest(
+      ".video-js.vjs-fullscreen, .html5-video-player.ytp-fullscreen, .vjs-fullscreen, .ytp-fullscreen"
+    );
+    if (player && (!ElementCtor || player instanceof ElementCtor)) {
+      return /** @type {Element} */ (player);
+    }
+  }
+
+  return doc.documentElement;
 }
 
 function isKanaOnlyReading(value) {
@@ -115,17 +158,54 @@ export async function openReadingPicker(wordEl, options = {}) {
     </form>
   `;
 
-  document.documentElement.append(popup);
+  const mountRoot = resolveOverlayMountRoot(wordEl);
+  mountRoot.append(popup);
 
   const rect = wordEl.getBoundingClientRect();
   const popupRect = popup.getBoundingClientRect();
-  let left = rect.left + rect.width / 2 - popupRect.width / 2;
-  left = Math.max(8, Math.min(left, window.innerWidth - popupRect.width - 8));
-  let top = rect.top - popupRect.height - 8;
-  if (top < 8) top = rect.bottom + 8;
-  popup.style.left = `${left}px`;
-  popup.style.top = `${top}px`;
+  const viewportW =
+    mountRoot === document.documentElement
+      ? window.innerWidth
+      : mountRoot.getBoundingClientRect().width || window.innerWidth;
+  const viewportH =
+    mountRoot === document.documentElement
+      ? window.innerHeight
+      : mountRoot.getBoundingClientRect().height || window.innerHeight;
+  const origin =
+    mountRoot === document.documentElement
+      ? { left: 0, top: 0 }
+      : mountRoot.getBoundingClientRect();
 
+  let left = rect.left + rect.width / 2 - popupRect.width / 2;
+  left = Math.max(
+    origin.left + 8,
+    Math.min(left, origin.left + viewportW - popupRect.width - 8)
+  );
+  let top = rect.top - popupRect.height - 8;
+  if (top < origin.top + 8) top = rect.bottom + 8;
+  if (top + popupRect.height > origin.top + viewportH - 8) {
+    top = Math.max(origin.top + 8, rect.top - popupRect.height - 8);
+  }
+
+  // fixed は通常ビューポート基準。fullscreen 要素が transform を持つ場合は
+  // マウント先基準の absolute に切り替える。
+  const mountStyle =
+    typeof getComputedStyle === "function" ? getComputedStyle(mountRoot) : null;
+  const mountTransformed =
+    mountRoot !== document.documentElement &&
+    mountStyle &&
+    mountStyle.transform &&
+    mountStyle.transform !== "none";
+
+  if (mountTransformed) {
+    popup.style.position = "absolute";
+    popup.style.left = `${left - origin.left + (mountRoot.scrollLeft || 0)}px`;
+    popup.style.top = `${top - origin.top + (mountRoot.scrollTop || 0)}px`;
+  } else {
+    popup.style.position = "fixed";
+    popup.style.left = `${left}px`;
+    popup.style.top = `${top}px`;
+  }
   const input = popup.querySelector(".yt-furigana-picker__input");
   const form = popup.querySelector(".yt-furigana-picker__custom");
 
@@ -234,6 +314,72 @@ async function applyReadingChoice(wordEl, surface, reading, contextText) {
     );
     await chrome.storage.local.set({ [LEARNING_INBOX_KEY]: inbox });
   }
+
+  // 匿名貢献（オプトイン）。失敗しても UI は止めない。
+  try {
+    if (typeof chrome !== "undefined" && chrome?.runtime?.sendMessage) {
+      const { contributionEnabled } = await chrome.storage.sync.get({
+        contributionEnabled: false
+      });
+      if (contributionEnabled) {
+        const { contextLeft, contextRight } = splitContributionContext(
+          contextText,
+          surface
+        );
+        chrome.runtime.sendMessage({
+          type: "SUBMIT_CONTRIBUTION",
+          surface,
+          reading: normalized,
+          contextLeft,
+          contextRight
+        });
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
+ * 語＋読み (rt) を含むヒット矩形。rt を上に絶対配置してもクリックできるようにする。
+ * @param {Element} word
+ * @returns {{ left: number, top: number, right: number, bottom: number, width: number, height: number } | null}
+ */
+export function getFuriganaWordHitRect(word) {
+  if (!word || typeof word.getBoundingClientRect !== "function") return null;
+
+  /** @type {DOMRect[]} */
+  const rects = [word.getBoundingClientRect()];
+  if (typeof word.querySelectorAll === "function") {
+    for (const rt of word.querySelectorAll("rt")) {
+      if (typeof rt.getBoundingClientRect === "function") {
+        rects.push(rt.getBoundingClientRect());
+      }
+    }
+  }
+
+  let left = Infinity;
+  let top = Infinity;
+  let right = -Infinity;
+  let bottom = -Infinity;
+  for (const rect of rects) {
+    if (!(rect.width > 0 || rect.height > 0)) continue;
+    left = Math.min(left, rect.left);
+    top = Math.min(top, rect.top);
+    right = Math.max(right, rect.right);
+    bottom = Math.max(bottom, rect.bottom);
+  }
+  if (!Number.isFinite(left)) return null;
+
+  const pad = 3;
+  return {
+    left: left - pad,
+    top: top - pad,
+    right: right + pad,
+    bottom: bottom + pad,
+    width: right - left + pad * 2,
+    height: bottom - top + pad * 2
+  };
 }
 
 /**
@@ -268,8 +414,8 @@ export function findFuriganaWordAtPoint(clientX, clientY, root = document) {
       continue;
     }
 
-    const rect = word.getBoundingClientRect();
-    if (rect.width <= 0 || rect.height <= 0) continue;
+    const rect = getFuriganaWordHitRect(word);
+    if (!rect || !(rect.width > 0 || rect.height > 0)) continue;
     if (
       clientX < rect.left ||
       clientX > rect.right ||
@@ -279,7 +425,7 @@ export function findFuriganaWordAtPoint(clientX, clientY, root = document) {
       continue;
     }
 
-    const area = rect.width * rect.height;
+    const area = Math.max(1, rect.width * rect.height);
     if (area < bestArea) {
       best = word;
       bestArea = area;
@@ -292,7 +438,25 @@ export function findFuriganaWordAtPoint(clientX, clientY, root = document) {
 function resolveActivatedWord(event, root) {
   const direct = event.target?.closest?.(".yt-furigana-word");
   if (direct instanceof HTMLElement && root.contains(direct)) return direct;
-  return findFuriganaWordAtPoint(event.clientX, event.clientY, root);
+
+  const fromRt = event.target?.closest?.("rt")?.closest?.(".yt-furigana-word");
+  if (fromRt instanceof HTMLElement && root.contains(fromRt)) return fromRt;
+
+  const atPoint = findFuriganaWordAtPoint(event.clientX, event.clientY, root);
+  if (atPoint) return atPoint;
+
+  // 操作レイヤーが最前面でも、下の字幕語を掘り出す
+  if (typeof document !== "undefined" && typeof document.elementsFromPoint === "function") {
+    try {
+      for (const el of document.elementsFromPoint(event.clientX, event.clientY)) {
+        const word = el?.closest?.(".yt-furigana-word");
+        if (word instanceof HTMLElement && root.contains(word)) return word;
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  return null;
 }
 
 /**
@@ -349,6 +513,11 @@ export function installReadingPicker(root = document) {
     },
     true
   );
+
+  // 全画面切替で documentElement 側のポップアップが残らないようにする
+  const onFullscreenChange = () => closeReadingPicker();
+  document.addEventListener("fullscreenchange", onFullscreenChange);
+  document.addEventListener("webkitfullscreenchange", onFullscreenChange);
 }
 
 const HOVER_CLASS = "yt-furigana-word--hover";
@@ -374,7 +543,10 @@ function showFloatingTip(wordEl) {
     el = document.createElement("div");
     el.id = FLOATING_TIP_ID;
     el.className = "yt-furigana-floating-tip";
-    document.documentElement.appendChild(el);
+  }
+  const mountRoot = resolveOverlayMountRoot(wordEl);
+  if (el.parentElement !== mountRoot) {
+    mountRoot.appendChild(el);
   }
   el.textContent = tip;
 

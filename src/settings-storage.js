@@ -1,7 +1,10 @@
 /**
  * 設定の読み書き。資格情報は sync（Google アカウント同期）に置かず local に保存する。
  */
-import { DEFAULT_SETTINGS } from "./default-settings.js";
+import {
+  DEFAULT_SETTINGS,
+  normalizeStoredEngine
+} from "./default-settings.js";
 
 export const SECRET_SETTING_KEYS = ["readingApiKey", "licenseKey"];
 
@@ -29,9 +32,15 @@ export async function getMergedSettings() {
     await chrome.storage.sync.set({ readingApiKey: "", licenseKey: "" });
   }
 
+  const engine = normalizeStoredEngine(sync.engine);
+  if (engine !== sync.engine) {
+    await chrome.storage.sync.set({ engine });
+  }
+
   return {
     ...DEFAULT_SETTINGS,
     ...sync,
+    engine,
     readingApiKey,
     licenseKey
   };

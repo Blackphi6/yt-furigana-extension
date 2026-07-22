@@ -24,9 +24,12 @@ RUN pip install --upgrade pip && pip install -r /app/reading-engine/requirements
 COPY reading-engine/reading_engine /app/reading-engine/reading_engine
 COPY reading-engine/data /app/reading-engine/data
 COPY data/generated/heteronym-candidates.json /app/data/generated/heteronym-candidates.json
+COPY data/generated/shared-readings-seed.json /app/data/generated/shared-readings-seed.json
 COPY data/creative-ruby /app/data/creative-ruby
 COPY reading-engine/deploy/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
+
+ENV YT_FURIGANA_SHARED_READINGS_SEED=/app/data/generated/shared-readings-seed.json
 
 EXPOSE 7860
 

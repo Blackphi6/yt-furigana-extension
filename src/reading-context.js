@@ -248,6 +248,13 @@ export function resetReadingOverridesToBase() {
   rebuildManualPhraseIndex();
 }
 
+/** ベース＋バンドル学習まで戻し、共有／ユーザー辞書の再適用前に呼ぶ */
+export function reloadBundledReadingMaps() {
+  resetReadingOverridesToBase();
+  mergeLearnedOverrides(MANUAL_PHRASE_READINGS, CONTEXT_READING_RULES, learnedOverrides);
+  rebuildManualPhraseIndex();
+}
+
 export function applyLearnedOverridesNow(learned) {
   resetReadingOverridesToBase();
   mergeLearnedOverrides(MANUAL_PHRASE_READINGS, CONTEXT_READING_RULES, learned);

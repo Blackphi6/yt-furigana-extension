@@ -22,8 +22,8 @@
       <section class="panel">
         <h2>使い方</h2>
         <p class="hint">
-          そのまま使えます。字幕の漢字を押すと読みの候補が出て、選ぶとその読みを覚えます。
-          作業はすべてこの端末の中だけで、インターネットに送りません。
+          そのまま使えます。字幕の漢字を押すと読みの候補が出て、選ぶとその読みをこの端末が覚えます。
+          字幕本文は開発者のサーバーへ送りません。みんなの読みパックの受信（オフ可）だけ、表層→読みの一覧を取りにいきます。
         </p>
       </section>
 
@@ -54,8 +54,8 @@
         <h2>有料オプション</h2>
         <p class="plan-badge" id="planBadge">無料</p>
         <p class="hint" id="planHint">
-          無料：ふりがなと、読みの覚え直しは制限なし（外には送りません）。<br />
-          有料：直した読みを別のパソコンにも移す／みんな用の読み辞書を受け取る、などができます。
+          無料：ふりがなと、読みの覚え直しは制限なし。みんなの読みパック受信はオフにできます。<br />
+          有料：直した読みを別のパソコンにも移す／指定サーバーの共有辞書を取り込む、などができます。
         </p>
         <label class="field" for="readingApiUrl">
           <span>別パソコンへ移すときの接続先（有料向け）</span>
@@ -86,14 +86,9 @@
         <div class="button-row">
           <button type="button" id="verifyLicense" class="button">キーを確認</button>
           <button type="button" id="syncDict" class="button secondary">読み辞書を移す</button>
-          <button type="button" id="fetchSharedDict" class="button secondary">みんな用辞書</button>
+          <button type="button" id="fetchSharedDict" class="button secondary">サーバー共有辞書</button>
         </div>
         <p class="status" id="premiumStatus" hidden></p>
-        <p class="hint">
-          開発者の手元テスト用キー:
-          <code>ytfp_live_demo_key_001</code>
-          （自分のパソコンで接続先を動かしているとき用）
-        </p>
         <p class="hint">
           <a id="buyPremiumLink" href="https://blackphi6.github.io/yt-furigana-extension/pricing.html" target="_blank" rel="noreferrer"
             >有料オプションの案内</a
@@ -108,16 +103,25 @@
       <section class="panel">
         <h2>読みの覚え直し</h2>
         <p class="hint">
-          字幕の漢字を押して読みを選ぶと、この端末が覚えます。外のサーバーには送りません。
-          有料オプションの「読み辞書を移す」を使うと、別のパソコンにも同じ覚えを持っていけます。
+          字幕の漢字を押して読みを選ぶと、まずこの端末が覚えます。
+          下の「みんなの辞書づくりに送る」をオンにしたときだけ、表層・読み・短い前後を送ります（既定オフ）。
+          有料の「読み辞書を移す」で別のパソコンにも同じ覚えを持っていけます。
         </p>
         <p class="hint">
-          迷った言葉のメモ（字幕の一部やページの場所）も、希望すればこの端末だけに残します。
-          開発者のサーバーへ自動送信はしません。
+          迷った言葉のメモ（字幕の一部やページの場所）は、希望すればこの端末だけに残します（下のチェックでオフ可）。
+          メモの自動送信はありません。みんなの読みパックは<strong>受信のみ</strong>（既定オン・オフ可）です。
         </p>
         <label class="row">
           <input type="checkbox" id="learningInboxEnabled" checked />
           <span>迷った言葉のメモを、この端末に自動で残す（オフにしても、手で選んだ読みは覚えます）</span>
+        </label>
+        <label class="row">
+          <input type="checkbox" id="contributionEnabled" />
+          <span>直した読みをみんなの辞書づくりに送る（任意・表層と読みと短い前後だけ。動画の住所は送りません）</span>
+        </label>
+        <label class="row">
+          <input type="checkbox" id="sharedPackEnabled" checked />
+          <span>みんなの読みパックを受け取る（この端末の覚え直しは上書きしません）</span>
         </label>
         <button type="button" id="exportLearning" class="button">メモをファイルに出す</button>
         <button type="button" id="clearLearning" class="button secondary">メモを消す</button>

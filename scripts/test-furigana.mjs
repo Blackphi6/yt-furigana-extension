@@ -36,6 +36,35 @@ assertEqual(
   "人々"
 );
 
+assertEqual(
+  buildRuby("カツアゲ放題", "かつあげほうだい"),
+  "カツアゲ<ruby>放題<rt>ほうだい</rt></ruby>",
+  "カツアゲ放題"
+);
+assertEqual(
+  buildRuby("カツアゲ放題", "ほうだい"),
+  "カツアゲ<ruby>放題<rt>ほうだい</rt></ruby>",
+  "カツアゲ放題 partial reading"
+);
+
+// XSS: 字幕表層・読みを HTML エスケープする
+assertEqual(
+  buildRuby("<img src=x onerror=alert(1)>日", "にち"),
+  "<ruby>&lt;img src=x onerror=alert(1)&gt;日<rt>にち</rt></ruby>",
+  "escape surface with tags"
+);
+assertEqual(
+  buildRuby("日", "<img src=x>"),
+  "<ruby>日<rt>&lt;img src=x&gt;</rt></ruby>",
+  "escape reading with tags"
+);
+const xssWrap = buildFuriganaHtml("<b>日</b>", () => [
+  { surface_form: "<b>日</b>", reading: "ニチ", pronunciation: "ニチ" }
+]);
+if (xssWrap.includes("<b>") || !xssWrap.includes("&lt;b&gt;")) {
+  throw new Error(`wrap must escape surface HTML: ${xssWrap}`);
+}
+
 const tokenizer = await new Promise((resolve, reject) => {
   kuromoji.builder({ dicPath: dictPath }).build((error, built) => {
     if (error) reject(error);

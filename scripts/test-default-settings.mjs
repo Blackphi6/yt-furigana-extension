@@ -4,6 +4,7 @@ import {
   isReadingApiEngine,
   isRemoteEngine,
   listInstalledModelNames,
+  normalizeStoredEngine,
   pickPreferredOllamaModel,
   shouldUseRemoteConversion
 } from "../src/default-settings.js";
@@ -50,24 +51,29 @@ if (
   throw new Error("isRemoteEngine mismatch");
 }
 
+if (normalizeStoredEngine("reading-api") !== "kuromoji") {
+  throw new Error("reading-api must migrate to kuromoji");
+}
+if (normalizeStoredEngine("ollama") !== "kuromoji") {
+  throw new Error("ollama must migrate to kuromoji");
+}
+if (normalizeStoredEngine("sudachi") !== "hybrid") {
+  throw new Error("sudachi must migrate to hybrid");
+}
+if (normalizeStoredEngine("hybrid") !== "hybrid") {
+  throw new Error("hybrid must stay hybrid");
+}
+
 if (
   shouldUseRemoteConversion({ engine: "reading-api", readingApiUrl: "" }) ||
-  shouldUseRemoteConversion({ engine: "reading-api" })
-) {
-  throw new Error("reading-api without URL must stay local");
-}
-
-if (
-  !shouldUseRemoteConversion({
+  shouldUseRemoteConversion({ engine: "reading-api" }) ||
+  shouldUseRemoteConversion({
     engine: "reading-api",
     readingApiUrl: "http://127.0.0.1:8765"
-  })
+  }) ||
+  shouldUseRemoteConversion({ engine: "ollama" })
 ) {
-  throw new Error("reading-api with URL should use remote");
-}
-
-if (!shouldUseRemoteConversion({ engine: "ollama" })) {
-  throw new Error("ollama should use remote conversion");
+  throw new Error("legacy remote engines must stay local after normalize");
 }
 
 if (shouldUseRemoteConversion({ engine: "kuromoji" })) {
@@ -76,6 +82,14 @@ if (shouldUseRemoteConversion({ engine: "kuromoji" })) {
 
 if (DEFAULT_SETTINGS.learningInboxEnabled !== true) {
   throw new Error("learningInboxEnabled should default to true (opt-out model)");
+}
+
+if (DEFAULT_SETTINGS.contributionEnabled !== false) {
+  throw new Error("contributionEnabled should default to false (opt-in)");
+}
+
+if (DEFAULT_SETTINGS.sharedPackEnabled !== true) {
+  throw new Error("sharedPackEnabled should default to true");
 }
 
 console.log("Default settings tests passed.");

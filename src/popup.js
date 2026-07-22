@@ -1,5 +1,6 @@
 import {
   DEFAULT_SETTINGS,
+  normalizeStoredEngine,
   pickPreferredOllamaModel
 } from "./default-settings.js";
 import { readingApiOriginPattern } from "./reading-api.js";
@@ -70,8 +71,8 @@ function updatePlanUi(settings) {
   }
   if (planHint) {
     planHint.innerHTML = premium
-      ? "有料が有効です。読み辞書の移動や、みんな用辞書が使えます。"
-      : "無料：ふりがなと、読みの覚え直しは制限なし（外には送りません）。<br />有料：直した読みを別のパソコンにも移す／みんな用の読み辞書を受け取る、などができます。";
+      ? "有料が有効です。読み辞書の移動や、サーバー共有辞書が使えます。"
+      : "無料：ふりがなと、読みの覚え直しは制限なし。みんなの読みパック受信はオフにできます。<br />有料：直した読みを別のパソコンにも移す／指定サーバーの共有辞書を取り込む、などができます。";
   }
   if (sponsorsLink) {
     sponsorsLink.href = settings.sponsorsUrl || DEFAULT_SPONSORS_URL;
@@ -203,14 +204,9 @@ async function refreshInstalledModels({ autoFix = false } = {}) {
   return response;
 }
 
-function normalizeStoredEngine(engine) {
-  // UI no longer offers these; migrate quietly.
-  if (engine === "groq" || engine === "sudachi") return "hybrid";
-  if (engine === "ollama" || engine === "reading-api") return "kuromoji";
-  return engine || DEFAULT_SETTINGS.engine;
-}
-
 const learningInboxEnabledInput = document.getElementById("learningInboxEnabled");
+const contributionEnabledInput = document.getElementById("contributionEnabled");
+const sharedPackEnabledInput = document.getElementById("sharedPackEnabled");
 
 async function loadSettings() {
   const result = await getMergedSettings();
@@ -220,6 +216,12 @@ async function loadSettings() {
   if (licenseKeyInput) licenseKeyInput.value = result.licenseKey || "";
   if (learningInboxEnabledInput) {
     learningInboxEnabledInput.checked = result.learningInboxEnabled !== false;
+  }
+  if (contributionEnabledInput) {
+    contributionEnabledInput.checked = result.contributionEnabled === true;
+  }
+  if (sharedPackEnabledInput) {
+    sharedPackEnabledInput.checked = result.sharedPackEnabled !== false;
   }
   if (ollamaUrlInput) ollamaUrlInput.value = result.ollamaUrl;
   setModelField(result.ollamaModel, []);
@@ -254,6 +256,12 @@ async function saveSettings() {
     dictRevisedAt: current.dictRevisedAt || "",
     sharedDictEnabled:
       current.sharedDictEnabled ?? DEFAULT_SETTINGS.sharedDictEnabled,
+    contributionEnabled: contributionEnabledInput
+      ? contributionEnabledInput.checked
+      : DEFAULT_SETTINGS.contributionEnabled,
+    sharedPackEnabled: sharedPackEnabledInput
+      ? sharedPackEnabledInput.checked
+      : DEFAULT_SETTINGS.sharedPackEnabled,
     learningInboxEnabled: learningInboxEnabledInput
       ? learningInboxEnabledInput.checked
       : DEFAULT_SETTINGS.learningInboxEnabled,
@@ -264,6 +272,29 @@ async function saveSettings() {
 
 enabledInput.addEventListener("change", saveSettings);
 learningInboxEnabledInput?.addEventListener("change", saveSettings);
+contributionEnabledInput?.addEventListener("change", async () => {
+  await saveSettings();
+});
+sharedPackEnabledInput?.addEventListener("change", async () => {
+  await saveSettings();
+  if (sharedPackEnabledInput.checked) {
+    try {
+      await chrome.runtime.sendMessage({ type: "FETCH_SHARED_READINGS_PACK" });
+    } catch {
+      /* ignore */
+    }
+  } else {
+    // オフ時は受信キャッシュも捨て、次回ページ読込で共有語を使わない
+    try {
+      await chrome.storage.local.set({
+        freeSharedReadingPack: {},
+        sharedReadingsFetchedAt: 0
+      });
+    } catch {
+      /* ignore */
+    }
+  }
+});
 readingApiUrlInput.addEventListener("change", saveSettings);
 readingApiUrlInput.addEventListener("blur", saveSettings);
 readingApiKeyInput?.addEventListener("change", saveSettings);
@@ -386,7 +417,7 @@ syncDictButton?.addEventListener("click", async () => {
 
 fetchSharedDictButton?.addEventListener("click", async () => {
   await saveSettings();
-  setStatus(premiumStatus, "みんな用辞書を取り込んでいます…", true);
+  setStatus(premiumStatus, "サーバー共有辞書を取り込んでいます…", true);
   const response = await sendMessage("FETCH_SHARED_DICT");
   if (!response.ok) {
     setStatus(premiumStatus, response.error ?? "取り込みに失敗しました", false);
@@ -394,7 +425,7 @@ fetchSharedDictButton?.addEventListener("click", async () => {
   }
   setStatus(
     premiumStatus,
-    `みんな用辞書 ${response.count} 語を取り込みました（ページを再読み込みすると反映）`,
+    `サーバー共有辞書 ${response.count} 語を取り込みました（ページを再読み込みすると反映）`,
     true
   );
 });

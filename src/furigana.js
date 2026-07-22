@@ -72,6 +72,15 @@ function displayReading(reading) {
   return toHiragana(raw);
 }
 
+/** HTML 本文・属性用。字幕由来の表層を innerHTML に載せる前に必須。 */
+export function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 function parseSegments(surface) {
   const segments = [];
   let current = "";
@@ -100,7 +109,7 @@ function alignMiddleSegments(segments, reading) {
     const segment = segments[index];
 
     if (segment.type === "kana") {
-      result += segment.text;
+      result += escapeHtml(segment.text);
       readingIndex += toHiragana(segment.text).length;
       continue;
     }
@@ -112,13 +121,13 @@ function alignMiddleSegments(segments, reading) {
       const kanjiReading =
         nextIndex === -1 ? reading.slice(readingIndex) : reading.slice(readingIndex, nextIndex);
 
-      result += `<ruby>${segment.text}<rt>${kanjiReading}</rt></ruby>`;
+      result += `<ruby>${escapeHtml(segment.text)}<rt>${escapeHtml(kanjiReading)}</rt></ruby>`;
       readingIndex += kanjiReading.length;
       continue;
     }
 
     const kanjiReading = reading.slice(readingIndex);
-    result += `<ruby>${segment.text}<rt>${kanjiReading}</rt></ruby>`;
+    result += `<ruby>${escapeHtml(segment.text)}<rt>${escapeHtml(kanjiReading)}</rt></ruby>`;
     readingIndex = reading.length;
   }
 
@@ -138,31 +147,32 @@ export function buildRuby(surface, reading, options = {}) {
   const shown = preserveKatakana
     ? displayReading(reading || "")
     : hiraganaReading;
+  const safeSurface = escapeHtml(surface);
 
   if (isLatinWord(surface)) {
     // yeah / happiness など、形態素が英字読みを返すだけのときはルビ不要
     // かな読みがある欧文は和製英語と同様にカタカナ表示（You→ユー）
-    if (!isUsefulLatinReading(reading || shown)) return surface;
+    if (!isUsefulLatinReading(reading || shown)) return safeSurface;
     const katakana = toKatakana(reading || shown);
-    return `<ruby>${surface}<rt>${katakana}</rt></ruby>`;
+    return `<ruby>${safeSurface}<rt>${escapeHtml(katakana)}</rt></ruby>`;
   }
 
   // 100W / 50% / 360 など漢字なし数字系はルビにせず本文のみ
   // （長い読みの横幅対策。ツールチップは wrapFuriganaWord 側）
   if (hasDigit(surface) && hiraganaReading && !hasKanji(surface)) {
     if (!/[\u3040-\u309f\u30a0-\u30ff]/.test(shown || hiraganaReading)) {
-      return surface;
+      return safeSurface;
     }
-    if (isNumberReadingTipSurface(surface)) return surface;
-    return `<ruby>${surface}<rt>${shown}</rt></ruby>`;
+    if (isNumberReadingTipSurface(surface)) return safeSurface;
+    return `<ruby>${safeSurface}<rt>${escapeHtml(shown)}</rt></ruby>`;
   }
 
-  if (!hasKanji(surface)) return surface;
-  if (!hiraganaReading || hiraganaReading === toHiragana(surface)) return surface;
+  if (!hasKanji(surface)) return safeSurface;
+  if (!hiraganaReading || hiraganaReading === toHiragana(surface)) return safeSurface;
 
   // 1人→ひとり など、数字混じりは語全体にルビを振る
   if (hasDigit(surface)) {
-    return `<ruby>${surface}<rt>${shown}</rt></ruby>`;
+    return `<ruby>${safeSurface}<rt>${escapeHtml(shown)}</rt></ruby>`;
   }
 
   const segments = parseSegments(surface);
@@ -173,9 +183,12 @@ export function buildRuby(surface, reading, options = {}) {
   while (index < segments.length && segments[index].type === "kana") {
     const kana = toHiragana(segments[index].text);
     if (hiraganaReading.slice(readingStart, readingStart + kana.length) !== kana) {
-      break;
+      // 読みに無い先頭かな（カツアゲ+放題 など）は本文のまま残し、読みは後ろの漢字へ
+      result += escapeHtml(segments[index].text);
+      index += 1;
+      continue;
     }
-    result += segments[index].text;
+    result += escapeHtml(segments[index].text);
     readingStart += kana.length;
     index += 1;
   }
@@ -189,7 +202,7 @@ export function buildRuby(surface, reading, options = {}) {
     if (hiraganaReading.slice(readingEnd - kana.length, readingEnd) !== kana) {
       break;
     }
-    trailing.unshift(segments[endIndex].text);
+    trailing.unshift(escapeHtml(segments[endIndex].text));
     readingEnd -= kana.length;
     endIndex -= 1;
   }
@@ -205,7 +218,7 @@ export function buildRuby(surface, reading, options = {}) {
   }
 
   if (middleSegments.length === 1 && middleSegments[0].type === "kanji") {
-    result += `<ruby>${middleSegments[0].text}<rt>${middleReadingShown || middleReadingHira}</rt></ruby>`;
+    result += `<ruby>${escapeHtml(middleSegments[0].text)}<rt>${escapeHtml(middleReadingShown || middleReadingHira)}</rt></ruby>`;
   } else if (
     middleSegments.length > 0 &&
     middleSegments.every((segment) => segment.type === "kanji" || segment.type === "other") &&
@@ -213,7 +226,7 @@ export function buildRuby(surface, reading, options = {}) {
     !middleSegments.some((segment) => segment.type === "kana")
   ) {
     const joined = middleSegments.map((segment) => segment.text).join("");
-    result += `<ruby>${joined}<rt>${middleReadingShown || middleReadingHira}</rt></ruby>`;
+    result += `<ruby>${escapeHtml(joined)}<rt>${escapeHtml(middleReadingShown || middleReadingHira)}</rt></ruby>`;
   } else {
     // 送り仮名合わせはひらがな長でアライン。表示もひらがな（混在は稀）
     result += alignMiddleSegments(middleSegments, middleReadingHira);
@@ -243,11 +256,7 @@ import {
 } from "./inline-paren-reading.js";
 
 function escapeAttr(value) {
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/"/g, "&quot;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+  return escapeHtml(value);
 }
 
 /**
@@ -284,7 +293,7 @@ export function wrapFuriganaWord(surface, reading, rubyHtml, options = {}) {
     .filter(Boolean)
     .join(" ");
   const tipAttr = tip ? ` data-tip="${escapeAttr(tipReading)}"` : "";
-  return `<span class="${className}" data-surface="${escapeAttr(surface)}" data-reading="${escapeAttr(normalized)}"${tipAttr} tabindex="0" role="button" title="${escapeAttr(title)}">${rubyHtml || surface}</span>`;
+  return `<span class="${className}" data-surface="${escapeAttr(surface)}" data-reading="${escapeAttr(normalized)}"${tipAttr} tabindex="0" role="button" title="${escapeAttr(title)}">${rubyHtml || escapeHtml(surface)}</span>`;
 }
 
 /**

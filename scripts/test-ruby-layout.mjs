@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import {
   MAX_RT_TIGHTEN_EM,
   MIN_CAPTION_SCALE,
+  RUBY_BASE_OVERFLOW_EM,
   RUBY_RT_CLEARANCE_PX,
   computeRubyFit,
   computeRubyNeighborGapPx,
@@ -13,7 +14,7 @@ import {
 
 assert.equal(MAX_RT_TIGHTEN_EM, 0);
 assert.equal(computeRubyRtFontScale(4, 1), 1);
-assert.ok(RUBY_RT_CLEARANCE_PX >= 6);
+assert.ok(RUBY_RT_CLEARANCE_PX >= 2);
 
 assert.deepEqual(
   computeRubyFit({
@@ -71,8 +72,8 @@ assert.equal(
     rtFontSizePx: 10,
     baseFontSizePx: 20
   });
-  // rt 10 + clearance + 漢字はみ出し(0.22*20) 以上
-  assert.ok(pad >= 10 + RUBY_RT_CLEARANCE_PX + Math.ceil(20 * 0.22));
+  // rt 10 + clearance + 漢字はみ出し
+  assert.ok(pad >= 10 + RUBY_RT_CLEARANCE_PX + Math.ceil(20 * RUBY_BASE_OVERFLOW_EM));
   assert.ok(pad > 10 + 2, "must be looser than the old rtHeight+2 padding");
 }
 

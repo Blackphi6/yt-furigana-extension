@@ -63,6 +63,44 @@ export function isOutlineOnlyCaption(element) {
   );
 }
 
+/**
+ * 動画色に追従する歌詞字幕など、ネイティブ字形を壊したくないか。
+ * （明朝・多色 span・縁取り透過）
+ * @param {HTMLElement} element
+ */
+export function preferNativeStyledCaption(element) {
+  if (typeof HTMLElement === "undefined") return false;
+  if (!(element instanceof HTMLElement)) return false;
+  if (!element.closest?.(".ytp-caption-window-container")) return false;
+
+  if (isOutlineOnlyCaption(element)) return true;
+
+  const style = getComputedStyle(element);
+  if (hasVisibleBackground(style.backgroundColor)) return false;
+
+  const family = style.fontFamily || "";
+  if (
+    /mincho|明朝|serif|游明朝|ヒラギノ明朝|noto\s*serif|yu\s*mincho|hiragino\s*mincho/i.test(
+      family
+    )
+  ) {
+    return true;
+  }
+
+  const colors = new Set();
+  for (const node of [element, ...element.querySelectorAll("span")]) {
+    if (!(node instanceof HTMLElement)) continue;
+    try {
+      const c = getComputedStyle(node).color;
+      if (c) colors.add(c);
+    } catch {
+      /* ignore */
+    }
+    if (colors.size >= 2) return true;
+  }
+  return false;
+}
+
 function captureNodeStyle(node) {
   const computed = getComputedStyle(node);
   return {
@@ -320,7 +358,7 @@ export function expandYouTubeCaptionWindow(element) {
  */
 export function computeTVerLineGapPx(
   nextRubyRoomPx,
-  { minGapPx = 10, padPx = 8 } = {}
+  { minGapPx = 22, padPx = 10 } = {}
 ) {
   const room = Math.max(0, Number(nextRubyRoomPx) || 0);
   return Math.max(minGapPx, Math.ceil(room + padPx));
@@ -363,6 +401,7 @@ export function ensureTVerCaptionOverflow(element) {
 
 /**
  * 1行分のルビ占有高さ（本文上に出る分）を実測。
+ * padding-top 方式と、rt を上へ絶対配置する方式の両方に対応する。
  * @param {HTMLElement} line
  */
 export function measureTVerRubyRoomPx(line) {
@@ -374,14 +413,30 @@ export function measureTVerRubyRoomPx(line) {
     const rt = ruby.querySelector("rt");
     const pad = Number.parseFloat(getComputedStyle(ruby).paddingTop) || 0;
     const rtH = rt ? rt.getBoundingClientRect().height : 0;
-    max = Math.max(max, pad, rtH * 1.05);
+    const floated = pad <= 0.5 && rtH > 0 ? rtH + 6 : rtH * 1.05;
+    max = Math.max(max, pad, floated);
   }
   return max;
 }
 
 /**
- * ルビ分だけ本文が下に押し出されないよう、帯ごとわずかに持ち上げる。
- * 行間は fitTVerCaptionViewport 側で実測調整する。
+ * 先頭の cue-line だけ負の margin で持ち上げる（旧・padding-top 方式向け）。
+ * 現行 TVer は rt 絶対配置のため通常は使わないが、判定ヘルパとして残す。
+ * @param {Element | null | undefined} cueLine
+ * @param {ParentNode | null | undefined} display
+ */
+export function shouldLiftTVerCueLine(cueLine, display) {
+  if (!cueLine || !display || typeof display.querySelectorAll !== "function") {
+    return true;
+  }
+  const lines = Array.from(display.querySelectorAll(".vjs-text-track-cue-line"));
+  if (lines.length <= 1) return true;
+  return lines[0] === cueLine;
+}
+
+/**
+ * TVer: 本文位置は変えず、負マージンによる持ち上げはしない。
+ * （ルビは CSS で上に絶対配置。行間は fitTVerCaptionViewport が確保）
  * @param {HTMLElement} element
  */
 export function liftTVerRubyCaption(element) {
@@ -390,16 +445,9 @@ export function liftTVerRubyCaption(element) {
   const display = element.closest(".vjs-text-track-display");
   if (!(display instanceof HTMLElement)) return;
 
-  const hasRuby = Boolean(element.querySelector("ruby"));
-  if (!hasRuby) {
-    element.style.removeProperty("margin-top");
-    element.style.removeProperty("padding-bottom");
-    return;
-  }
-
-  element.style.setProperty("margin-top", "-0.82em", "important");
-  element.style.setProperty("padding-bottom", "0.22em", "important");
-  element.style.setProperty("line-height", "1.2", "important");
+  // 旧スタイルの負マージンが残っていたら消す
+  element.style.removeProperty("margin-top");
+  element.style.removeProperty("padding-bottom");
 }
 
 /** @type {WeakMap<Element, boolean>} */
@@ -529,8 +577,8 @@ export function scheduleCaptionViewportFit(element) {
 
 /**
  * TVer 字幕を実測して:
- * 1) 行間を次行ルビ高さに合わせる
- * 2) プレイヤー下端からはみ出す分だけスタックを上へ逃がす
+ * 本文位置は変えず（行間をルビ分だけ広げない）、
+ * プレイヤー下端／シークバーに被る分だけスタックを上へ逃がす。
  * @param {HTMLElement} display
  */
 export function fitTVerCaptionViewport(display) {
@@ -553,21 +601,10 @@ export function fitTVerCaptionViewport(display) {
     display.querySelectorAll(".vjs-text-track-cue-line")
   ).filter((node) => node instanceof HTMLElement && node.getClientRects().length);
 
-  // 行間: 次行のルビ実測に合わせる（動画・フォントサイズ依存）
-  for (let i = 0; i < lines.length; i += 1) {
-    const line = lines[i];
-    const next = lines[i + 1];
-    if (!next) {
-      line.style.removeProperty("margin-bottom");
-      continue;
-    }
-    const room = measureTVerRubyRoomPx(next);
-    const gap = computeTVerLineGapPx(room);
-    line.style.setProperty("margin-bottom", `${gap}px`, "important");
+  // 旧: 次行ルビ分の margin-bottom で本文を下へ押していた → やめる
+  for (const line of lines) {
+    line.style.removeProperty("margin-bottom");
   }
-
-  // 強制 reflow 後にスタック矩形を測る
-  void display.offsetHeight;
 
   if (lines.length === 0) {
     display.style.removeProperty("transform");
@@ -582,6 +619,12 @@ export function fitTVerCaptionViewport(display) {
     if (!(rect.width > 0 || rect.height > 0)) continue;
     stackTop = Math.min(stackTop, rect.top);
     stackBottom = Math.max(stackBottom, rect.bottom);
+    for (const rt of line.querySelectorAll("rt")) {
+      const rr = rt.getBoundingClientRect();
+      if (!(rr.width > 0 || rr.height > 0)) continue;
+      stackTop = Math.min(stackTop, rr.top);
+      stackBottom = Math.max(stackBottom, rr.bottom);
+    }
   }
   if (!Number.isFinite(stackTop) || !Number.isFinite(stackBottom)) return;
 
@@ -595,7 +638,8 @@ export function fitTVerCaptionViewport(display) {
       : display.getBoundingClientRect();
 
   const safeTop = playerRect.top + 8;
-  const safeBottom = playerRect.bottom - 14;
+  // コントロール／シークバー帯を避ける
+  const safeBottom = playerRect.bottom - 72;
   const lift = computeTVerViewportLiftPx({
     stackTop,
     stackBottom,

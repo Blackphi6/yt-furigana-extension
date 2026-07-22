@@ -77,6 +77,37 @@ npm run learn:gate -- --write-baseline
 - `data/learning/gate-baseline.json` — 直近合格スコア
 - `data/generated/learned-overrides.json` — cue 昇格（モデル重みは gitignore）
 
+## Free 向け「いつの間にか精度が上がる」経路
+
+字幕・歌詞は再配布しない。届けるのは **`(表層 → 読み)` だけ**。
+
+```text
+promote / LLM 学習
+  → data/generated/learned-overrides.json   （拡張バンドル用・cue 含む）
+  → npm run export:shared-readings          （phrases のみシード化）
+  → data/generated/shared-readings-seed.json
+  → Docker に同梱 / または:
+     YT_FURIGANA_ADMIN_TOKEN=... npm run publish:shared-readings
+  → GET /v1/shared-readings
+  → 拡張が起動時に sharedReadingDict へマージ（ストア更新不要）
+```
+
+| 層 | 中身 | ユーザーへの届き方 |
+|----|------|-------------------|
+| curated seed | 学習で確定した phrases | イメージ同梱 or admin PUT |
+| contributions | オプトイン訂正の票集計 | ランタイム JSONL → 再集計 |
+| contextRules / reranker | 文脈・モデル | 拡張更新 or 読みAPI サーバー |
+
+```bash
+# シードだけ更新（コミット用）
+npm run export:shared-readings
+
+# Render へ即時配信（ADMIN_TOKEN 必須）
+export YT_FURIGANA_ADMIN_TOKEN=...
+export YT_FURIGANA_PUBLISH_URL=https://yt-furigana-readings.onrender.com
+npm run publish:shared-readings
+```
+
 一時ファイル（gitignore）: `synth-accepted/rejected/log.jsonl`、NDL 中間 jsonl、`artifacts/`
 
 ## GitHub Actions（最適・¥0・Mac不要）

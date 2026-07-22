@@ -34,6 +34,11 @@ import {
   pushDict,
   fetchSharedDict
 } from "./dict-sync.js";
+import {
+  fetchSharedReadingsPack,
+  mergeSharedPackPreferLocal,
+  postContribution
+} from "./contributions.js";
 import { PLAN_FREE, resolveEntitlement } from "./premium.js";
 import { getMergedSettings } from "./settings-storage.js";
 import {
@@ -448,7 +453,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
           ...settings,
           plan: entitlement.plan
         });
-        await chrome.storage.local.set({ sharedReadingDict: entries });
+        await chrome.storage.local.set({ premiumSharedReadingDict: entries });
         return { count: Object.keys(entries).length, entries };
       })
       .then((data) => sendResponse({ ok: true, ...data }))
@@ -456,8 +461,93 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return true;
   }
 
+  if (message?.type === "SUBMIT_CONTRIBUTION") {
+    getSettings()
+      .then(async (settings) => {
+        if (!settings.contributionEnabled) {
+          return { skipped: true };
+        }
+        return postContribution(settings, {
+          surface: message.surface,
+          reading: message.reading,
+          contextLeft: message.contextLeft || "",
+          contextRight: message.contextRight || ""
+        });
+      })
+      .then((data) => sendResponse({ ok: true, ...data }))
+      .catch((error) => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+
+  if (message?.type === "FETCH_SHARED_READINGS_PACK") {
+    refreshSharedReadingsPack({ force: true })
+      .then((data) => sendResponse({ ok: true, ...data }))
+      .catch((error) => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+
   return false;
 });
+
+/** 共有パックの最短再取得間隔（SW 再起動による連打防止） */
+const SHARED_PACK_MIN_INTERVAL_MS = 6 * 60 * 60 * 1000;
+
+/**
+ * Free 共有読みパックを取得して local にマージ（既存キーは上書きしない）。
+ * @param {{ force?: boolean }} [options]
+ */
+async function refreshSharedReadingsPack(options = {}) {
+  const settings = await getSettings();
+  if (settings.sharedPackEnabled === false) {
+    return { skipped: true, count: 0 };
+  }
+  if (!options.force) {
+    const meta = await chrome.storage.local.get({ sharedReadingsFetchedAt: 0 });
+    const last = Number(meta.sharedReadingsFetchedAt || 0);
+    if (last > 0 && Date.now() - last < SHARED_PACK_MIN_INTERVAL_MS) {
+      return { skipped: true, reason: "throttled", count: 0 };
+    }
+  }
+  const pack = await fetchSharedReadingsPack(settings);
+  const stored = await chrome.storage.local.get({ freeSharedReadingPack: {} });
+  const local =
+    stored.freeSharedReadingPack && typeof stored.freeSharedReadingPack === "object"
+      ? stored.freeSharedReadingPack
+      : {};
+  const merged = mergeSharedPackPreferLocal(local, pack.entries);
+  await chrome.storage.local.set({
+    freeSharedReadingPack: merged,
+    sharedReadingsRevisedAt: pack.revisedAt || "",
+    sharedReadingsFetchedAt: Date.now()
+  });
+  return {
+    count: Object.keys(pack.entries).length,
+    mergedCount: Object.keys(merged).length,
+    revisedAt: pack.revisedAt || ""
+  };
+}
+
+function scheduleSharedPackRefresh(force = false) {
+  void refreshSharedReadingsPack({ force }).catch((error) => {
+    console.warn(
+      "[YT Furigana] shared readings pack skipped:",
+      error?.message || error
+    );
+  });
+}
+
+chrome.runtime.onInstalled.addListener(() => {
+  scheduleSharedPackRefresh();
+});
+
+if (chrome.runtime.onStartup) {
+  chrome.runtime.onStartup.addListener(() => {
+    scheduleSharedPackRefresh();
+  });
+}
+
+// SW 起動時にも一度試す（短命 SW 対策）
+scheduleSharedPackRefresh();
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "sync" && area !== "local") return;
@@ -471,5 +561,15 @@ chrome.storage.onChanged.addListener((changes, area) => {
     changes.licenseKey
   ) {
     llmCache.clear();
+  }
+  if (area === "sync" && changes.sharedPackEnabled) {
+    const enabled = changes.sharedPackEnabled.newValue !== false;
+    if (enabled) scheduleSharedPackRefresh(true);
+    else {
+      void chrome.storage.local.set({
+        freeSharedReadingPack: {},
+        sharedReadingsFetchedAt: 0
+      });
+    }
   }
 });

@@ -75,6 +75,26 @@ assert.ok(nando.includes('data-reading="なんど"'), nando);
 assert.ok(!nando.includes("なにど"), nando);
 assert.ok(!nando.includes('data-surface="何"'), nando);
 
+// カツアゲ放題: カタカナ未知語+接尾でも「放題」に読みが残る
+const katsuage = buildFuriganaHtml("カツアゲ放題", (text) =>
+  tokenizer.tokenize(text)
+);
+assert.ok(katsuage.includes("放題"), katsuage);
+assert.ok(
+  katsuage.includes("<rt>ほうだい</rt>") || katsuage.includes(">ほうだい</rt>"),
+  katsuage
+);
+assert.ok(!katsuage.includes("<rt></rt>"), katsuage);
+
+// 大正解: 接頭「大」+「正解」は一塊（途中改行しにくくする）
+const daiseikai = buildFuriganaHtml("今この世で君だけ大正解", (text) =>
+  tokenizer.tokenize(text)
+);
+assert.ok(daiseikai.includes('data-surface="大正解"'), daiseikai);
+assert.ok(daiseikai.includes("だいせいかい"), daiseikai);
+
 console.log("Token merge tests passed.");
 console.log(html);
 console.log(nando);
+console.log(katsuage);
+console.log(daiseikai);

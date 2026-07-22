@@ -28,6 +28,17 @@ def _save_orders(data: dict[str, Any]) -> None:
     ORDERS_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def _allow_dry_run_checkout() -> bool:
+    if os.environ.get("RENDER", "").lower() == "true":
+        return False
+    if os.environ.get("YT_FURIGANA_ENV", "").lower() in ("production", "prod"):
+        return False
+    if os.environ.get("YT_FURIGANA_STRICT", "").strip() in ("1", "true", "yes"):
+        return False
+    raw = os.environ.get("YT_FURIGANA_ALLOW_DRY_RUN", "1").strip().lower()
+    return raw not in ("0", "false", "no", "off")
+
+
 def create_checkout_session(
     *,
     success_url: str,
@@ -36,7 +47,7 @@ def create_checkout_session(
 ) -> dict[str, Any]:
     """
     Create a Stripe Checkout Session for Premium.
-    Without STRIPE_SECRET_KEY, returns a dry-run session (local testing).
+    Without STRIPE_SECRET_KEY, returns a dry-run session (local testing only).
     """
     price_id = os.environ.get("STRIPE_PRICE_ID", "").strip()
     secret = os.environ.get("STRIPE_SECRET_KEY", "").strip()
@@ -46,6 +57,11 @@ def create_checkout_session(
     ).rstrip("/")
 
     if not secret or not price_id:
+        if not _allow_dry_run_checkout():
+            raise RuntimeError(
+                "stripe_not_configured: set STRIPE_SECRET_KEY and STRIPE_PRICE_ID "
+                "(dry-run checkout is disabled in production)"
+            )
         # Dry-run: mint immediately and send user to success page with session id
         minted = mint_license(note="dry-run-checkout")
         session_id = f"dry_{minted['licenseKey'][-12:]}"

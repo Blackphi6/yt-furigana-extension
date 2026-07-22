@@ -12,7 +12,9 @@ import {
   scheduleYouTubeCaptionFit,
   scheduleCaptionViewportFit,
   fitTVerCaptionViewport,
-  isOutlineOnlyCaption
+  isOutlineOnlyCaption,
+  preferNativeStyledCaption,
+  shouldLiftTVerCueLine
 } from "../src/caption-styles.js";
 
 assert.equal(parseBackgroundAlpha("transparent"), 0);
@@ -30,9 +32,10 @@ assert.equal(scheduleYouTubeCaptionFit(null), undefined);
 assert.equal(scheduleCaptionViewportFit(null), undefined);
 assert.equal(fitTVerCaptionViewport(null), undefined);
 assert.equal(isOutlineOnlyCaption(null), false);
+assert.equal(preferNativeStyledCaption(null), false);
 
-assert.equal(computeTVerLineGapPx(0), 10);
-assert.equal(computeTVerLineGapPx(20), 28);
+assert.equal(computeTVerLineGapPx(0), 22);
+assert.equal(computeTVerLineGapPx(20), 30);
 
 assert.equal(
   computeTVerViewportLiftPx({
@@ -43,5 +46,21 @@ assert.equal(
   }),
   20
 );
+
+// 2行字幕: 先頭行だけ持ち上げ、2行目のルビが前行帯に沈まない
+{
+  const line1 = { id: "l1" };
+  const line2 = { id: "l2" };
+  const display = {
+    querySelectorAll(sel) {
+      assert.equal(sel, ".vjs-text-track-cue-line");
+      return [line1, line2];
+    }
+  };
+  assert.equal(shouldLiftTVerCueLine(line1, display), true);
+  assert.equal(shouldLiftTVerCueLine(line2, display), false);
+  assert.equal(shouldLiftTVerCueLine(line1, null), true);
+  assert.equal(shouldLiftTVerCueLine(line1, { querySelectorAll: () => [line1] }), true);
+}
 
 console.log("Caption background tests passed.");

@@ -144,12 +144,37 @@ const privacy = read("docs/PRIVACY.md");
 if (!/オプトアウト/.test(privacy)) {
   fail("docs/PRIVACY.md must document learning log opt-out");
 }
+if (!/共有読みパック/.test(privacy)) {
+  fail("docs/PRIVACY.md must document shared readings pack");
+}
+if (!/timedtext/.test(privacy)) {
+  fail("docs/PRIVACY.md must clarify timedtext is not used on default path");
+}
 const privacySite = read("site/privacy.html");
 if (!/オプトアウト/.test(privacySite)) {
   fail("site/privacy.html must document learning log opt-out");
 }
+if (!/共有読みパック/.test(privacySite)) {
+  fail("site/privacy.html must document shared readings pack");
+}
 if (!/learningInboxEnabled/.test(popup)) {
   fail("popup/popup.html must expose learningInboxEnabled opt-out");
+}
+if (/インターネットに送りません/.test(popup)) {
+  fail("popup must not claim zero network use (shared pack receives remotely)");
+}
+if (/ytfp_live_demo_key_001/.test(popup)) {
+  fail("popup must not ship demo license key");
+}
+if (!/sharedPackEnabled/.test(popup)) {
+  fail("popup must expose sharedPackEnabled opt-out");
+}
+const pricing = read("site/pricing.html");
+if (/ytfp_live_demo_key_001/.test(pricing)) {
+  fail("site/pricing.html must not publish demo license key");
+}
+if (!/返金/.test(pricing)) {
+  fail("site/pricing.html must mention refund / support");
 }
 const defaults = read("src/default-settings.js");
 if (!/learningInboxEnabled/.test(defaults)) {
@@ -160,11 +185,35 @@ if (!/isLearningInboxEnabled/.test(learningInbox)) {
   fail("src/learning-inbox.js must gate on isLearningInboxEnabled");
 }
 
+// --- manifest CSP / no bridge WAR ---
+if (!/content_security_policy/.test(manifest)) {
+  fail("manifest.json must declare content_security_policy.extension_pages");
+}
+if (/page-caption-bridge/.test(manifest)) {
+  fail("manifest.json must not expose page-caption-bridge in store build");
+}
+
+// --- shared pack always public ---
+const contributions = read("src/contributions.js");
+if (/normalizeReadingApiUrl/.test(contributions)) {
+  fail("contributions.js must not route Free pack via readingApiUrl");
+}
+
+// --- seed for Docker ---
+if (!existsSync(path.join(root, "data/generated/shared-readings-seed.json"))) {
+  fail("data/generated/shared-readings-seed.json required for Free pack deploy");
+}
+
 // --- secrets must not ship in store pack ---
-for (const bad of [".env", "reading-engine/.env", "store/.env.webstore"]) {
-  if (pack.includes(`"${bad}"`) || pack.includes(`'${bad}'`)) {
-    fail(`pack-chrome-store.mjs must not include ${bad}`);
+const includeBlock = pack.match(/const INCLUDE = \[([\s\S]*?)\];/);
+const includeSrc = includeBlock ? includeBlock[1] : pack;
+for (const bad of [".env", "reading-engine/.env", "store/.env.webstore", "licenses.json"]) {
+  if (includeSrc.includes(`"${bad}"`) || includeSrc.includes(`'${bad}'`)) {
+    fail(`pack-chrome-store.mjs INCLUDE must not list ${bad}`);
   }
+}
+if (!/FORBIDDEN_IN_ZIP|assertZipSafe/.test(pack)) {
+  fail("pack-chrome-store.mjs must scan zip for secrets / bridge");
 }
 
 // --- meta samples: proper noun disclaimer ---

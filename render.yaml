@@ -18,9 +18,27 @@ services:
       - key: YT_FURIGANA_CORS_ORIGINS
         value: https://blackphi6.github.io,http://127.0.0.1:4173,http://localhost:4173,http://127.0.0.1:5500,http://localhost:5500
       - key: YT_FURIGANA_RATE_LIMIT_PER_MIN
-        value: "30"
+        value: "20"
+      - key: YT_FURIGANA_RATE_LIMIT_GET_PER_MIN
+        value: "60"
+      - key: YT_FURIGANA_PUBLIC_READINGS
+        value: "1"
       - key: YT_FURIGANA_RERANKER_PATH
         value: ""
+      - key: YT_FURIGANA_CONTRIB_MIN_VOTES
+        value: "3"
+      - key: YT_FURIGANA_ENV
+        value: production
+      - key: YT_FURIGANA_ALLOW_DRY_RUN
+        value: "0"
+      - key: YT_FURIGANA_ALLOW_DEMO_KEY
+        value: "0"
+      # Optional: comma-separated Premium keys that survive redeploys (free plan disk is ephemeral)
+      - key: YT_FURIGANA_LICENSE_KEYS
+        sync: false
+      # Set in Dashboard (secret). Required for npm run publish:shared-readings
+      - key: YT_FURIGANA_ADMIN_TOKEN
+        sync: false
       # Bump this when you need Blueprint Manual sync to force a Docker rebuild
       - key: YT_FURIGANA_BUILD_ID
-        value: "clause-cues-20260718"
+        value: "cws-120-20260722"
