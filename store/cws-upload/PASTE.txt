@@ -1,0 +1,88 @@
+================================================================================
+Chrome Web Store — コピー用テキスト（YT Furigana v1.9.0）
+================================================================================
+
+【アイテム名】
+YT Furigana
+
+【カテゴリ】
+生産性（Productivity）※ または「アクセシビリティ」が選べればそちら
+
+【言語】
+日本語
+
+--------------------------------------------------------------------------------
+【短い説明】（132文字以内・そのまま貼る）
+--------------------------------------------------------------------------------
+YouTube / TVer の日本語字幕にひらがなルビ（非公式）。端末内で処理。クリックで読みを覚えます。有料は読み辞書の移動などが任意。
+
+--------------------------------------------------------------------------------
+【詳細説明】（そのまま貼る）
+--------------------------------------------------------------------------------
+YT Furigana は、YouTube と TVer の日本語字幕にひらがなのふりがな（ruby）を重ねて表示する Chrome 拡張です。
+
+【無料】
+・この端末だけで動く読み付け（設定不要）
+・字幕の漢字をクリックして読みを覚え直す
+・迷った言葉のメモも端末内のみ（オフにできます）
+・既定ではクラウドへ字幕本文を送りません
+・みんなの読みパック（表層→読みのみ）を受け取れる（オフ可）
+
+【有料オプション（任意）】
+・直した読み辞書を別のパソコンへ移す
+・指定サーバー上の共有辞書を手動で取り込む
+
+ソース: https://github.com/Blackphi6/yt-furigana-extension
+サイト: https://blackphi6.github.io/yt-furigana-extension/
+料金: https://blackphi6.github.io/yt-furigana-extension/pricing.html
+
+字幕・映像の著作権は各権利者に帰属します。本拡張は画面上の表示加工であり、コンテンツの再配布を目的としません。
+
+YouTube、TVer、Google Chrome は各社の商標です。本拡張は各社の公式アプリ・公式機能ではありません。
+「YT Furigana」の「YT」は製品名の略称であり、YouTube の商標ではありません。
+
+--------------------------------------------------------------------------------
+【単一目的】（Privacy / Single purpose）
+--------------------------------------------------------------------------------
+YouTube / TVer の日本語字幕にふりがな（ルビ）を表示する（非公式）。
+
+--------------------------------------------------------------------------------
+【審査コメント（英語・任意）】
+--------------------------------------------------------------------------------
+Unofficial accessibility tool for Japanese captions on YouTube and TVer.
+"YT" in the product name is not a YouTube trademark.
+No affiliation with Google, YouTube, or TVer.
+Caption text is processed locally by default (no timedtext fetch on the normal playback path).
+Optional: receive a shared surface→reading pack from the public reading API (on by default, user can disable).
+Optional: send anonymous reading corrections only when the user opts in.
+Premium sync / BYO reading API only when the user configures a server URL.
+Support: GitHub Issues. Refunds: Stripe purchases within 14 days if unused (card fees may apply).
+
+--------------------------------------------------------------------------------
+【プライバシー慣行 — 回答の目安】
+--------------------------------------------------------------------------------
+・リモートコード実行: No
+・ユーザーデータを販売するか: No
+・広告目的で使うか: No
+・単一目的以外の収集: No
+・Website content: 画面上の字幕 DOM を読みルビ付与。既定で timedtext は使わない。
+  任意オプトインで表層・読み・短い前後文脈のみ送信可。学習メモは端末内（オプトアウト可）。
+・共有読みパック: 既定オン・オフ可。表層→読みのみ受信（字幕本文なし）。
+・ポリシー URL: https://blackphi6.github.io/yt-furigana-extension/privacy.html
+
+--------------------------------------------------------------------------------
+【権限の正当化】（ホスト権限の説明欄など）
+--------------------------------------------------------------------------------
+storage — 設定・学習辞書の保存
+youtube.com / tver.jp — 字幕 DOM へのルビ付与
+yt-furigana-readings.onrender.com — Free 共有読みパック受信（オフ可）／任意の匿名訂正
+optional localhost — ユーザーがローカル Ollama / 読みエンジンを使うときだけ
+optional http(s)://*/* — 有料の辞書同期先をユーザーが指定したときだけ
+declarativeNetRequest — ローカル Ollama のオリジン緩和（許可後）
+
+--------------------------------------------------------------------------------
+【URL】
+--------------------------------------------------------------------------------
+Homepage:  https://blackphi6.github.io/yt-furigana-extension/
+Privacy:   https://blackphi6.github.io/yt-furigana-extension/privacy.html
+Support:   https://github.com/Blackphi6/yt-furigana-extension/issues

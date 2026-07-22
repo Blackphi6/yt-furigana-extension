@@ -44,7 +44,8 @@
     "watch": "node scripts/build.mjs --watch",
     "learn:report": "node scripts/learning/write-daily-report.mjs",
     "export:shared-readings": "node scripts/export-shared-readings-seed.mjs",
-    "publish:shared-readings": "node scripts/export-shared-readings-seed.mjs --publish"
+    "publish:shared-readings": "node scripts/export-shared-readings-seed.mjs --publish",
+    "pack:cws": "node scripts/pack-chrome-store.mjs && node scripts/pack-cws-upload.mjs"
   },
   "dependencies": {
     "budoux": "^0.8.4",

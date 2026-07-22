@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>YT Furigana — popup store demo</title>
+    <link rel="stylesheet" href="../popup/popup.css" />
+    <style>
+      body {
+        margin: 0;
+        background: #1a1714;
+        min-height: 800px;
+        width: 1280px;
+        display: grid;
+        place-items: center;
+        font-family: "Hiragino Sans", "Noto Sans JP", sans-serif;
+      }
+      .frame {
+        width: 360px;
+        max-height: 720px;
+        overflow: hidden;
+        border-radius: 12px;
+        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+        background: #f7f3eb;
+      }
+      .frame body,
+      .frame main {
+        margin: 0;
+      }
+      /* popup.css expects body>main; wrap content */
+      .shot-label {
+        position: absolute;
+        top: 28px;
+        left: 36px;
+        color: #c23b22;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+      body {
+        position: relative;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shot-label">YT Furigana · ポップアップ</div>
+    <div class="frame">
+      <main style="width: 360px; padding: 16px 16px 20px; box-sizing: border-box">
+        <header>
+          <h1 style="margin: 0 0 4px; font-size: 1.25rem">YT Furigana</h1>
+          <p style="margin: 0 0 12px; font-size: 0.8rem; opacity: 0.75">
+            YouTube / TVer の日本語字幕に、ひらがなを重ねます（非公式）
+          </p>
+        </header>
+        <label class="toggle" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px">
+          <span>ふりがなを表示する</span>
+          <input type="checkbox" checked disabled />
+        </label>
+        <section class="panel" style="margin-bottom: 12px">
+          <h2 style="font-size: 0.95rem; margin: 0 0 6px">使い方</h2>
+          <p class="hint" style="margin: 0; font-size: 0.78rem; line-height: 1.45">
+            そのまま使えます。字幕の漢字を押すと読みの候補が出ます。字幕本文はサーバーへ送りません。
+          </p>
+        </section>
+        <section class="panel" style="margin-bottom: 12px">
+          <h2 style="font-size: 0.95rem; margin: 0 0 6px">読みの覚え直し</h2>
+          <label class="row" style="display: flex; gap: 8px; font-size: 0.78rem; margin: 6px 0">
+            <input type="checkbox" checked disabled />
+            <span>みんなの読みパックを受け取る</span>
+          </label>
+          <label class="row" style="display: flex; gap: 8px; font-size: 0.78rem; margin: 6px 0">
+            <input type="checkbox" disabled />
+            <span>直した読みをみんなの辞書づくりに送る（任意）</span>
+          </label>
+        </section>
+        <p class="hint" style="font-size: 0.72rem; opacity: 0.65; margin: 0">
+          「YT」は製品名の略称であり、YouTube の商標ではありません。
+        </p>
+      </main>
+    </div>
+  </body>
+</html>

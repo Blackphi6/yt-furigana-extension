@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>YT Furigana — click picker demo</title>
+    <link rel="stylesheet" href="../styles/content.css" />
+    <style>
+      body {
+        margin: 0;
+        width: 1280px;
+        height: 800px;
+        background: radial-gradient(ellipse at 50% 30%, #2a2420, #0b0b0c 70%);
+        font-family: "Hiragino Sans", "Noto Sans JP", sans-serif;
+        color: #fff;
+        position: relative;
+      }
+      .brand {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 56px;
+        background: #c23b22;
+        display: flex;
+        align-items: center;
+        padding: 0 28px;
+        font-weight: 700;
+      }
+      .caption {
+        position: absolute;
+        left: 50%;
+        bottom: 160px;
+        transform: translateX(-50%);
+        background: rgba(8, 8, 8, 0.75);
+        padding: 0.4em 0.85em;
+        font-size: 40px;
+        border-radius: 4px;
+      }
+      rt {
+        font-size: 0.42em;
+        color: #ffb4a4;
+      }
+      .picker {
+        position: absolute;
+        left: 52%;
+        bottom: 280px;
+        width: 280px;
+        background: #f7f3eb;
+        color: #1c1917;
+        border-radius: 10px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+        padding: 12px 12px 10px;
+        font-size: 14px;
+      }
+      .picker h3 {
+        margin: 0 0 8px;
+        font-size: 13px;
+      }
+      .picker button {
+        display: block;
+        width: 100%;
+        text-align: left;
+        margin: 4px 0;
+        padding: 8px 10px;
+        border: 1px solid #e5ddd0;
+        border-radius: 6px;
+        background: #fff;
+        cursor: default;
+      }
+      .picker button.is-current {
+        border-color: #c23b22;
+        background: #fff1ed;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="brand">YT Furigana · 読み候補（クリック）</div>
+    <div class="caption">
+      <ruby>忙<rt>いそが</rt></ruby>しい<ruby>世界<rt>せかい</rt></ruby>を
+    </div>
+    <div class="picker" role="dialog" aria-label="読みを選ぶ">
+      <h3>「世界」の読み</h3>
+      <button type="button" class="is-current">せかい · 候補</button>
+      <button type="button">せけん · 別読み</button>
+      <button type="button">自分で入力…</button>
+    </div>
+  </body>
+</html>
