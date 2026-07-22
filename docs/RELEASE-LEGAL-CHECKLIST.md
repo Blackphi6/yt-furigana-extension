@@ -44,7 +44,7 @@ npm run pack:store
 4. **Remote code** → No
 5. **Data use** — Improve readings locally; optional anonymous contribution aggregation; optional Premium sync to user-configured server.
 6. **Data sale / ads / transfer for unrelated use** → No
-7. **Certification** — Privacy policy URL: `https://blackphi6.github.io/yt-furigana-extension/privacy.html`
+7. **Certification** — Privacy policy URL: `https://blackphi6.github.io/yt-furigana-extension/privacy.html` (EN: `privacy.en.html`)
 
 ### 審査コメント用（英語）
 
