@@ -50,8 +50,27 @@
   background: #3f6f4e;
 }
 
+.demo-page .engine-status[data-state="waking"]::before {
+  background: #c4a035;
+  box-shadow: 0 0 0 0 color-mix(in oklab, #c4a035 55%, transparent);
+  animation: demo-wake-pulse 1.1s ease-out infinite;
+}
+
+@keyframes demo-wake-pulse {
+  70% {
+    box-shadow: 0 0 0 0.45rem transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
 .demo-page .engine-status[data-state="down"]::before {
   background: var(--vermilion);
+}
+
+.cta-row .btn[data-busy="1"] {
+  opacity: 0.85;
 }
 
 .demo-workbench {

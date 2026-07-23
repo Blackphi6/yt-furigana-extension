@@ -1,4 +1,4 @@
-import { collectQuizItems, uniqueCandidates } from "./demo-quiz.js?v=20260723b";
+import { collectQuizItems, uniqueCandidates } from "./demo-quiz.js?v=20260723c";
 
 const DEFAULT_API =
   (window.YT_FURIGANA_SITE && window.YT_FURIGANA_SITE.readingApiUrl) ||
@@ -503,25 +503,39 @@ function friendlyHttpError(status, body, { endpoint = "" } = {}) {
 
 async function fetchWithColdStart(url, options = {}, { attempts = 3, label = "接続" } = {}) {
   let lastErr;
-  for (let i = 0; i < attempts; i += 1) {
-    if (i > 0) {
-      statusEl.dataset.state = "down";
-      statusEl.textContent = `スリープ解除中…（${label} 再試行 ${i + 1}/${attempts}）`;
-    }
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 90000);
-      const res = await fetch(url, { ...options, signal: controller.signal });
-      clearTimeout(timer);
-      return res;
-    } catch (err) {
-      lastErr = err;
-      if (err?.name === "AbortError") {
-        lastErr = new Error("タイムアウト（無料枠の起動待ち）。もう一度試してください。");
+  const started = Date.now();
+  const tick = setInterval(() => {
+    if (!statusEl) return;
+    const sec = Math.max(1, Math.round((Date.now() - started) / 1000));
+    statusEl.dataset.state = "waking";
+    statusEl.textContent =
+      sec < 8
+        ? `${label}中…`
+        : `スリープ解除中… ${sec}秒（無料枠の起動待ち・このあとすぐになります）`;
+  }, 1000);
+  try {
+    for (let i = 0; i < attempts; i += 1) {
+      if (i > 0 && statusEl) {
+        statusEl.dataset.state = "waking";
+        statusEl.textContent = `スリープ解除中…（${label} 再試行 ${i + 1}/${attempts}）`;
+      }
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 90000);
+        const res = await fetch(url, { ...options, signal: controller.signal });
+        clearTimeout(timer);
+        return res;
+      } catch (err) {
+        lastErr = err;
+        if (err?.name === "AbortError") {
+          lastErr = new Error("タイムアウト（無料枠の起動待ち）。もう一度試してください。");
+        }
       }
     }
+    throw lastErr || new Error("接続失敗");
+  } finally {
+    clearInterval(tick);
   }
-  throw lastErr || new Error("接続失敗");
 }
 
 async function submitProposals(entries, { source = "demo" } = {}) {
@@ -617,6 +631,7 @@ async function runAnalyze(options = {}) {
   const btn = $("#run-btn");
   btn.disabled = true;
   btn.textContent = "付けています…";
+  btn.dataset.busy = "1";
   const pins = collectUserDict();
   // ピッカーからの再実行では勝手に共有送信しない
   const share =
@@ -642,6 +657,7 @@ async function runAnalyze(options = {}) {
     const data = await res.json();
     renderResult(text, data);
     statusEl.dataset.state = "ok";
+    statusEl.textContent = `エンジン稼働中（${base}）`;
 
     if (share && pins.length) {
       try {
@@ -673,6 +689,7 @@ async function runAnalyze(options = {}) {
   } finally {
     btn.disabled = false;
     btn.textContent = "ルビを付ける";
+    delete btn.dataset.busy;
   }
 }
 
