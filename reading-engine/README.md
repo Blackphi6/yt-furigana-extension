@@ -48,10 +48,13 @@ npm run reading-engine
 | Path | Auth | Notes |
 |------|------|-------|
 | `POST /v1/readings` | optional | Set `YT_FURIGANA_API_KEYS` to require Bearer |
+| `POST /v1/proposals` | none | Demo staged proposals (review queue; **not** Free pack) |
+| `POST /v1/contributions` | none | Extension opt-in votes (threshold → pack) |
 | `POST /v1/license/verify` | license in body | Activates Premium in the extension |
 | `GET/PUT /v1/dict/sync` | Bearer license | Per-license user dictionary |
 | `GET /v1/dict/shared` | Bearer license | Shared pack |
 | `POST /v1/admin/mint-license` | admin token | `YT_FURIGANA_ADMIN_TOKEN` |
+| `POST /v1/admin/proposals/list\|process\|promote` | admin token | Review / promote staged proposals |
 
 Demo license: `ytfp_live_demo_key_001` — see `docs/FREEMIUM.md`.
 

@@ -146,8 +146,8 @@
           <details class="reading-pins">
             <summary>この文だけ読みを固定（任意）</summary>
             <p class="hint">
-              拡張でクリックして直すのと同じ優先です。下に
-              <strong>漢字（空白）かな</strong> を1行ずつ書いてください。このリクエスト以外には残りません。
+              結果の漢字をクリックしても直せます（拡張と同じ感覚）。下に
+              <strong>漢字（空白）かな</strong> を1行ずつ書いても同じです。既定ではこのリクエスト以外に残りません。
             </p>
             <label class="field-label" for="reading-pins">固定リスト</label>
             <textarea
@@ -156,9 +156,20 @@
               spellcheck="false"
               placeholder="葛飾　かつしか&#10;一二三　ひふみ"
             ></textarea>
+            <label class="pin-share">
+              <input type="checkbox" id="pin-share-proposal" />
+              共有候補として送る（審査待ち・即公開しません）
+            </label>
+            <p class="hint pin-share-hint">
+              送ってもみんな用パックにはすぐ反映されません。ヒューリスティック／任意の LLM 審査のあと、運営が curated に載せるまで公開されません。表層と読みだけ送ります（字幕全文・動画 URL は送りません）。
+            </p>
             <div class="pin-actions">
               <button type="button" class="btn ghost small" id="pin-clear">クリア</button>
+              <button type="button" class="btn ghost small" id="pin-propose" disabled>
+                候補だけ送る
+              </button>
             </div>
+            <p class="hint" id="pin-propose-status" hidden></p>
           </details>
 
           <details class="api-advanced">
@@ -180,6 +191,7 @@
 
           <div class="result-block" id="result-block" hidden>
             <h3>ルビ結果</h3>
+            <p class="hint result-edit-hint">着色された漢字をクリックすると読みを変更できます。</p>
             <div class="ruby-out" id="ruby-out" lang="ja"></div>
             <p class="full-reading" id="full-reading"></p>
             <div class="legend">

@@ -25,6 +25,13 @@ from reading_engine.contributions import (
     normalize_entries,
     validate_contribution,
 )
+from reading_engine.proposals import (
+    append_proposals,
+    list_proposals,
+    process_pending_proposals,
+    promote_accepted_proposals,
+    validate_proposal_entries,
+)
 from reading_engine.rate_limit import RateLimitMiddleware, client_ip_from_request
 from reading_engine.stripe_billing import (
     create_checkout_session,
@@ -126,10 +133,31 @@ class ContributionRequest(BaseModel):
     contextRight: str = ""
 
 
+class ProposalEntry(BaseModel):
+    surface: str = Field(default="", max_length=64)
+    reading: str = Field(default="", max_length=64)
+
+
+class ProposalRequest(BaseModel):
+    """Demo staged proposals — never published to Free pack immediately."""
+
+    entries: list[ProposalEntry] = Field(default_factory=list, max_length=50)
+    source: str = Field(default="demo", max_length=32)
+    note: str = Field(default="", max_length=80)
+
+
 class SharedReadingsSeedRequest(BaseModel):
     adminToken: str = ""
     entries: dict[str, str] = Field(default_factory=dict)
     replace: bool = False
+
+
+class ProposalAdminRequest(BaseModel):
+    adminToken: str = ""
+    status: str | None = None
+    limit: int = Field(default=200, ge=1, le=1000)
+    useLlm: bool | None = None
+    surfaces: list[str] = Field(default_factory=list, max_length=500)
 
 
 @app.get("/")
@@ -143,7 +171,8 @@ def root() -> dict[str, Any]:
                 "local extension engines",
                 "BYO localhost readings",
                 "/v1/shared-readings",
-                "/v1/contributions (opt-in)",
+                "/v1/contributions (opt-in votes)",
+                "/v1/proposals (demo staged review)",
             ],
             "premium": [
                 "/v1/dict/sync",
@@ -248,6 +277,35 @@ def contributions_post(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
+@app.post("/v1/proposals")
+def proposals_post(request: Request, body: ProposalRequest) -> dict[str, Any]:
+    """
+    Stage reading proposals from the public demo.
+
+    Stored for review only — does not update /v1/shared-readings until an
+    admin promotes accepted entries (or auto-curate is explicitly enabled).
+    Public POST uses heuristic gate only; LLM review is admin /process.
+    """
+    try:
+        entries = validate_proposal_entries(
+            [e.model_dump() for e in body.entries]
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    try:
+        return append_proposals(
+            entries,
+            client_ip=client_ip_from_request(request),
+            source=body.source or "demo",
+            note=body.note or "",
+            use_llm=False,
+        )
+    except ValueError as exc:
+        if str(exc) == "proposal_cooldown":
+            raise HTTPException(status_code=429, detail="proposal_cooldown") from exc
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
 @app.get("/v1/shared-readings")
 def shared_readings_get() -> dict[str, Any]:
     """Free shared readings pack (curated seed + aggregated contributions)."""
@@ -279,6 +337,32 @@ def admin_shared_readings_seed(body: SharedReadingsSeedRequest) -> dict[str, Any
     if not entries and not body.replace:
         raise HTTPException(status_code=400, detail="entries_required")
     return merge_curated_entries(entries, replace=body.replace)
+
+
+@app.post("/v1/admin/proposals/list")
+def admin_proposals_list(body: ProposalAdminRequest) -> dict[str, Any]:
+    if not _admin_token_ok(body.adminToken):
+        raise HTTPException(status_code=403, detail="forbidden")
+    return list_proposals(status=body.status, limit=body.limit)
+
+
+@app.post("/v1/admin/proposals/process")
+def admin_proposals_process(body: ProposalAdminRequest) -> dict[str, Any]:
+    """Re-run heuristic / optional LLM review on pending proposals."""
+    if not _admin_token_ok(body.adminToken):
+        raise HTTPException(status_code=403, detail="forbidden")
+    return process_pending_proposals(use_llm=body.useLlm, limit=body.limit)
+
+
+@app.post("/v1/admin/proposals/promote")
+def admin_proposals_promote(body: ProposalAdminRequest) -> dict[str, Any]:
+    """Merge accepted proposals into curated Free pack."""
+    if not _admin_token_ok(body.adminToken):
+        raise HTTPException(status_code=403, detail="forbidden")
+    return promote_accepted_proposals(
+        surfaces=body.surfaces or None,
+        mark_promoted=True,
+    )
 
 
 @app.post("/v1/admin/mint-license")

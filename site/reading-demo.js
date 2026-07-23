@@ -15,6 +15,10 @@ const fullReading = $("#full-reading");
 const resultBody = $("#result-body");
 const pinsEl = $("#reading-pins");
 
+/** @type {{ text: string, tokens: any[] } | null} */
+let lastResult = null;
+const PICKER_ID = "demo-reading-picker";
+
 apiEl.value = DEFAULT_API;
 
 function escapeHtml(s) {
@@ -23,6 +27,15 @@ function escapeHtml(s) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function isKanaReading(value) {
+  const raw = String(value ?? "").normalize("NFKC").trim();
+  return Boolean(raw) && /^[\u3040-\u309f\u30a0-\u30ffー・･]+$/.test(raw);
+}
+
+function closeDemoPicker() {
+  document.getElementById(PICKER_ID)?.remove();
 }
 
 /** Parse "surface reading" / "surface=reading" / "surface　reading" lines. */
@@ -49,6 +62,57 @@ function collectUserDict() {
   return out;
 }
 
+/**
+ * Upsert one pin line (same surface replaced; others kept).
+ * @param {string} surface
+ * @param {string} reading
+ */
+function upsertPin(surface, reading) {
+  if (!pinsEl) return;
+  const surf = String(surface || "").trim();
+  const read = String(reading || "").trim();
+  if (!surf || !read) return;
+  const lines = String(pinsEl.value || "")
+    .split(/\n/)
+    .map((l) => l.trimEnd());
+  const next = [];
+  let replaced = false;
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      if (line === "") next.push(line);
+      continue;
+    }
+    if (trimmed.startsWith("#")) {
+      next.push(line);
+      continue;
+    }
+    let lineSurface = "";
+    if (trimmed.includes("=")) {
+      lineSurface = trimmed.slice(0, trimmed.indexOf("=")).trim();
+    } else {
+      const parts = trimmed.split(/[\s　]+/).filter(Boolean);
+      if (parts.length >= 2) {
+        parts.pop();
+        lineSurface = parts.join("");
+      }
+    }
+    if (lineSurface === surf) {
+      if (!replaced) {
+        next.push(`${surf}　${read}`);
+        replaced = true;
+      }
+      continue;
+    }
+    next.push(line);
+  }
+  if (!replaced) next.push(`${surf}　${read}`);
+  pinsEl.value = next.filter((l, i, arr) => !(l === "" && arr[i - 1] === "")).join("\n");
+  const details = pinsEl.closest("details");
+  if (details) details.open = true;
+  syncProposeButton();
+}
+
 function sourceLabel(source) {
   const map = {
     trust_pattern: "信頼句",
@@ -66,20 +130,154 @@ function buildRubyHtml(text, tokens) {
   const hits = [...tokens].sort((a, b) => a.span[0] - b.span[0]);
   let html = "";
   let cursor = 0;
-  for (const t of hits) {
+  for (let i = 0; i < hits.length; i += 1) {
+    const t = hits[i];
     const [start, end] = t.span;
     if (start < cursor) continue;
     html += escapeHtml(text.slice(cursor, start));
     const surface = text.slice(start, end);
-    html += `<span data-hit data-source="${escapeHtml(t.source || "")}"><ruby>${escapeHtml(surface)}<rt>${escapeHtml(t.reading || "")}</rt></ruby></span>`;
+    const reading = t.reading || "";
+    const editable = /[\u3400-\u9fff\uF900-\uFAFF]/.test(surface) && Boolean(reading);
+    if (editable) {
+      html += `<span class="demo-ruby-word" data-hit data-token-index="${i}" data-surface="${escapeHtml(surface)}" data-reading="${escapeHtml(reading)}" data-source="${escapeHtml(t.source || "")}" role="button" tabindex="0" title="クリックして読みを変更"><ruby>${escapeHtml(surface)}<rt>${escapeHtml(reading)}</rt></ruby></span>`;
+    } else {
+      html += `<span data-hit data-source="${escapeHtml(t.source || "")}"><ruby>${escapeHtml(surface)}<rt>${escapeHtml(reading)}</rt></ruby></span>`;
+    }
     cursor = end;
   }
   html += escapeHtml(text.slice(cursor));
   return html;
 }
 
+function uniqueCandidates(token, currentReading) {
+  const list = [];
+  const push = (v) => {
+    const s = String(v || "").trim();
+    if (!s || list.includes(s)) return;
+    list.push(s);
+  };
+  push(currentReading);
+  for (const c of token?.candidates || []) push(c);
+  return list;
+}
+
+/**
+ * @param {HTMLElement} wordEl
+ */
+function openDemoPicker(wordEl) {
+  closeDemoPicker();
+  const surface = wordEl.getAttribute("data-surface") || "";
+  const current = wordEl.getAttribute("data-reading") || "";
+  if (!surface) return;
+
+  const idx = Number.parseInt(wordEl.getAttribute("data-token-index") || "", 10);
+  const token =
+    lastResult?.tokens && Number.isFinite(idx)
+      ? [...lastResult.tokens].sort((a, b) => a.span[0] - b.span[0])[idx]
+      : null;
+  const candidates = uniqueCandidates(token, current);
+
+  const popup = document.createElement("div");
+  popup.id = PICKER_ID;
+  popup.className = "demo-reading-picker";
+  popup.setAttribute("role", "dialog");
+  popup.setAttribute("aria-label", `${surface}の読みを変更`);
+
+  const candHtml = candidates
+    .map(
+      (c) =>
+        `<button type="button" class="demo-pick-cand${c === current ? " is-current" : ""}" data-reading="${escapeHtml(c)}">${escapeHtml(c)}</button>`
+    )
+    .join("");
+
+  popup.innerHTML = `
+    <div class="demo-pick-head">
+      <strong>${escapeHtml(surface)}</strong>
+      <span>の読み</span>
+      <button type="button" class="demo-pick-close" aria-label="閉じる">×</button>
+    </div>
+    <div class="demo-pick-cands">${candHtml || "<span class='hint'>候補なし</span>"}</div>
+    <label class="demo-pick-custom">
+      <span>候補にない読み</span>
+      <input type="text" inputmode="kana" autocomplete="off" spellcheck="false" placeholder="ひらがな／カタカナ" value="" />
+    </label>
+    <div class="demo-pick-actions">
+      <button type="button" class="btn small" data-apply-custom>この読みにする</button>
+    </div>
+    <p class="hint demo-pick-msg" hidden></p>
+  `;
+
+  document.body.appendChild(popup);
+
+  const rect = wordEl.getBoundingClientRect();
+  const pad = 8;
+  let left = rect.left + window.scrollX;
+  let top = rect.bottom + window.scrollY + 6;
+  popup.style.left = `${left}px`;
+  popup.style.top = `${top}px`;
+  const box = popup.getBoundingClientRect();
+  if (box.right > window.innerWidth - pad) {
+    left = Math.max(pad, window.innerWidth - box.width - pad) + window.scrollX;
+    popup.style.left = `${left}px`;
+  }
+  if (box.bottom > window.innerHeight - pad) {
+    top = Math.max(pad, rect.top + window.scrollY - box.height - 6);
+    popup.style.top = `${top}px`;
+  }
+
+  const input = popup.querySelector("input");
+  const msg = popup.querySelector(".demo-pick-msg");
+
+  const applyReading = async (reading) => {
+    const read = String(reading || "").normalize("NFKC").trim();
+    if (!isKanaReading(read)) {
+      if (msg) {
+        msg.hidden = false;
+        msg.textContent = "ひらがなまたはカタカナで入力してください。";
+      }
+      return;
+    }
+    upsertPin(surface, read);
+    closeDemoPicker();
+    await runAnalyze({ fromPicker: true });
+  };
+
+  popup.querySelector(".demo-pick-close")?.addEventListener("click", () => closeDemoPicker());
+  popup.querySelectorAll(".demo-pick-cand").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      void applyReading(btn.getAttribute("data-reading") || "");
+    });
+  });
+  popup.querySelector("[data-apply-custom]")?.addEventListener("click", () => {
+    void applyReading(input?.value || "");
+  });
+  input?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      void applyReading(input.value || "");
+    }
+  });
+
+  const onDoc = (e) => {
+    if (popup.contains(e.target) || wordEl.contains(e.target)) return;
+    closeDemoPicker();
+    document.removeEventListener("pointerdown", onDoc, true);
+  };
+  document.addEventListener("pointerdown", onDoc, true);
+  const onKey = (e) => {
+    if (e.key === "Escape") {
+      closeDemoPicker();
+      document.removeEventListener("keydown", onKey, true);
+    }
+  };
+  document.addEventListener("keydown", onKey, true);
+  input?.focus();
+}
+
 function renderResult(text, data) {
   const tokens = data.tokens || [];
+  lastResult = { text, tokens };
+  closeDemoPicker();
   rubyOut.innerHTML = buildRubyHtml(text, tokens);
   fullReading.textContent = data.reading ? `かな通し: ${data.reading}` : "";
   resultBody.innerHTML = tokens
@@ -180,8 +378,88 @@ async function fetchWithColdStart(url, options = {}, { attempts = 3, label = "�
   throw lastErr || new Error("接続失敗");
 }
 
-async function runAnalyze() {
+async function submitProposals(entries) {
+  const base = apiEl.value.replace(/\/$/, "");
+  const res = await fetchWithColdStart(
+    `${base}/v1/proposals`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        entries,
+        source: "demo",
+        note: "",
+      }),
+    },
+    { attempts: 2, label: "提案" }
+  );
+  const text = await res.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = {};
+  }
+  if (!res.ok) {
+    const detail = data.detail || text || res.status;
+    throw new Error(
+      res.status === 429
+        ? "少し間隔を空けてから再度お試しください（提案のクールダウン）。"
+        : friendlyHttpError(res.status, String(detail))
+    );
+  }
+  return data;
+}
+
+function showProposeStatus(msg, { ok = true } = {}) {
+  const el = $("#pin-propose-status");
+  if (!el) return;
+  el.hidden = !msg;
+  el.textContent = msg || "";
+  el.dataset.state = ok ? "ok" : "err";
+}
+
+function syncProposeButton() {
+  const btn = $("#pin-propose");
+  if (!btn) return;
+  btn.disabled = collectUserDict().length === 0;
+}
+
+async function runProposeOnly() {
   showError("");
+  showProposeStatus("");
+  const entries = collectUserDict();
+  if (!entries.length) {
+    showProposeStatus("固定リストに「漢字 かな」を1行以上書いてください。", {
+      ok: false,
+    });
+    return;
+  }
+  const btn = $("#pin-propose");
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "送信中…";
+  }
+  try {
+    const data = await submitProposals(entries);
+    const sum = data.summary || {};
+    showProposeStatus(
+      `受け取りました（公開なし）。審査待ち ${sum.pending || 0} / 承認 ${sum.accepted || 0} / 却下 ${sum.rejected || 0}`,
+      { ok: true }
+    );
+  } catch (err) {
+    showProposeStatus(String(err.message || err), { ok: false });
+  } finally {
+    if (btn) {
+      btn.textContent = "候補だけ送る";
+      syncProposeButton();
+    }
+  }
+}
+
+async function runAnalyze(options = {}) {
+  showError("");
+  if (!options.fromPicker) showProposeStatus("");
   const text = inputEl.value.trim();
   if (!text) {
     showError("文を入力してください。");
@@ -191,6 +469,10 @@ async function runAnalyze() {
   const btn = $("#run-btn");
   btn.disabled = true;
   btn.textContent = "付けています…";
+  const pins = collectUserDict();
+  // ピッカーからの再実行では勝手に共有送信しない
+  const share =
+    !options.fromPicker && Boolean($("#pin-share-proposal")?.checked);
   try {
     const res = await fetchWithColdStart(
       `${base}/v1/readings`,
@@ -199,7 +481,7 @@ async function runAnalyze() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           text,
-          user_dict: collectUserDict(),
+          user_dict: pins,
           return_candidates: true,
         }),
       },
@@ -212,6 +494,27 @@ async function runAnalyze() {
     const data = await res.json();
     renderResult(text, data);
     statusEl.dataset.state = "ok";
+
+    if (share && pins.length) {
+      try {
+        const prop = await submitProposals(pins);
+        const sum = prop.summary || {};
+        showProposeStatus(
+          `共有候補を受け取りました（即公開しません）。待ち ${sum.pending || 0} / 承認 ${sum.accepted || 0} / 却下 ${sum.rejected || 0}`,
+          { ok: true }
+        );
+      } catch (err) {
+        showProposeStatus(
+          `ルビは表示できましたが、候補送信に失敗: ${err.message || err}`,
+          { ok: false }
+        );
+      }
+    } else if (options.fromPicker) {
+      showProposeStatus(
+        "読みを固定リストに反映しました。共有に送る場合はチェックを入れて「候補だけ送る」を押してください。",
+        { ok: true }
+      );
+    }
   } catch (err) {
     const msg = String(err.message || err);
     const isNetwork = /Failed to fetch|NetworkError|Load failed|AbortError/i.test(msg);
@@ -228,10 +531,32 @@ async function runAnalyze() {
   }
 }
 
+rubyOut?.addEventListener("click", (e) => {
+  const word = e.target?.closest?.(".demo-ruby-word");
+  if (!word || !rubyOut.contains(word)) return;
+  e.preventDefault();
+  openDemoPicker(word);
+});
+rubyOut?.addEventListener("keydown", (e) => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  const word = e.target?.closest?.(".demo-ruby-word");
+  if (!word || !rubyOut.contains(word)) return;
+  e.preventDefault();
+  openDemoPicker(word);
+});
+
 $("#pin-clear")?.addEventListener("click", () => {
   pinsEl.value = "";
+  syncProposeButton();
+  showProposeStatus("");
 });
-$("#run-btn").addEventListener("click", runAnalyze);
+$("#pin-propose")?.addEventListener("click", () => {
+  void runProposeOnly();
+});
+pinsEl?.addEventListener("input", syncProposeButton);
+$("#run-btn").addEventListener("click", () => {
+  void runAnalyze();
+});
 apiEl.addEventListener("change", checkHealth);
 
 document.querySelectorAll(".chip").forEach((chip) => {
@@ -239,14 +564,14 @@ document.querySelectorAll(".chip").forEach((chip) => {
     document.querySelectorAll(".chip").forEach((c) => c.setAttribute("aria-pressed", "false"));
     chip.setAttribute("aria-pressed", "true");
     inputEl.value = chip.dataset.sample || "";
-    runAnalyze();
+    void runAnalyze();
   });
 });
 
 inputEl.addEventListener("keydown", (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
     e.preventDefault();
-    runAnalyze();
+    void runAnalyze();
   }
 });
 
@@ -257,5 +582,6 @@ if (qText) {
 }
 
 checkHealth().then((ok) => {
-  if (ok) runAnalyze();
+  syncProposeButton();
+  if (ok) void runAnalyze();
 });

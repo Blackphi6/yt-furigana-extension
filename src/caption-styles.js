@@ -1,4 +1,8 @@
-import { fitRubyReadings } from "./ruby-layout.js";
+import {
+  fitRubyReadings,
+  markKeepOneLineCaption,
+  KEEP_ONE_LINE_ATTR
+} from "./ruby-layout.js";
 
 const styleSnapshots = new WeakMap();
 const styleGuards = new WeakMap();
@@ -6,6 +10,7 @@ const styleGuards = new WeakMap();
 const FONT_SIZE_ATTR = "data-yt-furigana-font-size";
 const BACKGROUND_ATTR = "data-yt-furigana-bg";
 const LINE_WIDTH_ATTR = "data-yt-furigana-line-width";
+const NEEDED_WIDTH_ATTR = "data-yt-furigana-needed-width";
 
 /** YouTube の Background 既定（Window 0% で見える文字帯） */
 const YT_DEFAULT_BACKGROUND = "rgba(8, 8, 8, 0.75)";
@@ -217,6 +222,9 @@ export function captureCaptionStyles(element) {
 
   const fontSize = lockFontSize(element, getMaxFontSizeInTree(element));
 
+  // ルビ注入前に単一行か判定（注入後に測ると誤判定する）
+  markKeepOneLineCaption(element);
+
   // ルビ余白追加前の行幅／窓幅を記録 → 1行維持の縮小基準
   if (!element.getAttribute(LINE_WIDTH_ATTR)) {
     const win = element.closest(
@@ -224,7 +232,18 @@ export function captureCaptionStyles(element) {
     );
     const winW = win instanceof HTMLElement ? win.clientWidth : 0;
     const selfW = Math.ceil(element.getBoundingClientRect().width);
-    const available = Math.max(selfW, winW > 12 ? winW - 12 : 0);
+    // 単一行維持では「今の本文幅」より窓／プレイヤー幅を優先
+    const player = element.closest(".html5-video-player, .video-js");
+    const playerW =
+      player instanceof HTMLElement
+        ? Math.ceil((player.clientWidth || player.getBoundingClientRect().width) * 0.92)
+        : 0;
+    const available = Math.max(
+      winW > 12 ? winW - 12 : 0,
+      playerW,
+      // 窓が本文ぴったりでも、少し余白を見ておく
+      selfW > 0 ? selfW + 24 : 0
+    );
     if (available > 0) {
       element.setAttribute(LINE_WIDTH_ATTR, String(available));
     }
@@ -348,6 +367,25 @@ export function expandYouTubeCaptionWindow(element) {
   const line = win.querySelector(".caption-visual-line");
   if (line instanceof HTMLElement) {
     line.style.setProperty("overflow", "visible", "important");
+  }
+
+  // 単一行ロックで必要な幅を YouTube の書き戻し後も再適用
+  const needed = Number.parseFloat(
+    element.getAttribute(NEEDED_WIDTH_ATTR) ||
+      win.querySelector?.(`[${NEEDED_WIDTH_ATTR}]`)?.getAttribute?.(NEEDED_WIDTH_ATTR) ||
+      ""
+  );
+  if (needed > 0) {
+    const player = element.closest(".html5-video-player");
+    const maxW =
+      player instanceof HTMLElement
+        ? Math.floor(
+            (player.clientWidth || player.getBoundingClientRect().width || needed) * 0.94
+          )
+        : needed;
+    const width = Math.min(Math.ceil(needed) + 8, maxW > 0 ? maxW : Math.ceil(needed) + 8);
+    win.style.setProperty("width", `${width}px`, "important");
+    win.style.setProperty("max-width", "94%", "important");
   }
 }
 
@@ -735,9 +773,18 @@ export function releaseCaptionStyles(element) {
   styleSnapshots.delete(element);
   element.removeAttribute("data-yt-furigana-styled");
   element.removeAttribute(LINE_WIDTH_ATTR);
+  element.removeAttribute(KEEP_ONE_LINE_ATTR);
+  element.removeAttribute(NEEDED_WIDTH_ATTR);
   element.removeAttribute("data-yt-furigana-outline");
   element.removeAttribute("data-yt-furigana-readable");
   element.removeAttribute(BACKGROUND_ATTR);
+
+  const win = element.closest?.(".caption-window, .captions-text");
+  if (win instanceof HTMLElement) {
+    win.style.removeProperty("width");
+    win.style.removeProperty("max-width");
+    // overflow:visible は他キューでも害が少ないので残してよいが、幅は戻す
+  }
 
   const line = element.closest?.(".vjs-text-track-cue-line");
   if (line instanceof HTMLElement) {
@@ -758,6 +805,9 @@ export function releaseCaptionStyles(element) {
     "margin-top",
     "overflow",
     "white-space",
+    "word-break",
+    "line-break",
+    "overflow-wrap",
     "box-decoration-break",
     "-webkit-box-decoration-break"
   ]) {

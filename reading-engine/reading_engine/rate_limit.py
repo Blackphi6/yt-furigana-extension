@@ -59,6 +59,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self.mutate_prefixes = mutate_prefixes or (
             "/v1/readings",
             "/v1/contributions",
+            "/v1/proposals",
             "/v1/admin",
             "/v1/billing/checkout",
             "/v1/license/verify",

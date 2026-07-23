@@ -29,6 +29,15 @@ services:
         value: "3"
       - key: YT_FURIGANA_CONTRIB_COOLDOWN_SEC
         value: "30"
+      - key: YT_FURIGANA_PROPOSAL_COOLDOWN_SEC
+        value: "60"
+      # Leave unset / empty → heuristic only, pending for admin promote
+      - key: YT_FURIGANA_PROPOSAL_LLM
+        value: "1"
+      - key: YT_FURIGANA_PROPOSAL_AUTO_CURATE
+        value: "0"
+      - key: GROQ_API_KEY
+        sync: false
       - key: YT_FURIGANA_ENV
         value: production
       - key: YT_FURIGANA_ALLOW_DRY_RUN

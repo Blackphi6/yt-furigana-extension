@@ -22,6 +22,28 @@
   white-space: normal;
 }
 
+/*
+ * 注入前に単一行だった字幕は絶対に折り返さない。
+ * 幅不足は ruby-layout 側のフォント縮小／窓幅で吸収する。
+ */
+.ytp-caption-segment[data-yt-furigana-keep-one-line="1"],
+.caption-visual-line[data-yt-furigana-keep-one-line="1"],
+.vjs-text-track-cue-line > span[data-yt-furigana-keep-one-line="1"],
+.ytp-caption-segment[data-yt-furigana-keep-one-line="1"] .yt-furigana-one-line,
+.caption-visual-line[data-yt-furigana-keep-one-line="1"] .yt-furigana-one-line,
+.vjs-text-track-cue-line > span[data-yt-furigana-keep-one-line="1"] .yt-furigana-one-line {
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+  line-break: strict !important;
+}
+
+.yt-furigana-one-line {
+  display: inline-block !important;
+  white-space: nowrap !important;
+  max-width: none !important;
+}
+
 /* 2行目のルビが1行目本文に食い込まないよう、行同士に余裕を確保 */
 .ytp-caption-window-container .caption-window:has([data-yt-furigana-styled]) .caption-visual-line:not(:last-child),
 .ytp-caption-window-container .captions-text:has([data-yt-furigana-styled]) .caption-visual-line:not(:last-child) {
@@ -67,6 +89,13 @@
   line-break: strict;
   word-break: keep-all;
   overflow-wrap: normal;
+}
+
+.vjs-text-track-display .vjs-text-track-cue-line > span[data-yt-furigana-keep-one-line="1"],
+.vjs-text-track-display .vjs-text-track-cue-line > span[data-yt-furigana-keep-one-line="1"] .yt-furigana-one-line {
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
 }
 
 /*

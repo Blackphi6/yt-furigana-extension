@@ -15,6 +15,7 @@ import {
 } from "./default-settings.js";
 import { buildFuriganaHtml } from "./furigana.js";
 import { insertCaptionSoftBreaks, maxLineCharsFromElement, estimateMaxLineChars } from "./caption-line-break.js";
+import { wrapKeepOneLineHtml } from "./ruby-layout.js";
 import { recordLearningSample } from "./learning-inbox.js";
 import { installReadingPicker, installFuriganaHoverHighlight } from "./reading-picker.js";
 import {
@@ -448,8 +449,28 @@ function requestReadingApiFurigana(text) {
 }
 
 function ensureOriginalText(element, normalized) {
-  if (!element.hasAttribute(ORIGINAL_ATTR)) {
-    element.setAttribute(ORIGINAL_ATTR, normalized);
+  const prev = element.getAttribute(ORIGINAL_ATTR);
+  if (prev === normalized) return;
+  element.setAttribute(ORIGINAL_ATTR, normalized);
+  // キュー本文が変わったら1行判定・幅基準を捨てて再計測させる
+  element.removeAttribute("data-yt-furigana-keep-one-line");
+  element.removeAttribute("data-yt-furigana-line-width");
+  element.removeAttribute("data-yt-furigana-needed-width");
+}
+
+/**
+ * ルビ注入前にプレーン本文で1行判定できる状態へ戻す。
+ * @param {HTMLElement} element
+ */
+function prepareCaptionForLineFitCapture(element) {
+  if (!(element instanceof HTMLElement)) return;
+  element.removeAttribute("data-yt-furigana-keep-one-line");
+  element.removeAttribute("data-yt-furigana-line-width");
+  element.removeAttribute("data-yt-furigana-needed-width");
+  if (!element.querySelector("ruby, rt, .yt-furigana-one-line")) return;
+  const original = element.getAttribute(ORIGINAL_ATTR);
+  if (original != null) {
+    element.textContent = original;
   }
 }
 
@@ -647,9 +668,18 @@ function applyFuriganaHtml(element, html, processingKey) {
   // 通常: YouTube / TVer 標準字幕へルビを差し込む
   clearReadingFloats(element);
   if (!(isYouTubeHost() && youtubeOverlayMode)) {
+    prepareCaptionForLineFitCapture(element);
     captureCaptionStyles(element);
-    const maxLineChars = maxLineCharsFromElement(element);
-    element.innerHTML = insertCaptionSoftBreaks(html, { maxLineChars });
+    const keepOneLine =
+      element.getAttribute("data-yt-furigana-keep-one-line") === "1";
+    const withBreaks = keepOneLine
+      ? html
+      : insertCaptionSoftBreaks(html, {
+          maxLineChars: maxLineCharsFromElement(element)
+        });
+    element.innerHTML = keepOneLine
+      ? wrapKeepOneLineHtml(withBreaks)
+      : withBreaks;
     applyCaptionStyles(element);
     startCaptionStyleGuard(element);
     element.setAttribute(PROCESSED_ATTR, processingKey);
@@ -657,9 +687,15 @@ function applyFuriganaHtml(element, html, processingKey) {
   }
 
   // レガシー色替わりオーバーレイ（現行は無効化済み経路）
+  prepareCaptionForLineFitCapture(element);
   captureCaptionStyles(element);
-  const maxLineChars = maxLineCharsForYouTubeOverlay(element);
-  const broken = insertCaptionSoftBreaks(html, { maxLineChars });
+  const keepOneLine =
+    element.getAttribute("data-yt-furigana-keep-one-line") === "1";
+  const broken = keepOneLine
+    ? wrapKeepOneLineHtml(html)
+    : insertCaptionSoftBreaks(html, {
+        maxLineChars: maxLineCharsForYouTubeOverlay(element)
+      });
   element.innerHTML = broken;
   applyCaptionStyles(element);
   startCaptionStyleGuard(element);
@@ -1036,6 +1072,7 @@ function resetProcessedCaptions() {
         element.getAttribute("data-yt-furigana-float-mode") === "1" ||
         Boolean(element.querySelector?.("[data-yt-furigana-float-host]"));
       clearReadingFloats(element);
+      releaseCaptionStyles(element);
       if (!wasFloatMode) {
         const original = element.getAttribute(ORIGINAL_ATTR);
         if (original != null) {

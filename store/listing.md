@@ -24,9 +24,12 @@ npm run pack:cws   # cws-upload を更新
 | アイコン 128 | `store/cws-upload/icon128.png` |
 | 手順 | `store/cws-upload/README.md` |
 
-## 単一目的
+## カテゴリ（Dashboard の選択肢）
 
-YouTube / TVer の日本語字幕にふりがな（ルビ）を付ける。
+**ユーザー補助機能** を選ぶ。
+
+次点は **教育**（日本語学習用途を前面に出す場合）。
+エンタテイメント／ツールは弱い（補助・学習の方が審査の単一目的と一致しやすい）。
 
 ## 短い説明（132 文字以内）
 

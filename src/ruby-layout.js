@@ -1,8 +1,20 @@
 /** 読みの字間を詰める下限。0 = 詰めない（潰れて重なって見えるのを防ぐ） */
 export const MAX_RT_TIGHTEN_EM = 0;
 
-/** 1行に収まらない一塊のためのフォント縮小下限 */
+/** 1行に収まらない一塊のためのフォント縮小下限（複数行キュー向け） */
 export const MIN_CAPTION_SCALE = 0.72;
+
+/**
+ * 注入前に単一行だった字幕を1行のまま枠に収めるときの縮小下限。
+ * 折り返しは禁止なので、複数行向けより低くしてでも1行を守る。
+ */
+export const MIN_KEEP_ONE_LINE_SCALE = 0.55;
+
+/** 注入前に単一行だったことを示す（折り返し禁止） */
+export const KEEP_ONE_LINE_ATTR = "data-yt-furigana-keep-one-line";
+
+/** 単一行ロック用ラッパ */
+export const ONE_LINE_CLASS = "yt-furigana-one-line";
 
 /** 隣接ギャップの下限 / 上限（px）— 触れる直前まで詰める */
 export const RUBY_READING_GAP_MIN_PX = 1;
@@ -153,6 +165,120 @@ export function computeLineShrinkScale(
   return Math.max(minScale, (availableWidth / contentWidth) * 0.985);
 }
 
+/**
+ * テキストの視覚行数（Range の clientRects を top でクラスタ）。
+ * レイアウト未計測環境では 1 を返す。
+ * @param {Element} element
+ * @returns {number}
+ */
+export function countCaptionTextLines(element) {
+  if (!(element instanceof Element)) return 1;
+  try {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    const rects = Array.from(range.getClientRects()).filter(
+      (r) => r.width > 1 && r.height > 1
+    );
+    if (rects.length === 0) {
+      const box = element.getBoundingClientRect?.();
+      if (!box || !(box.height > 0)) return 1;
+      const style =
+        typeof getComputedStyle === "function" ? getComputedStyle(element) : null;
+      const fontPx = Number.parseFloat(style?.fontSize) || 16;
+      const lhRaw = style?.lineHeight;
+      const linePx =
+        lhRaw && lhRaw !== "normal" ? Number.parseFloat(lhRaw) || fontPx * 1.2 : fontPx * 1.2;
+      return box.height > linePx * 1.75 ? 2 : 1;
+    }
+    const tops = [];
+    for (const r of rects) {
+      const slack = Math.max(3, r.height * 0.35);
+      if (!tops.some((t) => Math.abs(t - r.top) <= slack)) tops.push(r.top);
+    }
+    return Math.max(1, tops.length);
+  } catch {
+    return 1;
+  }
+}
+
+/**
+ * @param {number} lineCount
+ * @returns {boolean}
+ */
+export function shouldKeepCaptionOneLine(lineCount) {
+  return Number(lineCount) <= 1;
+}
+
+/**
+ * 単一行維持のためのフォントサイズ（px）と、下限でも足りないときの窓広げ要否。
+ * @param {{
+ *   contentWidth: number,
+ *   availableWidth: number,
+ *   baseFontPx: number,
+ *   minScale?: number
+ * }} input
+ */
+export function planKeepOneLineFit({
+  contentWidth,
+  availableWidth,
+  baseFontPx,
+  minScale = MIN_KEEP_ONE_LINE_SCALE
+}) {
+  const base = Math.max(1, Number(baseFontPx) || 16);
+  const scale = computeLineShrinkScale(contentWidth, availableWidth, { minScale });
+  const fittedWidth = contentWidth * scale;
+  return {
+    scale,
+    fontSizePx: base * scale,
+    needsWiden: fittedWidth > availableWidth + 1.5
+  };
+}
+
+/**
+ * 注入前の単一行フラグを属性に残す（既に判定済みなら触らない）。
+ * @param {HTMLElement} element
+ */
+export function markKeepOneLineCaption(element) {
+  if (!(element instanceof HTMLElement)) return false;
+  if (element.hasAttribute(KEEP_ONE_LINE_ATTR)) {
+    return element.getAttribute(KEEP_ONE_LINE_ATTR) === "1";
+  }
+  // 既にルビ注入済みなら「今の行数」で判定すると誤る
+  if (
+    element.getAttribute("data-yt-furigana-styled") === "1" ||
+    element.querySelector?.("ruby, .yt-furigana-one-line")
+  ) {
+    element.setAttribute(KEEP_ONE_LINE_ATTR, "0");
+    return false;
+  }
+  const keep = shouldKeepCaptionOneLine(countCaptionTextLines(element));
+  element.setAttribute(KEEP_ONE_LINE_ATTR, keep ? "1" : "0");
+  return keep;
+}
+
+/**
+ * @param {string} html
+ * @returns {string}
+ */
+export function wrapKeepOneLineHtml(html) {
+  const body = String(html || "");
+  if (!body) return body;
+  if (body.includes(`class="${ONE_LINE_CLASS}"`) || body.includes(`class='${ONE_LINE_CLASS}'`)) {
+    return body;
+  }
+  return `<span class="${ONE_LINE_CLASS}">${body}</span>`;
+}
+
+/**
+ * @param {HTMLElement} host
+ * @returns {boolean}
+ */
+export function isKeepOneLineCaption(host) {
+  return (
+    host instanceof HTMLElement && host.getAttribute(KEEP_ONE_LINE_ATTR) === "1"
+  );
+}
+
 function rubyBaseText(ruby, rt) {
   const full = ruby.textContent || "";
   const reading = rt.textContent || "";
@@ -287,6 +413,116 @@ function resolveAvailableWidth(host) {
   return host.clientWidth || 0;
 }
 
+/**
+ * 単一行ロック時の利用可能幅。窓幅を優先（本文幅＝内容幅だと縮小判定できない）。
+ * @param {HTMLElement} host
+ */
+function resolveKeepOneLineAvailableWidth(host) {
+  const win = host.closest?.(
+    ".caption-window, .captions-text, .vjs-text-track-cue, .vjs-text-track-window, .html5-video-player"
+  );
+  let winW = 0;
+  if (win instanceof HTMLElement) {
+    winW = win.clientWidth || win.getBoundingClientRect().width || 0;
+  }
+  const player = host.closest?.(".html5-video-player, .video-js");
+  const playerW =
+    player instanceof HTMLElement
+      ? player.clientWidth || player.getBoundingClientRect().width || 0
+      : 0;
+  const stored = Number.parseFloat(host.getAttribute("data-yt-furigana-line-width") || "");
+  // プレイヤーの約 90% まで使ってよい（中央字幕の一般的上限）
+  const softCap = playerW > 0 ? playerW * 0.92 : winW > 0 ? winW : stored;
+  const candidates = [stored, winW > 12 ? winW - 12 : 0, softCap].filter((n) => n > 0);
+  if (candidates.length === 0) return host.scrollWidth || host.clientWidth || 0;
+  return Math.max(...candidates);
+}
+
+function measureOneLineContentWidth(host) {
+  const lock = host.querySelector?.(`:scope > .${ONE_LINE_CLASS}, .${ONE_LINE_CLASS}`);
+  if (lock instanceof HTMLElement) {
+    return Math.ceil(lock.scrollWidth || lock.getBoundingClientRect().width || 0);
+  }
+  return Math.ceil(host.scrollWidth || host.getBoundingClientRect().width || 0);
+}
+
+function ensureOneLineWrapper(host) {
+  if (!(host instanceof HTMLElement)) return null;
+  const existing = host.querySelector(`:scope > .${ONE_LINE_CLASS}`);
+  if (existing instanceof HTMLElement) return existing;
+  if (!host.childNodes.length) return null;
+  const wrap = document.createElement("span");
+  wrap.className = ONE_LINE_CLASS;
+  while (host.firstChild) wrap.appendChild(host.firstChild);
+  host.appendChild(wrap);
+  return wrap;
+}
+
+function widenCaptionWindowForOneLine(host, neededWidthPx) {
+  const needed = Math.ceil(Number(neededWidthPx) || 0);
+  if (!(needed > 0)) return;
+  host.setAttribute("data-yt-furigana-needed-width", String(needed));
+
+  const win = host.closest?.(".caption-window, .captions-text");
+  if (!(win instanceof HTMLElement)) return;
+
+  const player = host.closest?.(".html5-video-player");
+  const maxW =
+    player instanceof HTMLElement
+      ? Math.floor((player.clientWidth || player.getBoundingClientRect().width || needed) * 0.94)
+      : needed;
+  const width = Math.min(needed + 8, maxW > 0 ? maxW : needed + 8);
+  win.style.setProperty("width", `${width}px`, "important");
+  win.style.setProperty("max-width", "94%", "important");
+  win.style.setProperty("overflow", "visible", "important");
+}
+
+/**
+ * 元が1行の字幕を nowrap + 縮小（必要なら窓広げ）で1行に固定する。
+ * @param {HTMLElement} host
+ * @param {ParentNode} root
+ */
+function enforceKeepOneLine(host, root) {
+  host.style.setProperty("white-space", "nowrap", "important");
+  host.style.setProperty("word-break", "keep-all", "important");
+  host.style.setProperty("line-break", "strict", "important");
+  host.style.setProperty("overflow-wrap", "normal", "important");
+
+  ensureOneLineWrapper(host);
+
+  const lockedAttr = host.getAttribute("data-yt-furigana-font-size");
+  const baseFontPx =
+    Number.parseFloat(lockedAttr) ||
+    Number.parseFloat(getComputedStyle(host).fontSize) ||
+    16;
+  // 計測前に基準サイズへ戻す（前回縮小の累積防止）
+  host.style.setProperty("font-size", `${baseFontPx}px`, "important");
+
+  // 押し広げは控えめ（幅を食いすぎて縮小が激しくなるのを防ぐ）
+  separateOverlappingRubyReadings(root, { maxPushPx: 3 });
+  if (host !== root) separateOverlappingRubyReadings(host, { maxPushPx: 3 });
+
+  const available = resolveKeepOneLineAvailableWidth(host);
+  const contentWidth = measureOneLineContentWidth(host);
+  const plan = planKeepOneLineFit({
+    contentWidth,
+    availableWidth: available,
+    baseFontPx
+  });
+
+  if (plan.scale < 1) {
+    host.style.setProperty("font-size", `${plan.fontSizePx}px`, "important");
+  }
+
+  if (plan.needsWiden) {
+    widenCaptionWindowForOneLine(host, contentWidth * plan.scale);
+  } else if (contentWidth > available + 1 && plan.scale >= MIN_KEEP_ONE_LINE_SCALE) {
+    // 縮小後もギリギリなら窓を内容幅に寄せる
+    const after = measureOneLineContentWidth(host);
+    if (after > available + 1) widenCaptionWindowForOneLine(host, after);
+  }
+}
+
 function isInsideTVerCaption(node) {
   return Boolean(
     node &&
@@ -362,31 +598,37 @@ function applyRubyFitPass(root) {
 }
 
 /**
- * 余白付きルビを適用したあと、必要なら折り返す。
- * 文字サイズの縮小はしない（禁物）。幅不足は折り返し／余白調整で対応。
+ * 余白付きルビを適用する。
+ * 注入前に単一行だった字幕は折り返さず、縮小／窓幅で1行を維持する。
  * @param {ParentNode|Element|null|undefined} root
- * @param {{ allowFontShrink?: boolean }} [options] 互換用。true でも縮小しない。
+ * @param {{ allowFontShrink?: boolean }} [options] 互換用（単一行時は常に縮小可）
  */
 export function fitRubyReadings(root, _options = {}) {
   if (!root || typeof root.querySelectorAll !== "function") return;
 
   const host = resolveCaptionHost(root);
-  if (host instanceof HTMLElement) {
-    // ZWSP / <wbr> 位置だけで折り返す。文字途中割れは抑止。
+  const keepOneLine = isKeepOneLineCaption(host);
+
+  if (host instanceof HTMLElement && !keepOneLine) {
+    // 元から複数行のキューだけ折り返し許可
     host.style.setProperty("white-space", "normal");
     host.style.setProperty("word-break", "keep-all");
     host.style.setProperty("line-break", "strict");
     host.style.setProperty("overflow-wrap", "normal");
-    // 以前の縮小指定が残っていれば戻す
-    if (host.hasAttribute("data-yt-furigana-font-size")) {
-      host.style.removeProperty("font-size");
-      host.removeAttribute("data-yt-furigana-font-size");
+    const locked = host.getAttribute("data-yt-furigana-font-size");
+    if (locked) {
+      host.style.setProperty("font-size", locked, "important");
     }
   }
 
   applyRubyFitPass(root);
-  separateOverlappingRubyReadings(root);
 
+  if (host instanceof HTMLElement && keepOneLine) {
+    enforceKeepOneLine(host, root);
+    return;
+  }
+
+  separateOverlappingRubyReadings(root);
   if (host instanceof HTMLElement) {
     separateOverlappingRubyReadings(host);
   }
