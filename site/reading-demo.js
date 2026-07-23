@@ -1,4 +1,4 @@
-import { collectQuizItems, uniqueCandidates } from "./demo-quiz.js?v=20260723e";
+import { collectQuizItems, uniqueCandidates } from "./demo-quiz.js?v=20260723f";
 
 const DEFAULT_API =
   (window.YT_FURIGANA_SITE && window.YT_FURIGANA_SITE.readingApiUrl) ||
@@ -211,10 +211,10 @@ async function maybeSubmitClickProposal(surface, reading) {
     );
   } catch (err) {
     const msg = String(err.message || err);
-    if (/cooldown|429|クールダウン/i.test(msg)) {
+    if (/cooldown|429|クールダウン|受け取り済み/i.test(msg)) {
       showProposeStatus(
-        "この文には反映済み。同じ語の再送信は少し待ってから（クールダウン）。",
-        { ok: true }
+        "この文には反映済み。共有キューへも直近で送済みです（約60秒のクールダウン）。",
+        { ok: true, warn: true }
       );
       return;
     }
@@ -646,7 +646,7 @@ async function submitProposals(entries, { source = "demo" } = {}) {
     const detail = data.detail || text || res.status;
     throw new Error(
       res.status === 429
-        ? "少し間隔を空けてから再度お試しください（提案のクールダウン）。"
+        ? "すでに直近で受け取り済みです。同じ語の再送は約60秒空けてください（クールダウン）。クリック修正でも送っている場合は二重送信です。"
         : friendlyHttpError(res.status, String(detail), {
             endpoint: `${base}/v1/proposals`,
           })
@@ -655,12 +655,12 @@ async function submitProposals(entries, { source = "demo" } = {}) {
   return data;
 }
 
-function showProposeStatus(msg, { ok = true } = {}) {
+function showProposeStatus(msg, { ok = true, warn = false } = {}) {
   const el = $("#pin-propose-status");
   if (!el) return;
   el.hidden = !msg;
   el.textContent = msg || "";
-  el.dataset.state = ok ? "ok" : "err";
+  el.dataset.state = warn ? "warn" : ok ? "ok" : "err";
 }
 
 function syncProposeButton() {
@@ -692,7 +692,12 @@ async function runProposeOnly() {
       { ok: true }
     );
   } catch (err) {
-    showProposeStatus(String(err.message || err), { ok: false });
+    const msg = String(err.message || err);
+    if (/cooldown|429|クールダウン|受け取り済み/i.test(msg)) {
+      showProposeStatus(msg, { ok: true, warn: true });
+      return;
+    }
+    showProposeStatus(msg, { ok: false });
   } finally {
     if (btn) {
       btn.textContent = "候補だけ送る";

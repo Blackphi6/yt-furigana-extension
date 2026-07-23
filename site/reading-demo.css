@@ -189,6 +189,10 @@
   color: color-mix(in oklab, var(--ink) 70%, green);
 }
 
+#pin-propose-status[data-state="warn"] {
+  color: color-mix(in oklab, var(--ink) 55%, #a67c00);
+}
+
 #pin-propose-status[data-state="err"] {
   color: var(--vermilion-deep, #a33);
 }
