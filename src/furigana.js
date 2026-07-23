@@ -254,6 +254,7 @@ import {
   extractInlineParenReadings,
   applyInlineParenReadings
 } from "./inline-paren-reading.js";
+import { stripAnnotationMarkers } from "./annotation-markers.js";
 
 function escapeAttr(value) {
   return escapeHtml(value);
@@ -303,7 +304,10 @@ export function wrapFuriganaWord(surface, reading, rubyHtml, options = {}) {
  * 「音（ね）」はカッコを外して読みとして採用（字幕側の明示読みを最優先）。
  */
 export function buildFuriganaHtml(text, tokenize) {
-  const { text: prepared, spans: inlineSpans } = extractInlineParenReadings(text);
+  const withoutNotes = stripAnnotationMarkers(text);
+  const { text: prepared, spans: inlineSpans } = extractInlineParenReadings(
+    withoutNotes
+  );
   const tokens = applyInlineParenReadings(
     applyManualPhraseReadings(
       applyContextualReadings(

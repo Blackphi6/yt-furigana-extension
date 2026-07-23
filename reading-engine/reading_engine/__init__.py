@@ -21,6 +21,7 @@ from fugashi import Tagger
 
 from reading_engine.reranker import confidence_threshold, get_reranker
 from reading_engine.trust_patterns import match_trust_reading
+from reading_engine.annotation_markers import strip_annotation_markers
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CREATIVE_SEED = REPO_ROOT / "data" / "creative-ruby" / "seed.jsonl"
@@ -303,6 +304,7 @@ class ReadingEngine:
         return reading, conf, source, cands[:6]
 
     def analyze(self, text: str, user_dict: list[dict[str, str]] | None = None) -> dict[str, Any]:
+        text = strip_annotation_markers(text)
         user_map = {
             e["surface"]: normalize_reading(e["reading"])
             for e in (user_dict or [])
