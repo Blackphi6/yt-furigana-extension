@@ -1,0 +1,40 @@
+# Fail loudly if the live Render API is missing demo / Free-pack routes.
+# Does not deploy — only detects stale Manual-Deploy drift.
+
+name: Probe public reading API
+
+on:
+  schedule:
+    # Twice daily (UTC). Cold-start friendly timeout is in the probe script.
+    - cron: "17 3,15 * * *"
+  push:
+    branches: [main]
+    paths:
+      - "reading-engine/**"
+      - "render.yaml"
+      - "scripts/probe-public-api.mjs"
+      - ".github/workflows/probe-public-api.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: probe-public-api
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Probe live Render routes
+        env:
+          PUBLIC_READING_API_URL: https://yt-furigana-readings.onrender.com
+          # Optional: after Manual Deploy, set repo Variable to pin expected buildId prefix
+          YT_FURIGANA_EXPECT_BUILD_PREFIX: ${{ vars.YT_FURIGANA_EXPECT_BUILD_PREFIX }}
+        run: node scripts/probe-public-api.mjs

@@ -37,6 +37,7 @@
     "dict:neologd": "node scripts/build-neologd-phrases.mjs",
     "dict:english": "node scripts/build-english-katakana.mjs",
     "demo:site": "python3 -m http.server 4173 --directory site",
+    "probe:api": "node scripts/probe-public-api.mjs",
     "reading-engine": "cd reading-engine && ../.venv-reading/bin/uvicorn reading_engine.server:app --host 127.0.0.1 --port 8765",
     "reading-engine:test": "node scripts/test-reading-engine.mjs",
     "mint-license": "node scripts/mint-license.mjs",
