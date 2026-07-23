@@ -1,4 +1,5 @@
-import { collectQuizItems, uniqueCandidates } from "./demo-quiz.js?v=20260723f";
+import { collectQuizItems, uniqueCandidates } from "./demo-quiz.js?v=20260723g";
+import { stripAnnotationMarkers } from "./annotation-markers.js?v=20260723g";
 
 const DEFAULT_API =
   (window.YT_FURIGANA_SITE && window.YT_FURIGANA_SITE.readingApiUrl) ||
@@ -407,15 +408,22 @@ function renderQuiz(text, tokens) {
 
 function renderResult(text, data) {
   const tokens = data.tokens || [];
-  lastResult = { text, tokens };
+  // API は注釈マーカー除去後の span を返す。元テキストに重ねるとルビが右へズレる。
+  const displayText = stripAnnotationMarkers(text);
+  const strippedMarkers = displayText !== String(text ?? "");
+  lastResult = { text: displayText, tokens };
   closeDemoPicker();
-  rubyOut.innerHTML = buildRubyHtml(text, tokens);
-  fullReading.textContent = data.reading ? `かな通し: ${data.reading}` : "";
+  rubyOut.innerHTML = buildRubyHtml(displayText, tokens);
+  const readingLine = data.reading ? `かな通し: ${data.reading}` : "";
+  const stripNote = strippedMarkers
+    ? "（注釈番号（①）などは表示から外しています — ルビ位置ずれ防止）"
+    : "";
+  fullReading.textContent = [readingLine, stripNote].filter(Boolean).join(" ");
 
   const sorted = [...tokens].sort((a, b) => a.span[0] - b.span[0]);
   resultBody.innerHTML = sorted
     .map((t, i) => {
-      const surface = t.surface || text.slice(t.span[0], t.span[1]);
+      const surface = t.surface || displayText.slice(t.span[0], t.span[1]);
       const reading = t.reading || "";
       const editable = /[\u3400-\u9fff\uF900-\uFAFF]/.test(surface) && Boolean(reading);
       const cands = uniqueCandidates(t, reading)
@@ -443,7 +451,7 @@ function renderResult(text, data) {
     })
     .join("");
   resultBlock.hidden = false;
-  renderQuiz(text, tokens);
+  renderQuiz(displayText, tokens);
 
   // 直し方が分かるよう、固定リストを開いておく
   const pinsDetails = pinsEl?.closest?.("details");
