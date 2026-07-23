@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import os
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -294,20 +295,24 @@ def append_proposals(
     source: str = "demo",
     note: str = "",
     use_llm: bool | None = None,
+    queue_llm: bool = True,
 ) -> dict[str, Any]:
     """
     Stage proposals. Never writes shared-readings.json directly.
-    Same voter is rate-limited by cooldown (batch, not per surface).
+    Cooldown is per (voter, surface) so different words can be sent quickly.
     """
     ensure_proposals_store()
     voter = voter_id_from_ip(client_ip)
     cooldown = proposal_cooldown_sec()
     now = time.monotonic()
     with _recent_lock:
-        last = _recent_proposals.get(voter, 0.0)
-        if cooldown > 0 and now - last < cooldown:
-            raise ValueError("proposal_cooldown")
-        _recent_proposals[voter] = now
+        for entry in entries:
+            cool_key = f"{voter}|{entry['surface']}"
+            last = _recent_proposals.get(cool_key, 0.0)
+            if cooldown > 0 and now - last < cooldown:
+                raise ValueError("proposal_cooldown")
+        for entry in entries:
+            _recent_proposals[f"{voter}|{entry['surface']}"] = now
 
     ts = _utcnow()
     src = str(source or "demo").strip()[:32] or "demo"
@@ -315,8 +320,13 @@ def append_proposals(
     stored: list[dict[str, Any]] = []
     summary = {"pending": 0, "accepted": 0, "rejected": 0}
 
+    # Public path: heuristic only (fast). LLM runs async when queued.
+    sync_llm = False if use_llm is None else bool(use_llm)
+
     for entry in entries:
-        review = review_pair(entry["surface"], entry["reading"], use_llm=use_llm)
+        review = review_pair(
+            entry["surface"], entry["reading"], use_llm=sync_llm
+        )
         status = str(review.get("status") or "pending")
         if status not in ("pending", "accepted", "rejected"):
             status = "pending"
@@ -338,6 +348,15 @@ def append_proposals(
 
     _append_rows(stored)
 
+    pending_ids = [
+        str(r["id"])
+        for r in stored
+        if r.get("status") == "pending" and r.get("id")
+    ]
+    llm_queued = False
+    if queue_llm and pending_ids and llm_review_enabled() and not sync_llm:
+        llm_queued = schedule_background_llm_review(pending_ids)
+
     promoted: dict[str, Any] | None = None
     if auto_curate_accepted():
         accepted_map = {
@@ -350,7 +369,6 @@ def append_proposals(
             for r in stored:
                 if r.get("status") == "accepted":
                     r["promoted"] = True
-            # rewrite promoted flags for just-appended rows (best-effort)
             all_rows = iter_proposal_rows()
             by_id = {r.get("id"): r for r in stored if r.get("id")}
             changed = False
@@ -369,11 +387,97 @@ def append_proposals(
         "published": False,
         "count": len(stored),
         "summary": summary,
+        "ids": [r.get("id") for r in stored],
         "message": "staged_for_review",
-        "llm": llm_review_enabled() if use_llm is None else bool(use_llm),
+        "llm": sync_llm or llm_queued,
+        "llmQueued": llm_queued,
         "autoCurate": bool(promoted),
         "promoted": promoted,
     }
+
+
+def review_rows_by_ids(
+    row_ids: list[str] | set[str],
+    *,
+    use_llm: bool = True,
+) -> dict[str, Any]:
+    """Re-review specific proposal ids (used by background LLM)."""
+    want = {str(i) for i in row_ids if str(i)}
+    if not want:
+        return {"ok": True, "updated": 0, "summary": {}}
+
+    rows = iter_proposal_rows()
+    updated = 0
+    summary = {"pending": 0, "accepted": 0, "rejected": 0}
+    newly_accepted: dict[str, str] = {}
+
+    for row in rows:
+        rid = str(row.get("id") or "")
+        if rid not in want:
+            continue
+        if row.get("status") != "pending":
+            continue
+        surface = str(row.get("surface") or "")
+        reading = str(row.get("reading") or "")
+        if not surface or not reading:
+            continue
+        review = review_pair(surface, reading, use_llm=use_llm)
+        status = str(review.get("status") or "pending")
+        if status not in ("pending", "accepted", "rejected"):
+            status = "pending"
+        row["status"] = status
+        row["reviewVia"] = review.get("via") or ""
+        row["reviewReason"] = str(review.get("reason") or "")[:160]
+        row["reviewedAt"] = _utcnow()
+        updated += 1
+        summary[status] = summary.get(status, 0) + 1
+        if status == "accepted":
+            newly_accepted[surface] = reading
+
+    if updated:
+        _rewrite_all_rows(rows)
+
+    promoted = None
+    if newly_accepted and auto_curate_accepted():
+        promoted = merge_curated_entries(newly_accepted, replace=False)
+        for row in rows:
+            if (
+                row.get("surface") in newly_accepted
+                and row.get("status") == "accepted"
+            ):
+                row["promoted"] = True
+                row["promotedAt"] = _utcnow()
+        _rewrite_all_rows(rows)
+
+    return {
+        "ok": True,
+        "updated": updated,
+        "summary": summary,
+        "promoted": promoted,
+    }
+
+
+def schedule_background_llm_review(row_ids: list[str]) -> bool:
+    """Fire-and-forget LLM review so public POST stays fast."""
+    ids = [str(i) for i in row_ids if str(i)]
+    if not ids or not llm_review_enabled():
+        return False
+
+    def _worker() -> None:
+        try:
+            result = review_rows_by_ids(ids, use_llm=True)
+            print(
+                "[proposals] background llm",
+                f"updated={result.get('updated')}",
+                f"summary={result.get('summary')}",
+            )
+        except Exception as exc:  # noqa: BLE001
+            print("[proposals] background llm failed:", exc)
+
+    threading.Thread(
+        target=_worker, name="proposal-llm-review", daemon=True
+    ).start()
+    return True
 
 
 def list_proposals(

@@ -58,7 +58,7 @@ def main() -> None:
 
         # stage does NOT publish to shared pack
         result = prop.append_proposals(
-            entries, client_ip="10.1.0.1", source="demo", use_llm=False
+            entries, client_ip="10.1.0.1", source="demo", use_llm=False, queue_llm=False
         )
         assert result["staged"] is True
         assert result["published"] is False
@@ -82,18 +82,28 @@ def main() -> None:
         pack2 = contrib.get_shared_readings_pack()
         assert pack2["entries"].get("何故") == "なぜ"
 
-        # cooldown
+        # cooldown is per surface: same surface blocked, other surface ok
         os.environ["YT_FURIGANA_PROPOSAL_COOLDOWN_SEC"] = "60"
         prop._recent_proposals.clear()
         more = prop.validate_proposal_entries(
             [{"surface": "夏日", "reading": "なつび"}]
         )
-        prop.append_proposals(more, client_ip="10.1.0.2", use_llm=False)
+        prop.append_proposals(more, client_ip="10.1.0.2", use_llm=False, queue_llm=False)
         try:
-            prop.append_proposals(more, client_ip="10.1.0.2", use_llm=False)
-            raise SystemExit("proposal_cooldown should fire")
+            prop.append_proposals(more, client_ip="10.1.0.2", use_llm=False, queue_llm=False)
+            raise SystemExit("proposal_cooldown should fire for same surface")
         except ValueError as exc:
             assert str(exc) == "proposal_cooldown"
+
+        other = prop.validate_proposal_entries(
+            [{"surface": "故郷", "reading": "ふるさと"}]
+        )
+        prop.append_proposals(
+            other, client_ip="10.1.0.2", use_llm=False, queue_llm=False
+        )
+
+        # background queue is a no-op without GROQ key
+        assert prop.schedule_background_llm_review(["x"]) is False
         os.environ["YT_FURIGANA_PROPOSAL_COOLDOWN_SEC"] = "0"
 
     print("proposals python tests passed.")

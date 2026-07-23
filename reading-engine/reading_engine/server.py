@@ -282,9 +282,9 @@ def proposals_post(request: Request, body: ProposalRequest) -> dict[str, Any]:
     """
     Stage reading proposals from the public demo.
 
-    Stored for review only — does not update /v1/shared-readings until an
-    admin promotes accepted entries (or auto-curate is explicitly enabled).
-    Public POST uses heuristic gate only; LLM review is admin /process.
+    Heuristic gate runs inline. When GROQ_API_KEY is set, LLM review is
+    queued in a background thread (does not block the response).
+    Never updates /v1/shared-readings until admin promote (or auto-curate).
     """
     try:
         entries = validate_proposal_entries(
@@ -299,6 +299,7 @@ def proposals_post(request: Request, body: ProposalRequest) -> dict[str, Any]:
             source=body.source or "demo",
             note=body.note or "",
             use_llm=False,
+            queue_llm=True,
         )
     except ValueError as exc:
         if str(exc) == "proposal_cooldown":

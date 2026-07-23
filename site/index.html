@@ -157,11 +157,11 @@
               placeholder="葛飾　かつしか&#10;一二三　ひふみ"
             ></textarea>
             <label class="pin-share">
-              <input type="checkbox" id="pin-share-proposal" />
-              共有候補として送る（審査待ち・即公開しません）
+              <input type="checkbox" id="pin-share-proposal" checked />
+              クリック修正も共有候補へ送る（LLM審査・即公開しません）
             </label>
             <p class="hint pin-share-hint">
-              送ってもみんな用パックにはすぐ反映されません。ヒューリスティック／任意の LLM 審査のあと、運営が curated に載せるまで公開されません。表層と読みだけ送ります（字幕全文・動画 URL は送りません）。
+              既定オン。送ってもみんな用パックにはすぐ反映されません。ヒューリスティックのあと、サーバーにキーがあれば LLM が裏で振るい分けます。運営が curated に載せるまで公開されません。表層と読みだけ送ります。
             </p>
             <div class="pin-actions">
               <button type="button" class="btn ghost small" id="pin-clear">クリア</button>
@@ -193,8 +193,8 @@
             <h3>ルビ結果</h3>
             <p class="hint result-edit-hint">
               <strong>直し方:</strong>
-              上のルビの漢字をクリック／下の表の「直す」または候補ボタンを押す／
-              「この文だけ読みを固定」に手書き。選ぶとすぐ再ルビ付けします。
+              上のルビの漢字をクリック／下の表の「直す」または候補ボタンを押す。
+              直すとこの文にすぐ反映し、チェックがオンなら審査キュー（LLM）へも送ります。
             </p>
             <div class="ruby-out" id="ruby-out" lang="ja"></div>
             <p class="full-reading" id="full-reading"></p>
