@@ -43,11 +43,34 @@ Render **Free** は hobby 向けで、次は仕様です（有料にしない限
 
 **推奨:** Keep-alive の定期 ping は「起こしっぱなし＝無料枠消費」なので既定では入れません。
 
+### いま起きている 404（/v1/proposals）を直す — **Dashboard で1回だけ**
+
+こちら（GitHub / AI）から Render の再デプロイは押せません。次を実行してください。
+
+1. https://dashboard.render.com/ を開く
+2. サービス **yt-furigana-readings** を開く
+3. **Manual Deploy** → **Deploy latest commit**
+4. 数分後に確認:
+
+```bash
+npm run probe:api
+# /v1/proposals が OK になれば完了（buildId が local 以外なら理想）
+```
+
+#### 以後自動にする（推奨・1回だけ）
+
+1. 同じサービス → **Settings** → **Deploy Hook** → Create → URL をコピー
+2. GitHub → このリポジトリ → **Settings** → **Secrets and variables** → **Actions**
+3. 名前 `RENDER_DEPLOY_HOOK`、値にその URL を保存
+
+以降、`reading-engine/**` や `render.yaml` の push で Actions が Hook を叩き、Manual Deploy 不要になります。
+
 ### 古いデプロイ事故を防ぐ
 
 1. Blueprint 適用後、サービス設定で **Auto-Deploy = On commit**（`render.yaml` の `autoDeployTrigger: commit`）
-2. GitHub Actions `Probe public reading API` が `/v1/proposals` 等の欠落を日次＋関連 push で検知
-3. 手元確認: `node scripts/probe-public-api.mjs`
+2. 上の **RENDER_DEPLOY_HOOK**（推奨）
+3. GitHub Actions `Probe public reading API` が `/v1/proposals` 等の欠落を日次＋関連 push で検知
+4. 手元確認: `node scripts/probe-public-api.mjs`
 
 ### コードだけ直したあと（Auto-Deploy が Off のとき）
 

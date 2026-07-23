@@ -1,4 +1,4 @@
-import { collectQuizItems, uniqueCandidates } from "./demo-quiz.js?v=20260723d";
+import { collectQuizItems, uniqueCandidates } from "./demo-quiz.js?v=20260723e";
 
 const DEFAULT_API =
   (window.YT_FURIGANA_SITE && window.YT_FURIGANA_SITE.readingApiUrl) ||
@@ -216,6 +216,10 @@ async function maybeSubmitClickProposal(surface, reading) {
         "この文には反映済み。同じ語の再送信は少し待ってから（クールダウン）。",
         { ok: true }
       );
+      return;
+    }
+    if (/古い Render|\/v1\/proposals|Manual Deploy/i.test(msg)) {
+      showProposeStatus(msg, { ok: false });
       return;
     }
     showProposeStatus(
@@ -564,9 +568,9 @@ function friendlyHttpError(status, body, { endpoint = "" } = {}) {
     /<html[\s>]/i.test(text) || /Sorry, we can't find the page/i.test(text);
   if (status === 404 && /\/v1\/proposals/i.test(endpoint) && !looksMissingHost) {
     return (
-      `${status}: この Render は古いビルドです（/v1/proposals がありません）。\n` +
-      `Dashboard → yt-furigana-readings → Manual Deploy → Deploy latest commit。\n` +
-      `手順: site/README.md`
+      `共有審査キューはまだ古い Render です（/v1/proposals なし）。` +
+      `この文への反映はできています。` +
+      ` https://dashboard.render.com/ で yt-furigana-readings → Manual Deploy → Deploy latest commit を1回実行してください。`
     );
   }
   if (status === 404 || looksMissingHost) {

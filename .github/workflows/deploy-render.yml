@@ -1,0 +1,50 @@
+# Trigger Render rebuild when the reading API / Blueprint changes.
+# One-time setup (owner):
+#   1. Render Dashboard → yt-furigana-readings → Settings → Deploy Hook → Create
+#   2. GitHub repo → Settings → Secrets → Actions → RENDER_DEPLOY_HOOK = that URL
+# Until the secret exists, this workflow no-ops (does not fail the repo).
+
+name: Deploy Render reading API
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "reading-engine/**"
+      - "render.yaml"
+      - "data/generated/heteronym-candidates.json"
+      - "data/creative-ruby/**"
+      - ".github/workflows/deploy-render.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-render-api
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Deploy Hook
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::warning::RENDER_DEPLOY_HOOK secret is not set."
+            echo "Create a Deploy Hook on Render (Settings → Deploy Hook),"
+            echo "then add it as a repo Actions secret named RENDER_DEPLOY_HOOK."
+            echo "Until then, use Dashboard → Manual Deploy → Deploy latest commit."
+            exit 0
+          fi
+          code=$(curl -sS -o /tmp/render-hook-body.txt -w "%{http_code}" -X POST "$HOOK")
+          echo "HTTP $code"
+          head -c 400 /tmp/render-hook-body.txt || true
+          echo
+          if [ "$code" != "200" ] && [ "$code" != "201" ] && [ "$code" != "202" ]; then
+            echo "::error::Deploy hook failed with HTTP $code"
+            exit 1
+          fi
+          echo "Render deploy triggered."
