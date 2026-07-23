@@ -1,4 +1,4 @@
-import { collectQuizItems, uniqueCandidates } from "./demo-quiz.js?v=20260723c";
+import { collectQuizItems, uniqueCandidates } from "./demo-quiz.js?v=20260723d";
 
 const DEFAULT_API =
   (window.YT_FURIGANA_SITE && window.YT_FURIGANA_SITE.readingApiUrl) ||
@@ -18,10 +18,20 @@ const resultBody = $("#result-body");
 const pinsEl = $("#reading-pins");
 const quizEl = $("#demo-quiz");
 const quizListEl = $("#demo-quiz-list");
+const progressEl = $("#analyze-progress");
+const progressFillEl = $("#analyze-progress-fill");
+const progressLabelEl = $("#analyze-progress-label");
 
 /** @type {{ text: string, tokens: any[] } | null} */
 let lastResult = null;
 const PICKER_ID = "demo-reading-picker";
+
+/** Cold start on free Render often takes ~30–60s; bar asymptotes toward this. */
+const ANALYZE_EXPECTED_MS = 50000;
+/** @type {ReturnType<typeof setInterval> | null} */
+let analyzeProgressTimer = null;
+/** @type {ReturnType<typeof setTimeout> | null} */
+let analyzeProgressHideTimer = null;
 
 apiEl.value = DEFAULT_API;
 
@@ -441,6 +451,74 @@ function showError(msg) {
   errorEl.textContent = msg || "";
 }
 
+/**
+ * Indeterminate-friendly progress: climbs toward ~92% by expectedMs, then creeps.
+ * Completes to 100% when stopAnalyzeProgress({ done: true }) is called.
+ */
+function startAnalyzeProgress() {
+  if (!progressEl || !progressFillEl || !progressLabelEl) return;
+  if (analyzeProgressTimer) clearInterval(analyzeProgressTimer);
+  if (analyzeProgressHideTimer) clearTimeout(analyzeProgressHideTimer);
+  const started = Date.now();
+  progressEl.hidden = false;
+  progressFillEl.style.width = "2%";
+  progressEl.setAttribute("aria-valuenow", "2");
+  progressLabelEl.textContent = "ルビ付けを開始… 目安 最大約1分（スリープ解除時）";
+
+  const tick = () => {
+    const elapsed = Date.now() - started;
+    // 1 - e^(-t/τ) → ~92% around expectedMs
+    const tau = ANALYZE_EXPECTED_MS * 0.55;
+    let pct = (1 - Math.exp(-elapsed / tau)) * 92;
+    if (elapsed > ANALYZE_EXPECTED_MS) {
+      pct = Math.min(97, 92 + ((elapsed - ANALYZE_EXPECTED_MS) / 40000) * 5);
+    }
+    pct = Math.max(2, Math.min(97, pct));
+    progressFillEl.style.width = `${pct}%`;
+    progressEl.setAttribute("aria-valuenow", String(Math.round(pct)));
+    const remain = Math.max(0, Math.ceil((ANALYZE_EXPECTED_MS - elapsed) / 1000));
+    if (remain > 0) {
+      progressLabelEl.textContent = `進行中 ${Math.round(pct)}% · 目安あと約 ${remain} 秒（起動待ちならもう少し）`;
+    } else {
+      progressLabelEl.textContent = `進行中 ${Math.round(pct)}% · 起動に時間がかかっています（もう少し）`;
+    }
+  };
+  tick();
+  analyzeProgressTimer = setInterval(tick, 200);
+}
+
+/**
+ * @param {{ done?: boolean, error?: boolean }} [opts]
+ */
+function stopAnalyzeProgress(opts = {}) {
+  if (analyzeProgressTimer) {
+    clearInterval(analyzeProgressTimer);
+    analyzeProgressTimer = null;
+  }
+  if (!progressEl || !progressFillEl || !progressLabelEl) return;
+  if (opts.error) {
+    progressFillEl.style.width = `${progressEl.getAttribute("aria-valuenow") || 40}%`;
+    progressLabelEl.textContent = "中断しました";
+    analyzeProgressHideTimer = setTimeout(() => {
+      progressEl.hidden = true;
+    }, 900);
+    return;
+  }
+  if (opts.done) {
+    progressFillEl.style.width = "100%";
+    progressEl.setAttribute("aria-valuenow", "100");
+    progressLabelEl.textContent = "完了";
+    analyzeProgressHideTimer = setTimeout(() => {
+      progressEl.hidden = true;
+      progressFillEl.style.width = "0%";
+      progressEl.setAttribute("aria-valuenow", "0");
+      progressLabelEl.textContent = "";
+    }, 650);
+    return;
+  }
+  progressEl.hidden = true;
+}
+
 async function checkHealth() {
   const tryBase = async (base, timeoutMs = 8000) => {
     const controller = new AbortController();
@@ -632,10 +710,13 @@ async function runAnalyze(options = {}) {
   btn.disabled = true;
   btn.textContent = "付けています…";
   btn.dataset.busy = "1";
+  const showBar = !options.fromPicker;
+  if (showBar) startAnalyzeProgress();
   const pins = collectUserDict();
   // ピッカーからの再実行では勝手に共有送信しない
   const share =
     !options.fromPicker && Boolean($("#pin-share-proposal")?.checked);
+  let ok = false;
   try {
     const res = await fetchWithColdStart(
       `${base}/v1/readings`,
@@ -658,6 +739,7 @@ async function runAnalyze(options = {}) {
     renderResult(text, data);
     statusEl.dataset.state = "ok";
     statusEl.textContent = `エンジン稼働中（${base}）`;
+    ok = true;
 
     if (share && pins.length) {
       try {
@@ -690,6 +772,7 @@ async function runAnalyze(options = {}) {
     btn.disabled = false;
     btn.textContent = "ルビを付ける";
     delete btn.dataset.busy;
+    if (showBar) stopAnalyzeProgress(ok ? { done: true } : { error: true });
   }
 }
 

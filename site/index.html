@@ -186,6 +186,21 @@
             <button type="button" class="btn" id="run-btn">ルビを付ける</button>
             <span class="hint">⌘ Enter / Ctrl Enter</span>
           </div>
+          <div
+            class="analyze-progress"
+            id="analyze-progress"
+            hidden
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+            aria-labelledby="analyze-progress-label"
+          >
+            <div class="analyze-progress-track">
+              <div class="analyze-progress-fill" id="analyze-progress-fill"></div>
+            </div>
+            <p class="analyze-progress-label" id="analyze-progress-label"></p>
+          </div>
 
           <p class="error" id="error" hidden></p>
 
@@ -335,6 +350,6 @@ curl -s https://yt-furigana-readings.onrender.com/v1/readings \
       </footer>
     </div>
     <script src="./home-metrics.js?v=20260718d" type="module"></script>
-    <script src="./reading-demo.js?v=20260723c" type="module"></script>
+    <script src="./reading-demo.js?v=20260723d" type="module"></script>
   </body>
 </html>
