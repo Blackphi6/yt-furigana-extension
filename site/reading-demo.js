@@ -1,3 +1,5 @@
+import { collectQuizItems, uniqueCandidates } from "./demo-quiz.js?v=20260723a";
+
 const DEFAULT_API =
   (window.YT_FURIGANA_SITE && window.YT_FURIGANA_SITE.readingApiUrl) ||
   "http://127.0.0.1:8765";
@@ -14,6 +16,8 @@ const rubyOut = $("#ruby-out");
 const fullReading = $("#full-reading");
 const resultBody = $("#result-body");
 const pinsEl = $("#reading-pins");
+const quizEl = $("#demo-quiz");
+const quizListEl = $("#demo-quiz-list");
 
 /** @type {{ text: string, tokens: any[] } | null} */
 let lastResult = null;
@@ -149,20 +153,8 @@ function buildRubyHtml(text, tokens) {
   return html;
 }
 
-function uniqueCandidates(token, currentReading) {
-  const list = [];
-  const push = (v) => {
-    const s = String(v || "").trim();
-    if (!s || list.includes(s)) return;
-    list.push(s);
-  };
-  push(currentReading);
-  for (const c of token?.candidates || []) push(c);
-  return list;
-}
-
 /**
- * Apply a reading without opening the picker (table buttons).
+ * Apply a reading without opening the picker (table / quiz buttons).
  * @param {string} surface
  * @param {string} reading
  */
@@ -358,6 +350,47 @@ function openDemoPicker(wordEl, anchorEl) {
   input?.focus();
 }
 
+/**
+ * Highlight ambiguous ruby words and render the 3-choice quiz panel.
+ * @param {string} text
+ * @param {object[]} tokens
+ */
+function renderQuiz(text, tokens) {
+  const items = collectQuizItems(text, tokens);
+  const quizIndexes = new Set(items.map((it) => it.index));
+  rubyOut?.querySelectorAll?.(".demo-ruby-word")?.forEach((el) => {
+    const idx = Number.parseInt(el.getAttribute("data-token-index") || "", 10);
+    el.classList.toggle("is-ambiguous", quizIndexes.has(idx));
+  });
+
+  if (!quizEl || !quizListEl) return;
+  if (!items.length) {
+    quizEl.hidden = true;
+    quizListEl.innerHTML = "";
+    return;
+  }
+  quizListEl.innerHTML = items
+    .map((it) => {
+      const conf =
+        typeof it.confidence === "number" ? it.confidence.toFixed(2) : "—";
+      const buttons = it.choices
+        .map(
+          (c) =>
+            `<button type="button" class="demo-quiz-choice${c === it.reading ? " is-current" : ""}" data-surface="${escapeHtml(it.surface)}" data-reading="${escapeHtml(c)}"${c === it.reading ? " disabled aria-current=\"true\"" : ""}>${escapeHtml(c)}</button>`
+        )
+        .join("");
+      return `<article class="demo-quiz-item" data-token-index="${it.index}">
+        <div class="demo-quiz-prompt">
+          <strong>${escapeHtml(it.surface)}</strong>
+          <span class="demo-quiz-meta">いま ${escapeHtml(it.reading)} · スコア ${conf}</span>
+        </div>
+        <div class="demo-quiz-choices" role="group" aria-label="${escapeHtml(it.surface)}の読み">${buttons}</div>
+      </article>`;
+    })
+    .join("");
+  quizEl.hidden = false;
+}
+
 function renderResult(text, data) {
   const tokens = data.tokens || [];
   lastResult = { text, tokens };
@@ -396,6 +429,7 @@ function renderResult(text, data) {
     })
     .join("");
   resultBlock.hidden = false;
+  renderQuiz(text, tokens);
 
   // 直し方が分かるよう、固定リストを開いておく
   const pinsDetails = pinsEl?.closest?.("details");
@@ -666,6 +700,16 @@ resultBody?.addEventListener("click", (e) => {
       idx
     );
   }
+});
+
+quizListEl?.addEventListener("click", (e) => {
+  const btn = e.target?.closest?.(".demo-quiz-choice");
+  if (!btn || !quizListEl.contains(btn) || btn.disabled) return;
+  e.preventDefault();
+  void applyReadingDirect(
+    btn.getAttribute("data-surface") || "",
+    btn.getAttribute("data-reading") || ""
+  );
 });
 
 $("#pin-clear")?.addEventListener("click", () => {

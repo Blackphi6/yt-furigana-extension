@@ -300,6 +300,94 @@
   white-space: nowrap;
 }
 
+.demo-ruby-word.is-ambiguous ruby {
+  box-shadow: inset 0 -2px 0 color-mix(in oklab, var(--vermilion) 55%, transparent);
+}
+
+.demo-quiz {
+  margin: 0.85rem 0 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid color-mix(in oklab, var(--vermilion) 28%, var(--line));
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--vermilion) 6%, var(--paper));
+}
+
+.demo-quiz-title {
+  margin: 0 0 0.25rem;
+  font-family: var(--display);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.demo-quiz-lead {
+  margin: 0 0 0.75rem;
+}
+
+.demo-quiz-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.demo-quiz-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.demo-quiz-prompt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.45rem;
+}
+
+.demo-quiz-prompt strong {
+  font-family: var(--display);
+  font-size: 1.15rem;
+}
+
+.demo-quiz-meta {
+  color: var(--sumi-soft);
+  font-size: 0.82rem;
+}
+
+.demo-quiz-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.demo-quiz-choice {
+  border: 1px solid var(--line);
+  background: white;
+  border-radius: 999px;
+  padding: 0.4rem 0.95rem;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.95rem;
+  min-width: 4.5rem;
+}
+
+.demo-quiz-choice:hover:not(:disabled) {
+  border-color: var(--vermilion-deep);
+}
+
+.demo-quiz-choice:focus-visible {
+  outline: 2px solid var(--vermilion-deep);
+  outline-offset: 2px;
+}
+
+.demo-quiz-choice.is-current,
+.demo-quiz-choice:disabled {
+  background: color-mix(in oklab, var(--vermilion) 14%, white);
+  border-color: color-mix(in oklab, var(--vermilion) 45%, var(--line));
+  font-weight: 700;
+  color: var(--vermilion-deep);
+  cursor: default;
+  opacity: 1;
+}
+
 .demo-reading-picker {
   position: absolute;
   z-index: 10000;

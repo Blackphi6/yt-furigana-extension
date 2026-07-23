@@ -193,11 +193,18 @@
             <h3>ルビ結果</h3>
             <p class="hint result-edit-hint">
               <strong>直し方:</strong>
-              上のルビの漢字をクリック／下の表の「直す」または候補ボタンを押す。
+              あいまいな語は下の<strong>3択</strong>、またはルビ／表のクリックで直せます。
               直すとこの文にすぐ反映し、チェックがオンなら審査キュー（LLM）へも送ります。
             </p>
             <div class="ruby-out" id="ruby-out" lang="ja"></div>
             <p class="full-reading" id="full-reading"></p>
+            <div class="demo-quiz" id="demo-quiz" hidden>
+              <h4 class="demo-quiz-title">あいまいな読み（3択）</h4>
+              <p class="hint demo-quiz-lead">
+                スコアが低い／候補が割れている漢字だけ聞きます。答えは辞書の候補の中から最大3つです。
+              </p>
+              <div class="demo-quiz-list" id="demo-quiz-list"></div>
+            </div>
             <div class="legend">
               <span data-source="trust_pattern">信頼句</span>
               <span data-source="reranker">再ランク</span>
@@ -274,8 +281,8 @@
             <span>同じ漢字が二回出ても、前後の節ごとにキューで読みを分けます。</span>
           </li>
           <li>
-            <strong>あいまいなら辞書側へ</strong>
-            <span>スコアが低いときは形態素の基本読みに戻し、字幕に変なルビを載せにくくします。</span>
+            <strong>あいまいなら辞書側へ／3択</strong>
+            <span>スコアが低いときは形態素の基本読みに戻します。デモでは同じ語を3択で聞けます（共有候補キューへ送れます）。</span>
           </li>
         </ol>
       </section>
@@ -328,6 +335,6 @@ curl -s https://yt-furigana-readings.onrender.com/v1/readings \
       </footer>
     </div>
     <script src="./home-metrics.js?v=20260718d" type="module"></script>
-    <script src="./reading-demo.js?v=20260718d" type="module"></script>
+    <script src="./reading-demo.js?v=20260723a" type="module"></script>
   </body>
 </html>
