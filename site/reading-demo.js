@@ -162,9 +162,42 @@ function uniqueCandidates(token, currentReading) {
 }
 
 /**
- * @param {HTMLElement} wordEl
+ * Apply a reading without opening the picker (table buttons).
+ * @param {string} surface
+ * @param {string} reading
  */
-function openDemoPicker(wordEl) {
+async function applyReadingDirect(surface, reading) {
+  const read = String(reading || "").normalize("NFKC").trim();
+  if (!isKanaReading(read)) {
+    showError("ひらがなまたはカタカナの読みを選んでください。");
+    return;
+  }
+  upsertPin(surface, read);
+  closeDemoPicker();
+  await runAnalyze({ fromPicker: true });
+}
+
+/**
+ * Open picker anchored to an arbitrary element (table 「直す」).
+ * @param {HTMLElement} anchor
+ * @param {string} surface
+ * @param {string} current
+ * @param {number} tokenIndex
+ */
+function openDemoPickerAt(anchor, surface, current, tokenIndex) {
+  const fake = document.createElement("span");
+  fake.className = "demo-ruby-word";
+  fake.setAttribute("data-surface", surface);
+  fake.setAttribute("data-reading", current);
+  fake.setAttribute("data-token-index", String(tokenIndex));
+  openDemoPicker(fake, anchor);
+}
+
+/**
+ * @param {HTMLElement} wordEl
+ * @param {HTMLElement} [anchorEl]
+ */
+function openDemoPicker(wordEl, anchorEl) {
   closeDemoPicker();
   const surface = wordEl.getAttribute("data-surface") || "";
   const current = wordEl.getAttribute("data-reading") || "";
@@ -193,13 +226,13 @@ function openDemoPicker(wordEl) {
   popup.innerHTML = `
     <div class="demo-pick-head">
       <strong>${escapeHtml(surface)}</strong>
-      <span>の読み</span>
+      <span>の読みを直す</span>
       <button type="button" class="demo-pick-close" aria-label="閉じる">×</button>
     </div>
-    <div class="demo-pick-cands">${candHtml || "<span class='hint'>候補なし</span>"}</div>
+    <div class="demo-pick-cands">${candHtml || "<span class='hint'>候補なし — 下に入力</span>"}</div>
     <label class="demo-pick-custom">
-      <span>候補にない読み</span>
-      <input type="text" inputmode="kana" autocomplete="off" spellcheck="false" placeholder="ひらがな／カタカナ" value="" />
+      <span>候補にない読み（ひらがな／カタカナ）</span>
+      <input type="text" inputmode="kana" autocomplete="off" spellcheck="false" placeholder="例: まちなか" value="" />
     </label>
     <div class="demo-pick-actions">
       <button type="button" class="btn small" data-apply-custom>この読みにする</button>
@@ -209,7 +242,8 @@ function openDemoPicker(wordEl) {
 
   document.body.appendChild(popup);
 
-  const rect = wordEl.getBoundingClientRect();
+  const anchor = anchorEl instanceof HTMLElement ? anchorEl : wordEl;
+  const rect = anchor.getBoundingClientRect();
   const pad = 8;
   let left = rect.left + window.scrollX;
   let top = rect.bottom + window.scrollY + 6;
@@ -258,12 +292,15 @@ function openDemoPicker(wordEl) {
     }
   });
 
-  const onDoc = (e) => {
-    if (popup.contains(e.target) || wordEl.contains(e.target)) return;
-    closeDemoPicker();
-    document.removeEventListener("pointerdown", onDoc, true);
-  };
-  document.addEventListener("pointerdown", onDoc, true);
+  // 開いた直後の同じ pointerdown で閉じないよう次フレームから監視
+  requestAnimationFrame(() => {
+    const onDoc = (e) => {
+      if (popup.contains(e.target)) return;
+      closeDemoPicker();
+      document.removeEventListener("pointerdown", onDoc, true);
+    };
+    document.addEventListener("pointerdown", onDoc, true);
+  });
   const onKey = (e) => {
     if (e.key === "Escape") {
       closeDemoPicker();
@@ -280,23 +317,42 @@ function renderResult(text, data) {
   closeDemoPicker();
   rubyOut.innerHTML = buildRubyHtml(text, tokens);
   fullReading.textContent = data.reading ? `かな通し: ${data.reading}` : "";
-  resultBody.innerHTML = tokens
-    .map((t) => {
-      const cands = (t.candidates || [])
-        .map((c) => (c === t.reading ? `<b>${escapeHtml(c)}</b>` : escapeHtml(c)))
-        .join(" · ");
+
+  const sorted = [...tokens].sort((a, b) => a.span[0] - b.span[0]);
+  resultBody.innerHTML = sorted
+    .map((t, i) => {
+      const surface = t.surface || text.slice(t.span[0], t.span[1]);
+      const reading = t.reading || "";
+      const editable = /[\u3400-\u9fff\uF900-\uFAFF]/.test(surface) && Boolean(reading);
+      const cands = uniqueCandidates(t, reading)
+        .map((c) => {
+          const current = c === reading;
+          if (!editable) {
+            return current ? `<b>${escapeHtml(c)}</b>` : escapeHtml(c);
+          }
+          return `<button type="button" class="demo-table-cand${current ? " is-current" : ""}" data-surface="${escapeHtml(surface)}" data-reading="${escapeHtml(c)}" title="この読みに直す">${escapeHtml(c)}</button>`;
+        })
+        .join(" ");
       const conf =
         typeof t.confidence === "number" ? t.confidence.toFixed(3) : "—";
-      return `<tr>
-        <td>${escapeHtml(t.surface)}</td>
-        <td>${escapeHtml(t.reading)}</td>
+      const fixBtn = editable
+        ? `<button type="button" class="btn ghost small demo-table-fix" data-token-index="${i}" data-surface="${escapeHtml(surface)}" data-reading="${escapeHtml(reading)}">直す</button>`
+        : "—";
+      return `<tr data-token-index="${i}">
+        <td>${escapeHtml(surface)}</td>
+        <td>${escapeHtml(reading)}</td>
         <td>${conf}</td>
         <td>${escapeHtml(sourceLabel(t.source))}</td>
         <td><span class="cand-list">${cands || "—"}</span></td>
+        <td>${fixBtn}</td>
       </tr>`;
     })
     .join("");
   resultBlock.hidden = false;
+
+  // 直し方が分かるよう、固定リストを開いておく
+  const pinsDetails = pinsEl?.closest?.("details");
+  if (pinsDetails) pinsDetails.open = true;
 }
 
 function showError(msg) {
@@ -543,6 +599,29 @@ rubyOut?.addEventListener("keydown", (e) => {
   if (!word || !rubyOut.contains(word)) return;
   e.preventDefault();
   openDemoPicker(word);
+});
+
+resultBody?.addEventListener("click", (e) => {
+  const cand = e.target?.closest?.(".demo-table-cand");
+  if (cand && resultBody.contains(cand)) {
+    e.preventDefault();
+    void applyReadingDirect(
+      cand.getAttribute("data-surface") || "",
+      cand.getAttribute("data-reading") || ""
+    );
+    return;
+  }
+  const fix = e.target?.closest?.(".demo-table-fix");
+  if (fix && resultBody.contains(fix)) {
+    e.preventDefault();
+    const idx = Number.parseInt(fix.getAttribute("data-token-index") || "", 10);
+    openDemoPickerAt(
+      fix,
+      fix.getAttribute("data-surface") || "",
+      fix.getAttribute("data-reading") || "",
+      idx
+    );
+  }
 });
 
 $("#pin-clear")?.addEventListener("click", () => {

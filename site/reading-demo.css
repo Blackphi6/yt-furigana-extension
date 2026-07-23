@@ -236,6 +236,7 @@
   cursor: pointer;
   border-radius: 2px;
   outline: none;
+  position: relative;
 }
 
 .ruby-out .demo-ruby-word:hover,
@@ -244,9 +245,59 @@
   box-shadow: inset 0 -2px 0 color-mix(in oklab, var(--vermilion) 55%, transparent);
 }
 
+.ruby-out .demo-ruby-word::after {
+  content: "直す";
+  position: absolute;
+  left: 50%;
+  bottom: -1.15em;
+  transform: translateX(-50%);
+  font-family: var(--body);
+  font-size: 0.55rem;
+  line-height: 1;
+  color: var(--vermilion-deep);
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.ruby-out .demo-ruby-word:hover::after,
+.ruby-out .demo-ruby-word:focus-visible::after {
+  opacity: 0.9;
+}
+
 .result-edit-hint {
-  margin: 0 0 0.5rem;
-  font-size: 0.88rem;
+  margin: 0 0 0.65rem;
+  font-size: 0.92rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid color-mix(in oklab, var(--vermilion) 35%, var(--line));
+  background: color-mix(in oklab, var(--vermilion) 8%, var(--paper));
+  border-radius: 8px;
+}
+
+.demo-table-cand {
+  border: 1px solid var(--line);
+  background: white;
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+  margin: 0.1rem;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.demo-table-cand:hover {
+  border-color: var(--vermilion-deep);
+}
+
+.demo-table-cand.is-current {
+  background: color-mix(in oklab, var(--vermilion) 14%, white);
+  border-color: color-mix(in oklab, var(--vermilion) 45%, var(--line));
+  font-weight: 700;
+  color: var(--vermilion-deep);
+}
+
+.demo-table-fix {
+  white-space: nowrap;
 }
 
 .demo-reading-picker {

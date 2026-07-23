@@ -191,7 +191,11 @@
 
           <div class="result-block" id="result-block" hidden>
             <h3>ルビ結果</h3>
-            <p class="hint result-edit-hint">着色された漢字をクリックすると読みを変更できます。</p>
+            <p class="hint result-edit-hint">
+              <strong>直し方:</strong>
+              上のルビの漢字をクリック／下の表の「直す」または候補ボタンを押す／
+              「この文だけ読みを固定」に手書き。選ぶとすぐ再ルビ付けします。
+            </p>
             <div class="ruby-out" id="ruby-out" lang="ja"></div>
             <p class="full-reading" id="full-reading"></p>
             <div class="legend">
@@ -210,7 +214,8 @@
                     <th>かな</th>
                     <th>スコア</th>
                     <th>経路</th>
-                    <th>候補内</th>
+                    <th>候補（押して直す）</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody id="result-body"></tbody>
