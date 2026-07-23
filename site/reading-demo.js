@@ -1,4 +1,4 @@
-import { collectQuizItems, uniqueCandidates } from "./demo-quiz.js?v=20260723a";
+import { collectQuizItems, uniqueCandidates } from "./demo-quiz.js?v=20260723b";
 
 const DEFAULT_API =
   (window.YT_FURIGANA_SITE && window.YT_FURIGANA_SITE.readingApiUrl) ||
@@ -480,9 +480,18 @@ async function checkHealth() {
   return false;
 }
 
-function friendlyHttpError(status, body) {
+function friendlyHttpError(status, body, { endpoint = "" } = {}) {
   const text = String(body || "");
-  if (status === 404 || /<html[\s>]/i.test(text) || /Sorry, we can't find the page/i.test(text)) {
+  const looksMissingHost =
+    /<html[\s>]/i.test(text) || /Sorry, we can't find the page/i.test(text);
+  if (status === 404 && /\/v1\/proposals/i.test(endpoint) && !looksMissingHost) {
+    return (
+      `${status}: この Render は古いビルドです（/v1/proposals がありません）。\n` +
+      `Dashboard → yt-furigana-readings → Manual Deploy → Deploy latest commit。\n` +
+      `手順: site/README.md`
+    );
+  }
+  if (status === 404 || looksMissingHost) {
     return (
       `${status}: 公開 API（Render）がまだありません。\n` +
       `Render で Blueprint（render.yaml）を適用してください。手順: site/README.md`
@@ -542,7 +551,9 @@ async function submitProposals(entries, { source = "demo" } = {}) {
     throw new Error(
       res.status === 429
         ? "少し間隔を空けてから再度お試しください（提案のクールダウン）。"
-        : friendlyHttpError(res.status, String(detail))
+        : friendlyHttpError(res.status, String(detail), {
+            endpoint: `${base}/v1/proposals`,
+          })
     );
   }
   return data;
