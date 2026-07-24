@@ -3,11 +3,15 @@ import {
   markKeepOneLineCaption,
   KEEP_ONE_LINE_ATTR
 } from "./ruby-layout.js";
+import {
+  FONT_SIZE_ATTR,
+  clearExtensionRubyInlineStyles,
+  clearYouTubeCaptionWindowArtifacts
+} from "./caption-teardown.js";
 
 const styleSnapshots = new WeakMap();
 const styleGuards = new WeakMap();
 
-const FONT_SIZE_ATTR = "data-yt-furigana-font-size";
 const BACKGROUND_ATTR = "data-yt-furigana-bg";
 const LINE_WIDTH_ATTR = "data-yt-furigana-line-width";
 const NEEDED_WIDTH_ATTR = "data-yt-furigana-needed-width";
@@ -778,13 +782,10 @@ export function releaseCaptionStyles(element) {
   element.removeAttribute("data-yt-furigana-outline");
   element.removeAttribute("data-yt-furigana-readable");
   element.removeAttribute(BACKGROUND_ATTR);
+  element.removeAttribute(FONT_SIZE_ATTR);
 
-  const win = element.closest?.(".caption-window, .captions-text");
-  if (win instanceof HTMLElement) {
-    win.style.removeProperty("width");
-    win.style.removeProperty("max-width");
-    // overflow:visible は他キューでも害が少ないので残してよいが、幅は戻す
-  }
+  clearExtensionRubyInlineStyles(element);
+  clearYouTubeCaptionWindowArtifacts(element);
 
   const line = element.closest?.(".vjs-text-track-cue-line");
   if (line instanceof HTMLElement) {
@@ -809,16 +810,10 @@ export function releaseCaptionStyles(element) {
     "line-break",
     "overflow-wrap",
     "box-decoration-break",
-    "-webkit-box-decoration-break"
+    "-webkit-box-decoration-break",
+    "position",
+    "transform"
   ]) {
     element.style.removeProperty(prop);
-  }
-
-  for (const ruby of element.querySelectorAll("ruby")) {
-    ruby.style.removeProperty("background-color");
-    ruby.style.removeProperty("box-decoration-break");
-    ruby.style.removeProperty("-webkit-box-decoration-break");
-    const rt = ruby.querySelector("rt");
-    if (rt) rt.style.removeProperty("background-color");
   }
 }

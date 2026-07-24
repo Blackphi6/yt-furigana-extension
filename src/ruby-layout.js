@@ -236,6 +236,8 @@ export function planKeepOneLineFit({
 
 /**
  * 注入前の単一行フラグを属性に残す（既に判定済みなら触らない）。
+ * YouTube/TVer の1セグメントは通常1行。<br>/改行が無ければ keep する
+ * （ルビ残留や高さ誤判定で soft-break が入り「2行→3行」になるのを防ぐ）。
  * @param {HTMLElement} element
  */
 export function markKeepOneLineCaption(element) {
@@ -243,7 +245,30 @@ export function markKeepOneLineCaption(element) {
   if (element.hasAttribute(KEEP_ONE_LINE_ATTR)) {
     return element.getAttribute(KEEP_ONE_LINE_ATTR) === "1";
   }
-  // 既にルビ注入済みなら「今の行数」で判定すると誤る
+
+  const original = element.getAttribute("data-yt-furigana-original");
+  const probeSource =
+    original != null ? original : String(element.textContent || "");
+  const hasExplicitBreak =
+    Boolean(element.querySelector?.("br")) || /[\n\r]/.test(probeSource);
+  const looksLikeCaptionSegment = Boolean(
+    element.matches?.(
+      ".ytp-caption-segment, .caption-visual-line, .vjs-text-track-cue-line > span, .vjs-text-track-cue-line"
+    ) || element.closest?.(".caption-window, .vjs-text-track-display")
+  );
+
+  // 明示改行が無い字幕セグメントは1行ロック（残留ルビがあっても ORIGINAL 優先）
+  if (!hasExplicitBreak && looksLikeCaptionSegment) {
+    if (
+      original != null ||
+      !element.querySelector?.("ruby, .yt-furigana-one-line")
+    ) {
+      element.setAttribute(KEEP_ONE_LINE_ATTR, "1");
+      return true;
+    }
+  }
+
+  // 既にルビ注入済みで ORIGINAL も無いなら「今の行数」で判定すると誤る
   if (
     element.getAttribute("data-yt-furigana-styled") === "1" ||
     element.querySelector?.("ruby, .yt-furigana-one-line")

@@ -29,13 +29,23 @@ import {
 } from "./youtube-caption-overlay.js";
 import {
   applyReadingFloatsOverNative,
-  clearReadingFloats
+  clearReadingFloats,
+  clearReadingFloatsInWindow
 } from "./youtube-reading-floats.js";
 import {
   applyUserReadingLearning,
   loadUserReadingStore
 } from "./user-reading-dict.js";
 import { createCaptionProcessScheduler } from "./caption-process-schedule.js";
+import {
+  ORIGINAL_ATTR,
+  PROCESSED_ATTR,
+  PROCESSING_ATTR,
+  plainTextWithoutRuby,
+  prepareCaptionForLineFitCapture,
+  flattenCaptionToPlainText,
+  clearExtensionCaptionAttrs
+} from "./caption-teardown.js";
 import {
   MANUAL_PHRASE_READINGS,
   CONTEXT_READING_RULES,
@@ -72,9 +82,6 @@ function findActiveTimedCaptionCues() {
   return [];
 }
 
-const PROCESSED_ATTR = "data-yt-furigana-done";
-const PROCESSING_ATTR = "data-yt-furigana-processing";
-const ORIGINAL_ATTR = "data-yt-furigana-original";
 /** Player captions only — transcript panel can have hundreds of nodes and freezes the page. */
 const YOUTUBE_CAPTION_SELECTORS = [".ytp-caption-segment", ".caption-visual-line"];
 /** TVer (Video.js / Streaks): colored cue text lives in direct child spans. */
@@ -382,20 +389,6 @@ function normalizeText(text) {
     .trim();
 }
 
-/** textContent of ruby includes <rt>, which must never be sent to converters. */
-function plainTextWithoutRuby(element) {
-  if (!(element instanceof HTMLElement)) {
-    return normalizeText(String(element?.textContent ?? ""));
-  }
-  const clone = element.cloneNode(true);
-  clone
-    .querySelectorAll(
-      "rt, rp, [data-yt-furigana-float-host], .yt-furigana-float-rt, .yt-furigana-float-host"
-    )
-    .forEach((node) => node.remove());
-  return normalizeText(clone.textContent ?? "");
-}
-
 function getCaptionSourceText(element) {
   const saved = element.getAttribute(ORIGINAL_ATTR);
   if (saved != null && saved !== "") {
@@ -456,22 +449,6 @@ function ensureOriginalText(element, normalized) {
   element.removeAttribute("data-yt-furigana-keep-one-line");
   element.removeAttribute("data-yt-furigana-line-width");
   element.removeAttribute("data-yt-furigana-needed-width");
-}
-
-/**
- * ルビ注入前にプレーン本文で1行判定できる状態へ戻す。
- * @param {HTMLElement} element
- */
-function prepareCaptionForLineFitCapture(element) {
-  if (!(element instanceof HTMLElement)) return;
-  element.removeAttribute("data-yt-furigana-keep-one-line");
-  element.removeAttribute("data-yt-furigana-line-width");
-  element.removeAttribute("data-yt-furigana-needed-width");
-  if (!element.querySelector("ruby, rt, .yt-furigana-one-line")) return;
-  const original = element.getAttribute(ORIGINAL_ATTR);
-  if (original != null) {
-    element.textContent = original;
-  }
 }
 
 function maxLineCharsForYouTubeOverlay(element) {
@@ -649,6 +626,7 @@ function stopYouTubeOverlaySyncLoop() {
 }
 
 function applyFuriganaHtml(element, html, processingKey) {
+  if (!enabled) return;
   // 色追従・縁取り・明朝などの「デザイン字幕」は本文を触らず読みだけ浮かせる
   if (isYouTubeHost() && preferNativeStyledCaption(element)) {
     clearYouTubeFuriganaOverlays();
@@ -744,6 +722,7 @@ async function fetchReadingApiHtml(normalized) {
  * カラオケは変換中に DOM が差し替わるため、開始時の element だけ見てはいけない。
  */
 function applyFuriganaToLiveCaptions(normalized, html, processingKey) {
+  if (!enabled) return;
   const targetKey = getCacheKey(normalized);
   for (const el of findCaptionElements(document)) {
     const text = getCaptionSourceText(el);
@@ -781,6 +760,7 @@ async function applyRemoteFurigana(normalized, processingKey) {
   const cacheKey = getCacheKey(normalized);
   try {
     const html = await convertText(normalized);
+    if (!enabled) return;
     // 変換完了時点の DOM が別ノードでも、キャッシュしてから現字幕へ適用
     cache.set(cacheKey, html);
     applyFuriganaToLiveCaptions(normalized, html, processingKey);
@@ -816,6 +796,7 @@ async function processElement(element) {
   // ノード単位の PROCESSING_ATTR は差し替えで無効になるため、inflight Map で重複排除
   try {
     const html = await convertLocalAndCache(normalized);
+    if (!enabled) return;
     applyFuriganaToLiveCaptions(normalized, html, processingKey);
   } catch (error) {
     console.error("[YT Furigana] conversion failed:", error);
@@ -1009,7 +990,14 @@ function startObserver() {
         if (caption && isCaptionElement(caption)) {
           releaseCaptionStyles(caption);
           caption.removeAttribute(PROCESSED_ATTR);
-          caption.removeAttribute(ORIGINAL_ATTR);
+          // ORIGINAL を捨てると disable 時に復元できない。プレーンを取り直して残す。
+          const plain = plainTextWithoutRuby(caption);
+          if (plain) {
+            caption.setAttribute(ORIGINAL_ATTR, plain);
+            if (caption.querySelector("ruby, rt, .yt-furigana-one-line")) {
+              caption.textContent = plain;
+            }
+          }
           if (!tryApplyCachedFurigana(caption)) {
             scheduleProcess(caption);
           }
@@ -1037,6 +1025,7 @@ function startObserver() {
 }
 
 function restoreOriginalText() {
+  captionProcessScheduler?.cancel?.();
   stopYouTubeOverlaySyncLoop();
   stopYouTubeOverlayPositionLoop();
   clearYouTubeFuriganaOverlays();
@@ -1045,22 +1034,12 @@ function restoreOriginalText() {
   restoreYouTubeNativeCaptionsVisible();
   CAPTION_SELECTORS.forEach((selector) => {
     document.querySelectorAll(selector).forEach((element) => {
-      const wasFloatMode =
-        element.getAttribute("data-yt-furigana-float-mode") === "1" ||
-        Boolean(element.querySelector?.("[data-yt-furigana-float-host]"));
+      if (!(element instanceof HTMLElement)) return;
+      clearReadingFloatsInWindow(element);
       clearReadingFloats(element);
       releaseCaptionStyles(element);
-      // 読みフロートモードは本文を触っていないので、textContent 復元しない
-      if (!wasFloatMode) {
-        const original = element.getAttribute(ORIGINAL_ATTR);
-        if (original != null) {
-          element.textContent = original;
-        }
-      }
-      element.removeAttribute(ORIGINAL_ATTR);
-      element.removeAttribute(PROCESSED_ATTR);
-      element.removeAttribute(PROCESSING_ATTR);
-      element.removeAttribute("data-yt-furigana-float-mode");
+      flattenCaptionToPlainText(element);
+      clearExtensionCaptionAttrs(element);
     });
   });
 }
@@ -1068,20 +1047,22 @@ function restoreOriginalText() {
 function resetProcessedCaptions() {
   CAPTION_SELECTORS.forEach((selector) => {
     document.querySelectorAll(selector).forEach((element) => {
-      const wasFloatMode =
-        element.getAttribute("data-yt-furigana-float-mode") === "1" ||
-        Boolean(element.querySelector?.("[data-yt-furigana-float-host]"));
+      if (!(element instanceof HTMLElement)) return;
       clearReadingFloats(element);
       releaseCaptionStyles(element);
-      if (!wasFloatMode) {
-        const original = element.getAttribute(ORIGINAL_ATTR);
-        if (original != null) {
-          element.textContent = original;
-        }
+      const original = element.getAttribute(ORIGINAL_ATTR);
+      if (original != null) {
+        element.textContent = original;
+      } else if (element.querySelector("ruby, rt, .yt-furigana-one-line")) {
+        flattenCaptionToPlainText(element);
       }
       element.removeAttribute(PROCESSED_ATTR);
       element.removeAttribute(PROCESSING_ATTR);
       element.removeAttribute("data-yt-furigana-float-mode");
+      element.removeAttribute("data-yt-furigana-keep-one-line");
+      element.removeAttribute("data-yt-furigana-line-width");
+      element.removeAttribute("data-yt-furigana-needed-width");
+      element.removeAttribute("data-yt-furigana-styled");
     });
   });
 }
@@ -1109,6 +1090,7 @@ async function applySettings() {
     restoreYouTubeNativeCaptionsVisible();
   }
 
+  // OFF 残骸を消してから再適用（二重ルビ・3行化防止）
   resetProcessedCaptions();
 
   if (
