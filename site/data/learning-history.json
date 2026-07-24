@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-23T06:30:07.085Z",
+  "updatedAt": "2026-07-24T06:25:53.644Z",
   "entries": [
     {
       "ts": "2026-07-18T12:08:38.759Z",
@@ -745,6 +745,101 @@
         },
         {
           "text": "学生は、論文を執筆しなければならないため、忙しい日々を送っている。",
+          "surface": "忙しい",
+          "gold": "いそがしい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "仕事・予定・日常の忙しさ"
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-24T06:25:53.644Z",
+      "mode": "synth",
+      "note": "素材 +4 / 本体ルール変化なし（日次は主に素材集め）",
+      "gateOk": true,
+      "floorsOk": true,
+      "regress": false,
+      "corpus": {
+        "total": 80,
+        "delta": 4,
+        "acceptedThisRun": 4,
+        "rejectedThisRun": 4
+      },
+      "benches": {
+        "seed-bench": {
+          "passed": 22,
+          "total": 22,
+          "rate": 1,
+          "minPassRate": 1,
+          "failed": []
+        },
+        "hard-heteronym": {
+          "passed": 13,
+          "total": 13,
+          "rate": 1,
+          "minPassRate": 0.85,
+          "failed": []
+        },
+        "easy-regression": {
+          "passed": 8,
+          "total": 8,
+          "rate": 1,
+          "minPassRate": 0.9,
+          "failed": []
+        }
+      },
+      "vsBaseline": {
+        "seed-bench": {
+          "rate": 1,
+          "passed": 22,
+          "total": 22,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "hard-heteronym": {
+          "rate": 1,
+          "passed": 13,
+          "total": 13,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "easy-regression": {
+          "rate": 1,
+          "passed": 8,
+          "total": 8,
+          "baselineRate": 1,
+          "deltaRate": 0
+        }
+      },
+      "overrides": {
+        "phraseCount": 1,
+        "contextRuleCount": 7,
+        "changed": false
+      },
+      "newSamples": [
+        {
+          "text": "カレーがとても辛いので、ラーメンを食べることにしました。",
+          "surface": "辛い",
+          "gold": "からい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "ラーメン・カレー・味・唐辛子"
+        },
+        {
+          "text": "仕事はとても辛いので、休みを取ることが必要だ",
+          "surface": "辛い",
+          "gold": "つらい",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "経験・出来事・境遇（味ではない）"
+        },
+        {
+          "text": "天国と地獄を超えても、愛は永遠です。",
+          "surface": "永遠",
+          "gold": "えいえん",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
+        },
+        {
+          "text": "私は仕事が忙しいので今日は夜遅くまで残る予定です。",
           "surface": "忙しい",
           "gold": "いそがしい",
           "source": "llm-synth:groq:verify_agree",

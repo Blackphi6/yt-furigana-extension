@@ -1,15 +1,15 @@
 {
-  "ts": "2026-07-23T06:30:07.085Z",
+  "ts": "2026-07-24T06:25:53.644Z",
   "mode": "synth",
-  "note": "素材 +5 / 本体ルール変化なし（日次は主に素材集め）",
+  "note": "素材 +4 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 76,
-    "delta": 5,
-    "acceptedThisRun": 5,
-    "rejectedThisRun": 3
+    "total": 80,
+    "delta": 4,
+    "acceptedThisRun": 4,
+    "rejectedThisRun": 4
   },
   "benches": {
     "seed-bench": {
@@ -64,35 +64,28 @@
   },
   "newSamples": [
     {
-      "text": "企業の株式は、東京市場で大幅に値上がりした。",
-      "surface": "市場",
-      "gold": "しじょう",
-      "source": "llm-synth:groq:arbitrate_agree",
-      "note": "株式・規模・経済・金融の文脈"
-    },
-    {
-      "text": "カレーは辛いからい味が好きな人も多いです",
+      "text": "カレーがとても辛いので、ラーメンを食べることにしました。",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "元気な友達と離れてしまって、生活が辛い",
+      "text": "仕事はとても辛いので、休みを取ることが必要だ",
       "surface": "辛い",
       "gold": "つらい",
       "source": "llm-synth:groq:arbitrate_agree",
       "note": "経験・出来事・境遇（味ではない）"
     },
     {
-      "text": "人生は永遠の旅であり、旅の終わりは見えない",
+      "text": "天国と地獄を超えても、愛は永遠です。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "学生は、論文を執筆しなければならないため、忙しい日々を送っている。",
+      "text": "私は仕事が忙しいので今日は夜遅くまで残る予定です。",
       "surface": "忙しい",
       "gold": "いそがしい",
       "source": "llm-synth:groq:verify_agree",
