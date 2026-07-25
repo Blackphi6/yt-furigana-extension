@@ -120,9 +120,12 @@ jobs:
           fi
       - name: Refresh GitHub Pages
         if: env.pages_refresh == '1'
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh workflow run pages.yml --ref "$(git rev-parse --abbrev-ref HEAD)"
+        run: |
+          gh workflow run pages.yml --ref "$(git rev-parse --abbrev-ref HEAD)" \
+            || echo "::warning::Pages refresh dispatch failed (403). Corpus commit already pushed."
 
   retrain:
     name: Retrain-lite weekly (ubuntu ¥0)
@@ -162,6 +165,9 @@ jobs:
           fi
       - name: Refresh GitHub Pages
         if: env.pages_refresh == '1'
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh workflow run pages.yml --ref "$(git rev-parse --abbrev-ref HEAD)"
+        run: |
+          gh workflow run pages.yml --ref "$(git rev-parse --abbrev-ref HEAD)" \
+            || echo "::warning::Pages refresh dispatch failed (403). Corpus commit already pushed."
