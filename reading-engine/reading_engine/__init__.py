@@ -93,10 +93,18 @@ CONTEXT_RULES: list[dict[str, Any]] = [
     {"surface": "風", "reading": "かぜ", "weight": 3, "cues": ["吹", "強風", "風が", "風で", "風強"]},
     {"surface": "風", "reading": "ふう", "weight": 3, "cues": ["こんな風", "どういう風", "風に書", "風にやっ", "ああいう風"]},
     {"surface": "博士", "reading": "はかせ", "weight": 3, "cues": ["物知り", "博士だ", "物知り博士"]},
-    {"surface": "博士", "reading": "はくし", "weight": 3, "cues": ["博士号", "学位", "論文"]},
+    {"surface": "博士", "reading": "はくし", "weight": 3, "cues": ["博士号", "博士の学位", "学位", "論文"]},
     # 同表層の二重出現デモ用
     {"surface": "町中", "reading": "まちなか", "weight": 4, "cues": ["町中の", "町中のカフェ", "市街"]},
     {"surface": "町中", "reading": "まちじゅう", "weight": 4, "cues": ["町中に広", "噂が町中", "町中に知れ", "町中で噂"]},
+    {"surface": "人気", "reading": "ひとけ", "weight": 5, "cues": ["人気のない", "人気がない", "人気のない夜", "人気のない道"]},
+    {"surface": "人気", "reading": "にんき", "weight": 4, "cues": ["人気が高", "人気者", "人気曲", "大人気"]},
+    {"surface": "一行", "reading": "いちぎょう", "weight": 5, "cues": ["一行だけ", "一行書", "一行メモ", "一行残"]},
+    {"surface": "一行", "reading": "いっこう", "weight": 5, "cues": ["観光客の一行", "一行が到", "一行が到着", "一行の旅"]},
+    {"surface": "一日", "reading": "ついたち", "weight": 5, "cues": ["毎月一日", "一日に給料", "月の一日", "一日付"]},
+    {"surface": "一日", "reading": "いちにち", "weight": 4, "cues": ["丸一日", "一日かか", "一日で読", "一日中"]},
+    {"surface": "上手", "reading": "じょうず", "weight": 5, "cues": ["が上手", "歌が上手", "絵が上手", "上手だ"]},
+    {"surface": "上手", "reading": "うわて", "weight": 5, "cues": ["上手に回", "上手に出", "交渉では上手"]},
 ]
 
 
