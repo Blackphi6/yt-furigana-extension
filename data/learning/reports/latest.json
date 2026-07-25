@@ -1,15 +1,15 @@
 {
-  "ts": "2026-07-25T15:19:49.594Z",
+  "ts": "2026-07-25T15:22:41.220Z",
   "mode": "synth",
-  "note": "素材 +11 / 本体ルール変化あり",
+  "note": "素材 +6 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 95,
-    "delta": 11,
-    "acceptedThisRun": 11,
-    "rejectedThisRun": 27
+    "total": 101,
+    "delta": 6,
+    "acceptedThisRun": 6,
+    "rejectedThisRun": 21
   },
   "benches": {
     "seed-bench": {
@@ -60,78 +60,50 @@
   "overrides": {
     "phraseCount": 1,
     "contextRuleCount": 23,
-    "changed": true
+    "changed": false
   },
   "newSamples": [
     {
-      "text": "朝の市場で魚を買うために早く出発した。",
+      "text": "魚や野菜を売るために毎朝出かける市場を見ました",
       "surface": "市場",
       "gold": "いちば",
       "source": "llm-synth:groq:verify_agree",
-      "note": "朝の市場で魚を買う、鮮魚・野菜売り場"
+      "note": "朝市・魚・野菜など物理的な市場"
     },
     {
-      "text": "魚の鮮度を確かめるために朝の市場に行った。",
-      "surface": "市場",
-      "gold": "いちば",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "朝の市場で魚を買う、鮮魚・野菜売り場"
-    },
-    {
-      "text": "私は最近の出来事が辛いと感じています。",
-      "surface": "辛い",
-      "gold": "つらい",
-      "source": "llm-synth:groq:arbitrate_agree",
-      "note": "経験・出来事・境遇（味ではない）"
-    },
-    {
-      "text": "今までの経験が辛いと感じているので、自分に励まされています。",
-      "surface": "辛い",
-      "gold": "つらい",
-      "source": "llm-synth:groq:arbitrate_agree",
-      "note": "経験・出来事・境遇（味ではない）"
-    },
-    {
-      "text": "新商品が町中に広がった",
+      "text": "町中のカフェは人気のスポットだ。",
       "surface": "町中",
-      "gold": "まちじゅう",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
+      "gold": "まちなか",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "町中のカフェ／市街地の中心（まちなか）"
     },
     {
-      "text": "町中に広がった花の色がきれいな通り",
-      "surface": "町中",
-      "gold": "まちじゅう",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
+      "text": "グラフを表にしてみました。",
+      "surface": "表",
+      "gold": "ひょう",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "グラフ・データ・一覧・表にまとめる"
     },
     {
-      "text": "警察が大事になりつつあった、暴漢が店内に乱入した。",
-      "surface": "大事",
-      "gold": "おおごと",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "大事になる／騒ぎ・事件に発展する直前"
+      "text": "彼は博士号を取得し、論文を発表する予定です。",
+      "surface": "博士",
+      "gold": "はくし",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "博士号／学位／論文"
     },
     {
-      "text": "彼は絵が上手だ。",
+      "text": "絵が上手な子供は、将来有名な画家になるかしら。",
       "surface": "上手",
       "gold": "じょうず",
       "source": "llm-synth:groq:arbitrate_agree",
       "note": "絵が上手／歌が上手だ（技能）"
     },
     {
-      "text": "明日学校へ行く予定だ。",
-      "surface": "行く",
-      "gold": "いく",
+      "text": "ドアが開くときに、自動で開く機械が働いている。",
+      "surface": "開く",
+      "gold": "あく",
       "source": "llm-synth:groq:verify_agree",
-      "note": "学校へ行く／明日行く（日常のいく）"
-    },
-    {
-      "text": "ラーメンが辛いので、唐辛子を少なくしてみた。",
-      "surface": "辛い",
-      "gold": "からい",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "ラーメン・カレー・味・唐辛子"
+      "note": "ドアが開く／蓋が開く（あく・自動）"
     }
   ]
 }

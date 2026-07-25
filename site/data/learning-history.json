@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-25T15:19:49.594Z",
+  "updatedAt": "2026-07-25T15:22:41.220Z",
   "entries": [
     {
       "ts": "2026-07-18T12:08:38.759Z",
@@ -1076,6 +1076,115 @@
           "gold": "からい",
           "source": "llm-synth:groq:verify_agree",
           "note": "ラーメン・カレー・味・唐辛子"
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-25T15:22:41.220Z",
+      "mode": "synth",
+      "note": "素材 +6 / 本体ルール変化なし（日次は主に素材集め）",
+      "gateOk": true,
+      "floorsOk": true,
+      "regress": false,
+      "corpus": {
+        "total": 101,
+        "delta": 6,
+        "acceptedThisRun": 6,
+        "rejectedThisRun": 21
+      },
+      "benches": {
+        "seed-bench": {
+          "passed": 22,
+          "total": 22,
+          "rate": 1,
+          "minPassRate": 1,
+          "failed": []
+        },
+        "hard-heteronym": {
+          "passed": 32,
+          "total": 32,
+          "rate": 1,
+          "minPassRate": 0.85,
+          "failed": []
+        },
+        "easy-regression": {
+          "passed": 8,
+          "total": 8,
+          "rate": 1,
+          "minPassRate": 0.9,
+          "failed": []
+        }
+      },
+      "vsBaseline": {
+        "seed-bench": {
+          "rate": 1,
+          "passed": 22,
+          "total": 22,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "hard-heteronym": {
+          "rate": 1,
+          "passed": 32,
+          "total": 32,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "easy-regression": {
+          "rate": 1,
+          "passed": 8,
+          "total": 8,
+          "baselineRate": 1,
+          "deltaRate": 0
+        }
+      },
+      "overrides": {
+        "phraseCount": 1,
+        "contextRuleCount": 23,
+        "changed": false
+      },
+      "newSamples": [
+        {
+          "text": "魚や野菜を売るために毎朝出かける市場を見ました",
+          "surface": "市場",
+          "gold": "いちば",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "朝市・魚・野菜など物理的な市場"
+        },
+        {
+          "text": "町中のカフェは人気のスポットだ。",
+          "surface": "町中",
+          "gold": "まちなか",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "町中のカフェ／市街地の中心（まちなか）"
+        },
+        {
+          "text": "グラフを表にしてみました。",
+          "surface": "表",
+          "gold": "ひょう",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "グラフ・データ・一覧・表にまとめる"
+        },
+        {
+          "text": "彼は博士号を取得し、論文を発表する予定です。",
+          "surface": "博士",
+          "gold": "はくし",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "博士号／学位／論文"
+        },
+        {
+          "text": "絵が上手な子供は、将来有名な画家になるかしら。",
+          "surface": "上手",
+          "gold": "じょうず",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "絵が上手／歌が上手だ（技能）"
+        },
+        {
+          "text": "ドアが開くときに、自動で開く機械が働いている。",
+          "surface": "開く",
+          "gold": "あく",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "ドアが開く／蓋が開く（あく・自動）"
         }
       ]
     }
