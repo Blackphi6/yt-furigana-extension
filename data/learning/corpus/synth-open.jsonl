@@ -82,3 +82,14 @@
 {"text":"仕事は辛いから寝たくなった。","surface":"辛い","candidates":["からい","つらい"],"gold":"つらい","source":"llm-synth:groq:arbitrate_agree","note":"経験・出来事・境遇（味ではない）"}
 {"text":"時は永遠に終わらない。","surface":"永遠","candidates":["えいえん","とわ"],"gold":"えいえん","source":"llm-synth:groq:verify_agree","note":"日常・論理・客観（永遠のテーマ、永遠に終わらない など）"}
 {"text":"今日は忙しいので、朝から急いで準備する必要がある","surface":"忙しい","candidates":["いそがしい","せわしい"],"gold":"いそがしい","source":"llm-synth:groq:verify_agree","note":"仕事・予定・日常の忙しさ"}
+{"text":"市場に野菜を買いに行きました。","surface":"市場","candidates":["いちば","しじょう"],"gold":"いちば","source":"llm-synth:groq:verify_agree","note":"朝市・魚・野菜など物理的な市場"}
+{"text":"朝の市場で魚を買うために早く出発した。","surface":"市場","candidates":["いちば","しじょう"],"gold":"いちば","source":"llm-synth:groq:verify_agree","note":"朝の市場で魚を買う、鮮魚・野菜売り場"}
+{"text":"魚の鮮度を確かめるために朝の市場に行った。","surface":"市場","candidates":["いちば","しじょう"],"gold":"いちば","source":"llm-synth:groq:verify_agree","note":"朝の市場で魚を買う、鮮魚・野菜売り場"}
+{"text":"私は最近の出来事が辛いと感じています。","surface":"辛い","candidates":["からい","つらい"],"gold":"つらい","source":"llm-synth:groq:arbitrate_agree","note":"経験・出来事・境遇（味ではない）"}
+{"text":"今までの経験が辛いと感じているので、自分に励まされています。","surface":"辛い","candidates":["からい","つらい"],"gold":"つらい","source":"llm-synth:groq:arbitrate_agree","note":"経験・出来事・境遇（味ではない）"}
+{"text":"新商品が町中に広がった","surface":"町中","candidates":["まちじゅう","まちなか"],"gold":"まちじゅう","source":"llm-synth:groq:verify_agree","note":"噂が町中に広まる／町中に知れ渡る（まちじゅう）"}
+{"text":"町中に広がった花の色がきれいな通り","surface":"町中","candidates":["まちじゅう","まちなか"],"gold":"まちじゅう","source":"llm-synth:groq:verify_agree","note":"噂が町中に広まる／町中に知れ渡る（まちじゅう）"}
+{"text":"警察が大事になりつつあった、暴漢が店内に乱入した。","surface":"大事","candidates":["おおごと","だいじ"],"gold":"おおごと","source":"llm-synth:groq:verify_agree","note":"大事になる／騒ぎ・事件に発展する直前"}
+{"text":"彼は絵が上手だ。","surface":"上手","candidates":["うわて","かみて","じょうしゅ","じょうず"],"gold":"じょうず","source":"llm-synth:groq:arbitrate_agree","note":"絵が上手／歌が上手だ（技能）"}
+{"text":"明日学校へ行く予定だ。","surface":"行く","candidates":["いく","ゆく"],"gold":"いく","source":"llm-synth:groq:verify_agree","note":"学校へ行く／明日行く（日常のいく）"}
+{"text":"ラーメンが辛いので、唐辛子を少なくしてみた。","surface":"辛い","candidates":["からい","つらい"],"gold":"からい","source":"llm-synth:groq:verify_agree","note":"ラーメン・カレー・味・唐辛子"}
