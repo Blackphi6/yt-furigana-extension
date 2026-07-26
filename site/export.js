@@ -63,8 +63,6 @@ const els = {
   download: $("#download"),
   copy: $("#copy"),
   exportStatus: $("#export-status"),
-  openStudioUpload: $("#open-studio-upload"),
-  studioStatus: $("#studio-status"),
   output: $("#output")
 };
 
@@ -615,7 +613,6 @@ function updateOutput() {
   const ready = text.length > 0;
   els.download.disabled = !ready;
   els.copy.disabled = !ready;
-  if (els.openStudioUpload) els.openStudioUpload.disabled = !ready;
 }
 
 els.formatList?.addEventListener("change", updateOutput);
@@ -644,48 +641,12 @@ function triggerDownload(format, text) {
   return link.download;
 }
 
-function studioTranslationsUrl(videoId) {
-  const id = String(videoId || "").trim();
-  if (!/^[\w-]{11}$/.test(id)) return "https://studio.youtube.com/";
-  return `https://studio.youtube.com/video/${id}/translations`;
-}
-
 els.download?.addEventListener("click", () => {
   const format = selectedFormat();
   const text = buildOutput();
   if (!text) return;
   const name = triggerDownload(format, text);
   setStatus(els.exportStatus, `${name} を保存しました。`);
-});
-
-els.openStudioUpload?.addEventListener("click", () => {
-  const cues = state.rubyCues;
-  if (!cues?.length) {
-    setStatus(els.studioStatus, "先にふりがなを付けてください。", "error");
-    return;
-  }
-
-  const srv3 =
-    EXPORT_FORMATS.find((format) => format.id === "srv3") || EXPORT_FORMATS[0];
-  const radio = els.formatList?.querySelector('input[name="export-format"][value="srv3"]');
-  if (radio) {
-    radio.checked = true;
-    updateOutput();
-  }
-
-  const text = serializeCaptions("srv3", cues, {
-    rubyBelow: els.rubyBelow?.checked
-  });
-  const name = triggerDownload(srv3, text);
-  const studioUrl = studioTranslationsUrl(state.videoId);
-  window.open(studioUrl, "_blank", "noopener,noreferrer");
-
-  setStatus(
-    els.studioStatus,
-    state.videoId
-      ? `${name} を保存し、Studio の字幕画面を開きました。手順どおりアップロードしてください。`
-      : `${name} を保存しました。Studio で対象動画の「字幕」を開き、ファイルをアップロードしてください。`
-  );
 });
 
 els.copy?.addEventListener("click", async () => {

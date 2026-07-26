@@ -1,0 +1,47 @@
+/* YouTube プレイヤー上の疑似字幕 */
+
+.ytco-overlay-root {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12%;
+  z-index: 60;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  padding: 0 8%;
+  box-sizing: border-box;
+}
+
+.ytco-overlay-root[hidden],
+.ytco-overlay-root[data-enabled="0"] {
+  display: none !important;
+}
+
+.ytco-overlay-line {
+  max-width: 90%;
+  font-size: var(--ytco-font-size, 28px);
+  line-height: 1.45;
+  color: #fff;
+  text-align: center;
+  text-shadow:
+    0 0 4px #000,
+    0 1px 2px #000,
+    1px 1px 2px #000,
+    -1px -1px 2px #000;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 0.25em 0.7em;
+  border-radius: 4px;
+  font-family: "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ytco-overlay-line ruby {
+  ruby-position: over;
+}
+
+.ytco-overlay-line rt {
+  font-size: 0.45em;
+  color: #fff;
+}

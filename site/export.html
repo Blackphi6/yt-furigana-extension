@@ -173,23 +173,27 @@
         </div>
         <p class="status" id="export-status" role="status" aria-live="polite"></p>
 
-        <div class="studio-upload" id="studio-upload">
-          <h3>YouTube に載せる（一時）</h3>
+        <div class="studio-upload" id="overlay-hint">
+          <h3>YouTube 上で疑似表示する</h3>
           <p class="hint">
-            動画の<strong>所有者アカウント</strong>で Studio の「字幕」から、ふりがな付き SRV3（.ytt）をアップロードできます。
-            下のボタンでファイルを保存し、Studio の字幕画面を開きます。
+            別拡張 <strong>YT Caption Overlay</strong>（実験用）に、この書き出しの
+            <code>.vtt</code> / <code>.ytt</code> を読み込ませると、プレイヤー上に自作字幕を重ね表示できます。
+            YouTube の字幕 API は使いません。
           </p>
-          <div class="field-row">
-            <button type="button" class="btn" id="open-studio-upload" disabled>
-              SRV3 を保存して Studio を開く
-            </button>
-          </div>
           <ol class="studio-steps hint">
-            <li>開いた Studio で「字幕」→「追加」→「ファイルをアップロード」</li>
-            <li>保存した <code>.ytt</code> を選ぶ（言語は日本語）</li>
-            <li>公開設定を確認して保存。反映まで数分かかることがあります</li>
+            <li>リポジトリで <code>npm run overlay:build</code></li>
+            <li>
+              <code>chrome://extensions</code> → 「パッケージ化されていない拡張機能を読み込む」→
+              <code>extensions/yt-caption-overlay</code>
+            </li>
+            <li>上でファイルをダウンロード → Overlay 拡張のポップアップで同じファイルを選択</li>
           </ol>
-          <p class="status" id="studio-status" role="status" aria-live="polite"></p>
+          <p class="hint">
+            詳細:
+            <a href="https://github.com/Blackphi6/yt-furigana-extension/tree/main/extensions/yt-caption-overlay"
+              >extensions/yt-caption-overlay/README.md</a
+            >
+          </p>
         </div>
 
         <details class="output-block">
@@ -230,6 +234,6 @@
         </p>
       </footer>
     </div>
-    <script src="./export.js?v=20260726c" type="module"></script>
+    <script src="./export.js?v=20260726d" type="module"></script>
   </body>
 </html>
