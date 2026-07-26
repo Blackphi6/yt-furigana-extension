@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-25T15:22:41.220Z",
+  "updatedAt": "2026-07-26T06:37:12.880Z",
   "entries": [
     {
       "ts": "2026-07-18T12:08:38.759Z",
@@ -1185,6 +1185,143 @@
           "gold": "あく",
           "source": "llm-synth:groq:verify_agree",
           "note": "ドアが開く／蓋が開く（あく・自動）"
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-26T06:37:12.880Z",
+      "mode": "synth",
+      "note": "素材 +16 / 本体ルール変化なし（日次は主に素材集め）",
+      "gateOk": true,
+      "floorsOk": true,
+      "regress": false,
+      "corpus": {
+        "total": 117,
+        "delta": 16,
+        "acceptedThisRun": 16,
+        "rejectedThisRun": 27
+      },
+      "benches": {
+        "seed-bench": {
+          "passed": 22,
+          "total": 22,
+          "rate": 1,
+          "minPassRate": 1,
+          "failed": []
+        },
+        "hard-heteronym": {
+          "passed": 32,
+          "total": 32,
+          "rate": 1,
+          "minPassRate": 0.85,
+          "failed": []
+        },
+        "easy-regression": {
+          "passed": 8,
+          "total": 8,
+          "rate": 1,
+          "minPassRate": 0.9,
+          "failed": []
+        }
+      },
+      "vsBaseline": {
+        "seed-bench": {
+          "rate": 1,
+          "passed": 22,
+          "total": 22,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "hard-heteronym": {
+          "rate": 1,
+          "passed": 32,
+          "total": 32,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "easy-regression": {
+          "rate": 1,
+          "passed": 8,
+          "total": 8,
+          "baselineRate": 1,
+          "deltaRate": 0
+        }
+      },
+      "overrides": {
+        "phraseCount": 1,
+        "contextRuleCount": 23,
+        "changed": false
+      },
+      "newSamples": [
+        {
+          "text": "大事な時期に会社の問題が大きく起こってしまった",
+          "surface": "大事",
+          "gold": "おおごと",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "大事になる／騒ぎ・事件に発展する直前"
+        },
+        {
+          "text": "彼女は大事な人だから、毎日会いに行く",
+          "surface": "大事",
+          "gold": "だいじ",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "大事な人／大事にする／大切"
+        },
+        {
+          "text": "彼は彼女の幸福を大事にするから、頑張って応援する",
+          "surface": "大事",
+          "gold": "だいじ",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "大事な人／大事にする／大切"
+        },
+        {
+          "text": "表は正面の顔です",
+          "surface": "表",
+          "gold": "おもて",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "裏と表／表に出る／玄関・顔の表"
+        },
+        {
+          "text": "グラフ表にデータを並べる",
+          "surface": "表",
+          "gold": "ひょう",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "グラフ・データ・一覧・表にまとめる"
+        },
+        {
+          "text": "風が吹く場所は広いです",
+          "surface": "風",
+          "gold": "かぜ",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "風が吹く／強風／風で髪が乱れる"
+        },
+        {
+          "text": "物知り博士はよく人に助言をする",
+          "surface": "博士",
+          "gold": "はかせ",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "物知り博士／呼び方としての博士"
+        },
+        {
+          "text": "博士の学位は論文を提出することで取得することができる。",
+          "surface": "博士",
+          "gold": "はくし",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "博士号／学位／論文"
+        },
+        {
+          "text": "今日は朝の授業が始まる時間だ。明日は午前9時からだから、今日は午前8時には席に着くようにしよう。",
+          "surface": "今日",
+          "gold": "きょう",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "今日は／明日・昨日と対になる日常のきょう"
+        },
+        {
+          "text": "明日学校へ行く",
+          "surface": "行く",
+          "gold": "いく",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "学校へ行く／明日行く（日常のいく）"
         }
       ]
     }
