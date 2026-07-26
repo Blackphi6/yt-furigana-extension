@@ -121,11 +121,12 @@ export async function fetchCaptionsViaYouTubeTab(videoId) {
     // ytInitialPlayerResponse 注入待ち
     await new Promise((r) => setTimeout(r, 800));
 
-    // ネスト関数は import を閉じ込まない（executeScript が toString でページへ運ぶ）
     const results = await chromeApi.scripting.executeScript({
       target: { tabId },
       world: "MAIN",
       args: [videoId],
+      // WEB の timedtext は PoToken で空本文になりやすい。
+      // ページ Cookie 付きで ANDROID player → timedtext を取る（ユーザー操作 1 本だけ）。
       func: async (targetVideoId) => {
         const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -146,6 +147,17 @@ export async function fetchCaptionsViaYouTubeTab(videoId) {
           return (
             playerResponse?.captions?.playerCaptionsTracklistRenderer
               ?.captionTracks || []
+          );
+        }
+
+        function trackLabel(track) {
+          return (
+            track?.name?.simpleText ||
+            (Array.isArray(track?.name?.runs)
+              ? track.name.runs.map((r) => r?.text || "").join("")
+              : "") ||
+            track?.languageCode ||
+            "ja"
           );
         }
 
@@ -180,23 +192,7 @@ export async function fetchCaptionsViaYouTubeTab(videoId) {
           return JSON.parse(body);
         }
 
-        let playerResponse =
-          globalThis.ytInitialPlayerResponse ||
-          globalThis.ytplayer?.config?.args?.raw_player_response ||
-          null;
-
-        for (let i = 0; i < 12 && !getTracks(playerResponse).length; i += 1) {
-          await sleep(300);
-          playerResponse =
-            globalThis.ytInitialPlayerResponse ||
-            globalThis.ytplayer?.config?.args?.raw_player_response ||
-            playerResponse;
-        }
-
-        let { track, asrOnly } = pickManualJa(getTracks(playerResponse));
-
-        // ページ内 WEB が空のときだけ、ユーザー操作起点で ANDROID を 1 回
-        if (!track?.baseUrl) {
+        async function fetchAndroidPlayer() {
           const res = await fetch(
             "https://www.youtube.com/youtubei/v1/player?prettyPrint=false",
             {
@@ -218,46 +214,102 @@ export async function fetchCaptionsViaYouTubeTab(videoId) {
           );
           if (res.status === 429) throw new Error("page ANDROID player failed (429)");
           if (!res.ok) throw new Error(`page ANDROID player failed (${res.status})`);
-          playerResponse = await res.json();
-          ({ track, asrOnly } = pickManualJa(getTracks(playerResponse)));
+          return res.json();
         }
 
-        if (!track?.baseUrl) {
-          if (asrOnly) {
-            throw new Error(
-              "この動画は自動生成（音声認識）字幕のみのため対象外です。手動で付けられた日本語字幕が必要です。"
-            );
+        try {
+          // 1) ANDROID を先に（WEB timedtext は空になりやすい）
+          let playerResponse = null;
+          let track = null;
+          let asrOnly = false;
+          const errors = [];
+
+          try {
+            playerResponse = await fetchAndroidPlayer();
+            ({ track, asrOnly } = pickManualJa(getTracks(playerResponse)));
+            if (track?.baseUrl) {
+              const data = await fetchJson3(track);
+              const cues = parseJson3Cues(data);
+              if (cues.length) {
+                return {
+                  ok: true,
+                  videoId: targetVideoId,
+                  title: String(playerResponse?.videoDetails?.title || ""),
+                  trackName: trackLabel(track),
+                  source: "youtube-tab-android",
+                  cues
+                };
+              }
+              errors.push("android timedtext empty");
+            } else {
+              errors.push(asrOnly ? "android asr-only" : "android no manual ja");
+            }
+          } catch (error) {
+            errors.push(`android: ${error?.message || error}`);
           }
-          throw new Error("日本語の手動字幕がありません");
+
+          // 2) ページ内 WEB playerResponse（フォールバック）
+          playerResponse =
+            globalThis.ytInitialPlayerResponse ||
+            globalThis.ytplayer?.config?.args?.raw_player_response ||
+            null;
+          for (let i = 0; i < 8 && !getTracks(playerResponse).length; i += 1) {
+            await sleep(250);
+            playerResponse =
+              globalThis.ytInitialPlayerResponse ||
+              globalThis.ytplayer?.config?.args?.raw_player_response ||
+              playerResponse;
+          }
+          ({ track, asrOnly } = pickManualJa(getTracks(playerResponse)));
+          if (track?.baseUrl) {
+            try {
+              const data = await fetchJson3(track);
+              const cues = parseJson3Cues(data);
+              if (cues.length) {
+                return {
+                  ok: true,
+                  videoId: targetVideoId,
+                  title: String(playerResponse?.videoDetails?.title || ""),
+                  trackName: trackLabel(track),
+                  source: "youtube-tab-web",
+                  cues
+                };
+              }
+              errors.push("web timedtext empty");
+            } catch (error) {
+              errors.push(`web: ${error?.message || error}`);
+            }
+          } else if (asrOnly) {
+            return {
+              ok: false,
+              error:
+                "この動画は自動生成（音声認識）字幕のみのため対象外です。手動で付けられた日本語字幕が必要です。"
+            };
+          }
+
+          return {
+            ok: false,
+            error:
+              errors.join(" / ") ||
+              "日本語の手動字幕をページから取得できませんでした"
+          };
+        } catch (error) {
+          return { ok: false, error: String(error?.message || error) };
         }
-
-        const data = await fetchJson3(track);
-        const cues = parseJson3Cues(data);
-        if (!cues.length) throw new Error("字幕テキストが空でした");
-
-        const trackName =
-          track?.name?.simpleText ||
-          (Array.isArray(track?.name?.runs)
-            ? track.name.runs.map((r) => r?.text || "").join("")
-            : "") ||
-          track?.languageCode ||
-          "ja";
-
-        return {
-          videoId: targetVideoId,
-          title: String(playerResponse?.videoDetails?.title || ""),
-          trackName,
-          source: "youtube-tab",
-          cues
-        };
       }
     });
 
     const payload = results?.[0]?.result;
-    if (!payload?.cues?.length) {
-      throw new Error("ページから字幕を取得できませんでした");
+    if (!payload?.ok || !payload?.cues?.length) {
+      throw new Error(payload?.error || "ページから字幕を取得できませんでした");
     }
-    return payload;
+    return {
+      videoId: payload.videoId,
+      title: payload.title || "",
+      trackName: payload.trackName || "ja",
+      source: payload.source || "youtube-tab",
+      cues: payload.cues
+    };
   } finally {
     // 書き出しのためだけに開いたタブは閉じる（既存タブは触らない）
     if (created && tabId != null) {
