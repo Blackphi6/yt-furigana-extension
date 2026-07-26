@@ -141,25 +141,49 @@ for (const tab of els.tabs) {
 
 // --- 拡張ブリッジ ------------------------------------------------------
 
-function getExtensionId() {
-  const stored = (() => {
-    try {
-      return localStorage.getItem(EXTENSION_ID_KEY) || "";
-    } catch {
-      return "";
-    }
-  })();
-  return stored || String(SITE.extensionId || "");
+function readStoredExtensionId() {
+  try {
+    return localStorage.getItem(EXTENSION_ID_KEY) || "";
+  } catch {
+    return "";
+  }
 }
 
-els.saveExtensionId?.addEventListener("click", () => {
-  const value = String(els.extensionId.value || "").trim();
+function persistExtensionId(value) {
   try {
     if (value) localStorage.setItem(EXTENSION_ID_KEY, value);
     else localStorage.removeItem(EXTENSION_ID_KEY);
   } catch {
-    // プライベートモード等。保存できなくても続行
+    // プライベートモード等
   }
+}
+
+/**
+ * 呼び先候補。入力欄 → 保存済み → config の一覧の順で重複除去。
+ * （保存し忘れでも、欄に書いた ID をそのまま使う）
+ */
+function listExtensionIdCandidates() {
+  const fromInput = String(els.extensionId?.value || "").trim();
+  const fromConfig = [
+    ...(Array.isArray(SITE.extensionIds) ? SITE.extensionIds : []),
+    SITE.extensionId
+  ]
+    .map((id) => String(id || "").trim())
+    .filter(Boolean);
+  const ordered = [fromInput, readStoredExtensionId(), ...fromConfig];
+  const seen = new Set();
+  const out = [];
+  for (const id of ordered) {
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
+  }
+  return out;
+}
+
+els.saveExtensionId?.addEventListener("click", () => {
+  const value = String(els.extensionId.value || "").trim();
+  persistExtensionId(value);
   setStatus(
     els.sourceStatus,
     value ? "拡張 ID を保存しました。もう一度「字幕を取得」を押してください。" : "拡張 ID を消しました。"
@@ -167,29 +191,19 @@ els.saveExtensionId?.addEventListener("click", () => {
 });
 
 /**
- * 拡張に字幕取得を依頼する。取得自体は拡張側で 1 本ずつ・クールダウン付き。
+ * 1 つの拡張 ID に字幕取得を依頼する。
+ * @param {string} extensionId
  * @param {string} videoId
+ * @returns {Promise<{ ok: true, cues: any[], title?: string, trackName?: string } | { ok: false, error: string, soft?: boolean }>}
  */
-function requestCaptionsFromExtension(videoId) {
-  const extensionId = getExtensionId();
-  if (!extensionId) {
-    return Promise.reject(
-      new Error("拡張 ID が未設定です。拡張を入れるか、下の欄に ID を貼ってください。")
-    );
-  }
-  if (typeof chrome === "undefined" || !chrome.runtime?.sendMessage) {
-    return Promise.reject(
-      new Error("この環境では拡張と通信できません。「字幕ファイルを貼る」を使ってください。")
-    );
-  }
-
-  return new Promise((resolve, reject) => {
+function pingExtensionForCaptions(extensionId, videoId) {
+  return new Promise((resolve) => {
     let settled = false;
     const timer = setTimeout(() => {
       if (settled) return;
       settled = true;
-      reject(new Error("拡張からの応答がありません。拡張を再読み込みしてみてください。"));
-    }, 60_000);
+      resolve({ ok: false, error: "timeout", soft: true });
+    }, 8_000);
 
     try {
       chrome.runtime.sendMessage(
@@ -199,35 +213,74 @@ function requestCaptionsFromExtension(videoId) {
           if (settled) return;
           settled = true;
           clearTimeout(timer);
-
           const lastError = chrome.runtime.lastError;
           if (lastError) {
-            reject(
-              new Error(
-                "拡張と話せませんでした。YT Furigana 1.9.1 以降を有効にし、ページを再読み込みしてください（ストアの 1.9.0 には書き出し用の橋がありません）。"
-              )
-            );
+            resolve({
+              ok: false,
+              error: lastError.message || "no receiver",
+              soft: true
+            });
             return;
           }
           if (!response?.ok) {
-            reject(
-              new Error(
-                response?.error ||
-                  "字幕を取得できませんでした。拡張を 1.9.1 以降に更新してから再試行してください。"
-              )
-            );
+            // 橋は通ったが字幕が無い等 → 他 ID は試さずこの結果を返す
+            resolve({
+              ok: false,
+              error: response?.error || "字幕を取得できませんでした。",
+              soft: false
+            });
             return;
           }
-          resolve(response);
+          resolve({ ok: true, ...response });
         }
       );
     } catch (error) {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
-      reject(error);
+      resolve({ ok: false, error: String(error?.message || error), soft: true });
     }
   });
+}
+
+/**
+ * 拡張に字幕取得を依頼する。候補 ID を順に試し、応答した最初の 1 本を使う。
+ * @param {string} videoId
+ */
+async function requestCaptionsFromExtension(videoId) {
+  if (typeof chrome === "undefined" || !chrome.runtime?.sendMessage) {
+    throw new Error(
+      "この環境では拡張と通信できません。「字幕ファイルを貼る」を使ってください。"
+    );
+  }
+
+  const candidates = listExtensionIdCandidates();
+  if (!candidates.length) {
+    throw new Error("拡張 ID が未設定です。下の欄に chrome://extensions の ID を貼ってください。");
+  }
+
+  const softErrors = [];
+  for (const extensionId of candidates) {
+    const result = await pingExtensionForCaptions(extensionId, videoId);
+    if (result.ok) {
+      persistExtensionId(extensionId);
+      if (els.extensionId) els.extensionId.value = extensionId;
+      return result;
+    }
+    if (!result.soft) {
+      // 橋は通った → その拡張の業務エラーをそのまま出す
+      persistExtensionId(extensionId);
+      if (els.extensionId) els.extensionId.value = extensionId;
+      throw new Error(result.error);
+    }
+    softErrors.push(`${extensionId.slice(0, 8)}…: ${result.error}`);
+  }
+
+  throw new Error(
+    "拡張と話せませんでした。ローカル版なら chrome://extensions で再読み込みし、" +
+      "カードに出ている ID を下の欄へ貼って保存してください。" +
+      (softErrors.length ? `（試行: ${softErrors.join(" / ")}）` : "")
+  );
 }
 
 els.fetchCaptions?.addEventListener("click", async () => {
@@ -562,7 +615,7 @@ els.copy?.addEventListener("click", async () => {
 
 renderFormatOptions();
 
-const savedExtensionId = getExtensionId();
+const savedExtensionId = readStoredExtensionId() || listExtensionIdCandidates()[0] || "";
 if (savedExtensionId) {
   els.extensionId.value = savedExtensionId;
 } else {

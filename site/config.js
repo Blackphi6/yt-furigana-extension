@@ -6,11 +6,15 @@ window.YT_FURIGANA_SITE = {
    */
   readingApiUrl: "https://yt-furigana-readings.onrender.com",
   /**
-   * Chrome Web Store 版の拡張 ID。
-   * 字幕書き出しページが chrome.runtime.sendMessage で呼び出す宛先。
-   * 未公開ビルドを使う場合はページ上の「拡張 ID」欄で上書きできる。
+   * 字幕書き出しが呼び出す拡張 ID の候補（先頭から順に試す）。
+   * 1) Chrome Web Store 版  2) 開発者のローカル読み込み版（このマシンの既定）
+   * ページ上の「拡張 ID」欄があればそちらを最優先する。
    */
   extensionId: "jpadpjpenggobbpdaclmlklajoihmgjh",
+  extensionIds: [
+    "jpadpjpenggobbpdaclmlklajoihmgjh",
+    "eabmmgidjadifakdmjlcpapinmijeefb"
+  ],
   /** Chrome Web Store 公開後に差し替え。空ならインストールページを使う */
   chromeStoreUrl: "",
   installUrl: "https://blackphi6.github.io/yt-furigana-extension/install.html",
