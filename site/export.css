@@ -129,7 +129,14 @@
   margin-top: 1rem;
 }
 
+.progress-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .progress-bar {
+  flex: 1;
   height: 6px;
   border-radius: 999px;
   background: color-mix(in oklab, var(--sumi) 10%, transparent);
@@ -143,6 +150,40 @@
   border-radius: inherit;
   background: var(--vermilion);
   transition: width 0.3s ease;
+}
+
+.progress-eta {
+  flex: 0 0 auto;
+  min-width: 5.5rem;
+  text-align: right;
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--sumi-soft);
+  white-space: nowrap;
+}
+
+/* --- Studio アップロード（一時） --- */
+.studio-upload {
+  margin-top: 1.5rem;
+  padding: 1rem 1.1rem;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  background: color-mix(in oklab, white 55%, transparent);
+}
+
+.studio-upload h3 {
+  font-family: var(--display);
+  font-size: 1.05rem;
+  margin: 0 0 0.45rem;
+}
+
+.studio-steps {
+  margin: 0.75rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.studio-steps li {
+  margin: 0.25rem 0;
 }
 
 /* --- プレビュー --- */

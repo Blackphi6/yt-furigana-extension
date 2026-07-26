@@ -54,6 +54,7 @@ const els = {
   progress: $("#progress"),
   progressFill: $("#progress-fill"),
   progressLabel: $("#progress-label"),
+  progressEta: $("#progress-eta"),
   convertStatus: $("#convert-status"),
   previewBlock: $("#preview-block"),
   cuePreview: $("#cue-preview"),
@@ -62,6 +63,8 @@ const els = {
   download: $("#download"),
   copy: $("#copy"),
   exportStatus: $("#export-status"),
+  openStudioUpload: $("#open-studio-upload"),
+  studioStatus: $("#studio-status"),
   output: $("#output")
 };
 
@@ -406,10 +409,49 @@ async function requestReadings(text, options) {
   }
 }
 
-function setProgress(done, total) {
+/**
+ * 残りブロック数と実測ペースから「あと何秒」を出す。
+ * @param {number} done
+ * @param {number} total
+ * @param {number | null} startedAt
+ */
+function estimateRemainingSeconds(done, total, startedAt) {
+  if (total <= 0 || done >= total) return 0;
+  const remaining = total - done;
+  if (done > 0 && startedAt) {
+    const elapsedSec = (Date.now() - startedAt) / 1000;
+    const perBlock = elapsedSec / done;
+    return Math.max(1, Math.ceil(remaining * perBlock));
+  }
+  // 未計測時: 初回はスリープ解除寄り、以降は間隔＋応答の目安
+  const coldFirstSec = 35;
+  const steadySec = Math.ceil(REQUEST_INTERVAL_MS / 1000) + 6;
+  return coldFirstSec + Math.max(0, remaining - 1) * steadySec;
+}
+
+function formatEtaLabel(seconds) {
+  if (seconds <= 0) return "完了間近";
+  if (seconds < 60) return `あと約 ${seconds} 秒`;
+  const min = Math.floor(seconds / 60);
+  const sec = seconds % 60;
+  return sec > 0 ? `あと約 ${min} 分 ${sec} 秒` : `あと約 ${min} 分`;
+}
+
+function setProgress(done, total, startedAt = null) {
   const ratio = total > 0 ? Math.round((done / total) * 100) : 0;
   els.progressFill.style.width = `${ratio}%`;
   els.progressLabel.textContent = `${done} / ${total} ブロック`;
+  if (els.progressEta) {
+    if (total <= 0) {
+      els.progressEta.textContent = "";
+    } else if (done >= total) {
+      els.progressEta.textContent = "完了";
+    } else {
+      els.progressEta.textContent = formatEtaLabel(
+        estimateRemainingSeconds(done, total, startedAt)
+      );
+    }
+  }
 }
 
 els.cancelFurigana?.addEventListener("click", () => {
@@ -436,7 +478,7 @@ els.applyFurigana?.addEventListener("click", async () => {
     indices.some((i) => hasKanjiText(state.cues[i].text))
   );
 
-  setProgress(0, targets.length);
+  setProgress(0, targets.length, null);
   setStatus(
     els.convertStatus,
     targets.length
@@ -448,6 +490,7 @@ els.applyFurigana?.addEventListener("click", async () => {
   /** @type {Map<number, any[]>} */
   const tokensByCue = new Map();
   let failed = null;
+  const startedAt = Date.now();
 
   for (let i = 0; i < targets.length; i += 1) {
     if (cancelRequested) break;
@@ -468,7 +511,7 @@ els.applyFurigana?.addEventListener("click", async () => {
       break;
     }
 
-    setProgress(i + 1, targets.length);
+    setProgress(i + 1, targets.length, startedAt);
     if (i < targets.length - 1) await sleep(REQUEST_INTERVAL_MS);
   }
 
@@ -572,6 +615,7 @@ function updateOutput() {
   const ready = text.length > 0;
   els.download.disabled = !ready;
   els.copy.disabled = !ready;
+  if (els.openStudioUpload) els.openStudioUpload.disabled = !ready;
 }
 
 els.formatList?.addEventListener("change", updateOutput);
@@ -582,11 +626,12 @@ function downloadName(extension) {
   return `${base.replace(/[^\w.-]+/g, "_")}-furigana.${extension}`;
 }
 
-els.download?.addEventListener("click", () => {
-  const format = selectedFormat();
-  const text = buildOutput();
-  if (!text) return;
-
+/**
+ * 指定形式の本文をダウンロードする。
+ * @param {{ id: string, extension: string, mime: string }} format
+ * @param {string} text
+ */
+function triggerDownload(format, text) {
   const blob = new Blob([text], { type: `${format.mime};charset=utf-8` });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -596,8 +641,51 @@ els.download?.addEventListener("click", () => {
   link.click();
   link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return link.download;
+}
 
-  setStatus(els.exportStatus, `${link.download} を保存しました。`);
+function studioTranslationsUrl(videoId) {
+  const id = String(videoId || "").trim();
+  if (!/^[\w-]{11}$/.test(id)) return "https://studio.youtube.com/";
+  return `https://studio.youtube.com/video/${id}/translations`;
+}
+
+els.download?.addEventListener("click", () => {
+  const format = selectedFormat();
+  const text = buildOutput();
+  if (!text) return;
+  const name = triggerDownload(format, text);
+  setStatus(els.exportStatus, `${name} を保存しました。`);
+});
+
+els.openStudioUpload?.addEventListener("click", () => {
+  const cues = state.rubyCues;
+  if (!cues?.length) {
+    setStatus(els.studioStatus, "先にふりがなを付けてください。", "error");
+    return;
+  }
+
+  const srv3 =
+    EXPORT_FORMATS.find((format) => format.id === "srv3") || EXPORT_FORMATS[0];
+  const radio = els.formatList?.querySelector('input[name="export-format"][value="srv3"]');
+  if (radio) {
+    radio.checked = true;
+    updateOutput();
+  }
+
+  const text = serializeCaptions("srv3", cues, {
+    rubyBelow: els.rubyBelow?.checked
+  });
+  const name = triggerDownload(srv3, text);
+  const studioUrl = studioTranslationsUrl(state.videoId);
+  window.open(studioUrl, "_blank", "noopener,noreferrer");
+
+  setStatus(
+    els.studioStatus,
+    state.videoId
+      ? `${name} を保存し、Studio の字幕画面を開きました。手順どおりアップロードしてください。`
+      : `${name} を保存しました。Studio で対象動画の「字幕」を開き、ファイルをアップロードしてください。`
+  );
 });
 
 els.copy?.addEventListener("click", async () => {

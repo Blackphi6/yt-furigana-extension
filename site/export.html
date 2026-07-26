@@ -140,7 +140,10 @@
           <button type="button" class="btn ghost" id="cancel-furigana" hidden>中止</button>
         </div>
         <div class="progress" id="progress" hidden>
-          <div class="progress-bar"><span id="progress-fill"></span></div>
+          <div class="progress-row">
+            <div class="progress-bar"><span id="progress-fill"></span></div>
+            <span class="progress-eta" id="progress-eta" aria-live="polite"></span>
+          </div>
           <p class="hint" id="progress-label"></p>
         </div>
         <p class="status" id="convert-status" role="status" aria-live="polite"></p>
@@ -169,6 +172,25 @@
           <button type="button" class="btn ghost" id="copy" disabled>コピー</button>
         </div>
         <p class="status" id="export-status" role="status" aria-live="polite"></p>
+
+        <div class="studio-upload" id="studio-upload">
+          <h3>YouTube に載せる（一時）</h3>
+          <p class="hint">
+            動画の<strong>所有者アカウント</strong>で Studio の「字幕」から、ふりがな付き SRV3（.ytt）をアップロードできます。
+            下のボタンでファイルを保存し、Studio の字幕画面を開きます。
+          </p>
+          <div class="field-row">
+            <button type="button" class="btn" id="open-studio-upload" disabled>
+              SRV3 を保存して Studio を開く
+            </button>
+          </div>
+          <ol class="studio-steps hint">
+            <li>開いた Studio で「字幕」→「追加」→「ファイルをアップロード」</li>
+            <li>保存した <code>.ytt</code> を選ぶ（言語は日本語）</li>
+            <li>公開設定を確認して保存。反映まで数分かかることがあります</li>
+          </ol>
+          <p class="status" id="studio-status" role="status" aria-live="polite"></p>
+        </div>
 
         <details class="output-block">
           <summary>書き出し結果を見る</summary>
@@ -208,6 +230,6 @@
         </p>
       </footer>
     </div>
-    <script src="./export.js?v=20260726b" type="module"></script>
+    <script src="./export.js?v=20260726c" type="module"></script>
   </body>
 </html>
