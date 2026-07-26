@@ -5,6 +5,12 @@ window.YT_FURIGANA_SITE = {
    * 初回アクセス時はスリープ解除で数十秒かかることがあります。
    */
   readingApiUrl: "https://yt-furigana-readings.onrender.com",
+  /**
+   * Chrome Web Store 版の拡張 ID。
+   * 字幕書き出しページが chrome.runtime.sendMessage で呼び出す宛先。
+   * 未公開ビルドを使う場合はページ上の「拡張 ID」欄で上書きできる。
+   */
+  extensionId: "jpadpjpenggobbpdaclmlklajoihmgjh",
   /** Chrome Web Store 公開後に差し替え。空ならインストールページを使う */
   chromeStoreUrl: "",
   installUrl: "https://blackphi6.github.io/yt-furigana-extension/install.html",

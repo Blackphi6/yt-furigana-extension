@@ -204,13 +204,18 @@ function requestCaptionsFromExtension(videoId) {
           if (lastError) {
             reject(
               new Error(
-                "拡張が見つかりません。YT Furigana をインストールして有効にしてください。"
+                "拡張と話せませんでした。YT Furigana 1.9.1 以降を有効にし、ページを再読み込みしてください（ストアの 1.9.0 には書き出し用の橋がありません）。"
               )
             );
             return;
           }
           if (!response?.ok) {
-            reject(new Error(response?.error || "字幕を取得できませんでした。"));
+            reject(
+              new Error(
+                response?.error ||
+                  "字幕を取得できませんでした。拡張を 1.9.1 以降に更新してから再試行してください。"
+              )
+            );
             return;
           }
           resolve(response);

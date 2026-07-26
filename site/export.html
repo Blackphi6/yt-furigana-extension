@@ -15,7 +15,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
-    <link rel="stylesheet" href="./export.css?v=20260725a" />
+    <link rel="stylesheet" href="./export.css?v=20260726a" />
     <script src="./config.js"></script>
   </head>
   <body class="export-page">
@@ -91,13 +91,15 @@
             <button type="button" class="btn" id="fetch-captions">字幕を取得</button>
           </div>
           <p class="hint" id="bridge-hint">
-            取得には YT Furigana 拡張が必要です（拡張があなたのブラウザで 1 本ずつ取得します）。
+            取得には YT Furigana 拡張 <strong>1.9.1 以降</strong>が必要です（拡張があなたのブラウザで 1 本ずつ取得します）。
+            Chrome ウェブストアの古い版（1.9.0）にはこの橋渡しがありません。
           </p>
           <details class="bridge-setup" id="bridge-setup">
-            <summary>拡張が見つからないとき</summary>
+            <summary>拡張が見つからない・反応しないとき</summary>
             <p class="hint">
-              未公開版・自分でビルドした拡張を使っている場合は、<code>chrome://extensions</code>
-              に表示される ID を貼ってください。この端末にのみ保存します。
+              1. <code>chrome://extensions</code> で YT Furigana がオンか確認<br />
+              2. バージョンが <strong>1.9.1 以上</strong>か確認（未満なら下の手順で差し替え）<br />
+              3. 未公開ビルドを使う場合は、同じ画面の ID を下に貼って保存（この端末のみ）
             </p>
             <div class="field-row">
               <input id="extension-id" type="text" placeholder="拡張 ID（32文字）" autocomplete="off" />
