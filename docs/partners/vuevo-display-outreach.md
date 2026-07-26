@@ -111,7 +111,7 @@ POST https://yt-furigana-readings.onrender.com/v1/readings
 | # | チャネル | URL | 状態 |
 |---|----------|-----|------|
 | 1 | VUEVO Display 専用フォーム | https://form.vuevo.net/display_contact | **送信済**（2026-07-26）`submissionGuid=8d6aa6e1-a97c-414b-b471-00f384d615c4` |
-| 2 | 会社CONTACT | https://pixiedusttech.com/ja/contact | 入力済・SUBMITは reCAPTCHA 待ち（人手完了可） |
+| 2 | 会社CONTACT | https://pixiedusttech.com/ja/contact | **送信済**（2026-07-26・本人ブラウザ／reCAPTCHA回避） |
 | 3 | 本リポ Issue（公開記録） | https://github.com/Blackphi6/yt-furigana-extension/issues/1 | 作成済 |
 | 4 | X（@pixiedusttech） | https://x.com/pixiedusttech | 認証があればメンション可 |
 
