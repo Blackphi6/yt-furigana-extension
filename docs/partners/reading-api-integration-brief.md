@@ -59,7 +59,6 @@ Render with HTML `<ruby>` / `<rt>`, or your own caption compositor using `span` 
 - Repo: https://github.com/Blackphi6/yt-furigana-extension
 - Pipeline: https://github.com/Blackphi6/yt-furigana-extension/blob/main/docs/READING-PIPELINE.md
 - Privacy: https://blackphi6.github.io/yt-furigana-extension/privacy.html
-- Outreach (JA): https://github.com/Blackphi6/yt-furigana-extension/blob/main/docs/partners/vuevo-display-outreach.md
 
 ## Contact
 
