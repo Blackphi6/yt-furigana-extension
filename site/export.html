@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ふりがな字幕エクスポート — YT Furigana</title>
+    <meta
+      name="description"
+      content="YouTube の日本語字幕にふりがなを振り、WebVTT / SRV3 / TTML で書き出します。非公式ツール。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./export.css?v=20260725a" />
+    <script src="./config.js"></script>
+  </head>
+  <body class="export-page">
+    <div class="wrap">
+      <header class="site-header">
+        <a class="brand" href="./">YT Furigana</a>
+        <nav class="nav" aria-label="主要ナビ">
+          <a href="./#demo">デモ</a>
+          <a href="./export.html" aria-current="page">字幕書き出し</a>
+          <a href="./learning-report.html">学習ログ</a>
+          <a href="./install.html">拡張</a>
+          <a href="https://github.com/Blackphi6/yt-furigana-extension">GitHub</a>
+        </nav>
+      </header>
+
+      <section class="hero export-hero fade-up">
+        <div>
+          <p class="pill-row" aria-label="特徴">
+            <span class="pill">日本語の手動字幕</span>
+            <span class="pill">ルビ対応形式のみ</span>
+            <span class="pill">非公式</span>
+          </p>
+          <h1>字幕に<em>ふりがな</em>を振って書き出す。</h1>
+          <p class="lead">
+            YouTube の日本語字幕を読み込み、漢字にルビを付けて
+            <strong>WebVTT / SRV3 / TTML</strong> で保存します。
+            ルビを文字の上に載せられる形式だけを対象にしているため、SRT には対応していません。
+          </p>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="source-title">
+        <h2 id="source-title">1. 字幕を読み込む</h2>
+        <p class="sub">
+          対象は<strong>日本語の手動字幕のみ</strong>です。自動生成（音声認識）字幕と、字幕が無い動画は対象外にしています。
+        </p>
+
+        <div class="source-tabs" role="tablist" aria-label="字幕の取り込み方法">
+          <button
+            type="button"
+            class="source-tab is-active"
+            role="tab"
+            id="tab-url"
+            aria-selected="true"
+            aria-controls="panel-url"
+            data-panel="url"
+          >
+            YouTube の URL
+          </button>
+          <button
+            type="button"
+            class="source-tab"
+            role="tab"
+            id="tab-file"
+            aria-selected="false"
+            aria-controls="panel-file"
+            data-panel="file"
+          >
+            字幕ファイルを貼る
+          </button>
+        </div>
+
+        <div class="source-panel" id="panel-url" role="tabpanel" aria-labelledby="tab-url">
+          <label class="field-label" for="video-url">動画 URL または動画 ID</label>
+          <div class="field-row">
+            <input
+              id="video-url"
+              type="url"
+              inputmode="url"
+              placeholder="https://www.youtube.com/watch?v=..."
+              autocomplete="off"
+            />
+            <button type="button" class="btn" id="fetch-captions">字幕を取得</button>
+          </div>
+          <p class="hint" id="bridge-hint">
+            取得には YT Furigana 拡張が必要です（拡張があなたのブラウザで 1 本ずつ取得します）。
+          </p>
+          <details class="bridge-setup" id="bridge-setup">
+            <summary>拡張が見つからないとき</summary>
+            <p class="hint">
+              未公開版・自分でビルドした拡張を使っている場合は、<code>chrome://extensions</code>
+              に表示される ID を貼ってください。この端末にのみ保存します。
+            </p>
+            <div class="field-row">
+              <input id="extension-id" type="text" placeholder="拡張 ID（32文字）" autocomplete="off" />
+              <button type="button" class="btn ghost" id="save-extension-id">保存</button>
+            </div>
+            <p class="hint">
+              拡張を入れたくない場合は「字幕ファイルを貼る」タブを使ってください。ネットワークに一切アクセスしません。
+            </p>
+          </details>
+        </div>
+
+        <div class="source-panel is-hidden" id="panel-file" role="tabpanel" aria-labelledby="tab-file">
+          <label class="field-label" for="caption-text">
+            SRT / WebVTT / timedtext json3 / srv3 の中身を貼るか、ファイルをドロップ
+          </label>
+          <textarea
+            id="caption-text"
+            rows="8"
+            spellcheck="false"
+            placeholder="1&#10;00:00:01,000 --> 00:00:03,500&#10;字幕のテキスト"
+          ></textarea>
+          <div class="field-row">
+            <input type="file" id="caption-file" accept=".srt,.vtt,.json,.xml,.ytt,.srv3,.txt" />
+            <button type="button" class="btn" id="load-text">読み込む</button>
+          </div>
+        </div>
+
+        <p class="status" id="source-status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="section" aria-labelledby="convert-title">
+        <h2 id="convert-title">2. ふりがなを付ける</h2>
+        <p class="sub">
+          公開読み API に本文を送って読みを取得します（無料枠のため、初回は起動待ちで数十秒かかることがあります）。
+        </p>
+        <div class="field-row">
+          <button type="button" class="btn" id="apply-furigana" disabled>ふりがなを付ける</button>
+          <button type="button" class="btn ghost" id="cancel-furigana" hidden>中止</button>
+        </div>
+        <div class="progress" id="progress" hidden>
+          <div class="progress-bar"><span id="progress-fill"></span></div>
+          <p class="hint" id="progress-label"></p>
+        </div>
+        <p class="status" id="convert-status" role="status" aria-live="polite"></p>
+
+        <div class="preview-block" id="preview-block" hidden>
+          <h3>プレビュー</h3>
+          <div class="cue-preview" id="cue-preview" lang="ja"></div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="export-title">
+        <h2 id="export-title">3. 書き出す</h2>
+        <p class="sub">ルビを文字の上に載せられる形式だけを用意しています。</p>
+
+        <fieldset class="format-list" id="format-list">
+          <legend class="field-label">形式</legend>
+        </fieldset>
+
+        <label class="checkbox-row">
+          <input type="checkbox" id="ruby-below" />
+          <span>SRV3: ルビを文字の下に置く</span>
+        </label>
+
+        <div class="field-row">
+          <button type="button" class="btn" id="download" disabled>ダウンロード</button>
+          <button type="button" class="btn ghost" id="copy" disabled>コピー</button>
+        </div>
+        <p class="status" id="export-status" role="status" aria-live="polite"></p>
+
+        <details class="output-block">
+          <summary>書き出し結果を見る</summary>
+          <pre class="output" id="output" aria-label="書き出し結果"></pre>
+        </details>
+      </section>
+
+      <section class="section" aria-labelledby="notes-title">
+        <h2 id="notes-title">注意</h2>
+        <ul class="notes">
+          <li>
+            <strong>取得は 1 本ずつ・低頻度で行います。</strong>
+            短時間に繰り返すと YouTube 側から一時的に制限され、字幕自体が見られなくなることがあります。
+            制限を検知した場合はその場で停止し、しばらく再取得できません。
+          </li>
+          <li>
+            SRV3 のルビは PC のブラウザで表示されます。モバイルアプリはルビ非対応のため
+            <code>漢字(かんじ)</code> として表示されます。
+          </li>
+          <li>
+            読みは自動判定のため誤りが残ります。書き出したファイルは公開前に確認してください。
+          </li>
+          <li>
+            本ツールは非公式です。ダウンロードした字幕の利用は、元動画の権利者の許諾範囲で行ってください。
+          </li>
+        </ul>
+      </section>
+
+      <footer class="site-footer">
+        <a href="./">トップ</a>
+        <a href="./privacy.html">プライバシー</a>
+        <a href="./terms.html">利用規約</a>
+        <a href="https://github.com/Blackphi6/yt-furigana-extension">GitHub</a>
+        <p class="trademark-note">
+          YouTube、TVer、Google Chrome、GitHub、Stripe、Ollama、Hugging Face 等の名称・ロゴは各社の商標です。
+          「YT Furigana」の「YT」は製品名の略称であり、YouTube の商標ではありません。
+        </p>
+      </footer>
+    </div>
+    <script src="./export.js?v=20260725a" type="module"></script>
+  </body>
+</html>

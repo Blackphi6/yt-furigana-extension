@@ -47,6 +47,8 @@ import {
   repairSegmentsToOriginal,
   segmentsToHtml
 } from "./segment-html.js";
+import { fetchJapaneseCaptionCuesForExport } from "./caption-export.js";
+
 
 const LLM_CACHE_LIMIT = 500;
 const llmCache = new Map();
@@ -488,6 +490,41 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
   return false;
 });
+
+
+/** 字幕書き出しページ（サイト）から呼べる origin */
+const EXPORT_PAGE_ORIGINS = new Set([
+  "https://blackphi6.github.io",
+  "http://localhost:4173",
+  "http://127.0.0.1:4173"
+]);
+
+/**
+ * サイトの字幕書き出しページからの取得依頼。
+ * ユーザーが URL を貼ってボタンを押したときだけ届く経路で、
+ * 通常再生では一切呼ばれない（timedtext 連打の防止は caption-export 側のガード）。
+ */
+if (chrome.runtime.onMessageExternal) {
+  chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
+    if (message?.type !== "YTF_EXPORT_FETCH_CAPTIONS") return false;
+
+    let origin = "";
+    try {
+      origin = new URL(sender?.url || "").origin;
+    } catch {
+      origin = "";
+    }
+    if (!EXPORT_PAGE_ORIGINS.has(origin)) {
+      sendResponse({ ok: false, error: "この送信元は許可されていません。" });
+      return false;
+    }
+
+    fetchJapaneseCaptionCuesForExport(message.videoId)
+      .then((result) => sendResponse({ ok: true, ...result }))
+      .catch((error) => sendResponse({ ok: false, error: error.message }));
+    return true;
+  });
+}
 
 /** 共有パックの最短再取得間隔（SW 再起動による連打防止） */
 const SHARED_PACK_MIN_INTERVAL_MS = 6 * 60 * 60 * 1000;
