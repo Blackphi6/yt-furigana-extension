@@ -1,15 +1,15 @@
 {
-  "ts": "2026-07-27T06:21:14.296Z",
-  "mode": "retrain",
-  "note": "素材増なし / 本体ルール変化なし（日次は主に素材集め）",
+  "ts": "2026-07-27T07:31:52.654Z",
+  "mode": "synth",
+  "note": "素材 +18 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 117,
-    "delta": 0,
-    "acceptedThisRun": 0,
-    "rejectedThisRun": 0
+    "total": 135,
+    "delta": 18,
+    "acceptedThisRun": 18,
+    "rejectedThisRun": 23
   },
   "benches": {
     "seed-bench": {
@@ -62,5 +62,76 @@
     "contextRuleCount": 23,
     "changed": false
   },
-  "newSamples": []
+  "newSamples": [
+    {
+      "text": "会社の収支をまとめるために表を作成し、グラフも描きました。",
+      "surface": "表",
+      "gold": "ひょう",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "グラフ・データ・一覧・表にまとめる"
+    },
+    {
+      "text": "風が強く吹き、髪が乱れた",
+      "surface": "風",
+      "gold": "かぜ",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "風が吹く／強風／風で髪が乱れる"
+    },
+    {
+      "text": "風が髪を乱した",
+      "surface": "風",
+      "gold": "かぜ",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "風が吹く／強風／風で髪が乱れる"
+    },
+    {
+      "text": "物知り博士が私たちに助けてくれたことは大切に思っています。",
+      "surface": "博士",
+      "gold": "はかせ",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "物知り博士／呼び方としての博士"
+    },
+    {
+      "text": "博士は論文を提出する必要がある",
+      "surface": "博士",
+      "gold": "はくし",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "博士号／学位／論文"
+    },
+    {
+      "text": "学位を取るには博士号が必要",
+      "surface": "博士",
+      "gold": "はくし",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "博士号／学位／論文"
+    },
+    {
+      "text": "彼の絵が上手で、みんなに認められている",
+      "surface": "上手",
+      "gold": "じょうず",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "絵が上手／歌が上手だ（技能）"
+    },
+    {
+      "text": "人気の高い俳優は、映画で活躍している人気者です",
+      "surface": "人気",
+      "gold": "にんき",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "人気が高い／人気者（にんき）"
+    },
+    {
+      "text": "時は行くものだ。",
+      "surface": "行く",
+      "gold": "ゆく",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "時が行く／行く末／文語・歌詞寄りのゆく"
+    },
+    {
+      "text": "角を曲がりました",
+      "surface": "角",
+      "gold": "かど",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "街角／角を曲がる（かど）"
+    }
+  ]
 }
