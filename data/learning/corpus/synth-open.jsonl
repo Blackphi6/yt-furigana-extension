@@ -148,3 +148,16 @@
 {"text":"絵は上手な人だ","surface":"上手","candidates":["うわて","かみて","じょうしゅ","じょうず"],"gold":"じょうず","source":"llm-synth:groq:arbitrate_agree","note":"絵が上手／歌が上手だ（技能）"}
 {"text":"人気者は、多くの人から尊敬されている。","surface":"人気","candidates":["じんき","にんき","ひとけ","ひとげ"],"gold":"にんき","source":"llm-synth:groq:arbitrate_agree","note":"人気が高い／人気者（にんき）"}
 {"text":"ドアが自動で開く","surface":"開く","candidates":["あく","ひらく"],"gold":"あく","source":"llm-synth:groq:verify_agree","note":"ドアが開く／蓋が開く（あく・自動）"}
+{"text":"朝の市場では、魚を買うために毎日出かける","surface":"市場","candidates":["いちば","しじょう"],"gold":"いちば","source":"llm-synth:groq:verify_agree","note":"朝の市場で魚を買う、鮮魚・野菜売り場"}
+{"text":"仕事の環境が辛いので、退職を考えている","surface":"辛い","candidates":["からい","つらい"],"gold":"つらい","source":"llm-synth:groq:arbitrate_agree","note":"経験・出来事・境遇（味ではない）"}
+{"text":"仕事の状況が辛いので、休暇を取ることを考える","surface":"辛い","candidates":["からい","つらい"],"gold":"つらい","source":"llm-synth:groq:arbitrate_agree","note":"経験・出来事・境遇（味ではない）"}
+{"text":"町中で噂が広がり始めた","surface":"町中","candidates":["まちじゅう","まちなか"],"gold":"まちじゅう","source":"llm-synth:groq:verify_agree","note":"噂が町中に広まる／町中に知れ渡る（まちじゅう）"}
+{"text":"町中には誰もが知っていた","surface":"町中","candidates":["まちじゅう","まちなか"],"gold":"まちじゅう","source":"llm-synth:groq:verify_agree","note":"噂が町中に広まる／町中に知れ渡る（まちじゅう）"}
+{"text":"市街地の中心は町中で賑やかです","surface":"町中","candidates":["まちじゅう","まちなか"],"gold":"まちなか","source":"llm-synth:groq:arbitrate_agree","note":"町中のカフェ／市街地の中心（まちなか）"}
+{"text":"町中のカフェで休憩しました","surface":"町中","candidates":["まちじゅう","まちなか"],"gold":"まちなか","source":"llm-synth:groq:arbitrate_agree","note":"町中のカフェ／市街地の中心（まちなか）"}
+{"text":"町中でのイベントは毎年行われます","surface":"町中","candidates":["まちじゅう","まちなか"],"gold":"まちなか","source":"llm-synth:groq:arbitrate_agree","note":"町中のカフェ／市街地の中心（まちなか）"}
+{"text":"事故は大事になる直前、運転手は危険を感じた","surface":"大事","candidates":["おおごと","だいじ"],"gold":"おおごと","source":"llm-synth:groq:verify_agree","note":"大事になる／騒ぎ・事件に発展する直前"}
+{"text":"私の大事な友達は今日来るそうです。","surface":"大事","candidates":["おおごと","だいじ"],"gold":"だいじ","source":"llm-synth:groq:arbitrate_agree","note":"大事な人／大事にする／大切"}
+{"text":"表が出る日は、明るくなるのを待つ","surface":"表","candidates":["おもて","ひょう"],"gold":"おもて","source":"llm-synth:groq:verify_agree","note":"裏と表／表に出る／玄関・顔の表"}
+{"text":"風が吹くと、髪が乱れる","surface":"風","candidates":["かぜ","ふう","ふり"],"gold":"かぜ","source":"llm-synth:groq:verify_agree","note":"風が吹く／強風／風で髪が乱れる"}
+{"text":"今日は明日と比べてもっと忙しい日です。","surface":"今日","candidates":["きょう","こんじつ","こんち","こんにち"],"gold":"きょう","source":"llm-synth:groq:verify_agree","note":"今日は／明日・昨日と対になる日常のきょう"}

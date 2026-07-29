@@ -1,15 +1,15 @@
 {
-  "ts": "2026-07-28T06:27:13.348Z",
+  "ts": "2026-07-29T06:30:56.845Z",
   "mode": "synth",
-  "note": "素材 +15 / 本体ルール変化なし（日次は主に素材集め）",
+  "note": "素材 +13 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 150,
-    "delta": 15,
-    "acceptedThisRun": 15,
-    "rejectedThisRun": 17
+    "total": 163,
+    "delta": 13,
+    "acceptedThisRun": 13,
+    "rejectedThisRun": 13
   },
   "benches": {
     "seed-bench": {
@@ -64,74 +64,74 @@
   },
   "newSamples": [
     {
-      "text": "表を用意して、グラフを描きます。",
-      "surface": "表",
-      "gold": "ひょう",
-      "source": "llm-synth:groq:arbitrate_agree",
-      "note": "グラフ・データ・一覧・表にまとめる"
+      "text": "町中で噂が広がり始めた",
+      "surface": "町中",
+      "gold": "まちじゅう",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
     },
     {
-      "text": "データをまとめるために表を作りました。",
-      "surface": "表",
-      "gold": "ひょう",
-      "source": "llm-synth:groq:arbitrate_agree",
-      "note": "グラフ・データ・一覧・表にまとめる"
+      "text": "町中には誰もが知っていた",
+      "surface": "町中",
+      "gold": "まちじゅう",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
     },
     {
-      "text": "風が吹く時は、花が色づく",
+      "text": "市街地の中心は町中で賑やかです",
+      "surface": "町中",
+      "gold": "まちなか",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "町中のカフェ／市街地の中心（まちなか）"
+    },
+    {
+      "text": "町中のカフェで休憩しました",
+      "surface": "町中",
+      "gold": "まちなか",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "町中のカフェ／市街地の中心（まちなか）"
+    },
+    {
+      "text": "町中でのイベントは毎年行われます",
+      "surface": "町中",
+      "gold": "まちなか",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "町中のカフェ／市街地の中心（まちなか）"
+    },
+    {
+      "text": "事故は大事になる直前、運転手は危険を感じた",
+      "surface": "大事",
+      "gold": "おおごと",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "大事になる／騒ぎ・事件に発展する直前"
+    },
+    {
+      "text": "私の大事な友達は今日来るそうです。",
+      "surface": "大事",
+      "gold": "だいじ",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "大事な人／大事にする／大切"
+    },
+    {
+      "text": "表が出る日は、明るくなるのを待つ",
+      "surface": "表",
+      "gold": "おもて",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "裏と表／表に出る／玄関・顔の表"
+    },
+    {
+      "text": "風が吹くと、髪が乱れる",
       "surface": "風",
       "gold": "かぜ",
       "source": "llm-synth:groq:verify_agree",
       "note": "風が吹く／強風／風で髪が乱れる"
     },
     {
-      "text": "風で髪が乱れた少女は、悲しんでいる",
-      "surface": "風",
-      "gold": "かぜ",
+      "text": "今日は明日と比べてもっと忙しい日です。",
+      "surface": "今日",
+      "gold": "きょう",
       "source": "llm-synth:groq:verify_agree",
-      "note": "風が吹く／強風／風で髪が乱れる"
-    },
-    {
-      "text": "物知り博士は、研究室で活躍している",
-      "surface": "博士",
-      "gold": "はかせ",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "物知り博士／呼び方としての博士"
-    },
-    {
-      "text": "彼は博士号を持っていますが、今回の論文は大きな失敗でした。",
-      "surface": "博士",
-      "gold": "はくし",
-      "source": "llm-synth:groq:arbitrate_agree",
-      "note": "博士号／学位／論文"
-    },
-    {
-      "text": "彼は研究で博士号をとり、論文の発表を控えていました。",
-      "surface": "博士",
-      "gold": "はくし",
-      "source": "llm-synth:groq:arbitrate_agree",
-      "note": "博士号／学位／論文"
-    },
-    {
-      "text": "絵は上手な人だ",
-      "surface": "上手",
-      "gold": "じょうず",
-      "source": "llm-synth:groq:arbitrate_agree",
-      "note": "絵が上手／歌が上手だ（技能）"
-    },
-    {
-      "text": "人気者は、多くの人から尊敬されている。",
-      "surface": "人気",
-      "gold": "にんき",
-      "source": "llm-synth:groq:arbitrate_agree",
-      "note": "人気が高い／人気者（にんき）"
-    },
-    {
-      "text": "ドアが自動で開く",
-      "surface": "開く",
-      "gold": "あく",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "ドアが開く／蓋が開く（あく・自動）"
+      "note": "今日は／明日・昨日と対になる日常のきょう"
     }
   ]
 }

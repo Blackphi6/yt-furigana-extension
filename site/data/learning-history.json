@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-28T06:27:13.348Z",
+  "updatedAt": "2026-07-29T06:30:56.845Z",
   "entries": [
     {
       "ts": "2026-07-18T12:08:38.759Z",
@@ -1662,6 +1662,143 @@
           "gold": "あく",
           "source": "llm-synth:groq:verify_agree",
           "note": "ドアが開く／蓋が開く（あく・自動）"
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-29T06:30:56.845Z",
+      "mode": "synth",
+      "note": "素材 +13 / 本体ルール変化なし（日次は主に素材集め）",
+      "gateOk": true,
+      "floorsOk": true,
+      "regress": false,
+      "corpus": {
+        "total": 163,
+        "delta": 13,
+        "acceptedThisRun": 13,
+        "rejectedThisRun": 13
+      },
+      "benches": {
+        "seed-bench": {
+          "passed": 22,
+          "total": 22,
+          "rate": 1,
+          "minPassRate": 1,
+          "failed": []
+        },
+        "hard-heteronym": {
+          "passed": 32,
+          "total": 32,
+          "rate": 1,
+          "minPassRate": 0.85,
+          "failed": []
+        },
+        "easy-regression": {
+          "passed": 8,
+          "total": 8,
+          "rate": 1,
+          "minPassRate": 0.9,
+          "failed": []
+        }
+      },
+      "vsBaseline": {
+        "seed-bench": {
+          "rate": 1,
+          "passed": 22,
+          "total": 22,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "hard-heteronym": {
+          "rate": 1,
+          "passed": 32,
+          "total": 32,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "easy-regression": {
+          "rate": 1,
+          "passed": 8,
+          "total": 8,
+          "baselineRate": 1,
+          "deltaRate": 0
+        }
+      },
+      "overrides": {
+        "phraseCount": 1,
+        "contextRuleCount": 23,
+        "changed": false
+      },
+      "newSamples": [
+        {
+          "text": "町中で噂が広がり始めた",
+          "surface": "町中",
+          "gold": "まちじゅう",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
+        },
+        {
+          "text": "町中には誰もが知っていた",
+          "surface": "町中",
+          "gold": "まちじゅう",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
+        },
+        {
+          "text": "市街地の中心は町中で賑やかです",
+          "surface": "町中",
+          "gold": "まちなか",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "町中のカフェ／市街地の中心（まちなか）"
+        },
+        {
+          "text": "町中のカフェで休憩しました",
+          "surface": "町中",
+          "gold": "まちなか",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "町中のカフェ／市街地の中心（まちなか）"
+        },
+        {
+          "text": "町中でのイベントは毎年行われます",
+          "surface": "町中",
+          "gold": "まちなか",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "町中のカフェ／市街地の中心（まちなか）"
+        },
+        {
+          "text": "事故は大事になる直前、運転手は危険を感じた",
+          "surface": "大事",
+          "gold": "おおごと",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "大事になる／騒ぎ・事件に発展する直前"
+        },
+        {
+          "text": "私の大事な友達は今日来るそうです。",
+          "surface": "大事",
+          "gold": "だいじ",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "大事な人／大事にする／大切"
+        },
+        {
+          "text": "表が出る日は、明るくなるのを待つ",
+          "surface": "表",
+          "gold": "おもて",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "裏と表／表に出る／玄関・顔の表"
+        },
+        {
+          "text": "風が吹くと、髪が乱れる",
+          "surface": "風",
+          "gold": "かぜ",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "風が吹く／強風／風で髪が乱れる"
+        },
+        {
+          "text": "今日は明日と比べてもっと忙しい日です。",
+          "surface": "今日",
+          "gold": "きょう",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "今日は／明日・昨日と対になる日常のきょう"
         }
       ]
     }
