@@ -1,15 +1,15 @@
 {
-  "ts": "2026-07-30T06:28:17.657Z",
+  "ts": "2026-07-31T06:44:04.171Z",
   "mode": "synth",
-  "note": "素材 +18 / 本体ルール変化なし（日次は主に素材集め）",
+  "note": "素材 +15 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 181,
-    "delta": 18,
-    "acceptedThisRun": 18,
-    "rejectedThisRun": 16
+    "total": 196,
+    "delta": 15,
+    "acceptedThisRun": 16,
+    "rejectedThisRun": 12
   },
   "benches": {
     "seed-bench": {
@@ -64,74 +64,74 @@
   },
   "newSamples": [
     {
-      "text": "表の顔はきれいな笑顔です。",
+      "text": "市街地の中心は、町中で賑やかです。",
+      "surface": "町中",
+      "gold": "まちなか",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "町中のカフェ／市街地の中心（まちなか）"
+    },
+    {
+      "text": "事故が起こる前は、全てが大事な日だった",
+      "surface": "大事",
+      "gold": "おおごと",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "大事になる／騒ぎ・事件に発展する直前"
+    },
+    {
+      "text": "大事な人と会った",
+      "surface": "大事",
+      "gold": "だいじ",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "大事な人／大事にする／大切"
+    },
+    {
+      "text": "彼は大事になることを知っています",
+      "surface": "大事",
+      "gold": "だいじ",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "大事な人／大事にする／大切"
+    },
+    {
+      "text": "この物を大事にする",
+      "surface": "大事",
+      "gold": "だいじ",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "大事な人／大事にする／大切"
+    },
+    {
+      "text": "表に出ることは大事だ",
       "surface": "表",
       "gold": "おもて",
       "source": "llm-synth:groq:verify_agree",
       "note": "裏と表／表に出る／玄関・顔の表"
     },
     {
-      "text": "グラフに表を描いた",
+      "text": "顔の表に笑顔を作る",
+      "surface": "表",
+      "gold": "おもて",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "裏と表／表に出る／玄関・顔の表"
+    },
+    {
+      "text": "データを表にまとめる必要がある",
       "surface": "表",
       "gold": "ひょう",
       "source": "llm-synth:groq:arbitrate_agree",
       "note": "グラフ・データ・一覧・表にまとめる"
     },
     {
-      "text": "データを表でまとめる",
+      "text": "グラフを表に掲示する",
       "surface": "表",
       "gold": "ひょう",
       "source": "llm-synth:groq:arbitrate_agree",
       "note": "グラフ・データ・一覧・表にまとめる"
     },
     {
-      "text": "一覧表を作った",
-      "surface": "表",
-      "gold": "ひょう",
-      "source": "llm-synth:groq:arbitrate_agree",
-      "note": "グラフ・データ・一覧・表にまとめる"
-    },
-    {
-      "text": "風が吹く日に、肌がかたくなる。",
-      "surface": "風",
-      "gold": "かぜ",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "風が吹く／強風／風で髪が乱れる"
-    },
-    {
-      "text": "物知り博士は、人々を驚かせています。",
+      "text": "物知り博士は、人々に知識を伝え続けています。",
       "surface": "博士",
       "gold": "はかせ",
       "source": "llm-synth:groq:verify_agree",
       "note": "物知り博士／呼び方としての博士"
-    },
-    {
-      "text": "教授と呼んだ博士は、学生たちの教えに従いました。",
-      "surface": "博士",
-      "gold": "はかせ",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "物知り博士／呼び方としての博士"
-    },
-    {
-      "text": "博士は、人々に知恵を与えました。",
-      "surface": "博士",
-      "gold": "はかせ",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "物知り博士／呼び方としての博士"
-    },
-    {
-      "text": "彼は論文を完成させて博士号を取得した。",
-      "surface": "博士",
-      "gold": "はくし",
-      "source": "llm-synth:groq:arbitrate_agree",
-      "note": "博士号／学位／論文"
-    },
-    {
-      "text": "明日行く場所は決まっています",
-      "surface": "行く",
-      "gold": "いく",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "学校へ行く／明日行く（日常のいく）"
     }
   ]
 }
