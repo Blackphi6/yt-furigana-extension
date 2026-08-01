@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-31T06:44:04.171Z",
+  "updatedAt": "2026-08-01T06:29:16.451Z",
   "entries": [
     {
       "ts": "2026-07-18T12:08:38.759Z",
@@ -2073,6 +2073,129 @@
           "gold": "はかせ",
           "source": "llm-synth:groq:verify_agree",
           "note": "物知り博士／呼び方としての博士"
+        }
+      ]
+    },
+    {
+      "ts": "2026-08-01T06:29:16.451Z",
+      "mode": "synth",
+      "note": "素材 +8 / 本体ルール変化なし（日次は主に素材集め）",
+      "gateOk": true,
+      "floorsOk": true,
+      "regress": false,
+      "corpus": {
+        "total": 204,
+        "delta": 8,
+        "acceptedThisRun": 8,
+        "rejectedThisRun": 9
+      },
+      "benches": {
+        "seed-bench": {
+          "passed": 22,
+          "total": 22,
+          "rate": 1,
+          "minPassRate": 1,
+          "failed": []
+        },
+        "hard-heteronym": {
+          "passed": 32,
+          "total": 32,
+          "rate": 1,
+          "minPassRate": 0.85,
+          "failed": []
+        },
+        "easy-regression": {
+          "passed": 8,
+          "total": 8,
+          "rate": 1,
+          "minPassRate": 0.9,
+          "failed": []
+        }
+      },
+      "vsBaseline": {
+        "seed-bench": {
+          "rate": 1,
+          "passed": 22,
+          "total": 22,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "hard-heteronym": {
+          "rate": 1,
+          "passed": 32,
+          "total": 32,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "easy-regression": {
+          "rate": 1,
+          "passed": 8,
+          "total": 8,
+          "baselineRate": 1,
+          "deltaRate": 0
+        }
+      },
+      "overrides": {
+        "phraseCount": 1,
+        "contextRuleCount": 23,
+        "changed": false
+      },
+      "newSamples": [
+        {
+          "text": "[\"朝の市場で、鮮魚と野菜を買うことができる\"]",
+          "surface": "市場",
+          "gold": "いちば",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "朝の市場で魚を買う、鮮魚・野菜売り場"
+        },
+        {
+          "text": "[\"市場で朝から人でにぎわいを見せる\"]",
+          "surface": "市場",
+          "gold": "いちば",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "朝の市場で魚を買う、鮮魚・野菜売り場"
+        },
+        {
+          "text": "体調が悪くて辛い仕事を続けている",
+          "surface": "辛い",
+          "gold": "つらい",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "経験・出来事・境遇（味ではない）"
+        },
+        {
+          "text": "病気の夫を手にして辛い思いをしている",
+          "surface": "辛い",
+          "gold": "つらい",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "経験・出来事・境遇（味ではない）"
+        },
+        {
+          "text": "町中で噂が広がって、知れ渡るようになる。",
+          "surface": "町中",
+          "gold": "まちじゅう",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
+        },
+        {
+          "text": "市街地の中心は、静かで落ち着いた町中で、カフェや小さな店が並んでいます。",
+          "surface": "町中",
+          "gold": "まちなか",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "町中のカフェ／市街地の中心（まちなか）"
+        },
+        {
+          "text": "事件が大事になる直前、警察は混乱を防ぐための対策を講じ始めた",
+          "surface": "大事",
+          "gold": "おおごと",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "大事になる／騒ぎ・事件に発展する直前"
+        },
+        {
+          "text": "[\"風が強く吹いたので、髪が乱れました。\"]",
+          "surface": "風",
+          "gold": "かぜ",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "風が吹く／強風／風で髪が乱れる"
         }
       ]
     }
