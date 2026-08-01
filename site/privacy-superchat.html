@@ -55,14 +55,15 @@
             <strong>画面上の DOM テキスト</strong>を読み、端末内の辞書でルビ付き HTML に変換して同じ要素へ戻します。
           </li>
           <li>
-            オン／オフ設定は <code>chrome.storage.local</code> に端末内保存します。
+            オン／オフ設定と、ユーザーが手動登録した読みは
+            <code>chrome.storage.local</code> に端末内保存します（サーバーへ送りません）。
           </li>
           <li>アカウント情報・位置情報・閲覧履歴リストは収集しません。</li>
         </ul>
 
         <h2>3. 権限</h2>
         <ul>
-          <li><code>storage</code> … 設定保存</li>
+          <li><code>storage</code> … 設定・手動登録読みの端末内保存</li>
           <li>
             <code>youtube.com</code> / <code>m.youtube.com</code> …
             ライブチャット（iframe 含む）内の Super Chat DOM へアクセスするため
