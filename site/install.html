@@ -61,9 +61,29 @@
         <h2>使い方</h2>
         <ol>
           <li>YouTube または TVer で日本語字幕をオン</li>
-          <li>漢字の上にふりがなが付く</li>
+          <li>漢字の上にふりがなが付く（既定は端末内エンジン。字幕本文は外部へ送りません）</li>
           <li>漢字を押すと読み候補 → 端末内に学習（Free）</li>
+          <li>
+            任意: 初回ポップアップの<strong>精度優先</strong>、またはあとから「公開読み API」を選ぶと、
+            デモと同じサーバーへ表示中の字幕テキストを送って読みを付けます（オプトイン。詳細は
+            <a href="./privacy.html">プライバシー</a>）
+          </li>
         </ol>
+
+        <h2>関連: Super Chat 向け</h2>
+        <p>
+          ライブのスパチャ本文にふりがなを付けたい場合は、別拡張の
+          <a href="./superchat.html">YT Super Chat Furigana</a>
+          を使います（字幕向け本体とは別インストール）。
+        </p>
+
+        <h2>プライバシーの要点</h2>
+        <ul>
+          <li>既定では字幕本文を開発者サーバーへ送りません</li>
+          <li>公開読み API は初回の「精度優先」または明示選択したときだけ送信します</li>
+          <li>共有読みパックの受信は表層→読みのみ（オフ可）</li>
+          <li>全文は <a href="./privacy.html">プライバシーポリシー</a> と <a href="./terms.html">利用規約</a> を参照</li>
+        </ul>
 
         <p id="store-note" class="sub" hidden>
           Chrome Web Store 版:

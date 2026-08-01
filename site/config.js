@@ -17,6 +17,9 @@ window.YT_FURIGANA_SITE = {
   ],
   /** Chrome Web Store 公開後に差し替え。空ならインストールページを使う */
   chromeStoreUrl: "",
+  /** Super Chat 向け別拡張（公開後に差し替え） */
+  superchatChromeStoreUrl: "",
+  superchatUrl: "https://blackphi6.github.io/yt-furigana-extension/superchat.html",
   installUrl: "https://blackphi6.github.io/yt-furigana-extension/install.html",
   siteUrl: "https://blackphi6.github.io/yt-furigana-extension",
   sponsorsUrl: "https://github.com/sponsors/Blackphi6",

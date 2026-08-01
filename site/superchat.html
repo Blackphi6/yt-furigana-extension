@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>YT Super Chat Furigana — スパチャにふりがな</title>
+    <meta
+      name="description"
+      content="YouTube ライブの Super Chat 本文にひらがなルビを付ける非公式 Chrome 拡張。端末内処理・字幕 API 不使用。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./config.js"></script>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="site-header">
+        <a class="brand" href="./">YT Furigana</a>
+        <nav class="nav">
+          <a href="./install.html">字幕向け拡張</a>
+          <a href="./privacy-superchat.html">プライバシー</a>
+          <a href="https://github.com/Blackphi6/yt-furigana-extension">GitHub</a>
+        </nav>
+      </header>
+
+      <section class="section prose" style="border-top: none; padding-top: 2.5rem">
+        <p class="eyebrow" style="opacity: 0.7; margin: 0 0 0.5rem">関連ツール · 別拡張</p>
+        <h1>YT Super Chat Furigana</h1>
+        <p>
+          YouTube ライブ配信の <strong>Super Chat</strong> 本文（と上部ティッカー）に、
+          ひらがなのふりがなを付ける非公式 Chrome 拡張です。
+          字幕向けの <a href="./install.html">YT Furigana</a> とは<strong>別インストール</strong>です。
+        </p>
+
+        <h2>特徴</h2>
+        <ul>
+          <li>Super Chat / ティッカーのみ（通常チャットには付けない）</li>
+          <li>端末内の辞書（kuromoji）だけで処理。チャット本文をサーバーへ送らない</li>
+          <li>YouTube timedtext / 字幕 API は使わない</li>
+        </ul>
+
+        <h2>インストール</h2>
+        <p id="store-line">
+          Chrome Web Store 公開後は、下のボタンから追加できます。公開前は zip / ソースから読み込んでください。
+        </p>
+        <p>
+          <a class="btn" id="cws-btn" href="#" hidden>Chrome に追加</a>
+        </p>
+
+        <h3>A. 提出用 zip（ローカル読み込み）</h3>
+        <ol>
+          <li>
+            リポジトリで <code>npm run pack:superchat</code> を実行し、
+            <code>store/superchat-cws-upload/yt-superchat-furigana.zip</code> を展開
+          </li>
+          <li><code>chrome://extensions</code> → デベロッパーモード → パッケージ化されていない拡張機能を読み込む</li>
+          <li>展開したフォルダを選ぶ</li>
+        </ol>
+
+        <h3>B. ソースからビルド</h3>
+        <ol>
+          <li><code>npm install && npm run superchat:build</code></li>
+          <li><code>extensions/yt-superchat-furigana</code> を読み込む</li>
+        </ol>
+
+        <h2>使い方</h2>
+        <ol>
+          <li>YouTube ライブ（またはアーカイブ）でチャットを表示</li>
+          <li>拡張アイコンで「ふりがなを表示」がオンであること</li>
+          <li>Super Chat 本文にルビが付く</li>
+        </ol>
+
+        <h2>プライバシー</h2>
+        <p>
+          詳細は
+          <a href="./privacy-superchat.html">プライバシーポリシー（本拡張）</a>
+          を参照してください。字幕向け本体のポリシーとは別ページです。
+        </p>
+
+        <p style="margin-top: 2rem">
+          <a href="./">← YT Furigana ホーム</a>
+        </p>
+      </section>
+
+      <footer class="site-footer">
+        <p>
+          YouTube、Google Chrome は各社の商標です。「YT」は製品名の略称であり、YouTube の商標ではありません。
+          本拡張は非公式です。
+        </p>
+      </footer>
+    </div>
+    <script>
+      const cfg = window.YT_FURIGANA_SITE || {};
+      const url = cfg.superchatChromeStoreUrl;
+      const btn = document.getElementById("cws-btn");
+      if (url && btn) {
+        btn.href = url;
+        btn.hidden = false;
+        document.getElementById("store-line").textContent =
+          "Chrome Web Store から追加できます。";
+      }
+    </script>
+  </body>
+</html>
