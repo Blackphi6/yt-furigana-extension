@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>YT Super Chat Furigana</title>
+    <link rel="stylesheet" href="./popup.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Super Chat Furigana</h1>
+        <p class="sub">ライブのスパチャ本文にふりがな</p>
+      </header>
+
+      <label class="toggle" for="enabled">
+        <span>ふりがなを表示</span>
+        <input type="checkbox" id="enabled" checked />
+      </label>
+
+      <p class="status" id="status" role="status"></p>
+
+      <p class="note">
+        Super Chat と上部ティッカーのみ対象です。通常チャットには付けません。
+        読みが付かない漢字はクリックして手動登録できます（端末内に保存）。
+        YouTube timedtext は使いません。辞書は端末内の kuromoji です。
+      </p>
+    </main>
+    <script src="../dist/popup.js" type="module"></script>
+  </body>
+</html>

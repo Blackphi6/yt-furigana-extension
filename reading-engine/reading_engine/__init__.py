@@ -22,6 +22,10 @@ from fugashi import Tagger
 from reading_engine.reranker import confidence_threshold, get_reranker
 from reading_engine.trust_patterns import match_trust_reading
 from reading_engine.annotation_markers import strip_annotation_markers
+from reading_engine.personal_names import (
+    collect_phrase_spans,
+    load_personal_name_phrases,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CREATIVE_SEED = REPO_ROOT / "data" / "creative-ruby" / "seed.jsonl"
@@ -318,8 +322,31 @@ class ReadingEngine:
             for e in (user_dict or [])
             if e.get("surface") and e.get("reading")
         }
-        words = list(self.tagger(text))
+        # 人名＋固定リストは形態素分割前に最長一致（経沢→つねざわ など）
+        phrase_map = dict(load_personal_name_phrases())
+        phrase_map.update(user_map)
+        phrase_spans = collect_phrase_spans(text, phrase_map)
+
         tokens: list[dict[str, Any]] = []
+        for start, end, surface, reading in phrase_spans:
+            tokens.append(
+                {
+                    "surface": surface,
+                    "span": [start, end],
+                    "reading": reading,
+                    "confidence": 1.0,
+                    "source": "user_dict" if surface in user_map else "personal_name",
+                    "candidates": [reading],
+                }
+            )
+
+        def overlaps_phrase(start: int, end: int) -> bool:
+            for p0, p1, _s, _r in phrase_spans:
+                if start < p1 and end > p0:
+                    return True
+            return False
+
+        words = list(self.tagger(text))
         cursor = 0
 
         for word in words:
@@ -330,7 +357,10 @@ class ReadingEngine:
             end = start + len(surface)
             cursor = end
 
-            # 1) user_dict highest priority
+            if overlaps_phrase(start, end):
+                continue
+
+            # 1) user_dict exact surface（単漢字など最長一致に乗らなかったもの）
             if surface in user_map:
                 reading = user_map[surface]
                 tokens.append(
@@ -353,17 +383,17 @@ class ReadingEngine:
             # 3) lattice
             cands = self._candidates_for(surface, base, text)
             if not cands:
-                if base:
-                    tokens.append(
-                        {
-                            "surface": surface,
-                            "span": [start, end],
-                            "reading": base,
-                            "confidence": 0.5,
-                            "source": "base_engine",
-                            "candidates": [base],
-                        }
-                    )
+                # 読みなしでも表層を返し、デモ／拡張で手動登録できるようにする
+                tokens.append(
+                    {
+                        "surface": surface,
+                        "span": [start, end],
+                        "reading": base or "",
+                        "confidence": 0.5 if base else 0.0,
+                        "source": "base_engine" if base else "unset",
+                        "candidates": [base] if base else [],
+                    }
+                )
                 continue
 
             reading, conf, source, out_cands = self._select_reading(

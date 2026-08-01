@@ -272,12 +272,14 @@
 
 .ruby-out ruby {
   ruby-align: center;
+  ruby-position: over;
 }
 
 .ruby-out rt {
   font-family: var(--body);
   font-size: 0.45em;
   color: var(--vermilion-deep);
+  text-align: center;
 }
 
 .ruby-out [data-hit] {
@@ -286,11 +288,12 @@
   -webkit-box-decoration-break: clone;
 }
 
-.ruby-out .demo-ruby-word {
-  cursor: pointer;
-  border-radius: 2px;
-  outline: none;
-  position: relative;
+.ruby-out .demo-ruby-word--unset {
+  box-shadow: inset 0 -1px 0 color-mix(in oklab, var(--vermilion) 40%, transparent);
+}
+
+.ruby-out .demo-ruby-word--unset::after {
+  content: "登録";
 }
 
 .ruby-out .demo-ruby-word:hover,

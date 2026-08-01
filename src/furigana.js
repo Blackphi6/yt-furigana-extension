@@ -117,7 +117,9 @@ function alignMiddleSegments(segments, reading) {
     const nextSegment = segments[index + 1];
     if (nextSegment?.type === "kana") {
       const nextKana = toHiragana(nextSegment.text);
-      const nextIndex = reading.indexOf(nextKana, readingIndex);
+      // 送り仮名が読み先頭と同じ字でも、漢字側に最低1モーラ残す
+      // 例: 示し合わせ / しめしあわせ → 示(しめ)し…（indexOf(し,0) だと空振りする）
+      const nextIndex = reading.indexOf(nextKana, readingIndex + 1);
       const kanjiReading =
         nextIndex === -1 ? reading.slice(readingIndex) : reading.slice(readingIndex, nextIndex);
 
@@ -248,7 +250,7 @@ import {
   MANUAL_PHRASE_READINGS
 } from "./reading-context.js";
 import { mergeTokensForRuby } from "./token-merge.js";
-import { getNeologdPhraseTrie } from "./neologd-phrases.js";
+import { getCombinedPhraseTrie } from "./personal-name-phrases.js";
 import { applyEnglishKatakanaReadings } from "./english-katakana-reading.js";
 import {
   extractInlineParenReadings,
@@ -314,7 +316,7 @@ export function buildFuriganaHtml(text, tokenize) {
         applyEnglishKatakanaReadings(
           mergeTokensForRuby(tokenize(prepared), {
             extraSurfaces: MANUAL_PHRASE_READINGS.keys(),
-            phraseTrie: getNeologdPhraseTrie()
+            phraseTrie: getCombinedPhraseTrie()
           })
         ),
         prepared

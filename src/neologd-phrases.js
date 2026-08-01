@@ -19,6 +19,11 @@ export function getNeologdReading(surface) {
   return neologdPhrases[surface] || "";
 }
 
+/** 結合 Trie 用（コピーしない参照。呼び出し側で破壊しないこと） */
+export function getNeologdPhrasesObject() {
+  return neologdPhrases;
+}
+
 function installParsedPhrases(parsed) {
   neologdPhrases = {};
   for (const [surface, reading] of Object.entries(parsed || {})) {

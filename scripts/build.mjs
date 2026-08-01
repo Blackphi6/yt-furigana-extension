@@ -36,6 +36,26 @@ async function copyNeologdPhrases() {
   console.log(`NEologd phrases ready (${sizeMb.toFixed(2)} MB gz)`);
 }
 
+async function copyPersonalNamePhrases() {
+  const source = path.join(root, "data", "generated", "personal-name-phrases.json.gz");
+  const target = path.join(root, "dict", "personal-name-phrases.json.gz");
+  const siteJsonSrc = path.join(root, "data", "generated", "personal-name-phrases.json");
+  const siteJsonDst = path.join(root, "site", "personal-name-phrases.json");
+  if (!existsSync(source)) {
+    console.warn(
+      "Personal-name phrases missing. Run: node scripts/build-personal-name-phrases.mjs"
+    );
+    return;
+  }
+  await mkdir(path.dirname(target), { recursive: true });
+  await cp(source, target, { force: true });
+  if (existsSync(siteJsonSrc)) {
+    await cp(siteJsonSrc, siteJsonDst, { force: true });
+  }
+  const sizeMb = statSync(target).size / (1024 * 1024);
+  console.log(`Personal-name phrases ready (${sizeMb.toFixed(2)} MB gz)`);
+}
+
 async function copyEnglishKatakana() {
   const source = path.join(root, "data", "generated", "english-katakana.json.gz");
   const target = path.join(root, "dict", "english-katakana.json.gz");
@@ -291,6 +311,7 @@ async function run() {
   await mkdir(path.join(root, "dist"), { recursive: true });
   await copyKuromojiDict();
   await copyNeologdPhrases();
+  await copyPersonalNamePhrases();
   await copyEnglishKatakana();
   await copySudachiDict();
   await generateIcons();

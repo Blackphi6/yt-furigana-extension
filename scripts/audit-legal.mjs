@@ -88,6 +88,7 @@ for (const rel of [
   "third_party/Apache-2.0.txt",
   "third_party/BSD-CMUdict.txt",
   "third_party/NOTICE-kuromoji.md",
+  "third_party/MIT-japanese-personal-name-dataset.txt",
   "licenses/licenses.html",
   "docs/TRADEMARK-AND-ATTRIBUTION.md"
 ]) {

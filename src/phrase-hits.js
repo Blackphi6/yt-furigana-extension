@@ -1,6 +1,10 @@
 import { normalizeReading, normalizeUserReading } from "./reading-normalize.js";
 import { MANUAL_PHRASE_READINGS } from "./reading-context.js";
-import { findNeologdMatchAt, getNeologdReading } from "./neologd-phrases.js";
+import { findNeologdMatchAt } from "./neologd-phrases.js";
+import {
+  findPersonalNameMatchAt,
+  findCombinedPhraseMatchAt
+} from "./personal-name-phrases.js";
 import { findLongestPhraseAt, buildPhraseTrie } from "./phrase-trie.js";
 
 function normalizePhraseReading(reading, source) {
@@ -12,7 +16,7 @@ function normalizePhraseReading(reading, source) {
 }
 
 /**
- * テキスト上で、辞書系フレーズ（NEologd・手動・学習）の非重複最長一致を集める。
+ * テキスト上で、辞書系フレーズ（人名・NEologd・手動・学習）の非重複最長一致を集める。
  * 読み API の user_dict 優先枠に載せて「辞書＋API」併用する。
  *
  * @param {string} text
@@ -32,19 +36,28 @@ export function collectLocalPhraseHits(text, extraPhrases = {}) {
   const hits = [];
   let index = 0;
   while (index < source.length) {
+    const combined = findCombinedPhraseMatchAt(source, index);
     const neo = findNeologdMatchAt(source, index);
+    const personal = findPersonalNameMatchAt(source, index);
     const manual = findLongestPhraseAt(extraTrie, source, index);
 
+    /** @type {Array<{ surface: string, reading: string, source: string }>} */
+    const opts = [];
+    if (combined) opts.push({ ...combined, source: "phrase" });
+    if (neo) opts.push({ ...neo, source: "neologd" });
+    if (personal) opts.push({ ...personal, source: "personal_name" });
+    if (manual) opts.push({ ...manual, source: "manual" });
+
     let best = null;
-    if (neo && manual) {
-      best =
-        neo.surface.length >= manual.surface.length
-          ? { ...neo, source: "neologd" }
-          : { ...manual, source: "manual" };
-    } else if (neo) {
-      best = { ...neo, source: "neologd" };
-    } else if (manual) {
-      best = { ...manual, source: "manual" };
+    for (const opt of opts) {
+      if (!best || opt.surface.length > best.surface.length) best = opt;
+      else if (
+        best &&
+        opt.surface.length === best.surface.length &&
+        (opt.source === "manual" || opt.source === "personal_name")
+      ) {
+        best = opt;
+      }
     }
 
     if (best && best.surface.length >= 2) {

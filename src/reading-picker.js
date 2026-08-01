@@ -93,8 +93,10 @@ export async function openReadingPicker(wordEl, options = {}) {
   const contextText =
     options.contextText ||
     wordEl.closest("[data-yt-furigana-original]")?.getAttribute("data-yt-furigana-original") ||
+    // Super Chat 拡張は data-ytscf-original に原文を残す
+    wordEl.closest("[data-ytscf-original]")?.getAttribute("data-ytscf-original") ||
     wordEl.closest(
-      ".ytp-caption-segment, .caption-visual-line, .segment-text, .vjs-text-track-cue-line"
+      ".ytp-caption-segment, .caption-visual-line, .segment-text, .vjs-text-track-cue-line, yt-live-chat-paid-message-renderer #message, yt-live-chat-ticker-paid-message-item-renderer #message"
     )?.textContent ||
     "";
 
@@ -340,13 +342,58 @@ async function applyReadingChoice(wordEl, surface, reading, contextText) {
   }
 }
 
+const FLOAT_RT_CLASS = "yt-furigana-float-rt";
+
+function isReadingFloatWord(word) {
+  if (!word) return false;
+  if (typeof word.classList?.contains === "function") {
+    return word.classList.contains(FLOAT_RT_CLASS);
+  }
+  return /\byt-furigana-float-rt\b/.test(String(word.className || ""));
+}
+
 /**
  * 語＋読み (rt) を含むヒット矩形。rt を上に絶対配置してもクリックできるようにする。
+ * float 経路では読みだけの要素なので、漢字（data-base-*）領域まで下に広げる。
  * @param {Element} word
  * @returns {{ left: number, top: number, right: number, bottom: number, width: number, height: number } | null}
  */
 export function getFuriganaWordHitRect(word) {
   if (!word || typeof word.getBoundingClientRect !== "function") return null;
+
+  const pad = 3;
+
+  // 縁取り字幕用 float: 見た目は読みのみ、クリック対象は下の漢字も含む
+  if (isReadingFloatWord(word)) {
+    const fr = word.getBoundingClientRect();
+    if (!(fr.width > 0 || fr.height > 0)) return null;
+    const bw =
+      Number.parseFloat(
+        typeof word.getAttribute === "function"
+          ? word.getAttribute("data-base-width") || ""
+          : ""
+      ) || fr.width;
+    const bh =
+      Number.parseFloat(
+        typeof word.getAttribute === "function"
+          ? word.getAttribute("data-base-height") || ""
+          : ""
+      ) || Math.max(fr.height * 1.8, 20);
+    const cx = (fr.left + fr.right) / 2;
+    const left = cx - bw / 2 - pad;
+    const right = cx + bw / 2 + pad;
+    const top = fr.top - pad;
+    // 読みは transform で漢字直上。下端から漢字高さ分をヒットに含める
+    const bottom = fr.bottom + bh + pad;
+    return {
+      left,
+      top,
+      right,
+      bottom,
+      width: right - left,
+      height: bottom - top
+    };
+  }
 
   /** @type {DOMRect[]} */
   const rects = [word.getBoundingClientRect()];
@@ -371,7 +418,6 @@ export function getFuriganaWordHitRect(word) {
   }
   if (!Number.isFinite(left)) return null;
 
-  const pad = 3;
   return {
     left: left - pad,
     top: top - pad,

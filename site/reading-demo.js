@@ -1,5 +1,6 @@
 import { collectQuizItems, uniqueCandidates } from "./demo-quiz.js?v=20260723g";
 import { stripAnnotationMarkers } from "./annotation-markers.js?v=20260723g";
+import { buildRuby } from "./build-ruby.js?v=20260725a";
 
 const DEFAULT_API =
   (window.YT_FURIGANA_SITE && window.YT_FURIGANA_SITE.readingApiUrl) ||
@@ -26,7 +27,102 @@ const progressLabelEl = $("#analyze-progress-label");
 /** @type {{ text: string, tokens: any[] } | null} */
 let lastResult = null;
 const PICKER_ID = "demo-reading-picker";
+const PINS_STORAGE_KEY = "ytf_reading_pins";
 
+/** @type {Record<string, string>} */
+let personalNamePhrases = {};
+let personalNamesPromise = null;
+
+async function ensurePersonalNamePhrases() {
+  if (Object.keys(personalNamePhrases).length) return personalNamePhrases;
+  if (personalNamesPromise) return personalNamesPromise;
+  personalNamesPromise = (async () => {
+    try {
+      const res = await fetch("./personal-name-phrases.json", {
+        cache: "force-cache"
+      });
+      if (!res.ok) {
+        const fallback = await fetch(
+          "https://raw.githubusercontent.com/Blackphi6/yt-furigana-extension/main/data/generated/personal-name-phrases.json"
+        );
+        if (!fallback.ok) return personalNamePhrases;
+        const data = await fallback.json();
+        if (data && typeof data === "object") personalNamePhrases = data;
+        return personalNamePhrases;
+      }
+      const data = await res.json();
+      if (data && typeof data === "object") {
+        personalNamePhrases = data;
+      }
+    } catch {
+      /* ignore */
+    }
+    return personalNamePhrases;
+  })();
+  return personalNamesPromise;
+}
+
+/**
+ * API トークンに人名最長一致を重ねる（サーバ未デプロイ時の保険）。
+ * @param {string} text
+ * @param {any[]} tokens
+ */
+function overlayPersonalNameTokens(text, tokens) {
+  const phrases = personalNamePhrases;
+  if (!text || !phrases || !Object.keys(phrases).length) return tokens || [];
+  const hits = [];
+  let i = 0;
+  while (i < text.length) {
+    let best = null;
+    for (let len = 2; len <= Math.min(8, text.length - i); len += 1) {
+      const surface = text.slice(i, i + len);
+      if (phrases[surface]) best = { surface, reading: phrases[surface], start: i, end: i + len };
+    }
+    if (best) {
+      hits.push(best);
+      i = best.end;
+    } else {
+      i += 1;
+    }
+  }
+  if (!hits.length) return tokens || [];
+  const kept = (tokens || []).filter((t) => {
+    const [a, b] = t.span || [0, 0];
+    return !hits.some((h) => a < h.end && b > h.start);
+  });
+  for (const h of hits) {
+    kept.push({
+      surface: h.surface,
+      span: [h.start, h.end],
+      reading: h.reading,
+      confidence: 1,
+      source: "personal_name",
+      candidates: [h.reading]
+    });
+  }
+  return kept.sort((a, b) => a.span[0] - b.span[0]);
+}
+
+function loadPinsFromStorage() {
+  if (!pinsEl) return;
+  try {
+    const saved = localStorage.getItem(PINS_STORAGE_KEY);
+    if (saved != null && !String(pinsEl.value || "").trim()) {
+      pinsEl.value = saved;
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+function savePinsToStorage() {
+  if (!pinsEl) return;
+  try {
+    localStorage.setItem(PINS_STORAGE_KEY, pinsEl.value || "");
+  } catch {
+    /* ignore */
+  }
+}
 /** Cold start on free Render often takes ~30–60s; bar asymptotes toward this. */
 const ANALYZE_EXPECTED_MS = 50000;
 /** @type {ReturnType<typeof setInterval> | null} */
@@ -123,6 +219,7 @@ function upsertPin(surface, reading) {
   }
   if (!replaced) next.push(`${surf}　${read}`);
   pinsEl.value = next.filter((l, i, arr) => !(l === "" && arr[i - 1] === "")).join("\n");
+  savePinsToStorage();
   const details = pinsEl.closest("details");
   if (details) details.open = true;
   syncProposeButton();
@@ -134,6 +231,8 @@ function sourceLabel(source) {
     reranker: "再ランク",
     cue: "文脈キュー",
     user_dict: "固定",
+    personal_name: "人名",
+    unset: "未登録",
     base_engine: "形態素",
     creative_ruby: "創作",
   };
@@ -152,11 +251,17 @@ function buildRubyHtml(text, tokens) {
     html += escapeHtml(text.slice(cursor, start));
     const surface = text.slice(start, end);
     const reading = t.reading || "";
-    const editable = /[\u3400-\u9fff\uF900-\uFAFF]/.test(surface) && Boolean(reading);
+    const hasKanji = /[\u3400-\u9fff\uF900-\uFAFF]/.test(surface);
+    // 読みなしでもクリック登録できるようにする（拡張の --unset と同じ）
+    const editable = hasKanji;
+    // 拡張本体と同じ送り仮名分割（語全体1ルビだと位置がおかしく見える）
+    const rubyInner = reading ? buildRuby(surface, reading) : escapeHtml(surface);
     if (editable) {
-      html += `<span class="demo-ruby-word" data-hit data-token-index="${i}" data-surface="${escapeHtml(surface)}" data-reading="${escapeHtml(reading)}" data-source="${escapeHtml(t.source || "")}" role="button" tabindex="0" title="クリックして読みを変更"><ruby>${escapeHtml(surface)}<rt>${escapeHtml(reading)}</rt></ruby></span>`;
+      const unsetClass = reading ? "" : " demo-ruby-word--unset";
+      const title = reading ? "クリックして読みを変更" : "クリックで読みを登録";
+      html += `<span class="demo-ruby-word${unsetClass}" data-hit data-token-index="${i}" data-surface="${escapeHtml(surface)}" data-reading="${escapeHtml(reading)}" data-source="${escapeHtml(t.source || "")}" role="button" tabindex="0" title="${title}">${rubyInner}</span>`;
     } else {
-      html += `<span data-hit data-source="${escapeHtml(t.source || "")}"><ruby>${escapeHtml(surface)}<rt>${escapeHtml(reading)}</rt></ruby></span>`;
+      html += `<span data-hit data-source="${escapeHtml(t.source || "")}">${rubyInner}</span>`;
     }
     cursor = end;
   }
@@ -267,7 +372,7 @@ function openDemoPicker(wordEl, anchorEl) {
   popup.id = PICKER_ID;
   popup.className = "demo-reading-picker";
   popup.setAttribute("role", "dialog");
-  popup.setAttribute("aria-label", `${surface}の読みを変更`);
+  popup.setAttribute("aria-label", `${surface}の読みを${current ? "変更" : "登録"}`);
 
   const candHtml = candidates
     .map(
@@ -279,13 +384,13 @@ function openDemoPicker(wordEl, anchorEl) {
   popup.innerHTML = `
     <div class="demo-pick-head">
       <strong>${escapeHtml(surface)}</strong>
-      <span>の読みを直す</span>
+      <span>${current ? "の読みを直す" : "の読みを登録"}</span>
       <button type="button" class="demo-pick-close" aria-label="閉じる">×</button>
     </div>
     <div class="demo-pick-cands">${candHtml || "<span class='hint'>候補なし — 下に入力</span>"}</div>
     <label class="demo-pick-custom">
-      <span>候補にない読み（ひらがな／カタカナ）</span>
-      <input type="text" inputmode="kana" autocomplete="off" spellcheck="false" placeholder="例: まちなか" value="" />
+      <span>${current ? "候補にない読み（ひらがな／カタカナ）" : "読みを入力（ひらがな／カタカナ）"}</span>
+      <input type="text" inputmode="kana" autocomplete="off" spellcheck="false" placeholder="例: つねざわ" value="" />
     </label>
     <div class="demo-pick-actions">
       <button type="button" class="btn small" data-apply-custom>この読みにする</button>
@@ -407,9 +512,10 @@ function renderQuiz(text, tokens) {
 }
 
 function renderResult(text, data) {
-  const tokens = data.tokens || [];
+  let tokens = data.tokens || [];
   // API は注釈マーカー除去後の span を返す。元テキストに重ねるとルビが右へズレる。
   const displayText = stripAnnotationMarkers(text);
+  tokens = overlayPersonalNameTokens(displayText, tokens);
   const strippedMarkers = displayText !== String(text ?? "");
   lastResult = { text: displayText, tokens };
   closeDemoPicker();
@@ -425,7 +531,7 @@ function renderResult(text, data) {
     .map((t, i) => {
       const surface = t.surface || displayText.slice(t.span[0], t.span[1]);
       const reading = t.reading || "";
-      const editable = /[\u3400-\u9fff\uF900-\uFAFF]/.test(surface) && Boolean(reading);
+      const editable = /[\u3400-\u9fff\uF900-\uFAFF]/.test(surface);
       const cands = uniqueCandidates(t, reading)
         .map((c) => {
           const current = c === reading;
@@ -438,7 +544,7 @@ function renderResult(text, data) {
       const conf =
         typeof t.confidence === "number" ? t.confidence.toFixed(3) : "—";
       const fixBtn = editable
-        ? `<button type="button" class="btn ghost small demo-table-fix" data-token-index="${i}" data-surface="${escapeHtml(surface)}" data-reading="${escapeHtml(reading)}">直す</button>`
+        ? `<button type="button" class="btn ghost small demo-table-fix" data-token-index="${i}" data-surface="${escapeHtml(surface)}" data-reading="${escapeHtml(reading)}">${reading ? "直す" : "登録"}</button>`
         : "—";
       return `<tr data-token-index="${i}">
         <td>${escapeHtml(surface)}</td>
@@ -730,6 +836,7 @@ async function runAnalyze(options = {}) {
   const showBar = !options.fromPicker;
   if (showBar) startAnalyzeProgress();
   const pins = collectUserDict();
+  await ensurePersonalNamePhrases();
   // ピッカーからの再実行では勝手に共有送信しない
   const share =
     !options.fromPicker && Boolean($("#pin-share-proposal")?.checked);
@@ -842,13 +949,17 @@ quizListEl?.addEventListener("click", (e) => {
 
 $("#pin-clear")?.addEventListener("click", () => {
   pinsEl.value = "";
+  savePinsToStorage();
   syncProposeButton();
   showProposeStatus("");
 });
 $("#pin-propose")?.addEventListener("click", () => {
   void runProposeOnly();
 });
-pinsEl?.addEventListener("input", syncProposeButton);
+pinsEl?.addEventListener("input", () => {
+  savePinsToStorage();
+  syncProposeButton();
+});
 $("#run-btn").addEventListener("click", () => {
   void runAnalyze();
 });
@@ -869,6 +980,9 @@ inputEl.addEventListener("keydown", (e) => {
     void runAnalyze();
   }
 });
+
+loadPinsFromStorage();
+void ensurePersonalNamePhrases();
 
 const params = new URLSearchParams(location.search);
 const qText = params.get("text");

@@ -72,6 +72,18 @@ v. 本ソフトウェアは、mecab-ipadic-NEologd（Toshinori Sato / @overlast�
    圧縮フレーズ一覧（data/generated/neologd-phrases.json.gz）である。
 
 
+v-1b. japanese-personal-name-dataset（姓）— MIT
+
+   Copyright (c) 2022 shuheilocale
+   https://github.com/shuheilocale/japanese-personal-name-dataset
+
+   日本人の姓（漢字→ひらがな）を読み付け用フレーズとして同梱する。
+   上流 last_name_org.csv は推定人数上位約 1999 姓。レア姓は
+   data/personal-name-extra.json で補完する場合がある（プロジェクト側）。
+   同梱物: data/generated/personal-name-phrases.json.gz
+   ライセンス全文: third_party/MIT-japanese-personal-name-dataset.txt
+
+
 v-2. CMU Pronouncing Dictionary (CMUdict) — BSD-2-Clause
 
    Copyright (C) 1993-2015 Carnegie Mellon University.

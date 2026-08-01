@@ -4,6 +4,7 @@ import {
   findLongestDictionaryMatchAt
 } from "./dictionary-match.js";
 import { getNeologdReading } from "./neologd-phrases.js";
+import { getPersonalNameReading } from "./personal-name-phrases.js";
 import { findLongestPhraseAt } from "./phrase-trie.js";
 import { applyNumberUnitReadings } from "./number-unit-reading.js";
 
@@ -54,7 +55,12 @@ function dictionaryReadingFor(surface) {
     何倍: "なんばい",
     直書き: "じかがき"
   };
-  return fallback[surface] || getNeologdReading(surface) || "";
+  return (
+    fallback[surface] ||
+    getPersonalNameReading(surface) ||
+    getNeologdReading(surface) ||
+    ""
+  );
 }
 
 /**
