@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-01T06:29:16.451Z",
+  "updatedAt": "2026-08-02T06:33:25.876Z",
   "entries": [
     {
       "ts": "2026-07-18T12:08:38.759Z",
@@ -2196,6 +2196,143 @@
           "gold": "かぜ",
           "source": "llm-synth:groq:verify_agree",
           "note": "風が吹く／強風／風で髪が乱れる"
+        }
+      ]
+    },
+    {
+      "ts": "2026-08-02T06:33:25.876Z",
+      "mode": "synth",
+      "note": "素材 +19 / 本体ルール変化なし（日次は主に素材集め）",
+      "gateOk": true,
+      "floorsOk": true,
+      "regress": false,
+      "corpus": {
+        "total": 223,
+        "delta": 19,
+        "acceptedThisRun": 19,
+        "rejectedThisRun": 26
+      },
+      "benches": {
+        "seed-bench": {
+          "passed": 22,
+          "total": 22,
+          "rate": 1,
+          "minPassRate": 1,
+          "failed": []
+        },
+        "hard-heteronym": {
+          "passed": 32,
+          "total": 32,
+          "rate": 1,
+          "minPassRate": 0.85,
+          "failed": []
+        },
+        "easy-regression": {
+          "passed": 8,
+          "total": 8,
+          "rate": 1,
+          "minPassRate": 0.9,
+          "failed": []
+        }
+      },
+      "vsBaseline": {
+        "seed-bench": {
+          "rate": 1,
+          "passed": 22,
+          "total": 22,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "hard-heteronym": {
+          "rate": 1,
+          "passed": 32,
+          "total": 32,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "easy-regression": {
+          "rate": 1,
+          "passed": 8,
+          "total": 8,
+          "baselineRate": 1,
+          "deltaRate": 0
+        }
+      },
+      "overrides": {
+        "phraseCount": 1,
+        "contextRuleCount": 23,
+        "changed": false
+      },
+      "newSamples": [
+        {
+          "text": "リストを表に整理してみました。",
+          "surface": "表",
+          "gold": "ひょう",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "グラフ・データ・一覧・表にまとめる"
+        },
+        {
+          "text": "風が吹き荒れる夜は寒い。",
+          "surface": "風",
+          "gold": "かぜ",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "風が吹く／強風／風で髪が乱れる"
+        },
+        {
+          "text": "強い風で髪が乱れる人を見た。",
+          "surface": "風",
+          "gold": "かぜ",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "風が吹く／強風／風で髪が乱れる"
+        },
+        {
+          "text": "風で花がびっしりと揺れる。",
+          "surface": "風",
+          "gold": "かぜ",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "風が吹く／強風／風で髪が乱れる"
+        },
+        {
+          "text": "博士は、物知りで有名な人物です。",
+          "surface": "博士",
+          "gold": "はかせ",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "物知り博士／呼び方としての博士"
+        },
+        {
+          "text": "博士は論文を発表し、学位を授与された。",
+          "surface": "博士",
+          "gold": "はくし",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "博士号／学位／論文"
+        },
+        {
+          "text": "[\"今日は明日も雨が降りそうだ\"]",
+          "surface": "今日",
+          "gold": "きょう",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "今日は／明日・昨日と対になる日常のきょう"
+        },
+        {
+          "text": "[\"今日は明日までの予定を確認した\"]",
+          "surface": "今日",
+          "gold": "きょう",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "今日は／明日・昨日と対になる日常のきょう"
+        },
+        {
+          "text": "ドアが開くので、入ったら閉めるようにしてください。",
+          "surface": "開く",
+          "gold": "あく",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "ドアが開く／蓋が開く（あく・自動）"
+        },
+        {
+          "text": "[\"朝は予定が多くて忙しいので、早く起きて準備を済ませたい\"]",
+          "surface": "忙しい",
+          "gold": "いそがしい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "仕事・予定・日常の忙しさ"
         }
       ]
     }
