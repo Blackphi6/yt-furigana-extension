@@ -1,15 +1,15 @@
 {
-  "ts": "2026-08-03T06:12:49.392Z",
-  "mode": "retrain",
-  "note": "素材増なし / 本体ルール変化なし（日次は主に素材集め）",
+  "ts": "2026-08-03T07:25:43.353Z",
+  "mode": "synth",
+  "note": "素材 +15 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 223,
-    "delta": 0,
-    "acceptedThisRun": 0,
-    "rejectedThisRun": 0
+    "total": 238,
+    "delta": 15,
+    "acceptedThisRun": 17,
+    "rejectedThisRun": 17
   },
   "benches": {
     "seed-bench": {
@@ -62,5 +62,76 @@
     "contextRuleCount": 23,
     "changed": false
   },
-  "newSamples": []
+  "newSamples": [
+    {
+      "text": "大事な計画が急に大事になりそう",
+      "surface": "大事",
+      "gold": "おおごと",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "大事になる／騒ぎ・事件に発展する直前"
+    },
+    {
+      "text": "大事な試合の直前は大事な時期",
+      "surface": "大事",
+      "gold": "おおごと",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "大事になる／騒ぎ・事件に発展する直前"
+    },
+    {
+      "text": "私が大事な人に会う時は、必ず大事な気持ちで会いに行く",
+      "surface": "大事",
+      "gold": "だいじ",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "大事な人／大事にする／大切"
+    },
+    {
+      "text": "データを表でまとめてみました",
+      "surface": "表",
+      "gold": "ひょう",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "グラフ・データ・一覧・表にまとめる"
+    },
+    {
+      "text": "グラフに表を描いてみました",
+      "surface": "表",
+      "gold": "ひょう",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "グラフ・データ・一覧・表にまとめる"
+    },
+    {
+      "text": "会社のデータを一覧表にまとめてみましょう",
+      "surface": "表",
+      "gold": "ひょう",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "グラフ・データ・一覧・表にまとめる"
+    },
+    {
+      "text": "風が強く吹き、髪が乱れた",
+      "surface": "風",
+      "gold": "かぜ",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "風が吹く／強風／風で髪が乱れる"
+    },
+    {
+      "text": "風が強く吹くと、花が落ちた",
+      "surface": "風",
+      "gold": "かぜ",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "風が吹く／強風／風で髪が乱れる"
+    },
+    {
+      "text": "相撲で上手な力士は優勝した",
+      "surface": "上手",
+      "gold": "うわて",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "交渉で上手に回る／相撲の上手（うわて）"
+    },
+    {
+      "text": "テキストの一行だけ書く",
+      "surface": "一行",
+      "gold": "いちぎょう",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "一行だけ書く／テキストの一行（いちぎょう）"
+    }
+  ]
 }
