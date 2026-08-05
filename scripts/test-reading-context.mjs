@@ -55,6 +55,25 @@ if (!one.includes("<ruby>1人<rt>ひとり</rt></ruby>")) {
   throw new Error(`Sudachi split should remain for 1人, got ${one}`);
 }
 
+// 方: 比較はほう、方法はかた（フレーズ）、人物はそのかた
+const hou = buildFuriganaHtml("その方がいい", tokenize);
+if (!/ほう/.test(hou)) {
+  throw new Error(`その方がいい should read ほう, got ${hou}`);
+}
+const tsutae = buildFuriganaHtml("伝え方が悪い", tokenize);
+if (!tsutae.includes("つたえかた") && !/つたえ/.test(tsutae)) {
+  throw new Error(`伝え方 should be つたえかた, got ${tsutae}`);
+}
+if (/data-surface="方" data-reading="ほう"/.test(tsutae)) {
+  throw new Error(`伝え方が should not leave 方=ほう, got ${tsutae}`);
+}
+const kataPerson = resolveContextualReading("その方", "ほう", "その方は誰ですか");
+if (kataPerson?.reading !== "かた") {
+  throw new Error(`その方は should prefer かた, got ${JSON.stringify(kataPerson)}`);
+}
+
 console.log("Hybrid reading tests passed.");
 console.log(html);
 console.log(one);
+console.log(hou);
+console.log(tsutae);

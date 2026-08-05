@@ -2,6 +2,7 @@ import kuromoji from "kuromoji";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildFuriganaHtml, buildRuby } from "../src/furigana.js";
+import { buildRuby as buildRubySite } from "../site/build-ruby.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dictPath = path.join(__dirname, "..", "dict");
@@ -23,12 +24,22 @@ function assertEqual(actual, expected, label) {
 for (const testCase of cases) {
   const actual = buildRuby(testCase.surface, testCase.reading);
   assertEqual(actual, testCase.expected, testCase.surface);
+  assertEqual(
+    buildRubySite(testCase.surface, testCase.reading),
+    testCase.expected,
+    `site/build-ruby: ${testCase.surface}`
+  );
 }
 
 assertEqual(
-  buildRuby("時々", "ときどき"),
-  "<ruby>時々<rt>ときどき</rt></ruby>",
-  "時々"
+  buildRuby("示し合わせ", "しめしあわせ"),
+  "<ruby>示<rt>しめ</rt></ruby>し<ruby>合<rt>あ</rt></ruby>わせ",
+  "示し合わせ（読み先頭が送り仮名と同字）"
+);
+assertEqual(
+  buildRubySite("示し合わせ", "しめしあわせ"),
+  "<ruby>示<rt>しめ</rt></ruby>し<ruby>合<rt>あ</rt></ruby>わせ",
+  "site 示し合わせ"
 );
 assertEqual(
   buildRuby("人々", "ひとびと"),

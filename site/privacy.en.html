@@ -17,7 +17,7 @@
       </header>
       <article class="section prose" style="border-top: none; padding-top: 2rem">
         <h1>Privacy Policy</h1>
-        <p>Last updated: 2026-07-26</p>
+        <p>Last updated: 2026-07-25</p>
         <p><strong>This is not legal advice.</strong> Japanese version:
           <a href="./privacy.html">privacy.html</a></p>
 
@@ -25,20 +25,29 @@
         <p>Repository: <a href="https://github.com/Blackphi6/yt-furigana-extension">GitHub</a>. Contact: GitHub Issues.</p>
 
         <h2>2. Default (Free) data</h2>
-        <p><strong>We do not send caption body text to our servers by default.</strong></p>
+        <p><strong>By default (Free, “Standard” or “High accuracy” engines), we do not send caption body text to our servers.</strong></p>
         <ul>
           <li>Settings → <code>chrome.storage.sync</code></li>
           <li>License / API keys, reading dictionary, learning inbox → <code>chrome.storage.local</code> (learning inbox opt-out available)</li>
           <li>Shared readings pack <strong>receive</strong> (default on, can disable): surface→reading only from the public reading API. No caption body.</li>
         </ul>
         <p>On YouTube / TVer we read on-screen caption DOM only. Default playback does not call YouTube timedtext.</p>
-        <p>
-          Exception: the <a href="./export.html">caption export</a> page.
-          Only when you paste a URL and press fetch does the extension retrieve
-          that one video’s captions from YouTube. No automatic prefetch.
-        </p>
 
         <h2>3. Optional sends</h2>
+        <h3>3.1 Public reading API (opt-in)</h3>
+        <p>
+          Enabled when you choose <strong>“Accuracy first”</strong> on first popup open, or later select
+          <strong>“Public reading API”</strong> in advanced engine settings. Until then the extension stays on-device
+          (no caption body leaves the device). Selecting accuracy / public API counts as consent to send on-screen
+          caption text for reading estimation. You can switch back to on-device anytime.
+        </p>
+        <ul>
+          <li>Destination: public reading engine by default (<code>https://yt-furigana-readings.onrender.com</code>), or a URL you set</li>
+          <li>Sent: on-screen caption text; personal reading dictionary entries if any</li>
+          <li>Not sent: video URL, watch history, comments, account info, persistent device IDs</li>
+          <li>Purpose: furigana / reading estimation only</li>
+        </ul>
+        <h3>3.2 Other optional sends</h3>
         <ul>
           <li>BYO reading API / Ollama: only if you configure them</li>
           <li>Premium sync / server shared dict: user-configured server</li>

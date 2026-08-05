@@ -1,5 +1,5 @@
 /**
- * YouTube ライブチャット iframe 内の Super Chat にふりがなを付ける。
+ * YouTube ライブチャット iframe 内の Super Chat / 通常チャットにふりがなを付ける。
  * timedtext / Innertube は使わない。
  * 読み未登録の漢字はクリックで手動登録できる。
  */
@@ -28,18 +28,21 @@ import {
 } from "../../../src/personal-name-phrases.js";
 import {
   applyFuriganaToMessage,
+  collectChatMessageElements,
   collectSuperChatMessageElements,
   extractPlainMessage,
   isAlreadyProcessed,
   needsFurigana,
-  restoreAllMessages
+  restoreChatMessages,
+  restoreSuperChatMessages
 } from "./process.js";
+import { isAnyTargetEnabled, normalizeYtscfState } from "./state.js";
 
 const STORAGE_KEY = "ytscfState";
 const CACHE_MAX = 400;
 
-/** @type {{ enabled: boolean }} */
-let state = { enabled: true };
+/** @type {{ superChatEnabled: boolean, chatEnabled: boolean }} */
+let state = { superChatEnabled: true, chatEnabled: true };
 
 /** @type {((text: string) => any[]) | null} */
 let tokenize = null;
@@ -61,7 +64,9 @@ function setStatus(partial) {
       ytscfRuntime: {
         ready: Boolean(tokenize),
         processedCount,
-        enabled: state.enabled,
+        superChatEnabled: state.superChatEnabled,
+        chatEnabled: state.chatEnabled,
+        enabled: isAnyTargetEnabled(state),
         href: location.href,
         ...partial
       }
@@ -102,12 +107,24 @@ async function loadPhraseDicts() {
 }
 
 /**
- * 辞書変更後に既処理メッセージを付け直す。
+ * @param {HTMLElement[]} elements
  */
-function reprocessAll() {
-  for (const el of collectSuperChatMessageElements(document)) {
+function clearDoneMarks(elements) {
+  for (const el of elements) {
     el.removeAttribute("data-ytscf-done");
     el.classList.remove("ytscf-done");
+  }
+}
+
+/**
+ * 有効な対象だけ付け直す。
+ */
+function reprocessEnabled() {
+  if (state.superChatEnabled) {
+    clearDoneMarks(collectSuperChatMessageElements(document));
+  }
+  if (state.chatEnabled) {
+    clearDoneMarks(collectChatMessageElements(document));
   }
   queueScan();
 }
@@ -153,9 +170,10 @@ function convert(text) {
 
 /**
  * @param {HTMLElement} el
+ * @param {boolean} enabledForKind
  */
-function processOne(el) {
-  if (!state.enabled || !tokenize) return;
+function processOne(el, enabledForKind) {
+  if (!enabledForKind || !tokenize) return;
 
   // 仮想リスト再利用で本文だけ差し替わった場合は付け直す
   if (isAlreadyProcessed(el)) {
@@ -188,7 +206,7 @@ function processOne(el) {
 
 function scan() {
   scanQueued = false;
-  if (!state.enabled) return;
+  if (!isAnyTargetEnabled(state)) return;
   if (!tokenize || !learningReady) {
     void Promise.all([
       ensureTokenizer(),
@@ -197,14 +215,22 @@ function scan() {
     ])
       .then(() => queueScan())
       .catch((error) => {
-        console.warn("[YT Super Chat Furigana]", error?.message || error);
+        console.warn("[YT Live Chat Furigana]", error?.message || error);
         setStatus({ ready: false, error: String(error?.message || error) });
       });
     return;
   }
 
-  const nodes = collectSuperChatMessageElements(document);
-  for (const el of nodes) processOne(el);
+  if (state.superChatEnabled) {
+    for (const el of collectSuperChatMessageElements(document)) {
+      processOne(el, true);
+    }
+  }
+  if (state.chatEnabled) {
+    for (const el of collectChatMessageElements(document)) {
+      processOne(el, true);
+    }
+  }
 }
 
 function queueScan() {
@@ -213,20 +239,33 @@ function queueScan() {
   requestAnimationFrame(scan);
 }
 
+/**
+ * フラグ差分でオフにした側だけ restore。
+ * @param {{ superChatEnabled: boolean, chatEnabled: boolean }} prev
+ * @param {{ superChatEnabled: boolean, chatEnabled: boolean }} next
+ */
+function applyStateTransition(prev, next) {
+  if (prev.superChatEnabled && !next.superChatEnabled) {
+    restoreSuperChatMessages(document);
+  }
+  if (prev.chatEnabled && !next.chatEnabled) {
+    restoreChatMessages(document);
+  }
+}
+
 async function loadState() {
   try {
     const data = await chrome.storage.local.get(STORAGE_KEY);
-    const saved = data?.[STORAGE_KEY];
-    state = { enabled: saved?.enabled !== false };
+    state = normalizeYtscfState(data?.[STORAGE_KEY]);
   } catch {
-    state = { enabled: true };
+    state = { superChatEnabled: true, chatEnabled: true };
   }
   setStatus({});
-  if (state.enabled) {
+  if (isAnyTargetEnabled(state)) {
     void Promise.all([ensureTokenizer(), reapplyUserReadings(), loadPhraseDicts()])
       .then(() => queueScan())
       .catch((error) => {
-        console.warn("[YT Super Chat Furigana]", error?.message || error);
+        console.warn("[YT Live Chat Furigana]", error?.message || error);
         setStatus({ ready: false, error: String(error?.message || error) });
       });
   }
@@ -237,21 +276,23 @@ chrome.storage.onChanged.addListener((changes, area) => {
 
   if (changes[USER_READING_DICT_KEY]) {
     void reapplyUserReadings().then(() => {
-      if (state.enabled) reprocessAll();
+      if (isAnyTargetEnabled(state)) reprocessEnabled();
     });
   }
 
   if (!changes[STORAGE_KEY]) return;
-  const saved = changes[STORAGE_KEY].newValue;
-  state = { enabled: saved?.enabled !== false };
-  if (!state.enabled) {
-    restoreAllMessages(document);
-    setStatus({ enabled: false });
+  const prev = state;
+  const next = normalizeYtscfState(changes[STORAGE_KEY].newValue);
+  state = next;
+  applyStateTransition(prev, next);
+  setStatus({});
+
+  if (!isAnyTargetEnabled(state)) {
     return;
   }
   void Promise.all([ensureTokenizer(), reapplyUserReadings(), loadPhraseDicts()])
     .then(() => {
-      reprocessAll();
+      reprocessEnabled();
     })
     .catch(() => {});
 });
@@ -260,7 +301,9 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === "YTSCF_PING") {
     sendResponse({
       ok: true,
-      enabled: state.enabled,
+      superChatEnabled: state.superChatEnabled,
+      chatEnabled: state.chatEnabled,
+      enabled: isAnyTargetEnabled(state),
       ready: Boolean(tokenize),
       processedCount,
       href: location.href,

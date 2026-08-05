@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>プライバシーポリシー — YT Super Chat Furigana</title>
-    <meta name="description" content="YT Super Chat Furigana のプライバシーポリシー。" />
+    <title>プライバシーポリシー — YT Live Chat Furigana</title>
+    <meta name="description" content="YT Live Chat Furigana のプライバシーポリシー。" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -18,7 +18,7 @@
       <header class="site-header">
         <a class="brand" href="./">YT Furigana</a>
         <nav class="nav">
-          <a href="./superchat.html">Super Chat 拡張</a>
+          <a href="./superchat.html">ライブチャット拡張</a>
           <a href="./privacy.html">字幕向け PP</a>
           <a href="./">ホーム</a>
         </nav>
@@ -26,9 +26,9 @@
 
       <article class="section prose" style="border-top: none; padding-top: 2rem">
         <h1>プライバシーポリシー</h1>
-        <p>最終更新: 2026-07-31</p>
+        <p>最終更新: 2026-08-01</p>
         <p>
-          対象: <strong>YT Super Chat Furigana</strong>（Chrome 拡張）。
+          対象: <strong>YT Live Chat Furigana</strong>（Chrome 拡張。旧称 YT Super Chat Furigana）。
           字幕向けの YT Furigana 本体とは別製品です。本体のポリシーは
           <a href="./privacy.html">こちら</a>。
           本文書は法的助言ではありません。
@@ -47,15 +47,16 @@
 
         <h2>2. 収集するデータ</h2>
         <p>
-          <strong>開発者のサーバーへ Super Chat 本文や視聴データを送信しません。</strong>
+          <strong>開発者のサーバーへチャット本文や視聴データを送信しません。</strong>
         </p>
         <ul>
           <li>
-            拡張は、開いている YouTube ページ上の Super Chat（および上部ティッカー）の
+            拡張は、開いている YouTube ページ上の Super Chat（および上部ティッカー）と
+            通常ライブチャットの
             <strong>画面上の DOM テキスト</strong>を読み、端末内の辞書でルビ付き HTML に変換して同じ要素へ戻します。
           </li>
           <li>
-            オン／オフ設定と、ユーザーが手動登録した読みは
+            Super Chat / 通常チャットの個別オン／オフ設定と、ユーザーが手動登録した読みは
             <code>chrome.storage.local</code> に端末内保存します（サーバーへ送りません）。
           </li>
           <li>アカウント情報・位置情報・閲覧履歴リストは収集しません。</li>
@@ -66,10 +67,10 @@
           <li><code>storage</code> … 設定・手動登録読みの端末内保存</li>
           <li>
             <code>youtube.com</code> / <code>m.youtube.com</code> …
-            ライブチャット（iframe 含む）内の Super Chat DOM へアクセスするため
+            ライブチャット（iframe 含む）内のチャット DOM へアクセスするため
           </li>
         </ul>
-        <p>YouTube timedtext / 字幕配信 API は使用しません。</p>
+        <p>YouTube timedtext / 字幕配信 API は使用しません。動画ページ下のコメント欄は対象外です。</p>
 
         <h2>4. 第三者</h2>
         <p>

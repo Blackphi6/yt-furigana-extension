@@ -1,5 +1,5 @@
 /**
- * Super Chat / ティッカー DOM の抽出と、二重処理防止付きの適用。
+ * Super Chat / 通常チャット / ティッカー DOM の抽出と、二重処理防止付きの適用。
  * YouTube timedtext は使わない。
  */
 
@@ -14,7 +14,14 @@ export const PAID_MESSAGE_SELECTOR =
 export const TICKER_MESSAGE_SELECTOR =
   "yt-live-chat-ticker-paid-message-item-renderer #message";
 
-export const TARGET_SELECTOR = `${PAID_MESSAGE_SELECTOR}, ${TICKER_MESSAGE_SELECTOR}`;
+/** 通常ライブチャット本文 */
+export const CHAT_MESSAGE_SELECTOR =
+  "yt-live-chat-text-message-renderer #message";
+
+export const SUPERCHAT_TARGET_SELECTOR = `${PAID_MESSAGE_SELECTOR}, ${TICKER_MESSAGE_SELECTOR}`;
+
+/** @deprecated 互換: Super Chat + ティッカーのみ（通常チャットは含まない） */
+export const TARGET_SELECTOR = SUPERCHAT_TARGET_SELECTOR;
 
 /**
  * @param {unknown} el
@@ -33,11 +40,28 @@ function isElementLike(el) {
 
 /**
  * @param {ParentNode | null | undefined} root
+ * @param {string} selector
+ * @returns {HTMLElement[]}
+ */
+function collectBySelector(root, selector) {
+  if (!root?.querySelectorAll) return [];
+  return [...root.querySelectorAll(selector)].filter(isElementLike);
+}
+
+/**
+ * @param {ParentNode | null | undefined} root
  * @returns {HTMLElement[]}
  */
 export function collectSuperChatMessageElements(root) {
-  if (!root?.querySelectorAll) return [];
-  return [...root.querySelectorAll(TARGET_SELECTOR)].filter(isElementLike);
+  return collectBySelector(root, SUPERCHAT_TARGET_SELECTOR);
+}
+
+/**
+ * @param {ParentNode | null | undefined} root
+ * @returns {HTMLElement[]}
+ */
+export function collectChatMessageElements(root) {
+  return collectBySelector(root, CHAT_MESSAGE_SELECTOR);
 }
 
 /**
@@ -114,10 +138,36 @@ export function restoreMessage(el) {
 
 /**
  * @param {ParentNode | null | undefined} root
+ * @param {string} selector
+ */
+function restoreMessagesMatching(root, selector) {
+  if (!root?.querySelectorAll) return;
+  for (const el of root.querySelectorAll(selector)) {
+    if (!isElementLike(el) || !el.hasAttribute?.(DONE_ATTR)) continue;
+    restoreMessage(el);
+  }
+}
+
+/**
+ * Super Chat / ティッカーだけ元に戻す。
+ * @param {ParentNode | null | undefined} root
+ */
+export function restoreSuperChatMessages(root) {
+  restoreMessagesMatching(root, SUPERCHAT_TARGET_SELECTOR);
+}
+
+/**
+ * 通常チャットだけ元に戻す。
+ * @param {ParentNode | null | undefined} root
+ */
+export function restoreChatMessages(root) {
+  restoreMessagesMatching(root, CHAT_MESSAGE_SELECTOR);
+}
+
+/**
+ * @param {ParentNode | null | undefined} root
  */
 export function restoreAllMessages(root) {
-  if (!root?.querySelectorAll) return;
-  for (const el of root.querySelectorAll(`[${DONE_ATTR}]`)) {
-    if (el instanceof HTMLElement) restoreMessage(el);
-  }
+  restoreSuperChatMessages(root);
+  restoreChatMessages(root);
 }

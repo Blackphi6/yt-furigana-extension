@@ -76,6 +76,37 @@ assert.ok(hit);
 assert.ok(hit.top < 40);
 assert.ok(hit.bottom > 40);
 
+// YouTube 縁取り字幕の float-rt: 読み矩形の下（漢字）でもヒットする
+{
+  const floatRt = {
+    id: "float-rt",
+    className: "yt-furigana-word yt-furigana-float-rt",
+    isConnected: true,
+    getAttribute: (name) => {
+      if (name === "data-base-width") return "56";
+      if (name === "data-base-height") return "28";
+      return null;
+    },
+    getBoundingClientRect: () => new FakeRect(100, 10, 40, 14),
+    querySelectorAll: () => []
+  };
+  Object.setPrototypeOf(floatRt, HTMLElement.prototype);
+  const floatRtRoot = {
+    querySelectorAll: () => [floatRt],
+    contains: () => true
+  };
+  // 読みの上
+  assert.equal(findFuriganaWordAtPoint(120, 12, floatRtRoot)?.id, "float-rt");
+  // 漢字領域（読みの下）
+  assert.equal(findFuriganaWordAtPoint(120, 30, floatRtRoot)?.id, "float-rt");
+  assert.equal(findFuriganaWordAtPoint(10, 30, floatRtRoot), null);
+
+  const floatHit = getFuriganaWordHitRect(floatRt);
+  assert.ok(floatHit);
+  assert.ok(floatHit.bottom >= 10 + 14 + 28);
+  assert.ok(floatHit.width >= 56);
+}
+
 // 全画面マウント先
 {
   const html = { id: "html" };

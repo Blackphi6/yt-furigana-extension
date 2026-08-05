@@ -84,6 +84,18 @@ v-1b. japanese-personal-name-dataset（姓）— MIT
    ライセンス全文: third_party/MIT-japanese-personal-name-dataset.txt
 
 
+v-1c. joyokanji 旧字体・異体字マップ — Apache License 2.0
+
+   https://github.com/new-village/joyo-kanji
+
+   文化庁「常用漢字表」等を参照した旧字体→新字体マップ、および
+   人名異体字（髙→高 等）の variants を読み照合用に同梱する。
+   画面上の表層は原文のまま。照合キーのみ正規化する。
+   同梱物: data/generated/kanji-compat-map.json
+   補完: data/kanji-compat-extra.json（プロジェクト側）
+   ライセンス全文: third_party/Apache-2.0.txt
+
+
 v-2. CMU Pronouncing Dictionary (CMUdict) — BSD-2-Clause
 
    Copyright (C) 1993-2015 Carnegie Mellon University.

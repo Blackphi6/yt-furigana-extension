@@ -176,7 +176,10 @@ function collectUserDict() {
       reading = parts.pop();
       surface = parts.join("");
     }
-    if (surface && reading) out.push({ surface, reading });
+    surface = String(surface || "").normalize("NFKC").trim();
+    reading = String(reading || "").normalize("NFKC").trim();
+    // 共有キュー／user_dict ともかな読みのみ
+    if (surface && isKanaReading(reading)) out.push({ surface, reading });
   }
   return out;
 }
@@ -717,6 +720,12 @@ function friendlyHttpError(status, body, { endpoint = "" } = {}) {
     return (
       `${status}: 公開 API（Render）がまだありません。\n` +
       `Render で Blueprint（render.yaml）を適用してください。手順: site/README.md`
+    );
+  }
+  if (status === 400 && /no_valid_entries/i.test(text)) {
+    return (
+      "共有候補として送れる形ではありません。" +
+      "「語（空白）かな」で、かなはひらがな／カタカナにしてください（例: 21 にじゅういち）。"
     );
   }
   const clipped = text.replace(/\s+/g, " ").trim().slice(0, 180);

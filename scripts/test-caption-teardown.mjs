@@ -9,34 +9,62 @@ import {
   plainTextWithoutRuby,
   prepareCaptionForLineFitCapture,
   flattenCaptionToPlainText,
-  clearExtensionCaptionAttrs
+  clearExtensionCaptionAttrs,
+  rememberCaptionWindowStyle,
+  restoreCaptionWindowStyle,
+  clearYouTubeCaptionWindowArtifacts,
+  hasExtensionCaptionMarkup,
+  isCaptionExtensionStale
 } from "../src/caption-teardown.js";
-import { markKeepOneLineCaption, KEEP_ONE_LINE_ATTR } from "../src/ruby-layout.js";
+import {
+  markKeepOneLineCaption,
+  KEEP_ONE_LINE_ATTR,
+  MIN_KEEP_ONE_LINE_SCALE
+} from "../src/ruby-layout.js";
 
 class FakeEl {
   constructor(className = "ytp-caption-segment") {
     this.className = className;
     this.attrs = new Map();
+    const el = this;
     this.style = {
       _p: {},
       setProperty(k, v) {
-        this._p[k] = v;
+        this._p[k] = String(v);
+        el._syncStyleAttr();
       },
       removeProperty(k) {
         delete this._p[k];
+        el._syncStyleAttr();
       }
     };
     /** @type {{ kind: string, text: string, style?: FakeEl['style'] }[]} */
     this.parts = [];
+  }
+  _syncStyleAttr() {
+    const parts = Object.entries(this.style._p).map(([k, v]) => `${k}: ${v}`);
+    if (parts.length) this.attrs.set("style", parts.join("; "));
+    else this.attrs.delete("style");
   }
   getAttribute(name) {
     return this.attrs.has(name) ? this.attrs.get(name) : null;
   }
   setAttribute(name, value) {
     this.attrs.set(name, String(value));
+    if (name === "style") {
+      this.style._p = {};
+      for (const part of String(value).split(";")) {
+        const idx = part.indexOf(":");
+        if (idx < 0) continue;
+        const k = part.slice(0, idx).trim();
+        const v = part.slice(idx + 1).trim();
+        if (k) this.style._p[k] = v;
+      }
+    }
   }
   removeAttribute(name) {
     this.attrs.delete(name);
+    if (name === "style") this.style._p = {};
   }
   hasAttribute(name) {
     return this.attrs.has(name);
@@ -79,6 +107,7 @@ class FakeEl {
     const c = new FakeEl(this.className);
     c.parts = this.parts.map((p) => ({ ...p }));
     c.attrs = new Map(this.attrs);
+    c.style._p = { ...this.style._p };
     return c;
   }
   get textContent() {
@@ -91,7 +120,71 @@ class FakeEl {
 
 globalThis.HTMLElement = FakeEl;
 
+assert.ok(MIN_KEEP_ONE_LINE_SCALE >= 0.7);
 assert.equal(normalizeCaptionPlain("  a\u200b  b  "), "a b");
+
+{
+  // overflow だけ剥がし、YouTube の left/width は残す
+  const el = new FakeEl();
+  el.setAttribute("style", "left: 40%; width: 50%; overflow: visible");
+  rememberCaptionWindowStyle(el);
+  assert.equal(restoreCaptionWindowStyle(el), true);
+  assert.match(el.getAttribute("style") || "", /left:\s*40%/);
+  assert.match(el.getAttribute("style") || "", /width:\s*50%/);
+  assert.doesNotMatch(el.getAttribute("style") || "", /overflow/);
+  assert.equal(restoreCaptionWindowStyle(el), false);
+}
+
+{
+  // 2セグメント teardown: left を剥がさない
+  const win = new FakeEl("caption-window");
+  win.setAttribute(
+    "style",
+    "left: 22%; width: 56%; transform: translateX(-50%); overflow: visible"
+  );
+  rememberCaptionWindowStyle(win);
+
+  const seg1 = new FakeEl();
+  const seg2 = new FakeEl();
+  seg1.closest = () => win;
+  seg2.closest = () => win;
+  win.querySelectorAll = () => [];
+
+  clearYouTubeCaptionWindowArtifacts(seg1);
+  clearYouTubeCaptionWindowArtifacts(seg2);
+  assert.match(win.getAttribute("style") || "", /left:\s*22%/);
+  assert.equal(restoreCaptionWindowStyle(win), true);
+  assert.match(win.getAttribute("style") || "", /left:\s*22%/);
+  assert.doesNotMatch(win.getAttribute("style") || "", /overflow/);
+}
+
+{
+  // シーク後: フラグだけ残ってルビ DOM が消えた状態
+  const el = new FakeEl();
+  el.setAttribute(PROCESSED_ATTR, "k:時間を過ごします");
+  el.setAttribute("data-yt-furigana-styled", "1");
+  el.textContent = "ここからはいつもの時間を過ごします";
+  assert.equal(hasExtensionCaptionMarkup(el), false);
+  assert.equal(isCaptionExtensionStale(el), true);
+
+  el.parts = [
+    { kind: "ruby", text: "時間" },
+    { kind: "rt", text: "じかん" }
+  ];
+  assert.equal(hasExtensionCaptionMarkup(el), true);
+  assert.equal(isCaptionExtensionStale(el), false);
+}
+
+{
+  // ネイティブ SRV3 ルビ（拡張フラグ無し）は「拡張のマークアップ」ではない
+  const el = new FakeEl();
+  el.parts = [
+    { kind: "ruby", text: "大体" },
+    { kind: "rt", text: "だいたい" }
+  ];
+  assert.equal(hasExtensionCaptionMarkup(el), false);
+  assert.equal(isCaptionExtensionStale(el), false);
+}
 
 {
   const el = new FakeEl();

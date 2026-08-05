@@ -18,6 +18,11 @@
         <input type="checkbox" id="enabled" checked />
       </label>
 
+      <label class="toggle" for="hide-native">
+        <span>ネイティブ字幕を隠す（重複を防ぐ）</span>
+        <input type="checkbox" id="hide-native" checked />
+      </label>
+
       <label class="field">
         <span>字幕ファイル（SRT / VTT / SRV3 / json3）</span>
         <input
@@ -39,8 +44,9 @@
       </div>
 
       <p class="note">
-        YouTube の timedtext には触れません。書き出しサイトで作った
-        <code>.vtt</code> / <code>.ytt</code> をそのまま載せられます。
+        改行位置は YouTube ネイティブ字幕の行分割を見てから決めます（字幕ON推奨）。
+        timedtext には触れません。書き出しサイトの <code>.vtt</code> /
+        <code>.ytt</code> をそのまま載せられます。
       </p>
     </main>
     <script src="../dist/popup.js" type="module"></script>

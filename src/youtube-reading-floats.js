@@ -253,6 +253,34 @@ export function filterAnchorsWithoutNativeRuby(anchors, nativeBases) {
   return anchors.filter((a) => !covered.has(String(a.surface || "").replace(/\s+/g, "")));
 }
 
+/** 既存ルビ字幕を触らない印（拡張未導入時と同じ見た目を保つ） */
+export const NATIVE_SKIP_ATTR = "data-yt-furigana-native-skip";
+
+/**
+ * 拡張がまだ触っていない字幕に、あらかじめふりがなが載っているか。
+ * SRV3 の <ruby> や、YouTube が小サイズかなで出している読みを含む。
+ * 該当したら拡張は何もしない（未インストール時と同じ挙動）。
+ * @param {HTMLElement} segment
+ */
+export function captionHasPreexistingFurigana(segment) {
+  if (!(segment instanceof HTMLElement)) return false;
+  if (segment.getAttribute(NATIVE_SKIP_ATTR) === "1") return true;
+
+  // 拡張が既に加工した字幕は「既存ルビ」扱いしない
+  if (
+    segment.hasAttribute("data-yt-furigana-done") ||
+    segment.getAttribute("data-yt-furigana-styled") === "1" ||
+    segment.getAttribute("data-yt-furigana-float-mode") === "1" ||
+    segment.querySelector(
+      ".yt-furigana-word, .yt-furigana-one-line, .yt-furigana-rb, [data-yt-furigana-float-host], .yt-furigana-float-host"
+    )
+  ) {
+    return false;
+  }
+
+  return nativeCaptionAlreadyShowsReadings(segment);
+}
+
 /**
  * YouTube が <ruby> 以外（小サイズかな span 等）で既にふりがなを出しているか。
  * デザイン字幕で二重載せを防ぐ。
@@ -261,6 +289,9 @@ export function filterAnchorsWithoutNativeRuby(anchors, nativeBases) {
 export function nativeCaptionAlreadyShowsReadings(segment) {
   if (!(segment instanceof HTMLElement)) return false;
   if (listNativeRubyBases(segment).length > 0) return true;
+
+  // jsdom 無しの単体テストや、スタイル未解決の環境では以降のヒューリスティックを諦める
+  if (typeof getComputedStyle !== "function") return false;
 
   const baseFs = Number.parseFloat(getComputedStyle(segment).fontSize) || 0;
   if (baseFs <= 0) return false;
@@ -398,6 +429,9 @@ export function applyReadingFloatsOverNative(segment, furiganaHtml) {
     el.className = `yt-furigana-word ${FLOAT_CLASS}`;
     el.setAttribute("data-surface", surface);
     el.setAttribute("data-reading", reading);
+    // ヒット矩形拡張用（読みは absolute、漢字はネイティブ本文側）
+    el.setAttribute("data-base-width", String(box.width));
+    el.setAttribute("data-base-height", String(box.height));
     el.setAttribute("tabindex", "0");
     el.setAttribute("role", "button");
     el.setAttribute("title", "クリックで読み候補");

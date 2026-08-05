@@ -1,5 +1,9 @@
 import {
   DEFAULT_SETTINGS,
+  ONBOARDING_ENGINE_ACCURACY,
+  ONBOARDING_ENGINE_PRIVACY,
+  PUBLIC_READING_API_URL,
+  needsEngineOnboarding,
   normalizeStoredEngine,
   pickPreferredOllamaModel
 } from "./default-settings.js";
@@ -40,6 +44,11 @@ const ollamaStatus = document.getElementById("ollamaStatus");
 const engineInputs = document.querySelectorAll('input[name="engine"]');
 const ollamaSettings = document.getElementById("advanced-engine-settings");
 const ollamaSettingsFields = document.getElementById("ollama-settings-fields");
+const engineOnboarding = document.getElementById("engine-onboarding");
+const mainSettings = document.getElementById("main-settings");
+const onboardingAccuracyButton = document.getElementById("onboarding-accuracy");
+const onboardingPrivacyButton = document.getElementById("onboarding-privacy");
+const onboardingPrivacyLink = document.getElementById("onboardingPrivacyLink");
 
 const CUSTOM_MODEL_VALUE = "__custom__";
 
@@ -47,11 +56,29 @@ function selectedEngine() {
   return document.querySelector('input[name="engine"]:checked')?.value ?? "kuromoji";
 }
 
+function setEngineRadios(engine) {
+  engineInputs.forEach((input) => {
+    input.checked = input.value === engine;
+  });
+}
+
+function updateOnboardingUi(done) {
+  if (engineOnboarding) engineOnboarding.hidden = done;
+  if (mainSettings) mainSettings.hidden = !done;
+}
+
 function updateEnginePanels() {
   const engine = selectedEngine();
   const advanced = document.getElementById("advanced-engine-settings");
   if (advanced && engine !== "kuromoji") {
     advanced.open = true;
+  }
+  if (readingApiSettings) {
+    readingApiSettings.hidden = engine !== "reading-api";
+  }
+  // 公開読み API を選んだ直後は URL 空＝公開サーバーでよい（明示同意はラジオ／初回選択）
+  if (engine === "reading-api" && readingApiUrlInput && !readingApiUrlInput.value.trim()) {
+    readingApiUrlInput.placeholder = PUBLIC_READING_API_URL;
   }
 }
 
@@ -82,6 +109,9 @@ function updatePlanUi(settings) {
   }
   if (privacyLink) {
     privacyLink.href = settings.privacyUrl || DEFAULT_PRIVACY_URL;
+  }
+  if (onboardingPrivacyLink) {
+    onboardingPrivacyLink.href = settings.privacyUrl || DEFAULT_PRIVACY_URL;
   }
   if (termsLink) {
     termsLink.href = settings.termsUrl || DEFAULT_TERMS_URL;
@@ -247,26 +277,30 @@ async function loadSettings() {
   updatePlanUi(result);
 
   const engine = normalizeStoredEngine(result.engine);
-  engineInputs.forEach((input) => {
-    input.checked = input.value === engine;
-  });
-
+  setEngineRadios(engine);
+  updateOnboardingUi(!needsEngineOnboarding(result));
   updateEnginePanels();
 }
 
-async function saveSettings() {
+async function saveSettings({ engineOnboardingDone } = {}) {
   const engine = selectedEngine();
   const readingApiUrl = readingApiUrlInput.value.trim();
+  const permissionUrl =
+    readingApiUrl ||
+    (engine === "reading-api" ? PUBLIC_READING_API_URL : "");
 
-  if (readingApiUrl) {
-    await ensureReadingApiPermission(readingApiUrl);
+  if (permissionUrl) {
+    await ensureReadingApiPermission(permissionUrl);
   }
 
   const current = await getMergedSettings();
+  const done =
+    engineOnboardingDone === true || current.engineOnboardingDone === true;
   await saveMergedSettings({
     ...current,
     enabled: enabledInput.checked,
     engine,
+    engineOnboardingDone: done,
     readingApiUrl,
     readingApiKey: readingApiKeyInput?.value.trim() || "",
     licenseKey: licenseKeyInput?.value.trim() || "",
@@ -287,6 +321,21 @@ async function saveSettings() {
     ollamaUrl: ollamaUrlInput?.value.trim() || current.ollamaUrl || DEFAULT_SETTINGS.ollamaUrl,
     ollamaModel: getSelectedModelName() || current.ollamaModel || DEFAULT_SETTINGS.ollamaModel
   });
+}
+
+/** 初回の精度／プライバシー選択。選んだ時点で同意または端末内確定。 */
+async function completeEngineOnboarding(engine) {
+  setEngineRadios(engine);
+  updateEnginePanels();
+  if (engine === ONBOARDING_ENGINE_ACCURACY) {
+    const granted = await ensureReadingApiPermission(PUBLIC_READING_API_URL);
+    if (!granted) {
+      // 許可拒否でも端末内へ落とさず、選択画面を残して再試行できるようにする
+      return;
+    }
+  }
+  await saveSettings({ engineOnboardingDone: true });
+  updateOnboardingUi(true);
 }
 
 enabledInput.addEventListener("change", saveSettings);
@@ -349,17 +398,24 @@ ollamaModelCustom?.addEventListener("blur", saveSettings);
 engineInputs.forEach((input) => {
   input.addEventListener("change", async () => {
     updateEnginePanels();
-    await saveSettings();
+    // 高度設定から切り替えた時点で初回選択は完了扱い
+    await saveSettings({ engineOnboardingDone: true });
   });
 });
 
+onboardingAccuracyButton?.addEventListener("click", () => {
+  void completeEngineOnboarding(ONBOARDING_ENGINE_ACCURACY);
+});
+onboardingPrivacyButton?.addEventListener("click", () => {
+  void completeEngineOnboarding(ONBOARDING_ENGINE_PRIVACY);
+});
+
 testReadingApiButton?.addEventListener("click", async () => {
-  if (!readingApiUrlInput.value.trim()) {
-    readingApiUrlInput.value = "http://127.0.0.1:8765";
-  }
+  // 空なら公開 API を仮入力して確認（保存時も空のままで公開へフォールバック可）
+  const url = readingApiUrlInput.value.trim() || PUBLIC_READING_API_URL;
   await saveSettings();
   setStatus(readingApiStatus, "接続確認中...", true);
-  const granted = await ensureReadingApiPermission(readingApiUrlInput.value.trim());
+  const granted = await ensureReadingApiPermission(url);
   if (!granted) {
     setStatus(readingApiStatus, "アクセス許可が拒否されました", false);
     return;

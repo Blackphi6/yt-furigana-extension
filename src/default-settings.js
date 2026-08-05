@@ -1,6 +1,15 @@
 export const DEFAULT_SETTINGS = {
   enabled: true,
+  /**
+   * 未選択中のフォールバックは端末内（kuromoji）。
+   * 初回ポップアップで選ぶまで engineOnboardingDone=false。
+   */
   engine: "kuromoji",
+  /**
+   * 初回のエンジン選択を済ませたか。
+   * false のあいだは端末内で動かし、ポップアップで精度／プライバシーを一度選ばせる。
+   */
+  engineOnboardingDone: false,
   /** 読み推定 API のベース URL（空＝未設定）。例: http://127.0.0.1:8765 */
   readingApiUrl: "",
   /** ホスト読みAPI用キー（Premium）。空なら localhost は認証なし可 */
@@ -31,6 +40,19 @@ export const DEFAULT_SETTINGS = {
   /** 曖昧語サンプル（字幕断片・URL）の端末内自動蓄積。オフで停止（手動選択の辞書学習は継続） */
   learningInboxEnabled: true
 };
+
+/** 初回選択の「精度優先」 */
+export const ONBOARDING_ENGINE_ACCURACY = "reading-api";
+/** 初回選択の「プライバシー優先」 */
+export const ONBOARDING_ENGINE_PRIVACY = "kuromoji";
+
+/**
+ * 初回オンボーディングがまだか。
+ * @param {{ engineOnboardingDone?: boolean }} [settings]
+ */
+export function needsEngineOnboarding(settings = {}) {
+  return settings.engineOnboardingDone !== true;
+}
 
 /** 公開デモ／共有パック用（Render）。readingApiUrl 未設定時のフォールバック */
 export const PUBLIC_READING_API_URL = "https://yt-furigana-readings.onrender.com";
@@ -100,13 +122,30 @@ export function isReadingApiEngine(engine) {
 
 /**
  * UI から外したエンジンを端末内へ寄せる。
- * popup を開かなくても content / background が同じ値を見る。
+ * reading-api はオプトインとして残す（ユーザーが明示選択したときだけ）。
  * @param {string | undefined} engine
  */
 export function normalizeStoredEngine(engine) {
   if (engine === "groq" || engine === "sudachi") return "hybrid";
-  if (engine === "ollama" || engine === "reading-api") return "kuromoji";
+  // Ollama は公開 UI から外したまま。旧設定は端末内へ寄せる
+  if (engine === "ollama") return "kuromoji";
+  if (engine === "reading-api") return "reading-api";
   return engine || DEFAULT_SETTINGS.engine;
+}
+
+/**
+ * 読み API のベース URL。空なら公開 API（オプトイン時のみ使う）。
+ * @param {{ engine?: string, readingApiUrl?: string }} [settings]
+ */
+export function resolveReadingApiBaseUrl(settings = {}) {
+  const explicit = String(settings.readingApiUrl || "")
+    .trim()
+    .replace(/\/+$/, "");
+  if (explicit) return explicit;
+  if (isReadingApiEngine(normalizeStoredEngine(settings.engine))) {
+    return String(PUBLIC_READING_API_URL || "").replace(/\/+$/, "");
+  }
+  return "";
 }
 
 /** ネットワーク経由の変換（プリフェッチ・非同期適用向き） */
@@ -116,10 +155,11 @@ export function isRemoteEngine(engine) {
 
 /**
  * 実際にリモート変換を使うか。
- * 公開 UI はローカルのみ。旧 reading-api / ollama は normalize で寄せる。
+ * reading-api はユーザーが明示選択したときだけ（オプトイン）。
  * @param {{ engine?: string, readingApiUrl?: string }} settings
  */
 export function shouldUseRemoteConversion(settings = {}) {
-  void settings;
-  return false;
+  const engine = normalizeStoredEngine(settings.engine);
+  if (!isReadingApiEngine(engine)) return false;
+  return Boolean(resolveReadingApiBaseUrl({ ...settings, engine }));
 }

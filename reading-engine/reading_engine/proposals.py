@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import threading
 import time
 import urllib.error
@@ -121,9 +122,12 @@ def heuristic_review(surface: str, reading: str) -> dict[str, Any]:
     read = str(reading or "").strip()
     reasons: list[str] = []
 
-    if len(read) > len(surf) * 6 + 4:
+    # 数字表層は読みが長くなりやすい（21→にじゅういち）ので長さ比を緩める
+    is_numberish = bool(re.match(r"^[0-9]", surf))
+    max_ratio = 12 if is_numberish else 6
+    if len(read) > len(surf) * max_ratio + 4:
         reasons.append("reading_too_long_vs_surface")
-    if len(surf) == 1 and len(read) > 6:
+    if len(surf) == 1 and not is_numberish and len(read) > 6:
         reasons.append("single_char_overlong_reading")
     if surf == read:
         reasons.append("surface_equals_reading")

@@ -26,6 +26,7 @@
 | SudachiDict | Apache-2.0（上流） | Sudachi 辞書 | 上流プロジェクトの NOTICE を参照 |
 | [BudouX](https://github.com/google/budoux) | Apache-2.0 | 字幕の自然な折り返し（句境界） | [NOTICE](../NOTICE) |
 | [CMUdict](https://github.com/cmusphinx/cmudict) | BSD-2-Clause | 英単語→カタカナ読み（事前変換データ） | [BSD-CMUdict.txt](../third_party/BSD-CMUdict.txt) |
+| [joyokanji](https://github.com/new-village/joyo-kanji) | Apache-2.0 | 旧字体・人名異体字の照合正規化 | [NOTICE](../NOTICE) / [Apache-2.0](../third_party/Apache-2.0.txt) |
 
 **IPADIC:** 奈良先端科学技術大学院大学（NAIST）の著作物を含み、ICOT Free Software 由来のエントリもあります。再配布時は著作権表示と無保証条項の添付が必要です（全文は `third_party/NOTICE-kuromoji.md`）。
 

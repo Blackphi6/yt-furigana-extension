@@ -18,8 +18,14 @@
   display: none !important;
 }
 
+/* ネイティブ字幕を隠す間だけ有効（クラスを外せば完全に元通り） */
+.ytco-hide-native .ytp-caption-window-container,
+.ytco-hide-native .caption-window {
+  opacity: 0 !important;
+}
+
 .ytco-overlay-line {
-  max-width: 90%;
+  max-width: 96%;
   font-size: var(--ytco-font-size, 28px);
   line-height: 1.45;
   color: #fff;
@@ -33,8 +39,9 @@
   padding: 0.25em 0.7em;
   border-radius: 4px;
   font-family: "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+  /* 半角スペースは折り返し候補だが、行内では1文字の空白として保持する */
   white-space: pre-wrap;
-  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .ytco-overlay-line ruby {

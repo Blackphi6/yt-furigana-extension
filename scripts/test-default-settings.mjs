@@ -1,11 +1,16 @@
 import {
   DEFAULT_SETTINGS,
+  ONBOARDING_ENGINE_ACCURACY,
+  ONBOARDING_ENGINE_PRIVACY,
+  PUBLIC_READING_API_URL,
   isLlmEngine,
   isReadingApiEngine,
   isRemoteEngine,
   listInstalledModelNames,
+  needsEngineOnboarding,
   normalizeStoredEngine,
   pickPreferredOllamaModel,
+  resolveReadingApiBaseUrl,
   shouldUseRemoteConversion
 } from "../src/default-settings.js";
 
@@ -51,8 +56,8 @@ if (
   throw new Error("isRemoteEngine mismatch");
 }
 
-if (normalizeStoredEngine("reading-api") !== "kuromoji") {
-  throw new Error("reading-api must migrate to kuromoji");
+if (normalizeStoredEngine("reading-api") !== "reading-api") {
+  throw new Error("reading-api must stay as opt-in engine");
 }
 if (normalizeStoredEngine("ollama") !== "kuromoji") {
   throw new Error("ollama must migrate to kuromoji");
@@ -64,20 +69,41 @@ if (normalizeStoredEngine("hybrid") !== "hybrid") {
   throw new Error("hybrid must stay hybrid");
 }
 
-if (
-  shouldUseRemoteConversion({ engine: "reading-api", readingApiUrl: "" }) ||
-  shouldUseRemoteConversion({ engine: "reading-api" }) ||
-  shouldUseRemoteConversion({
-    engine: "reading-api",
-    readingApiUrl: "http://127.0.0.1:8765"
-  }) ||
-  shouldUseRemoteConversion({ engine: "ollama" })
-) {
-  throw new Error("legacy remote engines must stay local after normalize");
-}
-
 if (shouldUseRemoteConversion({ engine: "kuromoji" })) {
   throw new Error("kuromoji must stay local");
+}
+if (shouldUseRemoteConversion({ engine: "hybrid" })) {
+  throw new Error("hybrid must stay local");
+}
+if (shouldUseRemoteConversion({ engine: "ollama" })) {
+  throw new Error("ollama must stay local after normalize");
+}
+if (
+  !shouldUseRemoteConversion({ engine: "reading-api" }) ||
+  !shouldUseRemoteConversion({
+    engine: "reading-api",
+    readingApiUrl: "http://127.0.0.1:8765"
+  })
+) {
+  throw new Error("reading-api opt-in must use remote conversion");
+}
+
+if (
+  resolveReadingApiBaseUrl({ engine: "reading-api", readingApiUrl: "" }) !==
+  PUBLIC_READING_API_URL.replace(/\/+$/, "")
+) {
+  throw new Error("reading-api with empty URL must fall back to public API");
+}
+if (
+  resolveReadingApiBaseUrl({
+    engine: "reading-api",
+    readingApiUrl: "http://127.0.0.1:8765/"
+  }) !== "http://127.0.0.1:8765"
+) {
+  throw new Error("explicit readingApiUrl must win");
+}
+if (resolveReadingApiBaseUrl({ engine: "kuromoji", readingApiUrl: "" }) !== "") {
+  throw new Error("local engines must not imply public API");
 }
 
 if (DEFAULT_SETTINGS.learningInboxEnabled !== true) {
@@ -90,6 +116,26 @@ if (DEFAULT_SETTINGS.contributionEnabled !== false) {
 
 if (DEFAULT_SETTINGS.sharedPackEnabled !== true) {
   throw new Error("sharedPackEnabled should default to true");
+}
+
+if (DEFAULT_SETTINGS.engine !== "kuromoji") {
+  throw new Error("default engine must remain kuromoji (local)");
+}
+
+if (DEFAULT_SETTINGS.engineOnboardingDone !== false) {
+  throw new Error("engine onboarding must start incomplete");
+}
+
+if (!needsEngineOnboarding({}) || !needsEngineOnboarding({ engineOnboardingDone: false })) {
+  throw new Error("needsEngineOnboarding should be true until done");
+}
+
+if (needsEngineOnboarding({ engineOnboardingDone: true })) {
+  throw new Error("needsEngineOnboarding should be false after done");
+}
+
+if (ONBOARDING_ENGINE_ACCURACY !== "reading-api" || ONBOARDING_ENGINE_PRIVACY !== "kuromoji") {
+  throw new Error("onboarding engines must map to reading-api / kuromoji");
 }
 
 console.log("Default settings tests passed.");

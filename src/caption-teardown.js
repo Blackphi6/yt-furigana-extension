@@ -9,6 +9,8 @@ export const PROCESSED_ATTR = "data-yt-furigana-done";
 export const PROCESSING_ATTR = "data-yt-furigana-processing";
 export const FLOAT_MODE_ATTR = "data-yt-furigana-float-mode";
 export const FONT_SIZE_ATTR = "data-yt-furigana-font-size";
+/** 拡張が触る前の YouTube 生 style（OFF/再ON 復元用） */
+export const PRIOR_STYLE_ATTR = "data-yt-furigana-prior-style";
 
 const EXTENSION_ATTRS = [
   ORIGINAL_ATTR,
@@ -16,6 +18,7 @@ const EXTENSION_ATTRS = [
   PROCESSING_ATTR,
   FLOAT_MODE_ATTR,
   FONT_SIZE_ATTR,
+  PRIOR_STYLE_ATTR,
   "data-yt-furigana-styled",
   "data-yt-furigana-keep-one-line",
   "data-yt-furigana-line-width",
@@ -23,8 +26,23 @@ const EXTENSION_ATTRS = [
   "data-yt-furigana-outline",
   "data-yt-furigana-readable",
   "data-yt-furigana-bg",
-  "data-yt-furigana-processed"
+  "data-yt-furigana-processed",
+  // youtube-reading-floats の NATIVE_SKIP_ATTR と同じ文字列
+  "data-yt-furigana-native-skip"
 ];
+
+/**
+ * OFF 後に font-size だけ残った style など、復元に使ってはいけない残骸か。
+ * @param {string | null | undefined} styleAttr
+ */
+export function isCorruptCaptionInlineStyle(styleAttr) {
+  const s = String(styleAttr || "").trim();
+  if (!s) return false;
+  if (/^font-size:\s*[^;]+;?\s*$/i.test(s)) return true;
+  // position/overflow だけの残骸
+  if (/^(position|overflow):\s*[^;]+;?\s*$/i.test(s)) return true;
+  return false;
+}
 
 /**
  * textContent of ruby includes <rt>, which must never be sent to converters.
@@ -123,8 +141,46 @@ export function clearExtensionRubyInlineStyles(element) {
   }
 }
 
+/** 拡張が字幕に差し込んだマークアップが残っているか */
+export function hasExtensionCaptionMarkup(element) {
+  if (!(element instanceof HTMLElement)) return false;
+  // 拡張固有のクラス／ホストがあれば確実に「我々の加工」
+  if (
+    element.querySelector(
+      ".yt-furigana-word, .yt-furigana-one-line, .yt-furigana-rb, [data-yt-furigana-float-host], .yt-furigana-float-host"
+    )
+  ) {
+    return true;
+  }
+  // 処理済みフラグ＋ ruby は拡張が差し込んだもの（ネイティブ SRV3 ルビはフラグ無し）
+  const marked =
+    element.hasAttribute(PROCESSED_ATTR) ||
+    element.getAttribute("data-yt-furigana-styled") === "1" ||
+    element.getAttribute(FLOAT_MODE_ATTR) === "1";
+  if (!marked) return false;
+  return Boolean(element.querySelector("ruby, rt"));
+}
+
 /**
- * caption-window 側に残る幅・overflow・持ち上げを戻す。
+ * 処理済みフラグはあるがルビ DOM が消えている（シーク等で YouTube が子を差し替えた）。
+ * @param {HTMLElement} element
+ */
+export function isCaptionExtensionStale(element) {
+  if (!(element instanceof HTMLElement)) return false;
+  const marked =
+    element.hasAttribute(PROCESSED_ATTR) ||
+    element.getAttribute("data-yt-furigana-styled") === "1" ||
+    element.getAttribute(FLOAT_MODE_ATTR) === "1";
+  if (!marked) return false;
+  return !hasExtensionCaptionMarkup(element);
+}
+
+/** @type {WeakSet<HTMLElement>} */
+const touchedCaptionWindows = new WeakSet();
+
+/**
+ * caption-window 側に残る overflow だけ戻す。
+ * left/width/transform は絶対に触らない（YouTube の中央寄せを壊す）。
  * @param {HTMLElement} element
  */
 export function clearYouTubeCaptionWindowArtifacts(element) {
@@ -134,26 +190,59 @@ export function clearYouTubeCaptionWindowArtifacts(element) {
     element.closest?.(".captions-text") ||
     element.closest?.(".ytp-caption-window-container");
   if (!(win instanceof HTMLElement)) return;
-  for (const prop of [
-    "width",
-    "max-width",
-    "overflow",
-    "transform",
-    "height",
-    "max-height"
-  ]) {
-    win.style.removeProperty(prop);
+
+  const nodes = [
+    win,
+    ...win.querySelectorAll(".captions-text, .caption-visual-line, .caption-window")
+  ];
+  for (const node of nodes) {
+    if (!(node instanceof HTMLElement)) continue;
+    // 触った窓は releaseAllCaptionWindowStyles に任せる
+    if (touchedCaptionWindows.has(node)) continue;
+    for (const prop of ["overflow", "height", "max-height"]) {
+      node.style.removeProperty(prop);
+    }
+    node.style.removeProperty("--ytf-yt-lift");
   }
-  win.style.removeProperty("--ytf-yt-lift");
-  for (const nested of win.querySelectorAll(
-    ".captions-text, .caption-visual-line, .caption-window"
+}
+
+/**
+ * 拡張が overflow 等を触った窓を記録する。
+ * 以前は style 属性を丸ごと保存していたが、シーク後に古い left/top を
+ * 書き戻すと字幕が画面中央へ飛ぶため、触った事実だけ残す。
+ * @param {HTMLElement} node
+ */
+export function rememberCaptionWindowStyle(node) {
+  if (!(node instanceof HTMLElement)) return;
+  touchedCaptionWindows.add(node);
+}
+
+/**
+ * 拡張が付けた overflow 等だけ剥がし、YouTube の left/width/transform は残す。
+ * @param {HTMLElement} node
+ * @returns {boolean}
+ */
+export function restoreCaptionWindowStyle(node) {
+  if (!(node instanceof HTMLElement)) return false;
+  if (!touchedCaptionWindows.has(node)) return false;
+  touchedCaptionWindows.delete(node);
+  for (const prop of ["overflow", "height", "max-height"]) {
+    node.style.removeProperty(prop);
+  }
+  node.style.removeProperty("--ytf-yt-lift");
+  return true;
+}
+
+/**
+ * プレイヤー内の字幕窓から、拡張が付けた overflow をすべて外す（disable 時）。
+ * @param {ParentNode | Document | null | undefined} root
+ */
+export function restoreAllCaptionWindowStyles(root = document) {
+  if (!root || typeof root.querySelectorAll !== "function") return;
+  for (const node of root.querySelectorAll(
+    ".caption-window, .captions-text, .caption-visual-line, .ytp-caption-window-container"
   )) {
-    if (!(nested instanceof HTMLElement)) continue;
-    nested.style.removeProperty("overflow");
-    nested.style.removeProperty("width");
-    nested.style.removeProperty("max-width");
-    nested.style.removeProperty("transform");
-    nested.style.removeProperty("--ytf-yt-lift");
+    if (node instanceof HTMLElement) restoreCaptionWindowStyle(node);
   }
 }
 

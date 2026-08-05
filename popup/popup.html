@@ -19,35 +19,88 @@
         <span class="slider" aria-hidden="true"></span>
       </label>
 
+      <section class="panel onboarding" id="engine-onboarding" hidden>
+        <h2>はじめに：読み付けの方式を選ぶ</h2>
+        <p class="hint">
+          最初の一度だけ確認します。あとからいつでも変えられます。
+          選ぶまではこの端末だけで動きます（字幕本文は外部へ送りません）。
+        </p>
+        <button type="button" class="choice choice-primary" id="onboarding-accuracy">
+          <strong>精度優先（おすすめ）</strong>
+          <span>
+            デモと同じ公開読み API を使います。表示中の字幕テキストを読み付けのためサーバーへ送ります。
+            選んだ時点で送信に同意したものとします。
+          </span>
+        </button>
+        <button type="button" class="choice" id="onboarding-privacy">
+          <strong>プライバシー優先</strong>
+          <span>
+            この端末だけで読みを付けます。字幕本文は外部へ送りません。珍しい固有語では読みが弱いことがあります。
+          </span>
+        </button>
+        <p class="hint">
+          詳細は
+          <a id="onboardingPrivacyLink" href="https://blackphi6.github.io/yt-furigana-extension/privacy.html" target="_blank" rel="noreferrer">プライバシー</a>
+          を参照してください。
+        </p>
+      </section>
+
+      <div id="main-settings">
       <section class="panel">
         <h2>使い方</h2>
         <p class="hint">
-          そのまま使えます。字幕の漢字を押すと読みの候補が出て、選ぶとその読みをこの端末が覚えます。
-          字幕本文は開発者のサーバーへ送りません。みんなの読みパックの受信（オフ可）だけ、表層→読みの一覧を取りにいきます。
+          字幕の漢字を押すと読みの候補が出て、選ぶとその読みをこの端末が覚えます。
+          みんなの読みパックの受信（オフ可）は、表層→読みの一覧だけを取りにいきます。
         </p>
       </section>
 
       <details class="panel advanced" id="advanced-engine-settings">
         <summary>読み方エンジンを変える（任意）</summary>
         <p class="hint">
-          普通はそのままで大丈夫です。まれに、言葉の切れ方がおかしいときだけ下を試してください。
+          初回に選んだ方式を、ここでいつでも切り替えられます。
         </p>
 
         <label class="radio">
           <input type="radio" name="engine" value="kuromoji" checked />
           <span>
-            <strong>標準（おすすめ）</strong>
-            <small>この端末だけで動きます。いちばん手軽です</small>
+            <strong>端末内（プライバシー優先）</strong>
+            <small>この端末だけで動きます。字幕本文は外部へ送りません</small>
           </span>
         </label>
 
         <label class="radio">
           <input type="radio" name="engine" value="hybrid" />
           <span>
-            <strong>高精度（やや重い）</strong>
-            <small>「1人」→「ひとり」など、切れ方を丁寧にします。初回だけ読み込みに時間がかかります</small>
+            <strong>端末内・高精度（やや重い）</strong>
+            <small>「1人」→「ひとり」など、切れ方を丁寧にします。端末内のみ。初回だけ読み込みに時間がかかります</small>
           </span>
         </label>
+
+        <label class="radio">
+          <input type="radio" name="engine" value="reading-api" />
+          <span>
+            <strong>公開読み API（精度優先）</strong>
+            <small>
+              デモサイトと同じ公開サーバーへ、<strong>表示中の字幕テキスト</strong>と端末内の読み辞書（ある場合）を送って読みを付けます。
+              選んだ時点で送信に同意したものとします。詳細はプライバシー。
+            </small>
+          </span>
+        </label>
+
+        <div id="reading-api-settings" hidden>
+          <p class="hint warn">
+            送信内容: いま画面に出ている字幕の文言、および読み付けに使う個人読み辞書（ある場合）。
+            動画 URL・視聴履歴・コメントは送りません。接続先 URL が空のときは公開サーバー
+            （yt-furigana-readings.onrender.com）を使います。無料枠のためスリープやレート制限があります。
+          </p>
+          <div class="button-row">
+            <button type="button" id="testReadingApi" class="button secondary">接続を確認</button>
+          </div>
+          <p class="status" id="readingApiStatus" hidden></p>
+          <p class="hint">
+            接続先を変えたいときは、下の「接続先 URL」に入力してください（セルフホスト可）。
+          </p>
+        </div>
       </details>
 
       <section class="panel">
@@ -58,11 +111,11 @@
           有料：直した読みを別のパソコンにも移す／指定サーバーの共有辞書を取り込む、などができます。
         </p>
         <label class="field" for="readingApiUrl">
-          <span>別パソコンへ移すときの接続先（有料向け）</span>
+          <span>接続先 URL（公開読み API / 有料の辞書移動。空なら公開サーバー）</span>
           <input
             type="text"
             id="readingApiUrl"
-            placeholder="例: http://127.0.0.1:8765"
+            placeholder="https://yt-furigana-readings.onrender.com"
           />
         </label>
         <label class="field" for="licenseKey">
@@ -130,8 +183,9 @@
 
       <p class="hint">
         字幕が出ないときは、YouTube の字幕設定で「日本語」をオンにしてください。<br />
-        迷ったら、読み方エンジンは「標準」のままで大丈夫です。
+        方式を変えたいときは「読み方エンジンを変える」からいつでも切り替えられます。
       </p>
+      </div>
 
       <footer class="legal">
         <p>

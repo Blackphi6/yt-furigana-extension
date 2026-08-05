@@ -11,6 +11,7 @@ import json
 import os
 import re
 import time
+import unicodedata
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
@@ -34,9 +35,15 @@ MAX_SURFACE = 32
 MAX_READING = 48
 MAX_CONTEXT = 16
 
+# 漢字・かな（共有辞書の本線）または数字系（デモの 21 / 21階 / 3.2.1 など）
 SURFACE_RE = re.compile(
-    r"^[\u3400-\u9fff\uF900-\uFAFF々〻"
-    r"\u3040-\u309f\u30a0-\u30ffーゝゞヽヾ]+$"
+    r"^("
+    r"[\u3400-\u9fff\uF900-\uFAFF々〻\u3040-\u309f\u30a0-\u30ffーゝゞヽヾ]+"
+    r"|"
+    r"[0-9０-９]+([,，][0-9０-９]+)*(\.[0-9０-９]+)?[%％階回人目名歳才年月日時分秒円枚冊本個点倍]?"
+    r"|"
+    r"[0-9０-９]+(\s*\.\s*[0-9０-９]+){2,}"
+    r")$"
 )
 READING_RE = re.compile(r"^[\u3040-\u309f\u30a0-\u30ffーゝゞヽヾ]+$")
 
@@ -119,8 +126,9 @@ def clip_context(value: str | None, limit: int = MAX_CONTEXT) -> str:
 
 
 def validate_pair(surface: str, reading: str) -> tuple[str, str]:
-    surf = str(surface or "").strip()
-    read = str(reading or "").strip()
+    # 全角数字・空白を寄せてから検証（デモ固定リストの全角スペース区切り対策）
+    surf = unicodedata.normalize("NFKC", str(surface or "")).strip()
+    read = unicodedata.normalize("NFKC", str(reading or "")).strip()
     if not surf or not read:
         raise ValueError("surface_and_reading_required")
     if len(surf) > MAX_SURFACE or len(read) > MAX_READING:

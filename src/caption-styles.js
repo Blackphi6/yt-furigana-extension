@@ -3,10 +3,15 @@ import {
   markKeepOneLineCaption,
   KEEP_ONE_LINE_ATTR
 } from "./ruby-layout.js";
+import { estimateMaxLineChars } from "./caption-line-break.js";
 import {
   FONT_SIZE_ATTR,
+  PRIOR_STYLE_ATTR,
+  isCorruptCaptionInlineStyle,
   clearExtensionRubyInlineStyles,
-  clearYouTubeCaptionWindowArtifacts
+  clearYouTubeCaptionWindowArtifacts,
+  rememberCaptionWindowStyle,
+  restoreAllCaptionWindowStyles
 } from "./caption-teardown.js";
 
 const styleSnapshots = new WeakMap();
@@ -19,8 +24,65 @@ const NEEDED_WIDTH_ATTR = "data-yt-furigana-needed-width";
 /** YouTube の Background 既定（Window 0% で見える文字帯） */
 const YT_DEFAULT_BACKGROUND = "rgba(8, 8, 8, 0.75)";
 
+/**
+ * YouTube は親コンテナを ~11px にし、segment 側で実寸を出すことが多い。
+ * OFF 後に 11px 継承だけ残ると極小になるので、直近の正常値を覚えておく。
+ */
+let lastKnownGoodCaptionFontPx = 0;
+
 function parseFontSizePx(value) {
   return Number.parseFloat(value) || 0;
+}
+
+/**
+ * style 属性文字列から font-size を抜く。
+ * @param {string | null | undefined} styleAttr
+ */
+export function extractFontSizeFromStyleAttr(styleAttr) {
+  const m = String(styleAttr || "").match(/font-size\s*:\s*([^;]+)/i);
+  if (!m) return "";
+  const raw = m[1].trim();
+  return parseFontSizePx(raw) > 0 ? raw : "";
+}
+
+/**
+ * OFF 復元用に、見える字号を data 属性へ残す（float 経路でも呼ぶ）。
+ * @param {HTMLElement} element
+ */
+export function ensureCaptionFontLock(element) {
+  if (!(element instanceof HTMLElement)) return "";
+  rememberPriorCaptionStyle(element);
+  return lockFontSize(element, resolveCapturableFontSize(element));
+}
+
+/**
+ * キャプチャ時点の「見える字号」。壊れて 11px 継承だけなら前回の正常値を使う。
+ * @param {HTMLElement} element
+ */
+export function resolveCapturableFontSize(element) {
+  if (!(element instanceof HTMLElement)) return "20px";
+  const raw = getMaxFontSizeInTree(element);
+  const px = parseFontSizePx(raw);
+  const container = element.closest?.(
+    ".ytp-caption-window-container, .caption-window, .vjs-text-track-display"
+  );
+  const containerPx =
+    container instanceof HTMLElement
+      ? parseFontSizePx(getComputedStyle(container).fontSize)
+      : 0;
+
+  // 親より明らかに大きい → ネイティブの実寸
+  if (px >= 14 && (containerPx <= 0 || px > containerPx + 2)) {
+    lastKnownGoodCaptionFontPx = px;
+    return /px$/i.test(String(raw).trim()) ? String(raw).trim() : `${px}px`;
+  }
+  if (lastKnownGoodCaptionFontPx >= 14) {
+    return `${lastKnownGoodCaptionFontPx}px`;
+  }
+  if (px > 0) {
+    return /px$/i.test(String(raw).trim()) ? String(raw).trim() : `${px}px`;
+  }
+  return "20px";
 }
 
 export function parseBackgroundAlpha(color) {
@@ -52,11 +114,9 @@ export function isOutlineOnlyCaption(element) {
   );
   if (win instanceof HTMLElement && win !== element) nodes.push(win);
 
-  let sawTransparentHost = false;
   for (const node of nodes) {
     const style = getComputedStyle(node);
     if (hasVisibleBackground(style.backgroundColor)) return false;
-    sawTransparentHost = true;
     const shadow = style.textShadow || "";
     if (shadow && shadow !== "none") return true;
     const stroke =
@@ -66,21 +126,153 @@ export function isOutlineOnlyCaption(element) {
     if (stroke && stroke !== "0px" && Number.parseFloat(stroke) > 0) return true;
   }
 
+  return false;
+}
+
+/**
+ * 黒文字＋透過帯など、拡張 teardown 後に壊れた見た目か。
+ * @param {HTMLElement} element
+ */
+export function looksLikeBrokenCaptionComputed(element) {
+  if (typeof HTMLElement === "undefined") return false;
+  if (!(element instanceof HTMLElement)) return false;
+  if (typeof getComputedStyle !== "function") return false;
+  const cs = getComputedStyle(element);
+  if (hasVisibleBackground(cs.backgroundColor)) return false;
+  const color = String(cs.color || "").replace(/\s+/g, "");
   return (
-    sawTransparentHost &&
-    Boolean(element.closest?.(".ytp-caption-window-container"))
+    /^rgb\(0,0,0\)$/i.test(color) ||
+    color === "#000" ||
+    color === "#000000" ||
+    color === "black"
   );
 }
 
 /**
- * 動画色に追従する歌詞字幕など、ネイティブ字形を壊したくないか。
- * （明朝・多色 span・縁取り透過）
+ * 初回だけ、健全な YouTube 生 style を data 属性に残す。
  * @param {HTMLElement} element
  */
+export function rememberPriorCaptionStyle(element) {
+  if (!(element instanceof HTMLElement)) return;
+  if (element.hasAttribute(PRIOR_STYLE_ATTR)) return;
+  const styleAttr = element.getAttribute("style");
+  if (isCorruptCaptionInlineStyle(styleAttr)) return;
+  if (looksLikeBrokenCaptionComputed(element)) return;
+  element.setAttribute(PRIOR_STYLE_ATTR, styleAttr || "");
+}
+
+/**
+ * DevTools で確認した通常の YouTube 字幕に近いフォールバック。
+ * @param {HTMLElement} element
+ * @param {string} [fontSize]
+ */
+export function applyYouTubeSegmentStyleFallback(element, fontSize = "") {
+  if (!(element instanceof HTMLElement)) return;
+  const px =
+    parseFontSizePx(fontSize) >= 14
+      ? fontSize
+      : lastKnownGoodCaptionFontPx >= 14
+        ? `${lastKnownGoodCaptionFontPx}px`
+        : "28px";
+  element.setAttribute(
+    "style",
+    [
+      "display: inline-block",
+      "white-space: pre-wrap",
+      "background: rgba(8, 8, 8, 0.75)",
+      `font-size: ${px}`,
+      "color: rgb(255, 255, 255)",
+      "fill: rgb(255, 255, 255)",
+      'font-family: "YouTube Noto", Roboto, Arial, Helvetica, Verdana, "PT Sans Caption", sans-serif'
+    ].join("; ")
+  );
+}
+
+/**
+ * prior style / フォールバックでネイティブ寄りの見た目に戻す。
+ * @param {HTMLElement} element
+ * @param {{ lockedFontSize?: string, priorInlineStyle?: string | null }} [opts]
+ */
+export function restoreYouTubeCaptionAppearance(element, opts = {}) {
+  if (!(element instanceof HTMLElement)) return;
+  const fromAttr = element.getAttribute(PRIOR_STYLE_ATTR);
+  let prior =
+    typeof opts.priorInlineStyle === "string" ? opts.priorInlineStyle : null;
+  // 壊れた prior（font-size だけ等）は捨てて data 属性の生 style を優先
+  if (prior == null || isCorruptCaptionInlineStyle(prior)) {
+    prior = fromAttr;
+  }
+  const locked =
+    opts.lockedFontSize ||
+    element.getAttribute(FONT_SIZE_ATTR) ||
+    (lastKnownGoodCaptionFontPx >= 14 ? `${lastKnownGoodCaptionFontPx}px` : "");
+
+  // keep-one-line の font-size !important を先に剥がす
+  element.style.removeProperty("font-size");
+
+  if (typeof prior === "string" && !isCorruptCaptionInlineStyle(prior)) {
+    if (prior) element.setAttribute("style", prior);
+    else element.removeAttribute("style");
+  } else {
+    applyYouTubeSegmentStyleFallback(element, locked);
+    return;
+  }
+
+  const priorFont = extractFontSizeFromStyleAttr(prior);
+  restoreCaptionFontSizeAfterRelease(element, {
+    priorInlineFontSize: priorFont,
+    lockedFontSize: locked
+  });
+
+  // 復元後も黒＋透過ならフォールバック確定
+  if (looksLikeBrokenCaptionComputed(element)) {
+    applyYouTubeSegmentStyleFallback(element, locked);
+    return;
+  }
+
+  // 親 11px 継承などに落ちていたら読みやすいサイズへ
+  let finalPx = parseFontSizePx(element.style.getPropertyValue("font-size"));
+  if (finalPx < 14 && typeof getComputedStyle === "function") {
+    finalPx = parseFontSizePx(getComputedStyle(element).fontSize);
+  }
+  if (finalPx < 14) {
+    applyYouTubeSegmentStyleFallback(element, locked);
+  }
+}
+
+/**
+ * OFF 直後に画面上の字幕が極小なら、強制的に読みやすいサイズへ戻す。
+ * @param {ParentNode} [root]
+ */
+export function ensureReleasedCaptionsReadable(root = document) {
+  if (!root || typeof root.querySelectorAll !== "function") return;
+  if (typeof getComputedStyle !== "function") return;
+  for (const el of root.querySelectorAll(
+    ".ytp-caption-segment, .vjs-text-track-cue-line > span"
+  )) {
+    if (!(el instanceof HTMLElement)) continue;
+    if (
+      el.classList?.contains("caption-visual-line") &&
+      el.querySelector(".ytp-caption-segment")
+    ) {
+      continue;
+    }
+    const stylePx = parseFontSizePx(el.style.getPropertyValue("font-size"));
+    const computedPx = parseFontSizePx(getComputedStyle(el).fontSize);
+    const px = Math.max(stylePx, computedPx);
+    if (px > 0 && px < 14) {
+      restoreYouTubeCaptionAppearance(el);
+    }
+  }
+}
+
 export function preferNativeStyledCaption(element) {
   if (typeof HTMLElement === "undefined") return false;
   if (!(element instanceof HTMLElement)) return false;
   if (!element.closest?.(".ytp-caption-window-container")) return false;
+  // teardown 残骸の黒文字透過を「デザイン字幕」と誤認しない
+  if (looksLikeBrokenCaptionComputed(element)) return false;
+  if (isCorruptCaptionInlineStyle(element.getAttribute("style"))) return false;
 
   if (isOutlineOnlyCaption(element)) return true;
 
@@ -208,6 +400,19 @@ export function resolveCaptionBackgroundColor(element) {
 }
 
 export function captureCaptionStyles(element) {
+  // 初回だけ、拡張が触る前の style 属性を丸ごと保存（OFF で極小化しないため）
+  rememberPriorCaptionStyle(element);
+  const isFirstCapture = !styleSnapshots.has(element);
+  const priorInlineStyle = isFirstCapture
+    ? element.getAttribute("style")
+    : styleSnapshots.get(element)?.priorInlineStyle;
+  const priorInlineFontSize = isFirstCapture
+    ? element.style.getPropertyValue("font-size")
+    : styleSnapshots.get(element)?.priorInlineFontSize || "";
+  const priorInlineFontPriority = isFirstCapture
+    ? element.style.getPropertyPriority("font-size")
+    : styleSnapshots.get(element)?.priorInlineFontPriority || "";
+
   const liveBg = resolveCaptionBackgroundColor(element);
   const outlineOnly = !liveBg && isOutlineOnlyCaption(element);
   // 縁取りだけの歌詞字幕のみ白黒強制。通常の YouTube 字幕は設定どおり残す。
@@ -224,7 +429,7 @@ export function captureCaptionStyles(element) {
     element.removeAttribute("data-yt-furigana-outline");
   }
 
-  const fontSize = lockFontSize(element, getMaxFontSizeInTree(element));
+  const fontSize = lockFontSize(element, resolveCapturableFontSize(element));
 
   // ルビ注入前に単一行か判定（注入後に測ると誤判定する）
   markKeepOneLineCaption(element);
@@ -250,6 +455,25 @@ export function captureCaptionStyles(element) {
     );
     if (available > 0) {
       element.setAttribute(LINE_WIDTH_ATTR, String(available));
+    }
+  }
+
+  // 長文を nowrap 固定すると動画外にはみ出すので、最初から折り返し経路へ
+  if (element.getAttribute(KEEP_ONE_LINE_ATTR) === "1") {
+    const available =
+      Number.parseFloat(element.getAttribute(LINE_WIDTH_ATTR) || "") || 0;
+    const fontPx = parseFontSizePx(fontSize) || 16;
+    const original =
+      element.getAttribute("data-yt-furigana-original") ||
+      String(element.textContent || "");
+    const chars = original.replace(/\s+/g, "").length;
+    const maxChars = estimateMaxLineChars({
+      lineWidthPx: available,
+      fontSizePx: fontPx
+    });
+    // ルビで少し広がる前提で余裕を見る
+    if (available > 40 && chars > Math.floor(maxChars * 0.92)) {
+      element.setAttribute(KEEP_ONE_LINE_ATTR, "0");
     }
   }
 
@@ -284,7 +508,10 @@ export function captureCaptionStyles(element) {
     window: captionWindow ? captureNodeStyle(captionWindow) : null,
     windowNode: captionWindow,
     backgroundColor,
-    forceReadable
+    forceReadable,
+    priorInlineStyle,
+    priorInlineFontSize,
+    priorInlineFontPriority
   };
 
   styleSnapshots.set(element, snapshot);
@@ -362,34 +589,27 @@ export function expandYouTubeCaptionWindow(element) {
   const win = element.closest(".caption-window");
   if (!(win instanceof HTMLElement)) return;
 
-  win.style.setProperty("overflow", "visible", "important");
+  rememberCaptionWindowStyle(win);
+
+  // width / max-width / left は触らない（中央寄せ崩壊の原因）
+  // 既に visible なら書き込まない（styleGuard の再入ループ防止）
+  if (win.style.getPropertyValue("overflow") !== "visible") {
+    win.style.setProperty("overflow", "visible", "important");
+  }
 
   const text = win.querySelector(".captions-text");
   if (text instanceof HTMLElement) {
-    text.style.setProperty("overflow", "visible", "important");
+    rememberCaptionWindowStyle(text);
+    if (text.style.getPropertyValue("overflow") !== "visible") {
+      text.style.setProperty("overflow", "visible", "important");
+    }
   }
   const line = win.querySelector(".caption-visual-line");
   if (line instanceof HTMLElement) {
-    line.style.setProperty("overflow", "visible", "important");
-  }
-
-  // 単一行ロックで必要な幅を YouTube の書き戻し後も再適用
-  const needed = Number.parseFloat(
-    element.getAttribute(NEEDED_WIDTH_ATTR) ||
-      win.querySelector?.(`[${NEEDED_WIDTH_ATTR}]`)?.getAttribute?.(NEEDED_WIDTH_ATTR) ||
-      ""
-  );
-  if (needed > 0) {
-    const player = element.closest(".html5-video-player");
-    const maxW =
-      player instanceof HTMLElement
-        ? Math.floor(
-            (player.clientWidth || player.getBoundingClientRect().width || needed) * 0.94
-          )
-        : needed;
-    const width = Math.min(Math.ceil(needed) + 8, maxW > 0 ? maxW : Math.ceil(needed) + 8);
-    win.style.setProperty("width", `${width}px`, "important");
-    win.style.setProperty("max-width", "94%", "important");
+    rememberCaptionWindowStyle(line);
+    if (line.style.getPropertyValue("overflow") !== "visible") {
+      line.style.setProperty("overflow", "visible", "important");
+    }
   }
 }
 
@@ -549,9 +769,9 @@ export function fitYouTubeCaptionViewport(host) {
   if (!(host instanceof HTMLElement)) return;
   if (!host.isConnected) return;
 
-  host.style.removeProperty("transform");
-  host.style.removeProperty("--ytf-yt-lift");
-
+  // YouTube は left:50% + translateX(-50%) で中央寄せすることがある。
+  // transform を消したり translateY だけ上書きすると左寄せ崩壊する。
+  // 持ち上げはセグメント側の相対 top だけで行い、窓の transform は触らない。
   const styled = host.matches("[data-yt-furigana-styled]")
     ? [host]
     : Array.from(host.querySelectorAll("[data-yt-furigana-styled]"));
@@ -562,6 +782,12 @@ export function fitYouTubeCaptionViewport(host) {
       );
 
   if (targets.length === 0) return;
+
+  for (const node of targets) {
+    if (!(node instanceof HTMLElement)) continue;
+    node.style.removeProperty("top");
+  }
+  host.style.removeProperty("--ytf-yt-lift");
 
   let stackTop = Infinity;
   let stackBottom = -Infinity;
@@ -604,7 +830,14 @@ export function fitYouTubeCaptionViewport(host) {
 
   if (lift > 0) {
     host.style.setProperty("--ytf-yt-lift", `${lift}px`);
-    host.style.setProperty("transform", `translateY(-${lift}px)`, "important");
+    for (const node of targets) {
+      if (!(node instanceof HTMLElement)) continue;
+      // position は YouTube 依存を壊さないよう relative のみ補助
+      if (getComputedStyle(node).position === "static") {
+        node.style.setProperty("position", "relative", "important");
+      }
+      node.style.setProperty("top", `-${lift}px`, "important");
+    }
   }
 }
 
@@ -727,54 +960,109 @@ export function startCaptionStyleGuard(element) {
   const snapshot = styleSnapshots.get(element);
   if (!snapshot) return;
 
+  const guardToken = Object.create(null);
   let applying = false;
+  /** @type {MutationObserver | null} */
+  let guard = null;
+  /** @type {MutationObserver | null} */
+  let winGuard = null;
+
+  const stillActive = () => {
+    const entry = styleGuards.get(element);
+    return Boolean(entry && entry.token === guardToken);
+  };
+
+  const observeTargets = () => {
+    if (!stillActive()) return;
+    if (!(element instanceof HTMLElement) || !element.isConnected) return;
+    guard?.observe(element, {
+      attributes: true,
+      attributeFilter: ["style", "class"]
+    });
+    const win = element.closest(".caption-window");
+    if (win instanceof HTMLElement) {
+      if (!winGuard) {
+        winGuard = new MutationObserver(apply);
+      }
+      winGuard.observe(win, {
+        attributes: true,
+        attributeFilter: ["style", "class"]
+      });
+    }
+  };
+
   const apply = () => {
-    if (applying) return;
+    if (applying || !stillActive()) return;
     if (!element.isConnected) {
-      guard.disconnect();
+      guard?.disconnect();
       winGuard?.disconnect();
       styleGuards.delete(element);
       return;
     }
     applying = true;
+    // 自分の style 書き込みで再発火しないよう一時切断
+    guard?.disconnect();
+    winGuard?.disconnect();
     try {
+      if (!stillActive()) return;
       applyBaseStyles(element, snapshot);
       paintCaptionBackground(element, snapshot);
       expandYouTubeCaptionWindow(element);
-      // YouTube が style を書き戻してもルビ縦積みを維持
       fitRubyReadings(element);
     } finally {
-      queueMicrotask(() => {
+      requestAnimationFrame(() => {
+        // OFF 後に遅延 rAF が再接続・再適用しないようにする
+        if (!stillActive()) {
+          applying = false;
+          return;
+        }
+        observeTargets();
         applying = false;
       });
     }
   };
 
-  const guard = new MutationObserver(apply);
-  guard.observe(element, { attributes: true, attributeFilter: ["style", "class"] });
-
-  // YouTube が caption-window の height を毎フレーム書き戻す対策
-  const win = element.closest(".caption-window");
-  let winGuard = null;
-  if (win instanceof HTMLElement) {
-    winGuard = new MutationObserver(apply);
-    winGuard.observe(win, { attributes: true, attributeFilter: ["style", "class"] });
-  }
-
+  guard = new MutationObserver(apply);
   styleGuards.set(element, {
+    token: guardToken,
     disconnect() {
-      guard.disconnect();
+      guard?.disconnect();
       winGuard?.disconnect();
     }
   });
+  observeTargets();
 }
 
 export function releaseCaptionStyles(element) {
-  const guard = styleGuards.get(element);
-  guard?.disconnect();
-  styleGuards.delete(element);
+  if (!(element instanceof HTMLElement)) return;
 
+  // visual-line は segment の親。ここで style を潰すと display:block が消え 2 行が壊れる
+  if (
+    element.classList?.contains("caption-visual-line") &&
+    element.querySelector(".ytp-caption-segment")
+  ) {
+    const guard = styleGuards.get(element);
+    styleGuards.delete(element);
+    guard?.disconnect();
+    styleSnapshots.delete(element);
+    element.style.removeProperty("overflow");
+    element.style.removeProperty("font-size");
+    return;
+  }
+
+  const guard = styleGuards.get(element);
+  // 先に map から外し、進行中 apply / 遅延 rAF を無効化
+  styleGuards.delete(element);
+  guard?.disconnect();
+
+  const snapshot = styleSnapshots.get(element);
+  const priorInlineStyle = snapshot?.priorInlineStyle;
+  const lockedFontSize =
+    snapshot?.segmentFontSize ||
+    element.getAttribute(FONT_SIZE_ATTR) ||
+    (lastKnownGoodCaptionFontPx >= 14 ? `${lastKnownGoodCaptionFontPx}px` : "");
   styleSnapshots.delete(element);
+
   element.removeAttribute("data-yt-furigana-styled");
   element.removeAttribute(LINE_WIDTH_ATTR);
   element.removeAttribute(KEEP_ONE_LINE_ATTR);
@@ -795,25 +1083,88 @@ export function releaseCaptionStyles(element) {
     line.style.removeProperty("overflow");
   }
 
-  for (const prop of [
-    "font-size",
-    "line-height",
-    "color",
-    "text-shadow",
-    "background-color",
-    "padding-top",
-    "padding-bottom",
-    "margin-top",
-    "overflow",
-    "white-space",
-    "word-break",
-    "line-break",
-    "overflow-wrap",
-    "box-decoration-break",
-    "-webkit-box-decoration-break",
-    "position",
-    "transform"
-  ]) {
-    element.style.removeProperty(prop);
+  // DevTools で確認済み: プロパティ単位の remove だけだと display/fill 等が残り、
+  // font-size が空 → 親の 11px 継承で極小になる。生 style / フォールバックへ戻す。
+  restoreYouTubeCaptionAppearance(element, {
+    priorInlineStyle:
+      typeof priorInlineStyle === "string" ? priorInlineStyle : undefined,
+    lockedFontSize
+  });
+}
+
+/**
+ * OFF 後の字号を決める。
+ * @param {HTMLElement} element
+ * @param {{ priorInlineFontSize?: string, priorInlineFontPriority?: string, lockedFontSize?: string }} opts
+ */
+export function restoreCaptionFontSizeAfterRelease(element, opts = {}) {
+  if (!(element instanceof HTMLElement)) return;
+  const prior = opts.priorInlineFontSize || "";
+  const priorPriority = opts.priorInlineFontPriority || "";
+  const locked = opts.lockedFontSize || "";
+  const priorPx = parseFontSizePx(prior);
+  const lockedPx = parseFontSizePx(locked);
+  const currentPx = parseFontSizePx(element.style.getPropertyValue("font-size"));
+
+  if (priorPx >= 14) {
+    element.style.setProperty("font-size", prior, priorPriority || undefined);
+    return;
   }
+  if (currentPx >= 14) return;
+  if (lockedPx >= 14) {
+    element.style.setProperty("font-size", locked);
+    return;
+  }
+  if (lastKnownGoodCaptionFontPx >= 14) {
+    element.style.setProperty("font-size", `${lastKnownGoodCaptionFontPx}px`);
+  }
+}
+
+/**
+ * @deprecated applyReleasedFontSize → restoreCaptionFontSizeAfterRelease
+ */
+export function applyReleasedFontSize(
+  element,
+  priorInlineFontSize,
+  priorInlineFontPriority = ""
+) {
+  restoreCaptionFontSizeAfterRelease(element, {
+    priorInlineFontSize,
+    priorInlineFontPriority,
+    lockedFontSize: priorInlineFontSize
+  });
+}
+
+/**
+ * OFF/再ON 時に .caption-visual-line へ誤って font-size を書いた残骸を落とす。
+ * DevTools: line が display:inline + font-size だけになり、2行字幕の帯が壊れていた。
+ */
+export function scrubYouTubeVisualLineArtifacts(root = document) {
+  if (!root || typeof root.querySelectorAll !== "function") return;
+  for (const line of root.querySelectorAll(".caption-visual-line")) {
+    if (!(line instanceof HTMLElement)) continue;
+    line.style.removeProperty("overflow");
+    line.style.removeProperty("font-size");
+    const raw = (line.getAttribute("style") || "").trim();
+    if (!raw) {
+      line.removeAttribute("style");
+    } else if (/^(display:\s*block;?\s*)?$/i.test(raw)) {
+      // display:block だけなら CSS に任せてよいが、YouTube が inline で付けていることもあるので残す
+    }
+    // span の初期 display:inline だと2行が横並びになるので、segment を持つ行は block に戻す
+    if (line.querySelector(".ytp-caption-segment")) {
+      const display = getComputedStyle(line).display;
+      if (display === "inline" || display === "inline-block") {
+        line.style.setProperty("display", "block");
+      }
+    }
+  }
+}
+
+/**
+ * disable / 再enable 前に、触った字幕窓の style を一括復元する。
+ */
+export function releaseAllCaptionWindowStyles() {
+  restoreAllCaptionWindowStyles(document);
+  scrubYouTubeVisualLineArtifacts(document);
 }

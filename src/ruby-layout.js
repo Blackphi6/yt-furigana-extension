@@ -8,7 +8,7 @@ export const MIN_CAPTION_SCALE = 0.72;
  * 注入前に単一行だった字幕を1行のまま枠に収めるときの縮小下限。
  * 折り返しは禁止なので、複数行向けより低くしてでも1行を守る。
  */
-export const MIN_KEEP_ONE_LINE_SCALE = 0.55;
+export const MIN_KEEP_ONE_LINE_SCALE = 0.7;
 
 /** 注入前に単一行だったことを示す（折り返し禁止） */
 export const KEEP_ONE_LINE_ATTR = "data-yt-furigana-keep-one-line";
@@ -210,7 +210,9 @@ export function shouldKeepCaptionOneLine(lineCount) {
 }
 
 /**
- * 単一行維持のためのフォントサイズ（px）と、下限でも足りないときの窓広げ要否。
+ * 単一行維持のためのフォントサイズ（px）と、下限でも足りないときの要否。
+ * needsWiden=true は「これ以上は1行固定をあきらめて折り返す」合図
+ * （caption-window の width は触らない）。
  * @param {{
  *   contentWidth: number,
  *   availableWidth: number,
@@ -232,6 +234,14 @@ export function planKeepOneLineFit({
     fontSizePx: base * scale,
     needsWiden: fittedWidth > availableWidth + 1.5
   };
+}
+
+/**
+ * 下限縮小でも枠に入らない → 1行ロックを解除して折り返すべきか。
+ * @param {{ needsWiden?: boolean } | null | undefined} plan
+ */
+export function shouldReleaseKeepOneLine(plan) {
+  return Boolean(plan?.needsWiden);
 }
 
 /**
@@ -444,7 +454,7 @@ function resolveAvailableWidth(host) {
  */
 function resolveKeepOneLineAvailableWidth(host) {
   const win = host.closest?.(
-    ".caption-window, .captions-text, .vjs-text-track-cue, .vjs-text-track-window, .html5-video-player"
+    ".caption-window, .captions-text, .vjs-text-track-cue, .vjs-text-track-window"
   );
   let winW = 0;
   if (win instanceof HTMLElement) {
@@ -455,10 +465,22 @@ function resolveKeepOneLineAvailableWidth(host) {
     player instanceof HTMLElement
       ? player.clientWidth || player.getBoundingClientRect().width || 0
       : 0;
+  const softCap = playerW > 0 ? playerW * 0.92 : 0;
   const stored = Number.parseFloat(host.getAttribute("data-yt-furigana-line-width") || "");
-  // プレイヤーの約 90% まで使ってよい（中央字幕の一般的上限）
-  const softCap = playerW > 0 ? playerW * 0.92 : winW > 0 ? winW : stored;
-  const candidates = [stored, winW > 12 ? winW - 12 : 0, softCap].filter((n) => n > 0);
+  // 前回の width いじり残骸で窓だけ狭いときは無視し、プレイヤー幅を優先
+  const winUsable =
+    softCap > 0 && winW > 0 && winW >= softCap * 0.5
+      ? winW - 12
+      : softCap <= 0 && winW > 12
+        ? winW - 12
+        : 0;
+  const storedUsable =
+    softCap > 0 && stored > 0 && stored >= softCap * 0.5
+      ? stored
+      : softCap <= 0 && stored > 0
+        ? stored
+        : 0;
+  const candidates = [softCap, winUsable, storedUsable].filter((n) => n > 0);
   if (candidates.length === 0) return host.scrollWidth || host.clientWidth || 0;
   return Math.max(...candidates);
 }
@@ -484,26 +506,44 @@ function ensureOneLineWrapper(host) {
 }
 
 function widenCaptionWindowForOneLine(host, neededWidthPx) {
+  // YouTube の .caption-window に width を書くと left 基準の中央寄せが壊れ、
+  // OFF→再ON で左下・極小字幕になる。幅は触らず、計測用属性だけ残す。
   const needed = Math.ceil(Number(neededWidthPx) || 0);
   if (!(needed > 0)) return;
   host.setAttribute("data-yt-furigana-needed-width", String(needed));
-
-  const win = host.closest?.(".caption-window, .captions-text");
-  if (!(win instanceof HTMLElement)) return;
-
-  const player = host.closest?.(".html5-video-player");
-  const maxW =
-    player instanceof HTMLElement
-      ? Math.floor((player.clientWidth || player.getBoundingClientRect().width || needed) * 0.94)
-      : needed;
-  const width = Math.min(needed + 8, maxW > 0 ? maxW : needed + 8);
-  win.style.setProperty("width", `${width}px`, "important");
-  win.style.setProperty("max-width", "94%", "important");
-  win.style.setProperty("overflow", "visible", "important");
+  void host.closest?.(".caption-window, .captions-text");
 }
 
 /**
- * 元が1行の字幕を nowrap + 縮小（必要なら窓広げ）で1行に固定する。
+ * 1行ロックを外し、枠内で折り返せる状態にする。
+ * （nowrap のまま動画外にはみ出すのを防ぐ）
+ * @param {HTMLElement} host
+ */
+export function releaseKeepOneLineToWrap(host) {
+  if (!(host instanceof HTMLElement)) return;
+  host.setAttribute(KEEP_ONE_LINE_ATTR, "0");
+  host.removeAttribute("data-yt-furigana-needed-width");
+
+  const wrap = host.querySelector(`:scope > .${ONE_LINE_CLASS}`);
+  if (wrap instanceof HTMLElement) {
+    while (wrap.firstChild) host.insertBefore(wrap.firstChild, wrap);
+    wrap.remove();
+  }
+
+  const lockedAttr = host.getAttribute("data-yt-furigana-font-size");
+  if (lockedAttr) {
+    host.style.setProperty("font-size", lockedAttr, "important");
+  }
+
+  host.style.setProperty("white-space", "normal", "important");
+  host.style.setProperty("word-break", "keep-all", "important");
+  host.style.setProperty("line-break", "strict", "important");
+  host.style.setProperty("overflow-wrap", "normal", "important");
+}
+
+/**
+ * 元が1行の字幕を nowrap + 縮小で1行に固定する。
+ * 下限縮小でも枠に入らなければ折り返しへフォールバック（はみ出し防止）。
  * @param {HTMLElement} host
  * @param {ParentNode} root
  */
@@ -535,16 +575,22 @@ function enforceKeepOneLine(host, root) {
     baseFontPx
   });
 
+  // 窓 width は触らない。収まらなければ折り返し（長文の動画外はみ出し防止）
+  if (shouldReleaseKeepOneLine(plan)) {
+    releaseKeepOneLineToWrap(host);
+    applyRubyFitPass(host);
+    separateOverlappingRubyReadings(root, { maxPushPx: 3 });
+    if (host !== root) separateOverlappingRubyReadings(host, { maxPushPx: 3 });
+    return;
+  }
+
   if (plan.scale < 1) {
     host.style.setProperty("font-size", `${plan.fontSizePx}px`, "important");
   }
 
-  if (plan.needsWiden) {
+  // 計測用に必要幅だけ記録（レイアウトは変更しない）
+  if (contentWidth > available + 1) {
     widenCaptionWindowForOneLine(host, contentWidth * plan.scale);
-  } else if (contentWidth > available + 1 && plan.scale >= MIN_KEEP_ONE_LINE_SCALE) {
-    // 縮小後もギリギリなら窓を内容幅に寄せる
-    const after = measureOneLineContentWidth(host);
-    if (after > available + 1) widenCaptionWindowForOneLine(host, after);
   }
 }
 

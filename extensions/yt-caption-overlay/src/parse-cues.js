@@ -40,6 +40,7 @@ function parseSrtOrVttWithRuby(source) {
       startMs,
       endMs: endMs <= startMs ? startMs + 1000 : endMs,
       text: plain,
+      // 明示改行だけ。半角スペースは YouTube ネイティブ行を見てから決める
       html: body.replace(/\n/g, "<br />")
     });
   }
@@ -55,6 +56,15 @@ function escapeHtml(value) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+/**
+ * 表示用 HTML（明示改行のみ）。スペース→改行は native-breaks 側。
+ * @param {string} html
+ * @returns {string}
+ */
+export function toOverlayHtml(html) {
+  return String(html || "").replace(/\n/g, "<br />");
 }
 
 /**
@@ -79,13 +89,19 @@ export function parseOverlayCaptions(source) {
       startMs: cue.startMs,
       endMs: cue.endMs,
       text: cue.text,
-      html: escapeHtml(cue.text).replace(/\n/g, "<br />")
+      html: toOverlayHtml(escapeHtml(cue.text))
     }))
   };
 }
 
 /**
- * 現在時刻に重なる cue を返す（複数行なら結合）。
+ * 現在時刻に重なる cue を 1 つだけ返す。
+ *
+ * 字幕は時間が重なる cue（ロール表示・分割）を含むことがある。
+ * それらを連結すると本来 1 行の字幕が 2 行に割れてしまうため、
+ * 「最後に始まった＝いま画面にあるべき」cue を優先し、同時なら長い方を採る。
+ * cue 自身が持つ改行（\n → <br />）はそのまま尊重する。
+ *
  * @param {OverlayCue[]} cues
  * @param {number} timeMs
  * @returns {OverlayCue | null}
@@ -93,13 +109,21 @@ export function parseOverlayCaptions(source) {
 export function findActiveCue(cues, timeMs) {
   const list = Array.isArray(cues) ? cues : [];
   const t = Math.max(0, Number(timeMs) || 0);
-  const hits = list.filter((cue) => t >= cue.startMs && t < cue.endMs);
-  if (!hits.length) return null;
-  if (hits.length === 1) return hits[0];
-  return {
-    startMs: hits[0].startMs,
-    endMs: hits[hits.length - 1].endMs,
-    text: hits.map((c) => c.text).join("\n"),
-    html: hits.map((c) => c.html).join("<br />")
-  };
+
+  /** @type {OverlayCue | null} */
+  let best = null;
+  for (const cue of list) {
+    if (t < cue.startMs || t >= cue.endMs) continue;
+    if (!best) {
+      best = cue;
+      continue;
+    }
+    if (
+      cue.startMs > best.startMs ||
+      (cue.startMs === best.startMs && cue.text.length > best.text.length)
+    ) {
+      best = cue;
+    }
+  }
+  return best;
 }

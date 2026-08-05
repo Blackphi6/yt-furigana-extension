@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "YT Super Chat Furigana",
-  "version": "1.0.2",
-  "version_name": "1.0.2",
-  "description": "YouTube ライブの Super Chat 本文にひらがなルビ（非公式）。端末内処理。読み未登録はクリックで登録。通常チャット・字幕APIは使いません。",
+  "name": "YT Live Chat Furigana",
+  "version": "1.1.0",
+  "version_name": "1.1.0",
+  "description": "YouTube ライブの Super Chat と通常チャットにひらがなルビ（非公式）。個別オン／オフ。端末内処理。字幕APIは使いません。",
   "homepage_url": "https://blackphi6.github.io/yt-furigana-extension/superchat.html",
   "permissions": ["storage"],
   "host_permissions": ["*://www.youtube.com/*", "*://m.youtube.com/*"],
@@ -13,7 +13,7 @@
   },
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "YT Super Chat Furigana",
+    "default_title": "YT Live Chat Furigana",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",

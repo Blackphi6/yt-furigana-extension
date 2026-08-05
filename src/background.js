@@ -2,7 +2,8 @@ import { buildFuriganaPrompt } from "./llm-prompt.js";
 import {
   DEFAULT_SETTINGS,
   listInstalledModelNames,
-  pickPreferredOllamaModel
+  pickPreferredOllamaModel,
+  resolveReadingApiBaseUrl
 } from "./default-settings.js";
 import { getOllamaTimeoutMs } from "./ollama-config.js";
 import {
@@ -48,7 +49,6 @@ import {
   segmentsToHtml
 } from "./segment-html.js";
 import { fetchJapaneseCaptionCuesForExport } from "./caption-export.js";
-
 
 const LLM_CACHE_LIMIT = 500;
 const llmCache = new Map();
@@ -121,7 +121,8 @@ function getCacheKey(text, settings) {
 }
 
 function getReadingApiCacheKey(text, settings) {
-  return `reading-api:${normalizeReadingApiUrl(settings.readingApiUrl)}:${text}`;
+  const base = resolveReadingApiBaseUrl(settings);
+  return `reading-api:${normalizeReadingApiUrl(base)}:${text}`;
 }
 
 function setCache(key, html) {
@@ -194,10 +195,10 @@ export async function callOllama(text, settings, resolvedModel) {
 }
 
 export async function callReadingApi(text, settings, userDict, userPhrases = {}) {
-  const endpoint = normalizeReadingApiUrl(settings.readingApiUrl);
+  const endpoint = normalizeReadingApiUrl(resolveReadingApiBaseUrl(settings));
   if (!endpoint) {
     throw new Error(
-      "読みAPIのURLが未設定です。ポップアップでエンドポイントを入力してください。"
+      "読みAPIのURLが未設定です。ポップアップで「公開読み API」を選ぶか、エンドポイントを入力してください。"
     );
   }
 
@@ -271,7 +272,7 @@ export async function checkOllamaConnection(settings) {
 }
 
 export async function checkReadingApiConnection(settings) {
-  const endpoint = normalizeReadingApiUrl(settings.readingApiUrl);
+  const endpoint = normalizeReadingApiUrl(resolveReadingApiBaseUrl(settings));
   if (!endpoint) {
     throw new Error("読みAPIのURLが未設定です");
   }
@@ -490,7 +491,6 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
   return false;
 });
-
 
 /** 字幕書き出しページ（サイト）から呼べる origin */
 const EXPORT_PAGE_ORIGINS = new Set([

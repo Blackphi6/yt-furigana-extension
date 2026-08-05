@@ -74,6 +74,14 @@ export function extractReadingsFromRubyHtml(html) {
     const reading = normalizeReading(match[2]);
     if (surface && reading) map.set(surface, reading);
   }
+  // wrapFuriganaWord の data-* も拾う（ルビ無し・unset 以外）
+  const attrRe =
+    /data-surface="([^"]*)"\s+data-reading="([^"]*)"/g;
+  while ((match = attrRe.exec(String(html || "")))) {
+    const surface = match[1];
+    const reading = normalizeReading(match[2]);
+    if (surface && reading) map.set(surface, reading);
+  }
   return map;
 }
 

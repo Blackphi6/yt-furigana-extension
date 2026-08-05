@@ -7,6 +7,7 @@ import { getNeologdReading } from "./neologd-phrases.js";
 import { getPersonalNameReading } from "./personal-name-phrases.js";
 import { findLongestPhraseAt } from "./phrase-trie.js";
 import { applyNumberUnitReadings } from "./number-unit-reading.js";
+import { normalizeKanjiForLookup } from "./kanji-normalize.js";
 
 function toHiragana(text) {
   return normalizeReading(text);
@@ -55,10 +56,14 @@ function dictionaryReadingFor(surface) {
     何倍: "なんばい",
     直書き: "じかがき"
   };
+  const lookup = normalizeKanjiForLookup(surface);
   return (
     fallback[surface] ||
+    fallback[lookup] ||
     getPersonalNameReading(surface) ||
+    getPersonalNameReading(lookup) ||
     getNeologdReading(surface) ||
+    getNeologdReading(lookup) ||
     ""
   );
 }

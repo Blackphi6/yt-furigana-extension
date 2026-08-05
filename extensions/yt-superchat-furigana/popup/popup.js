@@ -1,7 +1,10 @@
+import { isAnyTargetEnabled, normalizeYtscfState } from "../src/state.js";
+
 const STORAGE_KEY = "ytscfState";
 
 const els = {
-  enabled: document.querySelector("#enabled"),
+  superChatEnabled: document.querySelector("#superChatEnabled"),
+  chatEnabled: document.querySelector("#chatEnabled"),
   status: document.querySelector("#status")
 };
 
@@ -14,22 +17,30 @@ function setStatus(message, kind = "") {
 async function readState() {
   const data = await chrome.storage.local.get([STORAGE_KEY, "ytscfRuntime"]);
   return {
-    enabled: data?.[STORAGE_KEY]?.enabled !== false,
+    state: normalizeYtscfState(data?.[STORAGE_KEY]),
     runtime: data?.ytscfRuntime || null
   };
 }
 
-async function writeEnabled(enabled) {
+/**
+ * @param {{ superChatEnabled: boolean, chatEnabled: boolean }} state
+ */
+async function writeState(state) {
   await chrome.storage.local.set({
-    [STORAGE_KEY]: { enabled: Boolean(enabled) }
+    [STORAGE_KEY]: {
+      superChatEnabled: Boolean(state.superChatEnabled),
+      chatEnabled: Boolean(state.chatEnabled)
+    }
   });
 }
 
 async function refreshUi() {
-  const { enabled, runtime } = await readState();
-  els.enabled.checked = enabled;
-  if (!enabled) {
-    setStatus("オフ（Super Chat のルビを外します）");
+  const { state, runtime } = await readState();
+  if (els.superChatEnabled) els.superChatEnabled.checked = state.superChatEnabled;
+  if (els.chatEnabled) els.chatEnabled.checked = state.chatEnabled;
+
+  if (!isAnyTargetEnabled(state)) {
+    setStatus("オフ（ルビを外します）");
     return;
   }
   if (runtime?.error) {
@@ -41,12 +52,25 @@ async function refreshUi() {
     return;
   }
   const n = Number(runtime.processedCount) || 0;
-  setStatus(`準備完了 · 処理 ${n} 件`, "ok");
+  const parts = [];
+  if (state.superChatEnabled) parts.push("SC");
+  if (state.chatEnabled) parts.push("チャット");
+  setStatus(`準備完了 · ${parts.join("+")} · 処理 ${n} 件`, "ok");
 }
 
-els.enabled?.addEventListener("change", async () => {
-  await writeEnabled(els.enabled.checked);
+async function onToggleChange() {
+  await writeState({
+    superChatEnabled: Boolean(els.superChatEnabled?.checked),
+    chatEnabled: Boolean(els.chatEnabled?.checked)
+  });
   await refreshUi();
+}
+
+els.superChatEnabled?.addEventListener("change", () => {
+  void onToggleChange();
+});
+els.chatEnabled?.addEventListener("change", () => {
+  void onToggleChange();
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {

@@ -43,6 +43,16 @@ def main() -> None:
         except ValueError as exc:
             assert str(exc) == "no_valid_entries"
 
+        digit_entries = prop.validate_proposal_entries(
+            [{"surface": "21", "reading": "にじゅういち"}]
+        )
+        assert digit_entries == [{"surface": "21", "reading": "にじゅういち"}]
+
+        digit_unit = prop.validate_proposal_entries(
+            [{"surface": "２１階", "reading": "にじゅういっかい"}]
+        )
+        assert digit_unit[0]["surface"] == "21階"
+
         entries = prop.validate_proposal_entries(
             [{"surface": "何故", "reading": "なぜ"}, {"surface": "何故", "reading": "なにゆえ"}]
         )

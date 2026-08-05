@@ -43,6 +43,7 @@
 | NEologd／学習／MANUAL | 読みがほぼ一意の固有名詞・固定句 | 固有名詞辞書エントリ（権利者との提携を意味しない） |
 | 読み API（任意） | 同形異音・文脈依存 | 辛い、市場、下手に出る |
 | ローカル Kuromoji 既定 | APIなしでも動くベース | 日常字幕 |
+| 異体字照合正規化 | 表示は原文、辞書キーだけ常用形 | 髙橋→たかはし（[`PROPER-NOUN-READINGS.md`](PROPER-NOUN-READINGS.md)） |
 
 ポップアップの「読みAPI（外部・辞書併用）」がこの経路。失敗時はローカル辞書へフォールバック。
 
@@ -120,7 +121,16 @@ npm run publish:shared-readings
 |--------|--------|------|
 | `mode=smoke` | ubuntu-latest | dry + 3ベンチ |
 | cron 毎日 04:00 UTC / `mode=synth` | ubuntu-latest | Groq 合成 + ゲート計測 + [学習レポート](../site/learning-report.html) 更新 |
-| cron 月曜 03:00 UTC / `mode=retrain` | ubuntu-latest | merge + ルール学習 + 3ベンチ（baseline 更新） |
+| cron 月曜 03:00 UTC / `mode=retrain` | ubuntu-latest | merge + ルール学習 + `learn:promote-cues` + 3ベンチ（baseline 更新） |
+
+人手で同形異音を詰めたいとき:
+
+```bash
+npm run learn:promote-cues   # heteronym-cue-seed + synth コーパス → learned-overrides（ゲート付き）
+npm run learn:gate
+```
+
+`data/learning/heteronym-cue-seed.json` にキューを足す → promote-cues で本番 overrides へ。
 
 1日あたり想定呼び出し ~100回・無料枠のごく一部。Paid 不要。
 

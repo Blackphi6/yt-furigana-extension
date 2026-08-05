@@ -18,6 +18,10 @@ assert.equal(
   "dQw4w9WgXcQ"
 );
 assert.equal(
+  getYouTubeVideoId("https://m.youtube.com/watch?v=plHkXz9ghkA"),
+  "plHkXz9ghkA"
+);
+assert.equal(
   getYouTubeVideoId("https://youtu.be/dQw4w9WgXcQ?t=10"),
   "dQw4w9WgXcQ"
 );

@@ -12,6 +12,7 @@ import {
   computeRubySeparatePushPx,
   computeLineShrinkScale,
   planKeepOneLineFit,
+  shouldReleaseKeepOneLine,
   shouldKeepCaptionOneLine,
   wrapKeepOneLineHtml,
   ONE_LINE_CLASS
@@ -109,7 +110,7 @@ assert.equal(shouldKeepCaptionOneLine(2), false);
   assert.equal(plan.needsWiden, false);
 }
 
-// 極端に狭い枠でも折り返さず、下限縮小＋窓広げフラグ
+// 極端に狭い枠: 下限縮小でも足りない → 折り返し解除フラグ
 {
   const plan = planKeepOneLineFit({
     contentWidth: 800,
@@ -119,6 +120,7 @@ assert.equal(shouldKeepCaptionOneLine(2), false);
   });
   assert.equal(plan.scale, MIN_KEEP_ONE_LINE_SCALE);
   assert.equal(plan.needsWiden, true);
+  assert.equal(shouldReleaseKeepOneLine(plan), true);
   assert.ok(plan.fontSizePx >= 40 * MIN_KEEP_ONE_LINE_SCALE - 0.01);
 }
 
@@ -132,6 +134,7 @@ assert.equal(shouldKeepCaptionOneLine(2), false);
   assert.equal(plan.scale, 1);
   assert.equal(plan.fontSizePx, 28);
   assert.equal(plan.needsWiden, false);
+  assert.equal(shouldReleaseKeepOneLine(plan), false);
 }
 
 console.log("Ruby layout tests passed.");

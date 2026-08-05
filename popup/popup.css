@@ -82,6 +82,61 @@ header p {
   color: #6b7280;
 }
 
+.hint.warn {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+}
+
+.panel.onboarding {
+  margin-top: 12px;
+}
+
+.choice {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.choice:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.choice-primary {
+  border-color: #fecaca;
+  background: #fff7f7;
+}
+
+.choice-primary:hover {
+  background: #fef2f2;
+  border-color: #f87171;
+}
+
+.choice strong {
+  font-size: 13px;
+  color: #111827;
+}
+
+.choice span {
+  font-size: 11px;
+  line-height: 1.45;
+  color: #6b7280;
+}
+
 .panel {
   margin-top: 12px;
   padding: 12px 14px;

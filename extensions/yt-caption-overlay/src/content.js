@@ -4,20 +4,42 @@
  */
 
 import { findActiveCue } from "./parse-cues.js";
-import { ensureOverlayRoot, renderOverlay, removeOverlay } from "./overlay.js";
+import {
+  ensureOverlayRoot,
+  positionOverlay,
+  renderOverlay,
+  removeOverlay,
+  setHideNative
+} from "./overlay.js";
 
 const STORAGE_KEY = "ytcoState";
 
-/** @type {{ enabled: boolean, cues: any[], fileName: string, fontSize: number }} */
-let state = {
+const DEFAULTS = {
   enabled: true,
   cues: [],
   fileName: "",
-  fontSize: 28
+  fontSize: 28,
+  hideNative: true
 };
+
+/** @type {{ enabled: boolean, cues: any[], fileName: string, fontSize: number, hideNative: boolean }} */
+let state = { ...DEFAULTS };
 
 let raf = 0;
 let boundVideo = null;
+
+/**
+ * @param {any} saved
+ */
+function normalizeState(saved) {
+  return {
+    enabled: saved?.enabled !== false,
+    cues: Array.isArray(saved?.cues) ? saved.cues : [],
+    fileName: String(saved?.fileName || ""),
+    fontSize: Number(saved?.fontSize) || 28,
+    hideNative: saved?.hideNative !== false
+  };
+}
 
 function getPlayer() {
   return (
@@ -47,18 +69,29 @@ function tick() {
   }
 
   const root = ensureOverlayRoot(player);
-  if (!state.enabled || !state.cues.length) {
+  const active = state.enabled && state.cues.length > 0;
+
+  // ネイティブ字幕を隠すのは overlay が実際に出るときだけ（可逆）
+  setHideNative(player, active && state.hideNative);
+
+  if (!active) {
     renderOverlay(root, { enabled: false });
     schedule();
     return;
   }
 
+  positionOverlay(player, root, { hideNative: state.hideNative });
+
   const cue = findActiveCue(state.cues, video.currentTime * 1000);
-  renderOverlay(root, {
-    enabled: true,
-    html: cue?.html || "",
-    fontSize: state.fontSize
-  });
+  renderOverlay(
+    root,
+    {
+      enabled: true,
+      html: cue?.html || "",
+      fontSize: state.fontSize
+    },
+    player
+  );
   schedule();
 }
 
@@ -72,12 +105,7 @@ async function loadState() {
     const data = await chrome.storage.local.get(STORAGE_KEY);
     const saved = data?.[STORAGE_KEY];
     if (saved && typeof saved === "object") {
-      state = {
-        enabled: saved.enabled !== false,
-        cues: Array.isArray(saved.cues) ? saved.cues : [],
-        fileName: String(saved.fileName || ""),
-        fontSize: Number(saved.fontSize) || 28
-      };
+      state = normalizeState(saved);
     }
   } catch {
     /* ignore */
@@ -89,17 +117,12 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "local" || !changes[STORAGE_KEY]) return;
   const saved = changes[STORAGE_KEY].newValue;
   if (!saved) {
-    state = { enabled: true, cues: [], fileName: "", fontSize: 28 };
+    state = { ...DEFAULTS };
     const player = getPlayer();
     if (player) removeOverlay(player);
     return;
   }
-  state = {
-    enabled: saved.enabled !== false,
-    cues: Array.isArray(saved.cues) ? saved.cues : [],
-    fileName: String(saved.fileName || ""),
-    fontSize: Number(saved.fontSize) || 28
-  };
+  state = normalizeState(saved);
   schedule();
 });
 

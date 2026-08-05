@@ -29,7 +29,9 @@
 - [`docs/OPEN-SOURCE-LICENSES.md`](OPEN-SOURCE-LICENSES.md)
 - [`licenses/licenses.html`](../licenses/licenses.html) — 拡張内表示
 
-主な同梱物: kuromoji / IPADIC、NEologd フレーズ抽出、japanese-personal-name-dataset（姓）、Sudachi、BudouX、CMUdict（英→カタカナ事前変換）など。
+主な同梱物: kuromoji / IPADIC、NEologd フレーズ抽出、japanese-personal-name-dataset（姓）、joyokanji 由来の旧字・異体字照合マップ、Sudachi、BudouX、CMUdict（英→カタカナ事前変換）など。
+
+人名・異体字の運用方針: [`docs/PROPER-NOUN-READINGS.md`](PROPER-NOUN-READINGS.md)。
 
 **使わないデータ（意図的）:** JMdict、Wiktionary 等の ShareAlike 系を英語カタカナ辞書に使わない（[`docs/ENGLISH-KATAKANA.md`](ENGLISH-KATAKANA.md)）。
 

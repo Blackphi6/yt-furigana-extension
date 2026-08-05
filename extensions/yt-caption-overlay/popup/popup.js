@@ -4,6 +4,7 @@ const STORAGE_KEY = "ytcoState";
 
 const els = {
   enabled: document.querySelector("#enabled"),
+  hideNative: document.querySelector("#hide-native"),
   file: document.querySelector("#file"),
   fontSize: document.querySelector("#font-size"),
   fontSizeLabel: document.querySelector("#font-size-label"),
@@ -30,6 +31,7 @@ async function refreshUi() {
   const saved = await readState();
   const cueCount = Array.isArray(saved?.cues) ? saved.cues.length : 0;
   els.enabled.checked = saved?.enabled !== false;
+  els.hideNative.checked = saved?.hideNative !== false;
   els.fontSize.value = String(saved?.fontSize || 28);
   els.fontSizeLabel.textContent = els.fontSize.value;
   els.clear.disabled = cueCount === 0;
@@ -57,6 +59,23 @@ els.enabled?.addEventListener("change", async () => {
   setStatus(
     els.enabled.checked ? "表示オン" : "表示オフ",
     els.enabled.checked ? "ok" : ""
+  );
+});
+
+els.hideNative?.addEventListener("change", async () => {
+  const saved = (await readState()) || {
+    cues: [],
+    fileName: "",
+    fontSize: 28,
+    enabled: true
+  };
+  await writeState({
+    ...saved,
+    hideNative: els.hideNative.checked
+  });
+  setStatus(
+    els.hideNative.checked ? "ネイティブ字幕を隠します" : "ネイティブ字幕も表示します",
+    "ok"
   );
 });
 
@@ -89,6 +108,7 @@ els.file?.addEventListener("change", async () => {
     }
     await writeState({
       enabled: els.enabled.checked,
+      hideNative: els.hideNative.checked,
       fontSize: Number(els.fontSize.value) || 28,
       fileName: file.name,
       format,

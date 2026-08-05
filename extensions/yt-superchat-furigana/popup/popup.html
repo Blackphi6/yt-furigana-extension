@@ -3,25 +3,30 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>YT Super Chat Furigana</title>
+    <title>YT Live Chat Furigana</title>
     <link rel="stylesheet" href="./popup.css" />
   </head>
   <body>
     <main>
       <header>
-        <h1>Super Chat Furigana</h1>
-        <p class="sub">ライブのスパチャ本文にふりがな</p>
+        <h1>Live Chat Furigana</h1>
+        <p class="sub">ライブの Super Chat / 通常チャットにふりがな</p>
       </header>
 
-      <label class="toggle" for="enabled">
-        <span>ふりがなを表示</span>
-        <input type="checkbox" id="enabled" checked />
+      <label class="toggle" for="superChatEnabled">
+        <span>Super Chat / ティッカー</span>
+        <input type="checkbox" id="superChatEnabled" checked />
+      </label>
+
+      <label class="toggle" for="chatEnabled">
+        <span>通常チャット</span>
+        <input type="checkbox" id="chatEnabled" checked />
       </label>
 
       <p class="status" id="status" role="status"></p>
 
       <p class="note">
-        Super Chat と上部ティッカーのみ対象です。通常チャットには付けません。
+        Super Chat と通常チャットは個別にオン／オフできます（動画ページ下のコメント欄は対象外）。
         読みが付かない漢字はクリックして手動登録できます（端末内に保存）。
         YouTube timedtext は使いません。辞書は端末内の kuromoji です。
       </p>

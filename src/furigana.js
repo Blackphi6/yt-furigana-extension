@@ -257,6 +257,11 @@ import {
   applyInlineParenReadings
 } from "./inline-paren-reading.js";
 import { stripAnnotationMarkers } from "./annotation-markers.js";
+import {
+  normalizeKanjiForLookup,
+  remapTokenSurfacesToOriginal,
+  stripVariationSelectors
+} from "./kanji-normalize.js";
 
 function escapeAttr(value) {
   return escapeHtml(value);
@@ -304,24 +309,37 @@ export function wrapFuriganaWord(surface, reading, rubyHtml, options = {}) {
  * 文脈を結合前に掛けると「何度も何も…」で「何」が全部「なに」になり「なにど」になる。
  * 原文を「何」などで先に切り出すと「何故か」が分断されるのでやらない。
  * 「音（ね）」はカッコを外して読みとして採用（字幕側の明示読みを最優先）。
+ *
+ * 旧字・人名異体字（髙・𠮷 等）は照合キーだけ常用形へ寄せて解析し、
+ * 表示表層は原文のまま戻す（NFKC では 髙→高 にならないため）。
  */
 export function buildFuriganaHtml(text, tokenize) {
-  const withoutNotes = stripAnnotationMarkers(text);
+  // 不可視セレクタを先に落とし、インライン読みの位置と照合長を一致させる
+  const withoutNotes = stripVariationSelectors(stripAnnotationMarkers(text));
   const { text: prepared, spans: inlineSpans } = extractInlineParenReadings(
     withoutNotes
   );
+  const lookupText = normalizeKanjiForLookup(prepared);
+  const useLookup = lookupText !== prepared;
+
+  const analyzed = applyEnglishKatakanaReadings(
+    mergeTokensForRuby(tokenize(useLookup ? lookupText : prepared), {
+      extraSurfaces: MANUAL_PHRASE_READINGS.keys(),
+      phraseTrie: getCombinedPhraseTrie()
+    })
+  );
+  const contextual = applyContextualReadings(
+    analyzed,
+    useLookup ? lookupText : prepared
+  );
+  // 常用形キーでユーザー辞書（高橋）を当てたあと、表層を原文（髙橋）へ戻す
+  const withManualOnLookup = applyManualPhraseReadings(contextual);
+  const remapped = useLookup
+    ? remapTokenSurfacesToOriginal(withManualOnLookup, prepared, lookupText)
+    : withManualOnLookup;
+  // 原文キーのユーザー辞書（髙橋）も拾う
   const tokens = applyInlineParenReadings(
-    applyManualPhraseReadings(
-      applyContextualReadings(
-        applyEnglishKatakanaReadings(
-          mergeTokensForRuby(tokenize(prepared), {
-            extraSurfaces: MANUAL_PHRASE_READINGS.keys(),
-            phraseTrie: getCombinedPhraseTrie()
-          })
-        ),
-        prepared
-      )
-    ),
+    useLookup ? applyManualPhraseReadings(remapped) : remapped,
     inlineSpans
   );
 

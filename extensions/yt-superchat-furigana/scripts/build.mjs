@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * YT Super Chat Furigana のバンドル。
+ * YT Live Chat Furigana のバンドル。
  * 本体 src/furigana.js + kuromoji を同梱し、kuromoji 辞書だけ dict/ にコピーする。
  */
 import * as esbuild from "esbuild";
@@ -97,5 +97,5 @@ await Promise.all([
 ]);
 
 console.log(
-  `YT Super Chat Furigana build complete → extensions/yt-superchat-furigana/dist (${dictFiles.length} dict files)`
+  `YT Live Chat Furigana build complete → extensions/yt-superchat-furigana/dist (${dictFiles.length} dict files)`
 );

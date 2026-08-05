@@ -45,12 +45,22 @@ YouTube / TVer の日本語字幕にひらがなルビ（非公式）。端末�
 |------|------|
 | storage | 設定・学習辞書の保存 |
 | host: youtube.com / tver.jp | 字幕 DOM へのルビ付与 |
-| host: yt-furigana-readings.onrender.com | Free 共有読みパック受信（オフ可）／任意の匿名訂正 |
+| host: yt-furigana-readings.onrender.com | Free 共有読みパック受信（オフ可）／任意の匿名訂正／オプトイン時のみ公開読み API による字幕テキスト送信 |
 | optional: localhost | ローカル Ollama / 読みエンジン（許可ダイアログ） |
 | optional: http(s)://*/* | ユーザー指定の同期サーバー（有料） |
 | declarativeNetRequest (+ WithHostAccess) | ローカル Ollama のオリジン緩和（許可後） |
 
 審査メモ: 通常再生では YouTube timedtext を取得しません。画面上の字幕 DOM のみです。
+唯一の例外は公開サイトの「字幕書き出し」ページで、ユーザーが URL を貼って取得ボタンを押したときだけ、
+`externally_connectable`（公開サイトの origin のみ）経由で 1 本分の字幕を取得します。自動実行・先読みはしません。
+
+Privacy practices メモ:
+- 既定エンジンは端末内（字幕本文をリモート送信しない）
+- 「公開読み API」は初回の「精度優先」またはポップアップで明示選択したときだけ、表示中の字幕テキストと個人読み辞書を公開エンジンへ送る（オプトイン）
+- 共有読みパックは表層→読みの受信のみ（オフ可）
+
+商標について: YouTube、TVer、Google Chrome 等の名称・ロゴは各社の商標です。本拡張は非公式であり、
+各社とは関係ありません。「YT Furigana」の「YT」は製品名の略称であり、YouTube の商標ではありません。
 
 ## URL
 

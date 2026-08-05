@@ -63,15 +63,20 @@
 /*
  * TVer: 本文はネイティブ位置のまま、ルビだけ上へ絶対配置する。
  * padding-top 方式だと帯が高さ方向に伸び、文字が下がって見える。
+ * 拡張が加工した字幕にだけ適用（既存ルビを壊さない）。
  */
-.vjs-text-track-display .vjs-text-track-cue-line ruby,
-.vjs-text-track-display .vjs-text-track-cue-line > span ruby {
+.vjs-text-track-display .vjs-text-track-cue-line[data-yt-furigana-styled] ruby,
+.vjs-text-track-display .vjs-text-track-cue-line[data-yt-furigana-done] ruby,
+.vjs-text-track-display .vjs-text-track-cue-line > span[data-yt-furigana-styled] ruby,
+.vjs-text-track-display .vjs-text-track-cue-line > span[data-yt-furigana-done] ruby {
   padding-top: 0 !important;
   margin-top: 0 !important;
 }
 
-.vjs-text-track-display .vjs-text-track-cue-line rt,
-.vjs-text-track-display .vjs-text-track-cue-line > span rt {
+.vjs-text-track-display .vjs-text-track-cue-line[data-yt-furigana-styled] rt,
+.vjs-text-track-display .vjs-text-track-cue-line[data-yt-furigana-done] rt,
+.vjs-text-track-display .vjs-text-track-cue-line > span[data-yt-furigana-styled] rt,
+.vjs-text-track-display .vjs-text-track-cue-line > span[data-yt-furigana-done] rt {
   top: auto !important;
   bottom: calc(100% + 0.08em) !important;
   transform: translateX(-50%) !important;
@@ -81,8 +86,8 @@
 
 .vjs-text-track-display .vjs-text-track-cue-line:has([data-yt-furigana-styled]),
 .vjs-text-track-display .vjs-text-track-cue-line > span[data-yt-furigana-styled],
-.vjs-text-track-display .vjs-text-track-cue-line:has(ruby),
-.vjs-text-track-display .vjs-text-track-cue-line > span:has(ruby) {
+.vjs-text-track-display .vjs-text-track-cue-line[data-yt-furigana-done]:has(ruby),
+.vjs-text-track-display .vjs-text-track-cue-line > span[data-yt-furigana-done]:has(ruby) {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
   padding-top: 0 !important;
@@ -114,10 +119,18 @@
   cursor: pointer;
 }
 
-.ytp-caption-segment ruby,
-.caption-visual-line ruby,
-.vjs-text-track-cue-line > span ruby,
-ytd-transcript-segment-renderer .segment-text ruby {
+/*
+ * ルビレイアウトは「拡張が加工した字幕」にだけ効かせる。
+ * あらかじめ SRV3 等でふりがなが載っている字幕のネイティブ <ruby> を壊さないため。
+ */
+.ytp-caption-segment[data-yt-furigana-styled] ruby,
+.ytp-caption-segment[data-yt-furigana-done] ruby,
+.caption-visual-line[data-yt-furigana-styled] ruby,
+.caption-visual-line[data-yt-furigana-done] ruby,
+.vjs-text-track-cue-line > span[data-yt-furigana-styled] ruby,
+.vjs-text-track-cue-line > span[data-yt-furigana-done] ruby,
+ytd-transcript-segment-renderer .segment-text[data-yt-furigana-styled] ruby,
+ytd-transcript-segment-renderer .segment-text[data-yt-furigana-done] ruby {
   /* flex 縦積み禁止: 読み幅で単語が広がり 1 行が折れる */
   display: inline-block !important;
   position: relative !important;
@@ -129,18 +142,26 @@ ytd-transcript-segment-renderer .segment-text ruby {
   flex-direction: unset !important;
 }
 
-.ytp-caption-segment ruby > .yt-furigana-rb,
-.caption-visual-line ruby > .yt-furigana-rb,
-.vjs-text-track-cue-line > span ruby > .yt-furigana-rb,
-ytd-transcript-segment-renderer .segment-text ruby > .yt-furigana-rb {
+.ytp-caption-segment[data-yt-furigana-styled] ruby > .yt-furigana-rb,
+.ytp-caption-segment[data-yt-furigana-done] ruby > .yt-furigana-rb,
+.caption-visual-line[data-yt-furigana-styled] ruby > .yt-furigana-rb,
+.caption-visual-line[data-yt-furigana-done] ruby > .yt-furigana-rb,
+.vjs-text-track-cue-line > span[data-yt-furigana-styled] ruby > .yt-furigana-rb,
+.vjs-text-track-cue-line > span[data-yt-furigana-done] ruby > .yt-furigana-rb,
+ytd-transcript-segment-renderer .segment-text[data-yt-furigana-styled] ruby > .yt-furigana-rb,
+ytd-transcript-segment-renderer .segment-text[data-yt-furigana-done] ruby > .yt-furigana-rb {
   display: inline !important;
   line-height: 1 !important;
 }
 
-.ytp-caption-segment rt,
-.caption-visual-line rt,
-.vjs-text-track-cue-line > span rt,
-ytd-transcript-segment-renderer .segment-text rt {
+.ytp-caption-segment[data-yt-furigana-styled] rt,
+.ytp-caption-segment[data-yt-furigana-done] rt,
+.caption-visual-line[data-yt-furigana-styled] rt,
+.caption-visual-line[data-yt-furigana-done] rt,
+.vjs-text-track-cue-line > span[data-yt-furigana-styled] rt,
+.vjs-text-track-cue-line > span[data-yt-furigana-done] rt,
+ytd-transcript-segment-renderer .segment-text[data-yt-furigana-styled] rt,
+ytd-transcript-segment-renderer .segment-text[data-yt-furigana-done] rt {
   /* absolute なら幅は本文だけ。読みは左右にはみ出してよい */
   position: absolute !important;
   display: block !important;
@@ -461,8 +482,8 @@ ytd-transcript-segment-renderer .segment-text rt {
     1px 0 1px rgba(0, 0, 0, 0.7),
     -1px 0 1px rgba(0, 0, 0, 0.7) !important;
   background: transparent !important;
-  pointer-events: auto !important;
-  cursor: pointer !important;
+  /* クリックは下の漢字へ通し、座標ヒットで語を解決する（読みだけが先に掴まれるのを防ぐ） */
+  pointer-events: none !important;
 }
 
 .yt-furigana-float-rt:hover,
@@ -474,4 +495,106 @@ ytd-transcript-segment-renderer .segment-text rt {
 
 ytd-transcript-segment-renderer .segment-text ruby {
   ruby-align: center;
+}
+
+/* 再生バー: ふりがなトグル（Shift+C） */
+.yt-furigana-player-toggle {
+  position: relative !important;
+  display: inline-block !important;
+  width: 48px !important;
+  height: 100% !important;
+  min-width: 36px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #fff !important;
+  cursor: pointer !important;
+  opacity: 0.9;
+  vertical-align: top;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+  float: none;
+  line-height: 0 !important;
+  font-size: 0 !important;
+  text-align: center !important;
+}
+
+.ytp-right-controls .yt-furigana-player-toggle.ytp-button {
+  /* YouTube 右コントロールと同じく横並び */
+  float: left !important;
+  width: 48px !important;
+  height: 100% !important;
+}
+
+.yt-furigana-player-toggle:hover,
+.yt-furigana-player-toggle:focus-visible {
+  opacity: 1;
+  outline: none;
+}
+
+.yt-furigana-player-toggle.is-off {
+  opacity: 0.45;
+}
+
+.yt-furigana-player-toggle.is-on {
+  opacity: 0.95;
+}
+
+/* YouTube の .ytp-button 子要素配置と衝突しないよう中央固定 */
+.yt-furigana-player-toggle__icon {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: translate(-50%, -50%) !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  pointer-events: none !important;
+}
+
+.yt-furigana-player-toggle__label {
+  display: block !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP",
+    "Yu Gothic", Meiryo, sans-serif !important;
+  letter-spacing: 0.04em !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  color: inherit !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+}
+
+.yt-furigana-player-toggle__label.is-slashed {
+  text-decoration: line-through !important;
+  text-decoration-thickness: 1.5px !important;
+  opacity: 0.85;
+}
+
+/* Video.js / TVer — 円形コントロールに合わせる */
+.vjs-control-bar .yt-furigana-player-toggle,
+.video-js .yt-furigana-player-toggle.vjs-control {
+  width: 3em !important;
+  height: 100% !important;
+  flex: none !important;
+  font-size: inherit !important;
+  float: none !important;
+}
+
+/* コントロールバーが見つからないときの控えめな固定ボタン */
+.yt-furigana-player-toggle--floating {
+  position: absolute !important;
+  right: 12px !important;
+  bottom: 56px !important;
+  z-index: 60 !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 4px !important;
+  background: rgba(0, 0, 0, 0.55) !important;
+  float: none !important;
 }

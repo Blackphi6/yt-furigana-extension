@@ -99,6 +99,8 @@ async function phaseSynth(args) {
 async function phaseRetrainLite(args) {
   await run("node", ["scripts/learning/merge-synth-corpus.mjs"]);
   await run("npm", ["run", "learn"]);
+  // キュレート同形異音 + コーパス収穫をゲート付きで昇格
+  await run("npm", ["run", "learn:promote-cues"]);
   const benchArgs = ["scripts/learning/evaluate-three-benches.mjs"];
   if (args.writeBaseline) benchArgs.push("--write-baseline");
   await run("node", benchArgs);

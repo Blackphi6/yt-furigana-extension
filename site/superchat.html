@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>YT Super Chat Furigana — スパチャにふりがな</title>
+    <title>YT Live Chat Furigana — ライブチャットにふりがな</title>
     <meta
       name="description"
-      content="YouTube ライブの Super Chat 本文にひらがなルビを付ける非公式 Chrome 拡張。端末内処理・字幕 API 不使用。"
+      content="YouTube ライブの Super Chat と通常チャットにひらがなルビを付ける非公式 Chrome 拡張。個別オン／オフ。端末内処理・字幕 API 不使用。"
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -30,18 +30,19 @@
 
       <section class="section prose" style="border-top: none; padding-top: 2.5rem">
         <p class="eyebrow" style="opacity: 0.7; margin: 0 0 0.5rem">関連ツール · 別拡張</p>
-        <h1>YT Super Chat Furigana</h1>
+        <h1>YT Live Chat Furigana</h1>
         <p>
-          YouTube ライブ配信の <strong>Super Chat</strong> 本文（と上部ティッカー）に、
-          ひらがなのふりがなを付ける非公式 Chrome 拡張です。
+          YouTube ライブ配信の <strong>Super Chat</strong>（と上部ティッカー）および
+          <strong>通常ライブチャット</strong>に、ひらがなのふりがなを付ける非公式 Chrome 拡張です。
           字幕向けの <a href="./install.html">YT Furigana</a> とは<strong>別インストール</strong>です。
         </p>
 
         <h2>特徴</h2>
         <ul>
-          <li>Super Chat / ティッカーのみ（通常チャットには付けない）</li>
+          <li>Super Chat / ティッカーと通常チャット（個別にオン／オフ）</li>
           <li>端末内の辞書（kuromoji）だけで処理。チャット本文をサーバーへ送らない</li>
           <li>YouTube timedtext / 字幕 API は使わない</li>
+          <li>動画ページ下のコメント欄は対象外</li>
         </ul>
 
         <h2>インストール</h2>
@@ -71,8 +72,8 @@
         <h2>使い方</h2>
         <ol>
           <li>YouTube ライブ（またはアーカイブ）でチャットを表示</li>
-          <li>拡張アイコンで「ふりがなを表示」がオンであること</li>
-          <li>Super Chat 本文にルビが付く</li>
+          <li>拡張アイコンで「Super Chat / ティッカー」「通常チャット」を必要に応じてオン</li>
+          <li>対象のメッセージ本文にルビが付く</li>
           <li>読みが付かない漢字はクリックして手動登録（端末内に保存）</li>
         </ol>
 
