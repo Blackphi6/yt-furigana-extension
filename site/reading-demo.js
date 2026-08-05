@@ -1,6 +1,14 @@
 import { collectQuizItems, uniqueCandidates } from "./demo-quiz.js?v=20260723g";
 import { stripAnnotationMarkers } from "./annotation-markers.js?v=20260723g";
-import { buildRuby } from "./build-ruby.js?v=20260725a";
+import {
+  buildRuby,
+  isNumberReadingTipSurface,
+  isRegisterableSurface,
+} from "./build-ruby.js?v=20260805a";
+import {
+  overlayNumberTokens,
+  rebuildFullReading,
+} from "./number-overlay.js?v=20260805a";
 
 const DEFAULT_API =
   (window.YT_FURIGANA_SITE && window.YT_FURIGANA_SITE.readingApiUrl) ||
@@ -235,6 +243,7 @@ function sourceLabel(source) {
     unset: "未登録",
     base_engine: "形態素",
     creative_ruby: "創作",
+    number_rule: "数字規則",
   };
   return map[source] || source || "—";
 }
@@ -251,15 +260,25 @@ function buildRubyHtml(text, tokens) {
     html += escapeHtml(text.slice(cursor, start));
     const surface = text.slice(start, end);
     const reading = t.reading || "";
-    const hasKanji = /[\u3400-\u9fff\uF900-\uFAFF]/.test(surface);
-    // 読みなしでもクリック登録できるようにする（拡張の --unset と同じ）
-    const editable = hasKanji;
-    // 拡張本体と同じ送り仮名分割（語全体1ルビだと位置がおかしく見える）
-    const rubyInner = reading ? buildRuby(surface, reading) : escapeHtml(surface);
+    // 漢字・欧文・数字を拡張と同じくクリック編集可能にする
+    const editable = isRegisterableSurface(surface);
+    const tip = Boolean(reading) && isNumberReadingTipSurface(surface);
+    // 数字系はルビではなくチップ（横幅対策）。未読みは表層のみ。
+    const rubyInner = tip
+      ? escapeHtml(surface)
+      : reading
+        ? buildRuby(surface, reading)
+        : escapeHtml(surface);
     if (editable) {
       const unsetClass = reading ? "" : " demo-ruby-word--unset";
-      const title = reading ? "クリックして読みを変更" : "クリックで読みを登録";
-      html += `<span class="demo-ruby-word${unsetClass}" data-hit data-token-index="${i}" data-surface="${escapeHtml(surface)}" data-reading="${escapeHtml(reading)}" data-source="${escapeHtml(t.source || "")}" role="button" tabindex="0" title="${title}">${rubyInner}</span>`;
+      const tipClass = tip ? " demo-ruby-word--tip" : "";
+      const title = !reading
+        ? "クリックで読みを登録"
+        : tip
+          ? reading
+          : "クリックして読みを変更";
+      const tipAttr = tip ? ` data-tip="${escapeHtml(reading)}"` : "";
+      html += `<span class="demo-ruby-word${unsetClass}${tipClass}" data-hit data-token-index="${i}" data-surface="${escapeHtml(surface)}" data-reading="${escapeHtml(reading)}" data-source="${escapeHtml(t.source || "")}"${tipAttr} role="button" tabindex="0" title="${escapeHtml(title)}">${rubyInner}</span>`;
     } else {
       html += `<span data-hit data-source="${escapeHtml(t.source || "")}">${rubyInner}</span>`;
     }
@@ -516,11 +535,18 @@ function renderResult(text, data) {
   // API は注釈マーカー除去後の span を返す。元テキストに重ねるとルビが右へズレる。
   const displayText = stripAnnotationMarkers(text);
   tokens = overlayPersonalNameTokens(displayText, tokens);
+  // 公開 API が未デプロイでも数字を編集できるようクライアント側で載せる
+  tokens = overlayNumberTokens(displayText, tokens);
   const strippedMarkers = displayText !== String(text ?? "");
   lastResult = { text: displayText, tokens };
   closeDemoPicker();
   rubyOut.innerHTML = buildRubyHtml(displayText, tokens);
-  const readingLine = data.reading ? `かな通し: ${data.reading}` : "";
+  const rebuilt = rebuildFullReading(displayText, tokens);
+  const readingLine = rebuilt
+    ? `かな通し: ${rebuilt}`
+    : data.reading
+      ? `かな通し: ${data.reading}`
+      : "";
   const stripNote = strippedMarkers
     ? "（注釈番号（①）などは表示から外しています — ルビ位置ずれ防止）"
     : "";
@@ -531,7 +557,7 @@ function renderResult(text, data) {
     .map((t, i) => {
       const surface = t.surface || displayText.slice(t.span[0], t.span[1]);
       const reading = t.reading || "";
-      const editable = /[\u3400-\u9fff\uF900-\uFAFF]/.test(surface);
+      const editable = isRegisterableSurface(surface);
       const cands = uniqueCandidates(t, reading)
         .map((c) => {
           const current = c === reading;
@@ -788,7 +814,7 @@ async function runProposeOnly() {
   showProposeStatus("");
   const entries = collectUserDict();
   if (!entries.length) {
-    showProposeStatus("固定リストに「漢字 かな」を1行以上書いてください。", {
+    showProposeStatus("固定リストに「語 かな」を1行以上書いてください。", {
       ok: false,
     });
     return;

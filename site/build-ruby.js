@@ -38,7 +38,22 @@ export function isUsefulLatinReading(reading) {
 }
 
 export function isRegisterableSurface(text) {
-  return hasKanji(text) || isLatinWord(text);
+  if (hasKanji(text) || isLatinWord(text)) return true;
+  const s = String(text || "").normalize("NFKC").trim();
+  if (!s) return false;
+  // 数字のみ・小数・カンマ区切り（デモでクリック編集できるようにする）
+  if (/^[0-9]+([,，][0-9]+)*(\.[0-9]+)?$/.test(s)) return true;
+  // 数字＋助数詞／％
+  if (
+    /^[0-9]+([,，][0-9]+)*(\.[0-9]+)?[%％階回人目名歳才年月日時分秒円枚冊本個点倍]$/.test(
+      s
+    )
+  ) {
+    return true;
+  }
+  // 3.2.1 カウントダウン
+  if (/^[0-9]+(\s*\.\s*[0-9]+){2,}$/.test(s)) return true;
+  return false;
 }
 
 /**

@@ -15,7 +15,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
-    <link rel="stylesheet" href="./reading-demo.css?v=20260801a" />
+    <link rel="stylesheet" href="./reading-demo.css?v=20260805a" />
     <link rel="stylesheet" href="./home.css" />
     <script src="./config.js"></script>
   </head>
@@ -29,7 +29,7 @@
           <a href="#how">パイプライン</a>
           <a href="#api">エンドポイント</a>
           <a href="./export.html">字幕書き出し</a>
-          <a href="./superchat.html">スパチャ拡張</a>
+          <a href="./superchat.html">ライブチャット拡張</a>
           <a href="./learning-report.html">学習ログ</a>
           <a href="./install.html">拡張</a>
           <a href="https://github.com/Blackphi6/yt-furigana-extension">GitHub</a>
@@ -149,7 +149,7 @@
             <summary>この文だけ読みを固定（任意）</summary>
             <p class="hint">
               結果の漢字をクリックしても直せます（拡張と同じ感覚）。下に
-              <strong>漢字（空白）かな</strong> を1行ずつ書いても同じです。既定ではこのリクエスト以外に残りません。
+              <strong>語（空白）かな</strong> を1行ずつ書いても同じです（数字も可）。既定ではこのリクエスト以外に残りません。
             </p>
             <label class="field-label" for="reading-pins">固定リスト</label>
             <textarea
@@ -218,7 +218,7 @@
             <div class="demo-quiz" id="demo-quiz" hidden>
               <h4 class="demo-quiz-title">あいまいな読み（3択）</h4>
               <p class="hint demo-quiz-lead">
-                スコアが低い／候補が割れている漢字だけ聞きます。答えは辞書の候補の中から最大3つです。
+                スコアが低い漢字や、数字（候補が複数あるとき）を聞きます。答えは候補の中から最大3つです。
               </p>
               <div class="demo-quiz-list" id="demo-quiz-list"></div>
             </div>
@@ -352,6 +352,6 @@ curl -s https://yt-furigana-readings.onrender.com/v1/readings \
       </footer>
     </div>
     <script src="./home-metrics.js?v=20260718d" type="module"></script>
-    <script src="./reading-demo.js?v=20260801a" type="module"></script>
+    <script src="./reading-demo.js?v=20260805a" type="module"></script>
   </body>
 </html>

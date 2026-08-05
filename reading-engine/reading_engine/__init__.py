@@ -26,6 +26,7 @@ from reading_engine.personal_names import (
     collect_phrase_spans,
     load_personal_name_phrases,
 )
+from reading_engine.number_readings import merge_number_tokens
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CREATIVE_SEED = REPO_ROOT / "data" / "creative-ruby" / "seed.jsonl"
@@ -443,17 +444,21 @@ class ReadingEngine:
                 }
             )
         tokens.sort(key=lambda t: t["span"][0])
+        # 数字ラン（21 など）をギャップに載せる。助数詞漢字は別トークンのまま。
+        tokens = merge_number_tokens(text, tokens)
 
         rebuilt = []
         pos = 0
         for t in tokens:
             if t["span"][0] > pos:
                 rebuilt.append(text[pos : t["span"][0]])
-            rebuilt.append(t["reading"])
+            rebuilt.append(t["reading"] or text[t["span"][0] : t["span"][1]])
             pos = t["span"][1]
         if pos < len(text):
             rebuilt.append(text[pos:])
-        full_reading = normalize_reading("".join(rebuilt))
+        # 数字はかなに展開済み。残る英数字以外をひらがな化する。
+        full_reading = "".join(rebuilt).translate(_KATA_TO_HIRA)
+        full_reading = unicodedata.normalize("NFKC", full_reading)
 
         return {"reading": full_reading, "tokens": tokens}
 

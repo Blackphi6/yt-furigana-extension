@@ -11,6 +11,14 @@ import heteronymCandidates from "../data/generated/heteronym-candidates.json" wi
   type: "json"
 };
 import { getNeologdReading } from "./neologd-phrases.js";
+import {
+  readingForNumberSurface,
+  readingForNumberUnitSurface,
+  parseNumberSurface,
+  parseNumberUnitSurface,
+  parseDotSeparatedDigits,
+  readingForDotSeparatedDigits
+} from "./number-unit-reading.js";
 
 const MAX_CANDIDATES = 8;
 
@@ -134,6 +142,39 @@ export function collectReadingCandidates(
   if (Array.isArray(extra)) {
     for (const reading of extra) {
       add(reading, "dict", "辞書", 4);
+    }
+  }
+
+  // 数字・数字＋単位の規則読みと逐語候補
+  const numberUnit = parseNumberUnitSurface(surface);
+  const numberOnly = parseNumberSurface(surface);
+  const dotParts = parseDotSeparatedDigits(surface);
+  if (numberUnit || numberOnly || dotParts) {
+    const primary =
+      (numberUnit && readingForNumberUnitSurface(surface)) ||
+      (dotParts && readingForDotSeparatedDigits(surface)) ||
+      (numberOnly && readingForNumberSurface(surface)) ||
+      "";
+    if (primary) add(primary, "number", "数詞", 6);
+    const digits = String(surface || "")
+      .normalize("NFKC")
+      .replace(/[^0-9]/g, "");
+    if (digits.length >= 1) {
+      const seqHira = [...digits]
+        .map((d) => ["ぜろ", "いち", "に", "さん", "よん", "ご", "ろく", "なな", "はち", "きゅう"][Number(d)] || "")
+        .join("");
+      if (seqHira && seqHira !== normalizeReading(primary)) {
+        add(seqHira, "number", "逐語", 3);
+      }
+      const seqKata = [...digits]
+        .map(
+          (d) =>
+            ["ゼロ", "イチ", "ニー", "サン", "ヨン", "ゴー", "ロク", "ナナ", "ハチ", "キュー"][
+              Number(d)
+            ] || ""
+        )
+        .join("");
+      if (seqKata) add(seqKata, "number", "逐語カナ", 2.5);
     }
   }
 

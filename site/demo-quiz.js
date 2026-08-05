@@ -13,6 +13,7 @@ export const QUIZ_MAX_CHOICES = 3;
 export const QUIZ_MAX_ITEMS = 5;
 
 const KANJI_RE = /[\u3400-\u9fff\uF900-\uFAFF]/;
+const DIGIT_RE = /[0-9０-９]/;
 
 /**
  * @param {unknown} value
@@ -63,7 +64,7 @@ export function pickQuizChoices(candidates, current, max = QUIZ_MAX_CHOICES) {
 
 /**
  * Whether this token should appear in the quiz.
- * Only low-confidence lattice splits (not trust/user pins).
+ * Kanji: low-confidence lattice splits. Numbers: always offer when 2+ readings.
  * @param {object} token
  * @param {object} [opts]
  * @returns {boolean}
@@ -71,13 +72,15 @@ export function pickQuizChoices(candidates, current, max = QUIZ_MAX_CHOICES) {
 export function isQuizToken(token, opts = {}) {
   const confMax = typeof opts.confidenceMax === "number" ? opts.confidenceMax : QUIZ_CONFIDENCE_MAX;
   const surface = String(token?.surface || "");
-  if (!KANJI_RE.test(surface)) return false;
+  const isNumber = DIGIT_RE.test(surface) && !KANJI_RE.test(surface);
+  if (!KANJI_RE.test(surface) && !isNumber) return false;
   const source = String(token?.source || "");
   if (source === "user_dict" || source === "trust_pattern") return false;
   const reading = normalizeReading(token?.reading);
   if (!reading) return false;
   const cands = uniqueCandidates(token, reading);
   if (cands.length < 2) return false;
+  if (isNumber) return true;
   const conf = typeof token?.confidence === "number" ? token.confidence : 0;
   return conf <= confMax;
 }
