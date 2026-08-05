@@ -8,6 +8,7 @@ import {
   readingForDigitRun,
   digitByDigitReading,
   rebuildFullReading,
+  readKaiStyleCounter,
 } from "../site/number-overlay.js";
 import { isRegisterableSurface, isNumberReadingTipSurface } from "../site/build-ruby.js";
 import { isQuizToken, collectQuizItems } from "../site/demo-quiz.js";
@@ -23,10 +24,9 @@ import { isQuizToken, collectQuizItems } from "../site/demo-quiz.js";
   const text = "21階にバーテンダーがいるよ";
   const nums = collectNumberTokens(text);
   assert.equal(nums.length, 1);
-  assert.equal(nums[0].surface, "21");
-  assert.equal(nums[0].reading, "にじゅういち");
-  assert.ok(nums[0].candidates.includes("にいち"));
-  assert.ok(nums[0].candidates.includes("ニーイチ"));
+  assert.equal(nums[0].surface, "21階");
+  assert.equal(nums[0].reading, "にじゅういっかい");
+  assert.ok(nums[0].candidates.includes("にじゅういちかい"));
 }
 
 {
@@ -42,11 +42,10 @@ import { isQuizToken, collectQuizItems } from "../site/demo-quiz.js";
     },
   ];
   const merged = overlayNumberTokens(text, apiTokens);
-  assert.equal(merged.length, 2);
-  assert.equal(merged[0].surface, "21");
-  assert.equal(merged[1].surface, "階");
+  assert.equal(merged.length, 1, "階 token replaced by 21階");
+  assert.equal(merged[0].surface, "21階");
   const full = rebuildFullReading(text, merged);
-  assert.ok(full.startsWith("にじゅういちかい"), full);
+  assert.ok(full.startsWith("にじゅういっかい"), full);
   assert.ok(!full.startsWith("21"), full);
 }
 
@@ -78,6 +77,11 @@ import { isQuizToken, collectQuizItems } from "../site/demo-quiz.js";
     },
   ]);
   assert.ok(items.some((it) => it.surface === "21"), "quiz includes 21");
+}
+
+{
+  assert.equal(readKaiStyleCounter(21, "かい"), "にじゅういっかい");
+  assert.equal(readKaiStyleCounter(20, "かい"), "にじゅっかい");
 }
 
 console.log("test-number-overlay: ok");

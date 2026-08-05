@@ -46,6 +46,18 @@ assert.equal(readingForNumberUnitSurface("10分"), "じゅっぷん");
 assert.equal(readingForNumberUnitSurface("1分"), "いっぷん");
 assert.equal(readingForNumberUnitSurface("30分"), "さんじゅっぷん");
 
+assert.equal(readingForNumberUnitSurface("1階"), "いっかい");
+assert.equal(readingForNumberUnitSurface("6階"), "ろっかい");
+assert.equal(readingForNumberUnitSurface("8階"), "はっかい");
+assert.equal(readingForNumberUnitSurface("10階"), "じゅっかい");
+assert.equal(readingForNumberUnitSurface("11階"), "じゅういっかい");
+assert.equal(readingForNumberUnitSurface("16階"), "じゅうろっかい");
+assert.equal(readingForNumberUnitSurface("18階"), "じゅうはっかい");
+assert.equal(readingForNumberUnitSurface("20階"), "にじゅっかい");
+assert.equal(readingForNumberUnitSurface("21階"), "にじゅういっかい");
+assert.equal(readingForNumberUnitSurface("21回"), "にじゅういっかい");
+assert.equal(readingForNumberUnitSurface("101階"), "ひゃくいっかい");
+
 assert.equal(readNumberWithUnit(50, "%"), "ゴジュッパーセント");
 assert.equal(readingForNumberUnitSurface("50%"), "ゴジュッパーセント");
 assert.equal(readingForNumberUnitSurface("10%"), "ジュッパーセント");

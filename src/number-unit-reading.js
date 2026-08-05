@@ -539,12 +539,27 @@ export function readNumberWithUnit(number, unit) {
     return finish(`${cardinal}ほん`);
   }
 
-  // 階/回: 1階=いっかい など簡易
+  // 階/回: 1・6・8・10 および末尾同型（21階→にじゅういっかい、20階→にじゅっかい）
   if (unit === "階" || unit === "回") {
-    if (number === 1) return finish(`いっ${spec.suffix}`);
-    if (number === 6) return finish(`ろっ${spec.suffix}`);
-    if (number === 8) return finish(`はっ${spec.suffix}`);
-    if (number === 10) return finish(`じゅっ${spec.suffix}`);
+    const suffix = spec.suffix;
+    if (number % 10 === 0 && number >= 10 && number <= 90) {
+      const t = number / 10;
+      const head = t === 1 ? "" : t === 2 ? "に" : DIGIT[t];
+      return finish(`${head}じゅっ${suffix}`);
+    }
+    const last = number % 10;
+    if (last === 1) {
+      const head = number === 1 ? "" : readCardinal(number - 1) || "";
+      return finish(`${head}いっ${suffix}`);
+    }
+    if (last === 6) {
+      const head = number === 6 ? "" : readCardinal(number - 6) || "";
+      return finish(`${head}ろっ${suffix}`);
+    }
+    if (last === 8) {
+      const head = number === 8 ? "" : readCardinal(number - 8) || "";
+      return finish(`${head}はっ${suffix}`);
+    }
   }
 
   if (unit === "個") {

@@ -8,7 +8,7 @@ import {
 import {
   overlayNumberTokens,
   rebuildFullReading,
-} from "./number-overlay.js?v=20260805a";
+} from "./number-overlay.js?v=20260805c";
 
 const DEFAULT_API =
   (window.YT_FURIGANA_SITE && window.YT_FURIGANA_SITE.readingApiUrl) ||

@@ -164,7 +164,44 @@ export function numberReadingCandidates(primary, digits) {
 }
 
 /**
- * テキスト中の数字ランをトークン化する（助数詞は結合しない）。
+ * 階・回などカ行助数詞の促音（21階→にじゅういっかい）。
+ * @param {number} number
+ * @param {string} suffix かい など
+ */
+export function readKaiStyleCounter(number, suffix = "かい") {
+  if (!Number.isInteger(number) || number < 0) return "";
+  const unit = String(suffix || "かい");
+  if (number === 0) return `ぜろ${unit}`;
+  if (number % 10 === 0 && number >= 10 && number <= 90) {
+    const t = number / 10;
+    const head = t === 1 ? "" : t === 2 ? "に" : DIGIT[t];
+    return `${head}じゅっ${unit}`;
+  }
+  const last = number % 10;
+  if (last === 1) {
+    const head = number === 1 ? "" : readCardinal(number - 1);
+    return `${head}いっ${unit}`;
+  }
+  if (last === 6) {
+    const head = number === 6 ? "" : readCardinal(number - 6);
+    return `${head}ろっ${unit}`;
+  }
+  if (last === 8) {
+    const head = number === 8 ? "" : readCardinal(number - 8);
+    return `${head}はっ${unit}`;
+  }
+  const cardinal = readCardinal(number);
+  return cardinal ? `${cardinal}${unit}` : "";
+}
+
+/** 直後にくっつけると促音化する助数詞 */
+const KAI_STYLE_UNITS = {
+  階: "かい",
+  回: "かい"
+};
+
+/**
+ * テキスト中の数字ラン（＋階/回）をトークン化する。
  * @param {string} text
  * @returns {{ surface: string, span: [number, number], reading: string, confidence: number, source: string, candidates: string[] }[]}
  */
@@ -175,14 +212,39 @@ export function collectNumberTokens(text) {
   NUMBER_RUN_RE.lastIndex = 0;
   let m;
   while ((m = NUMBER_RUN_RE.exec(src))) {
-    const surface = m[0];
+    const digitSurface = m[0];
     const start = m.index;
-    const end = start + surface.length;
-    const parsed = readingForDigitRun(surface);
+    let end = start + digitSurface.length;
+    const parsed = readingForDigitRun(digitSurface);
     if (!parsed) continue;
+
+    const nextChar = src.slice(end, end + 1);
+    const unitReading = KAI_STYLE_UNITS[nextChar];
+    if (unitReading) {
+      end += 1;
+      const surface = src.slice(start, end);
+      const reading = readKaiStyleCounter(parsed.integer, unitReading);
+      if (!reading) continue;
+      // 誤結合しやすい「いちかい」も候補に残し、クリックで直せるようにする
+      const loose = `${parsed.reading}${unitReading}`;
+      const candidates = numberReadingCandidates(reading, parsed.digits);
+      if (loose !== reading) candidates.push(loose);
+      out.push({
+        surface,
+        span: [start, end],
+        reading,
+        confidence: 0.92,
+        source: "number_rule",
+        candidates
+      });
+      // 数字ランの次が単位なので、次の exec 位置を進める
+      NUMBER_RUN_RE.lastIndex = end;
+      continue;
+    }
+
     const candidates = numberReadingCandidates(parsed.reading, parsed.digits);
     out.push({
-      surface,
+      surface: digitSurface,
       span: [start, end],
       reading: parsed.reading,
       confidence: 0.9,
@@ -202,33 +264,29 @@ export function overlayNumberTokens(text, tokens) {
   const numbers = collectNumberTokens(text);
   if (!numbers.length) return tokens || [];
   const existing = tokens || [];
-  const result = [...existing];
-
+  // 数字＋階 が漢字「階」トークンと重なるので、重なりは数字側を優先
+  const kept = existing.filter((t) => {
+    const [a, b] = t.span || [0, 0];
+    return !numbers.some((n) => a < n.span[1] && b > n.span[0]);
+  });
+  const preferred = existing.filter((t) => {
+    const src = String(t.source || "");
+    if (src !== "user_dict" && src !== "personal_name") return false;
+    const [a, b] = t.span || [0, 0];
+    return numbers.some((n) => a === n.span[0] && b === n.span[1]);
+  });
+  const preferredKeys = new Set(
+    preferred.map((t) => `${t.span[0]}:${t.span[1]}`)
+  );
+  const result = [...kept];
   for (const n of numbers) {
-    const same = existing.find(
-      (t) =>
-        Array.isArray(t.span) &&
-        t.span[0] === n.span[0] &&
-        t.span[1] === n.span[1]
-    );
-    if (same) {
-      const merged = numberReadingCandidates(
-        same.reading || n.reading,
-        toAsciiDigits(n.surface)
-      );
-      const prev = Array.isArray(same.candidates) ? same.candidates : [];
-      same.candidates = [...new Set([...prev, ...merged, ...n.candidates])];
-      if (!same.reading) same.reading = n.reading;
-      continue;
-    }
-    const overlaps = existing.some((t) => {
-      const [a, b] = t.span || [0, 0];
-      return a < n.span[1] && b > n.span[0];
-    });
-    if (overlaps) continue;
+    const key = `${n.span[0]}:${n.span[1]}`;
+    if (preferredKeys.has(key)) continue;
     result.push(n);
   }
-
+  for (const p of preferred) {
+    if (!result.includes(p)) result.push(p);
+  }
   result.sort((a, b) => (a.span?.[0] ?? 0) - (b.span?.[0] ?? 0));
   return result;
 }

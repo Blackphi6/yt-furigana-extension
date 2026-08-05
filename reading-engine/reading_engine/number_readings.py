@@ -1,6 +1,6 @@
-"""Bare Arabic/fullwidth digit spans → cardinal + digit-by-digit candidates.
+"""Digit spans (+ 階/回 counters) → cardinal readings with sokuon.
 
-Keeps counter kanji (階 etc.) as separate tokens so heteronym quiz stays.
+Example: 21階 → にじゅういっかい（にじゅういちかい ではない）.
 """
 
 from __future__ import annotations
@@ -150,65 +150,130 @@ def number_candidates(primary: str, digits: str) -> list[str]:
     return out
 
 
+KAI_STYLE_UNITS = {"階": "かい", "回": "かい"}
+
+
+def read_kai_style_counter(number: int, suffix: str = "かい") -> str:
+    """21階→にじゅういっかい / 20階→にじゅっかい。"""
+    if not isinstance(number, int) or number < 0:
+        return ""
+    unit = suffix or "かい"
+    if number == 0:
+        return f"ぜろ{unit}"
+    if number % 10 == 0 and 10 <= number <= 90:
+        t = number // 10
+        head = "" if t == 1 else ("に" if t == 2 else _DIGIT[t])
+        return f"{head}じゅっ{unit}"
+    last = number % 10
+    if last == 1:
+        head = "" if number == 1 else read_cardinal(number - 1)
+        return f"{head}いっ{unit}"
+    if last == 6:
+        head = "" if number == 6 else read_cardinal(number - 6)
+        return f"{head}ろっ{unit}"
+    if last == 8:
+        head = "" if number == 8 else read_cardinal(number - 8)
+        return f"{head}はっ{unit}"
+    cardinal = read_cardinal(number)
+    return f"{cardinal}{unit}" if cardinal else ""
+
+
 def collect_number_tokens(text: str) -> list[dict[str, Any]]:
     src = text or ""
     tokens: list[dict[str, Any]] = []
-    for m in _NUMBER_RUN_RE.finditer(src):
-        surface = m.group(0)
-        parsed = reading_for_digit_run(surface)
+    pos = 0
+    while True:
+        m = _NUMBER_RUN_RE.search(src, pos)
+        if not m:
+            break
+        digit_surface = m.group(0)
+        start = m.start()
+        end = m.end()
+        parsed = reading_for_digit_run(digit_surface)
         if not parsed:
+            pos = end
             continue
         reading, digits = parsed
+        integer = int(digits.split(".", 1)[0]) if digits else 0
+
+        next_ch = src[end : end + 1]
+        unit_reading = KAI_STYLE_UNITS.get(next_ch)
+        if unit_reading:
+            end += 1
+            surface = src[start:end]
+            combined = read_kai_style_counter(integer, unit_reading)
+            if not combined:
+                pos = end
+                continue
+            loose = f"{reading}{unit_reading}"
+            cands = number_candidates(combined, digits)
+            if loose != combined:
+                cands = list(dict.fromkeys([*cands, loose]))
+            tokens.append(
+                {
+                    "surface": surface,
+                    "span": [start, end],
+                    "reading": combined,
+                    "confidence": 0.92,
+                    "source": "number_rule",
+                    "candidates": cands,
+                }
+            )
+            pos = end
+            continue
+
         tokens.append(
             {
-                "surface": surface,
-                "span": [m.start(), m.end()],
+                "surface": digit_surface,
+                "span": [start, end],
                 "reading": reading,
                 "confidence": 0.9,
                 "source": "number_rule",
                 "candidates": number_candidates(reading, digits),
             }
         )
+        pos = end
     return tokens
 
 
 def merge_number_tokens(
     text: str, tokens: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
-    """Insert number_rule tokens into gaps; enrich same-span user pins."""
+    """数字（＋階/回）を優先。重なる漢字トークンは落とす。"""
     numbers = collect_number_tokens(text)
     if not numbers:
         return tokens
     existing = list(tokens or [])
-    result = list(existing)
-    for n in numbers:
-        same = next(
-            (
-                t
-                for t in existing
-                if isinstance(t.get("span"), list)
-                and t["span"][0] == n["span"][0]
-                and t["span"][1] == n["span"][1]
-            ),
-            None,
-        )
-        if same is not None:
-            prev = list(same.get("candidates") or [])
-            merged = number_candidates(
-                str(same.get("reading") or n["reading"]), n["surface"]
-            )
-            same["candidates"] = list(dict.fromkeys([*prev, *merged, *n["candidates"]]))
-            if not same.get("reading"):
-                same["reading"] = n["reading"]
-            continue
-        overlaps = any(
+    kept = [
+        t
+        for t in existing
+        if not (
             isinstance(t.get("span"), list)
-            and t["span"][0] < n["span"][1]
-            and t["span"][1] > n["span"][0]
-            for t in existing
+            and any(
+                t["span"][0] < n["span"][1] and t["span"][1] > n["span"][0]
+                for n in numbers
+            )
         )
-        if overlaps:
+    ]
+    preferred = [
+        t
+        for t in existing
+        if str(t.get("source") or "") in ("user_dict", "personal_name")
+        and isinstance(t.get("span"), list)
+        and any(
+            t["span"][0] == n["span"][0] and t["span"][1] == n["span"][1]
+            for n in numbers
+        )
+    ]
+    preferred_keys = {f"{t['span'][0]}:{t['span'][1]}" for t in preferred}
+    result = list(kept)
+    for n in numbers:
+        key = f"{n['span'][0]}:{n['span'][1]}"
+        if key in preferred_keys:
             continue
         result.append(n)
+    for p in preferred:
+        if p not in result:
+            result.append(p)
     result.sort(key=lambda t: t["span"][0])
     return result
