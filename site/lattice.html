@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>LLMラティス（運用）— YT Furigana</title>
+    <meta
+      name="description"
+      content="運用向け: 直近の学習ランと累積コーパス／ラティス判定を確認します。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./learning-report.css" />
+    <link rel="stylesheet" href="./lattice.css?v=20260805b" />
+  </head>
+  <body class="report-page lattice-page">
+    <div class="wrap">
+      <header class="site-header">
+        <a class="brand" href="./">YT Furigana</a>
+        <nav class="nav" aria-label="主要ナビ">
+          <a href="./">ホーム</a>
+          <a href="./#demo">デモ</a>
+          <a href="./learning-report.html">学習レポート</a>
+          <a href="./lattice.html" aria-current="page">ラティス（運用）</a>
+          <a href="./install.html">拡張</a>
+          <a href="https://github.com/Blackphi6/yt-furigana-extension">GitHub</a>
+        </nav>
+      </header>
+
+      <section class="report-hero fade-up">
+        <p class="eyebrow">運用 · noindex</p>
+        <h1>LLMラティス</h1>
+        <p class="lead">
+          <strong>直近ランで何が増えたか</strong>と、<strong>累積コーパス／判定ログ</strong>を見ます。
+          公開デモではなく運用確認用です。
+        </p>
+        <p class="report-status" id="lattice-status" role="status">読み込み中…</p>
+      </section>
+
+      <section class="panel fade-up" aria-labelledby="run-heading" id="latest-run">
+        <h2 id="run-heading">直近の学習ラン</h2>
+        <p class="hint" id="run-meta">—</p>
+        <p class="lattice-run-note" id="run-note">—</p>
+        <ul class="sample-list" id="run-samples"></ul>
+      </section>
+
+      <section class="score-grid fade-up delay" aria-label="累積サマリ">
+        <article class="score-card">
+          <h2>コーパス累積</h2>
+          <p class="score-value" id="sum-corpus">—</p>
+          <p class="score-meta" id="sum-corpus-meta">synth-open</p>
+        </article>
+        <article class="score-card">
+          <h2>ラティス件数</h2>
+          <p class="score-value" id="sum-lattice">—</p>
+          <p class="score-meta" id="sum-lattice-meta">表示上限 800</p>
+        </article>
+        <article class="score-card">
+          <h2>hard 正答率</h2>
+          <p class="score-value" id="sum-hard">—</p>
+          <p class="score-meta" id="sum-hard-meta">直近ゲート</p>
+        </article>
+        <article class="score-card">
+          <h2>フィルタ後</h2>
+          <p class="score-value" id="sum-filtered">—</p>
+          <p class="score-meta" id="sum-sources"></p>
+        </article>
+      </section>
+
+      <section class="panel fade-up" aria-labelledby="filter-heading">
+        <h2 id="filter-heading">フィルタ</h2>
+        <div class="lattice-filters">
+          <label class="lattice-field">
+            <span>表層</span>
+            <input type="search" id="filter-surface" placeholder="例: 市場" autocomplete="off" />
+          </label>
+          <label class="lattice-field">
+            <span>source</span>
+            <select id="filter-source">
+              <option value="">すべて</option>
+            </select>
+          </label>
+          <label class="lattice-field lattice-field--grow">
+            <span>キーワード</span>
+            <input
+              type="search"
+              id="filter-q"
+              placeholder="文・gold・モデル名…"
+              autocomplete="off"
+            />
+          </label>
+          <label class="lattice-check">
+            <input type="checkbox" id="filter-recent" />
+            <span>直近ランのサンプルだけ</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="panel fade-up" aria-labelledby="list-heading">
+        <h2 id="list-heading">エントリ（新しい順）</h2>
+        <p class="hint" id="list-hint"></p>
+        <div class="lattice-list" id="lattice-list"></div>
+      </section>
+
+      <footer class="site-footer">
+        <p>
+          <a href="./learning-report.html">学習レポート</a>
+          ·
+          <a href="./">ホーム</a>
+          ·
+          <a href="./privacy.html">プライバシー</a>
+        </p>
+        <p class="trademark-note">
+          YouTube、TVer、Google Chrome、GitHub、Stripe、Ollama、Hugging Face 等の名称・ロゴは各社の商標です。
+          「YT Furigana」の「YT」は製品名の略称であり、YouTube の商標ではありません。
+        </p>
+      </footer>
+    </div>
+    <script src="./lattice.js?v=20260805b" type="module"></script>
+  </body>
+</html>

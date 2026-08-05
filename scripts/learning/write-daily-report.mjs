@@ -244,6 +244,10 @@ async function main() {
     "utf8"
   );
 
+  // 運用ラティス・ビューア用 feed（synth-log → site/data/lattice-feed.json）
+  const { writeLatticeFeed } = await import("./write-lattice-feed.mjs");
+  await writeLatticeFeed();
+
   console.log(
     `report mode=${mode} gate=${gateOk ? "PASS" : "FAIL"} corpus=${corpusCount} (Δ${corpusDelta >= 0 ? "+" : ""}${corpusDelta}) samples=${newSamples.length}`
   );

@@ -1,0 +1,191 @@
+.lattice-page .lattice-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: flex-end;
+}
+
+.lattice-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 8rem;
+  font-size: 0.82rem;
+  color: var(--sumi-soft);
+}
+
+.lattice-field--grow {
+  flex: 1 1 12rem;
+}
+
+.lattice-check {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  color: var(--sumi);
+  padding-bottom: 0.35rem;
+}
+
+.lattice-run-note {
+  margin: 0 0 0.85rem;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.lattice-note {
+  margin: 0 0 0.45rem;
+  font-size: 0.85rem;
+  color: var(--sumi-soft);
+}
+
+.lattice-field input,
+.lattice-field select {
+  font-family: var(--body);
+  font-size: 0.95rem;
+  color: var(--sumi);
+  background: color-mix(in oklab, white 70%, var(--paper));
+  border: 1px solid var(--line);
+  border-radius: 0.3rem;
+  padding: 0.45rem 0.55rem;
+}
+
+.lattice-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.lattice-card {
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+  padding: 0.9rem 1rem 1rem;
+  background: color-mix(in oklab, white 58%, var(--paper));
+}
+
+.lattice-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  align-items: baseline;
+  margin-bottom: 0.45rem;
+}
+
+.lattice-surface {
+  font-family: var(--display);
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.lattice-gold {
+  font-size: 0.92rem;
+  color: var(--vermilion-deep);
+}
+
+.lattice-meta {
+  margin-left: auto;
+  font-size: 0.78rem;
+  color: var(--sumi-soft);
+}
+
+.lattice-source {
+  display: inline-block;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  padding: 0.12rem 0.4rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--line);
+  background: color-mix(in oklab, var(--paper) 80%, white);
+}
+
+.lattice-source.is-agree {
+  border-color: color-mix(in oklab, #1b7f4a 35%, var(--line));
+  color: color-mix(in oklab, #1b7f4a 75%, var(--sumi));
+}
+
+.lattice-source.is-disagree,
+.lattice-source.is-no-consensus {
+  border-color: color-mix(in oklab, var(--vermilion) 40%, var(--line));
+  color: var(--vermilion-deep);
+}
+
+.lattice-text {
+  margin: 0 0 0.55rem;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.lattice-cands {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0 0 0.55rem;
+}
+
+.lattice-cand {
+  font-size: 0.85rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--line);
+  background: color-mix(in oklab, white 50%, var(--paper));
+}
+
+.lattice-cand.is-gold {
+  border-color: color-mix(in oklab, var(--vermilion) 55%, var(--line));
+  background: color-mix(in oklab, var(--vermilion) 12%, white);
+  font-weight: 600;
+}
+
+.lattice-cand.is-verify {
+  box-shadow: inset 0 -2px 0 color-mix(in oklab, #1b7f4a 55%, transparent);
+}
+
+.lattice-cand.is-arb {
+  box-shadow: inset 0 -2px 0 color-mix(in oklab, #2a5ea8 55%, transparent);
+}
+
+.lattice-models {
+  margin: 0 0 0.5rem;
+  font-size: 0.78rem;
+  color: var(--sumi-soft);
+}
+
+.lattice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.85rem;
+  align-items: center;
+  margin-top: 0.35rem;
+}
+
+.lattice-actions a {
+  font-size: 0.88rem;
+}
+
+.lattice-raw {
+  margin: 0.55rem 0 0;
+  font-size: 0.85rem;
+}
+
+.lattice-raw summary {
+  cursor: pointer;
+  color: var(--sumi-soft);
+}
+
+.lattice-raw pre {
+  margin: 0.4rem 0 0;
+  padding: 0.55rem 0.65rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  background: color-mix(in oklab, var(--sumi) 4%, white);
+  border: 1px solid var(--line);
+  border-radius: 0.3rem;
+}
+
+.lattice-empty {
+  margin: 0;
+  color: var(--sumi-soft);
+  font-size: 0.95rem;
+}
