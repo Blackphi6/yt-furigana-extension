@@ -40,7 +40,8 @@ function parseArgs(argv) {
     else args.provider = "ollama";
   }
   if (args.perTarget == null) {
-    args.perTarget = args.provider === "ollama" ? 2 : 1;
+    // Groq free: verify/arb ~1000 RPD。1ランで枠の一部を使い切る既定。
+    args.perTarget = args.provider === "ollama" ? 2 : 2;
   }
   return args;
 }

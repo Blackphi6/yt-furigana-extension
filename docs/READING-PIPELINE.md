@@ -96,7 +96,8 @@ promote / LLM 学習
 | 層 | 中身 | ユーザーへの届き方 |
 |----|------|-------------------|
 | curated seed | 学習で確定した phrases | イメージ同梱 or admin PUT |
-| contributions | オプトイン訂正の票集計 | ランタイム JSONL → 再集計 |
+| contributions | オプトイン訂正の票集計 | ランタイム JSONL → 再集計 → `/v1/shared-readings` |
+| contribution-stats | 表層・読み・票数のみの公開集計 | `npm run learn:import-contrib` → corpus → lattice / promote-cues |
 | contextRules / reranker | 文脈・モデル | 拡張更新 or 読みAPI サーバー |
 
 ```bash
@@ -113,15 +114,18 @@ npm run publish:shared-readings
 
 ## GitHub Actions（最適・¥0・Mac不要）
 
-軽利用向けの既定構成です。枠は十分余るので **6時間ごとではなく日次1回**。
+Groq 無料枠の **verify / arbitrate モデル（約 1000 RPD）** がボトルネックなので、
+その上限付近まで自動で回します（generator の 8B は 1.4万 RPD あるので余りやすい）。
 
 [`.github/workflows/learning-loop.yml`](../.github/workflows/learning-loop.yml)
 
 | トリガ | Runner | 内容 |
 |--------|--------|------|
 | `mode=smoke` | ubuntu-latest | dry + 3ベンチ |
-| cron 毎日 04:00 UTC / `mode=synth` | ubuntu-latest | Groq 合成 + ゲート計測 + [学習レポート](../site/learning-report.html) 更新 |
-| cron 月曜 03:00 UTC / `mode=retrain` | ubuntu-latest | merge + ルール学習 + `learn:promote-cues` + 3ベンチ（baseline 更新） |
+| cron **1日4回**（UTC 0/6/12/18） / `mode=synth` | ubuntu-latest | Groq 合成（`per_target=2`）+ ゲート計測 + [学習レポート](../site/learning-report.html) / [ラティス](../site/lattice.html) 更新 |
+| cron 月曜 03:30 UTC / `mode=retrain` | ubuntu-latest | merge + ルール学習 + `learn:promote-cues` + 3ベンチ（baseline 更新） |
+
+想定: 1ランあたり gen+verify+(arb) で verify/arb 系 **約 150–250 回** × 4 ≒ **600–1000 RPD**（無料上限付近）。429 時は `Retry-After` で自動待機。
 
 人手で同形異音を詰めたいとき:
 
@@ -132,8 +136,6 @@ npm run learn:gate
 
 `data/learning/heteronym-cue-seed.json` にキューを足す → promote-cues で本番 overrides へ。
 
-1日あたり想定呼び出し ~100回・無料枠のごく一部。Paid 不要。
-
 ### 一回だけ（無料アカウント）
 
 1. [Groq Console](https://console.groq.com/keys) で API Key 作成  
@@ -142,9 +144,10 @@ npm run learn:gate
 ```bash
 gh secret set GROQ_API_KEY
 gh workflow run learning-loop.yml -f mode=smoke
-gh workflow run learning-loop.yml -f mode=synth -f per_target=1
+gh workflow run learning-loop.yml -f mode=synth -f per_target=2
 ```
 
+枠の残量は [console.groq.com/settings/limits](https://console.groq.com/settings/limits) で確認。
 ### 任意・高精度（この Mac の Ollama）
 
 ```bash
@@ -161,7 +164,8 @@ ModernBERT 本番再学習だけローカル `.venv-reading` が要る（通常�
 | Cloudflare Workers AI | ¥0 | 一部アカウントで REST が 401（今回） |
 | Ollama ローカル | 電気代のみ | 任意・高精度 |
 
-Groq 等の太い無料枠は「枠が足りなくなったら」で十分。いまの負荷では過剰です。
+Groq 等の太い無料枠は **1日4回の自動 synth** で verify/arb の RPD 上限付近まで使います。
+429 が出たら間隔を開けてリトライ（Paid は不要な想定）。
 
 ## 一度回すコマンド（推論 Smoke）
 

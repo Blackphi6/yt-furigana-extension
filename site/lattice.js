@@ -247,10 +247,24 @@ async function main() {
   }
 
   try {
-    const [feedRes, reportRes] = await Promise.all([
-      fetch("./data/lattice-feed.json", { cache: "no-store" }),
-      fetch("./data/learning-report.json", { cache: "no-store" }),
-    ]);
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 15_000);
+    let feedRes;
+    let reportRes;
+    try {
+      [feedRes, reportRes] = await Promise.all([
+        fetch("./data/lattice-feed.json", {
+          cache: "no-store",
+          signal: controller.signal,
+        }),
+        fetch("./data/learning-report.json", {
+          cache: "no-store",
+          signal: controller.signal,
+        }),
+      ]);
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
     if (!feedRes.ok) throw new Error(`lattice-feed HTTP ${feedRes.status}`);
     const feed = await feedRes.json();
     const report = reportRes.ok ? await reportRes.json() : null;

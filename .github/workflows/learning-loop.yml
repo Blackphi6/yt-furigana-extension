@@ -1,7 +1,7 @@
-# Candidate-constrained learning loop — optimal ¥0 path (no Mac).
+# Candidate-constrained learning loop — ¥0 Groq free tier near the ceiling.
 #
-# Default synth provider: Groq free tier (Cloudflare Workers AI REST often 401s
-# even with valid tokens on some accounts).
+# Bottleneck: verify/arbitrate models are ~1000 RPD on free (generator 8B is 14.4k).
+# Quad-daily synth × per_target=2 ≈ 4×(~200) ≈ 800 calls/day on those models.
 #
 # Secret (once):
 #   GROQ_API_KEY   from https://console.groq.com/keys  (free, no card)
@@ -10,8 +10,10 @@ name: Learning loop
 
 on:
   schedule:
-    - cron: "0 4 * * *"
-    - cron: "0 3 * * 1"
+    # 1日4回 synth（UTC 0/6/12/18）— free RPD 上限付近
+    - cron: "5 0,6,12,18 * * *"
+    # 週1 retrain-lite（月曜・synth とずらす）
+    - cron: "30 3 * * 1"
   workflow_dispatch:
     inputs:
       mode:
@@ -24,9 +26,9 @@ on:
           - full
         default: smoke
       per_target:
-        description: "Sentences per target (default 1)"
+        description: "Sentences per target (scheduled default 2)"
         type: string
-        default: "1"
+        default: "2"
 
 permissions:
   contents: write
@@ -37,6 +39,8 @@ concurrency:
 
 env:
   LEARN_PROVIDER: groq
+  # 30 RPM 以内（呼び出し間隔 ms）
+  GROQ_MIN_INTERVAL_MS: "2100"
 
 jobs:
   smoke:
@@ -55,17 +59,17 @@ jobs:
       - name: Summary
         run: |
           echo "## Smoke OK (¥0 Groq path)" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Daily Groq synth + weekly retrain-lite" >> "$GITHUB_STEP_SUMMARY"
-          echo "- No Mac / no paid GPU" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Quad-daily Groq synth + weekly retrain-lite" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Tuned near free RPD (~1000 on verify/arb models)" >> "$GITHUB_STEP_SUMMARY"
 
   synth:
-    name: Synth daily (Groq free)
+    name: Synth (Groq free · near RPD)
     if: >
-      (github.event_name == 'schedule' && github.event.schedule == '0 4 * * *') ||
+      (github.event_name == 'schedule' && github.event.schedule != '30 3 * * 1') ||
       (github.event_name == 'workflow_dispatch' &&
        (github.event.inputs.mode == 'synth' || github.event.inputs.mode == 'full'))
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -96,17 +100,20 @@ jobs:
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           LEARN_PROVIDER: groq
+          GROQ_MIN_INTERVAL_MS: "2100"
         run: |
           PER="${{ github.event.inputs.per_target }}"
-          PER="${PER:-1}"
+          PER="${PER:-2}"
+          echo "per_target=$PER (free-tier near-ceiling)"
           npm run learn:autoloop -- --phase=synth --provider groq --per-target "$PER"
-      - name: Commit corpus + daily report
+      - name: Commit corpus + daily report + lattice feed
         run: |
           git config user.name "yt-furigana-learning-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git pull --rebase origin "$(git rev-parse --abbrev-ref HEAD)" || true
           git add \
             data/learning/corpus/synth-open.jsonl \
+            data/learning/corpus/contributions.jsonl \
             data/learning/gate-baseline.json \
             data/learning/reports/ \
             site/data/ \
@@ -130,11 +137,11 @@ jobs:
   retrain:
     name: Retrain-lite weekly (ubuntu ¥0)
     if: >
-      (github.event_name == 'schedule' && github.event.schedule == '0 3 * * 1') ||
+      (github.event_name == 'schedule' && github.event.schedule == '30 3 * * 1') ||
       (github.event_name == 'workflow_dispatch' &&
        (github.event.inputs.mode == 'retrain' || github.event.inputs.mode == 'full'))
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -152,6 +159,7 @@ jobs:
           git add \
             data/learning/gate-baseline.json \
             data/learning/corpus/synth-open.jsonl \
+            data/learning/corpus/contributions.jsonl \
             data/generated/learned-overrides.json \
             data/learning/reports/ \
             site/data/ \

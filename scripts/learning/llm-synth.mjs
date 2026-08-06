@@ -174,32 +174,59 @@ async function cloudflareChat(accountId, token, model, messages, { temperature }
   return JSON.stringify(result ?? "");
 }
 
+/** Groq 呼び出しのグローバル間隔（RPM 対策） */
+let lastGroqCallAt = 0;
+
 async function groqChat(apiKey, model, messages, { temperature }) {
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature,
-      max_tokens: 512,
-    }),
-  });
-  const raw = await res.text();
-  let data;
-  try {
-    data = JSON.parse(raw);
-  } catch {
-    throw new Error(`groq ${model}: ${res.status} ${raw.slice(0, 200)}`);
+  // Free 枠は多くのモデルで 30 RPM。連打すると即 429 になるので間隔を空ける。
+  const minInterval = Number(process.env.GROQ_MIN_INTERVAL_MS || 2100);
+  const maxAttempts = 6;
+  let lastErr = "";
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    const wait = minInterval - (Date.now() - lastGroqCallAt);
+    if (wait > 0) await sleep(wait);
+    lastGroqCallAt = Date.now();
+
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        temperature,
+        max_tokens: 512,
+      }),
+    });
+    const raw = await res.text();
+    if (res.status === 429) {
+      const retryAfterSec = Number(res.headers.get("retry-after") || 0);
+      const backoff = Math.max(
+        retryAfterSec * 1000,
+        minInterval * (attempt + 1),
+        3000
+      );
+      lastErr = `429 rate limit (retry in ${Math.round(backoff / 1000)}s)`;
+      console.warn(`groq ${model}: ${lastErr}`);
+      await sleep(backoff);
+      continue;
+    }
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      throw new Error(`groq ${model}: ${res.status} ${raw.slice(0, 200)}`);
+    }
+    if (!res.ok) {
+      const err = data?.error?.message || raw.slice(0, 300) || res.statusText;
+      throw new Error(`groq ${model}: ${res.status} ${err}`);
+    }
+    return data?.choices?.[0]?.message?.content || "";
   }
-  if (!res.ok) {
-    const err = data?.error?.message || raw.slice(0, 300) || res.statusText;
-    throw new Error(`groq ${model}: ${res.status} ${err}`);
-  }
-  return data?.choices?.[0]?.message?.content || "";
+  throw new Error(`groq ${model}: ${lastErr || "rate limit exhausted"}`);
 }
 
 /**
