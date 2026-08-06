@@ -44,7 +44,7 @@
   font-family: var(--body);
   font-size: 0.95rem;
   color: var(--sumi);
-  background: color-mix(in oklab, white 70%, var(--paper));
+  background: color-mix(in oklab, var(--elevated) 80%, var(--paper));
   border: 1px solid var(--line);
   border-radius: 0.3rem;
   padding: 0.45rem 0.55rem;
@@ -59,7 +59,7 @@
   border: 1px solid var(--line);
   border-radius: 0.4rem;
   padding: 0.9rem 1rem 1rem;
-  background: color-mix(in oklab, white 58%, var(--paper));
+  background: color-mix(in oklab, var(--elevated) 70%, var(--paper));
 }
 
 .lattice-card-head {
@@ -94,7 +94,7 @@
   padding: 0.12rem 0.4rem;
   border-radius: 0.25rem;
   border: 1px solid var(--line);
-  background: color-mix(in oklab, var(--paper) 80%, white);
+  background: color-mix(in oklab, var(--paper) 80%, var(--elevated));
 }
 
 .lattice-source.is-agree {
@@ -126,7 +126,7 @@
   padding: 0.15rem 0.45rem;
   border-radius: 0.25rem;
   border: 1px solid var(--line);
-  background: color-mix(in oklab, white 50%, var(--paper));
+  background: color-mix(in oklab, var(--elevated) 65%, var(--paper));
 }
 
 .lattice-cand.is-gold {

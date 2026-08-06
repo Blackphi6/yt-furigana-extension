@@ -14,6 +14,21 @@
       href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
+    <script>
+      (function () {
+        try {
+          var key = "ytf-theme";
+          var pref = localStorage.getItem(key) || "system";
+          if (pref !== "light" && pref !== "dark" && pref !== "system") pref = "system";
+          var dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var theme = pref === "dark" || (pref === "system" && dark) ? "dark" : "light";
+          document.documentElement.setAttribute("data-theme", theme);
+          document.documentElement.setAttribute("data-theme-pref", pref);
+          document.documentElement.style.colorScheme = theme;
+        } catch (e) {}
+      })();
+    </script>
+
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./learning-report.css" />
   </head>
@@ -103,5 +118,6 @@
       </footer>
     </div>
     <script src="./learning-report.js" type="module"></script>
+      <script type="module" src="./theme.js?v=20260806a"></script>
   </body>
 </html>

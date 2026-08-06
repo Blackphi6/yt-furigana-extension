@@ -9,6 +9,12 @@ import {
   overlayNumberTokens,
   rebuildFullReading,
 } from "./number-overlay.js?v=20260805c";
+import {
+  applyOccurrenceOverrides,
+  expandOverrideSpan,
+  shouldPinGlobally,
+  upsertOccurrenceOverride,
+} from "./demo-occurrence-overrides.js?v=20260806b";
 
 const DEFAULT_API =
   (window.YT_FURIGANA_SITE && window.YT_FURIGANA_SITE.readingApiUrl) ||
@@ -36,8 +42,10 @@ const progressLabelEl = $("#analyze-progress-label");
 let lastResult = null;
 const PICKER_ID = "demo-reading-picker";
 const PINS_STORAGE_KEY = "ytf_reading_pins";
+const OCCURRENCE_STORAGE_KEY = "ytf_reading_occurrence_overrides";
 
-/** @type {Record<string, string>} */
+/** @type {Record<string, { start: number, end: number, surface: string, reading: string }[]>} */
+let occurrenceByText = {};
 let personalNamePhrases = {};
 let personalNamesPromise = null;
 
@@ -121,6 +129,15 @@ function loadPinsFromStorage() {
   } catch {
     /* ignore */
   }
+  try {
+    const raw = localStorage.getItem(OCCURRENCE_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") occurrenceByText = parsed;
+    }
+  } catch {
+    occurrenceByText = {};
+  }
 }
 
 function savePinsToStorage() {
@@ -130,6 +147,90 @@ function savePinsToStorage() {
   } catch {
     /* ignore */
   }
+  try {
+    localStorage.setItem(
+      OCCURRENCE_STORAGE_KEY,
+      JSON.stringify(occurrenceByText)
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
+ * 固定リストから表層行を除去（出現ごとに直すときグローバル固定を外す）。
+ * @param {string} surface
+ */
+function removeGlobalPin(surface) {
+  if (!pinsEl) return;
+  const surf = String(surface || "").trim();
+  if (!surf) return;
+  const lines = String(pinsEl.value || "").split(/\n/);
+  const next = [];
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) {
+      next.push(line);
+      continue;
+    }
+    let lineSurface = "";
+    if (trimmed.includes("=")) {
+      lineSurface = trimmed.slice(0, trimmed.indexOf("=")).trim();
+    } else {
+      const parts = trimmed.split(/[\s　]+/).filter(Boolean);
+      if (parts.length >= 2) {
+        parts.pop();
+        lineSurface = parts.join("");
+      }
+    }
+    if (lineSurface === surf) continue;
+    next.push(line);
+  }
+  pinsEl.value = next.join("\n");
+  savePinsToStorage();
+  syncProposeButton();
+}
+
+/**
+ * クリック／3択／表からの直しは常に「この出現だけ」。
+ * グローバル固定リストには載せない（同表層の巻き添え防止）。
+ * @param {string} text
+ * @param {string} surface
+ * @param {string} reading
+ * @param {[number, number] | null | undefined} span
+ */
+function rememberReadingFix(text, surface, reading, span) {
+  const displayText = stripAnnotationMarkers(text || "");
+  let start = Array.isArray(span) ? span[0] : NaN;
+  let end = Array.isArray(span) ? span[1] : NaN;
+  let surf = String(surface || "").normalize("NFKC").trim();
+  let read = String(reading || "").normalize("NFKC").trim();
+  if (!Number.isFinite(start) || !Number.isFinite(end)) {
+    // span 欠落時は、文中の単一出現だけ位置を推定（複数なら触らない）
+    if (surf && shouldPinGlobally(displayText, surf)) {
+      const i = displayText.indexOf(surf);
+      if (i >= 0) {
+        start = i;
+        end = i + surf.length;
+      }
+    }
+  }
+  if (Number.isFinite(start) && Number.isFinite(end)) {
+    ({ start, end, surface: surf, reading: read } = expandOverrideSpan(
+      displayText,
+      start,
+      end,
+      surf,
+      read
+    ));
+    occurrenceByText[displayText] = upsertOccurrenceOverride(
+      occurrenceByText[displayText] || [],
+      { start, end, surface: surf, reading: read }
+    );
+  }
+  // 既存の「角 かど」などが残ると API が全出現を同じ読みにする
+  removeGlobalPin(surf);
+  savePinsToStorage();
 }
 /** Cold start on free Render often takes ~30–60s; bar asymptotes toward this. */
 const ANALYZE_EXPECTED_MS = 50000;
@@ -247,6 +348,7 @@ function sourceLabel(source) {
     base_engine: "形態素",
     creative_ruby: "創作",
     number_rule: "数字規則",
+    occurrence: "この文だけ",
   };
   return map[source] || source || "—";
 }
@@ -296,13 +398,14 @@ function buildRubyHtml(text, tokens) {
  * @param {string} surface
  * @param {string} reading
  */
-async function applyReadingDirect(surface, reading) {
+async function applyReadingDirect(surface, reading, span = null) {
   const read = String(reading || "").normalize("NFKC").trim();
   if (!isKanaReading(read)) {
     showError("ひらがなまたはカタカナの読みを選んでください。");
     return;
   }
-  upsertPin(surface, read);
+  const text = lastResult?.text || inputEl?.value || "";
+  rememberReadingFix(text, surface, read, span);
   closeDemoPicker();
   await runAnalyze({ fromPicker: true });
   await maybeSubmitClickProposal(surface, read);
@@ -451,7 +554,10 @@ function openDemoPicker(wordEl, anchorEl) {
       }
       return;
     }
-    upsertPin(surface, read);
+    const span =
+      token && Array.isArray(token.span) ? /** @type {[number, number]} */ (token.span) : null;
+    const text = lastResult?.text || inputEl?.value || "";
+    rememberReadingFix(text, surface, read, span);
     closeDemoPicker();
     await runAnalyze({ fromPicker: true });
     await maybeSubmitClickProposal(surface, read);
@@ -518,10 +624,10 @@ function renderQuiz(text, tokens) {
       const buttons = it.choices
         .map(
           (c) =>
-            `<button type="button" class="demo-quiz-choice${c === it.reading ? " is-current" : ""}" data-surface="${escapeHtml(it.surface)}" data-reading="${escapeHtml(c)}"${c === it.reading ? " disabled aria-current=\"true\"" : ""}>${escapeHtml(c)}</button>`
+            `<button type="button" class="demo-quiz-choice${c === it.reading ? " is-current" : ""}" data-surface="${escapeHtml(it.surface)}" data-reading="${escapeHtml(c)}" data-span-start="${it.span[0]}" data-span-end="${it.span[1]}"${c === it.reading ? " disabled aria-current=\"true\"" : ""}>${escapeHtml(c)}</button>`
         )
         .join("");
-      return `<article class="demo-quiz-item" data-token-index="${it.index}">
+      return `<article class="demo-quiz-item" data-token-index="${it.index}" data-span-start="${it.span[0]}" data-span-end="${it.span[1]}">
         <div class="demo-quiz-prompt">
           <strong>${escapeHtml(it.surface)}</strong>
           <span class="demo-quiz-meta">いま ${escapeHtml(it.reading)} · スコア ${conf}</span>
@@ -540,6 +646,12 @@ function renderResult(text, data) {
   tokens = overlayPersonalNameTokens(displayText, tokens);
   // 公開 API が未デプロイでも数字を編集できるようクライアント側で載せる
   tokens = overlayNumberTokens(displayText, tokens);
+  // 同一文の同表層を出現位置ごとに上書き（グローバル固定の巻き添え防止）
+  tokens = applyOccurrenceOverrides(
+    displayText,
+    tokens,
+    occurrenceByText[displayText] || []
+  );
   const strippedMarkers = displayText !== String(text ?? "");
   lastResult = { text: displayText, tokens };
   closeDemoPicker();
@@ -870,7 +982,15 @@ async function runAnalyze(options = {}) {
   btn.dataset.busy = "1";
   const showBar = !options.fromPicker;
   if (showBar) startAnalyzeProgress();
-  const pins = collectUserDict();
+  const displayText = stripAnnotationMarkers(text);
+  // 同一文に同表層が複数ある固定は API に送らない（出現上書きで付ける）
+  const occurrenceOverrides = occurrenceByText[displayText] || [];
+  // 同表層が複数、または出現上書きがある表層は user_dict に載せない
+  const pins = collectUserDict().filter((e) => {
+    if (!shouldPinGlobally(displayText, e.surface)) return false;
+    if (occurrenceOverrides.some((o) => o.surface === e.surface)) return false;
+    return true;
+  });
   await ensurePersonalNamePhrases();
   // ピッカーからの再実行では勝手に共有送信しない
   const share =
@@ -953,9 +1073,16 @@ resultBody?.addEventListener("click", (e) => {
   const cand = e.target?.closest?.(".demo-table-cand");
   if (cand && resultBody.contains(cand)) {
     e.preventDefault();
+    const row = cand.closest("tr");
+    const idx = Number.parseInt(row?.querySelector?.(".demo-table-fix")?.getAttribute("data-token-index") || "", 10);
+    const sorted = lastResult?.tokens
+      ? [...lastResult.tokens].sort((a, b) => a.span[0] - b.span[0])
+      : [];
+    const tok = Number.isFinite(idx) ? sorted[idx] : null;
     void applyReadingDirect(
       cand.getAttribute("data-surface") || "",
-      cand.getAttribute("data-reading") || ""
+      cand.getAttribute("data-reading") || "",
+      tok && Array.isArray(tok.span) ? tok.span : null
     );
     return;
   }
@@ -976,14 +1103,20 @@ quizListEl?.addEventListener("click", (e) => {
   const btn = e.target?.closest?.(".demo-quiz-choice");
   if (!btn || !quizListEl.contains(btn) || btn.disabled) return;
   e.preventDefault();
+  const start = Number.parseInt(btn.getAttribute("data-span-start") || "", 10);
+  const end = Number.parseInt(btn.getAttribute("data-span-end") || "", 10);
+  const span =
+    Number.isFinite(start) && Number.isFinite(end) ? [start, end] : null;
   void applyReadingDirect(
     btn.getAttribute("data-surface") || "",
-    btn.getAttribute("data-reading") || ""
+    btn.getAttribute("data-reading") || "",
+    span
   );
 });
 
 $("#pin-clear")?.addEventListener("click", () => {
   pinsEl.value = "";
+  occurrenceByText = {};
   savePinsToStorage();
   syncProposeButton();
   showProposeStatus("");

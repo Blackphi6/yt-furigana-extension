@@ -24,7 +24,7 @@
   padding: 0.28rem 0.65rem;
   border: 1px solid var(--line);
   color: var(--sumi-soft);
-  background: color-mix(in oklab, white 45%, transparent);
+  background: var(--chip);
 }
 
 .aside-note {
@@ -51,7 +51,7 @@
 .stats-strip article {
   padding: 1rem 1.1rem;
   border: 1px solid var(--line);
-  background: color-mix(in oklab, white 50%, var(--paper));
+  background: color-mix(in oklab, var(--elevated) 70%, var(--paper));
 }
 
 .stat-value {
@@ -80,7 +80,7 @@
 }
 
 .home-scores .score-card {
-  background: color-mix(in oklab, white 55%, var(--paper));
+  background: color-mix(in oklab, var(--elevated) 70%, var(--paper));
   border: 1px solid var(--line);
   border-radius: 0.35rem;
   padding: 1rem 1.1rem;
@@ -119,7 +119,7 @@
   gap: 0.25rem;
   padding: 1rem 1.1rem;
   border: 1px solid var(--line);
-  background: color-mix(in oklab, white 45%, transparent);
+  background: var(--chip);
 }
 
 .how-steps strong {

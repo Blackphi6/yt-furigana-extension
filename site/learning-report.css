@@ -40,7 +40,7 @@
 }
 
 .score-card {
-  background: color-mix(in oklab, white 55%, var(--paper));
+  background: color-mix(in oklab, var(--elevated) 70%, var(--paper));
   border: 1px solid var(--line);
   border-radius: 0.35rem;
   padding: 1rem 1.1rem;
@@ -71,7 +71,7 @@
 .panel {
   margin: 0 0 2rem;
   padding: 1.25rem 1.35rem;
-  background: color-mix(in oklab, white 40%, var(--paper));
+  background: color-mix(in oklab, var(--elevated) 55%, var(--paper));
   border: 1px solid var(--line);
   border-radius: 0.4rem;
 }
@@ -125,7 +125,7 @@
   padding: 0.75rem 0.85rem;
   border: 1px solid var(--line);
   border-radius: 0.3rem;
-  background: color-mix(in oklab, white 60%, transparent);
+  background: var(--chip);
 }
 
 .sample-list .surface {

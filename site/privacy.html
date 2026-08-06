@@ -11,6 +11,21 @@
       href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
+    <script>
+      (function () {
+        try {
+          var key = "ytf-theme";
+          var pref = localStorage.getItem(key) || "system";
+          if (pref !== "light" && pref !== "dark" && pref !== "system") pref = "system";
+          var dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var theme = pref === "dark" || (pref === "system" && dark) ? "dark" : "light";
+          document.documentElement.setAttribute("data-theme", theme);
+          document.documentElement.setAttribute("data-theme-pref", pref);
+          document.documentElement.style.colorScheme = theme;
+        } catch (e) {}
+      })();
+    </script>
+
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -107,8 +122,9 @@
           <li>Premium 購入（Stripe）: 決済は Stripe。ライセンス発行は読みエンジン側。メールは任意入力時のみ</li>
           <li>サイト上の読みデモ: 公開デモ API へサンプル文のみ（拡張本体の既定とは別）</li>
           <li>
-            匿名の読み訂正（オプトイン）: ユーザーがオンにした場合のみ、クリックで直した
+            匿名の読み訂正（オプトイン）: ユーザーがオンにした場合のみ（初回訂正時の確認ダイアログを含む）、クリックで直した
             <strong>表層・読み・短い前後文脈</strong>を読みエンジンへ送信します。動画 URL・端末 ID は送りません。
+            票の公開集計（<code>/v1/contribution-stats</code>）には表層・読み・票数のみが含まれ、文脈や投票者IDは含まれません。
           </li>
           <li>
             サイト・デモの読み提案（任意）: 固定リストの<strong>表層→読み</strong>のみを審査キューへ送ります。
@@ -117,7 +133,7 @@
         </ul>
         <p>
           公開読みエンジンは不正利用防止のため、接続元 IP 単位のレート制限をかけることがあります（個人の特定目的ではありません）。
-          匿名の読み訂正・デモ提案では重複防止のため投票者ID（IPの不可逆ハッシュ）をサーバー内のみで用います。公開パックにIPは含めません。
+          匿名の読み訂正・デモ提案では重複防止のため投票者ID（IPの不可逆ハッシュ）をサーバー内のみで用います。公開パックおよび票集計 API にIP・文脈は含めません。
         </p>
         <p>
           第三者の公開 API を指定した場合、その事業者のプライバシーポリシーが適用されます。
@@ -165,5 +181,6 @@
         </p>
       </footer>
     </div>
+      <script type="module" src="./theme.js?v=20260806a"></script>
   </body>
 </html>

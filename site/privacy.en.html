@@ -4,6 +4,21 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Privacy Policy (EN) — YT Furigana</title>
+    <script>
+      (function () {
+        try {
+          var key = "ytf-theme";
+          var pref = localStorage.getItem(key) || "system";
+          if (pref !== "light" && pref !== "dark" && pref !== "system") pref = "system";
+          var dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var theme = pref === "dark" || (pref === "system" && dark) ? "dark" : "light";
+          document.documentElement.setAttribute("data-theme", theme);
+          document.documentElement.setAttribute("data-theme-pref", pref);
+          document.documentElement.style.colorScheme = theme;
+        } catch (e) {}
+      })();
+    </script>
+
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -51,11 +66,11 @@
         <ul>
           <li>BYO reading API / Ollama: only if you configure them</li>
           <li>Premium sync / server shared dict: user-configured server</li>
-          <li>Anonymous corrections (opt-in): surface, reading, short context only (no video URL)</li>
+          <li>Anonymous corrections (opt-in): surface, reading, and short context only (no video URL). Enabled only when the user turns it on (including a one-time prompt after the first correction). Public <code>/v1/contribution-stats</code> exposes surface, reading, and vote counts only — no context, voter IDs, or IPs</li>
           <li>Demo reading proposals (optional): surface→reading only into a review queue — not published to the Free pack until curated after heuristic / optional LLM review</li>
           <li>Stripe checkout (site): payment via Stripe</li>
         </ul>
-        <p>Public API may rate-limit by IP. Opt-in votes and demo proposals use a non-reversible voter id derived from IP (not published in the pack).</p>
+        <p>Public API may rate-limit by IP. Opt-in votes and demo proposals use a non-reversible voter id derived from IP (not published in the pack or <code>/v1/contribution-stats</code>).</p>
 
         <h2>4. Ads / tracking</h2>
         <p>No ad SDK or behavioral tracking in the extension.</p>
@@ -73,5 +88,6 @@
         </p>
       </footer>
     </div>
+      <script type="module" src="./theme.js?v=20260806a"></script>
   </body>
 </html>

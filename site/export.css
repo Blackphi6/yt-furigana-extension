@@ -25,7 +25,7 @@
   padding: 0.28rem 0.65rem;
   border: 1px solid var(--line);
   color: var(--sumi-soft);
-  background: color-mix(in oklab, white 45%, transparent);
+  background: var(--chip);
 }
 
 .export-page .export-hero h1 {
@@ -94,7 +94,7 @@
   padding: 0.75rem 0.85rem;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: white;
+  background: var(--elevated);
   font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
   font-size: 0.86rem;
   line-height: 1.6;
@@ -111,7 +111,7 @@
   padding: 0.85rem 1rem;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: color-mix(in oklab, white 55%, transparent);
+  background: var(--chip);
 }
 
 .bridge-setup summary {
@@ -168,7 +168,7 @@
   padding: 1rem 1.1rem;
   border: 1px dashed var(--line);
   border-radius: 10px;
-  background: color-mix(in oklab, white 55%, transparent);
+  background: var(--chip);
 }
 
 .studio-upload h3 {
@@ -204,7 +204,7 @@
   padding: 0.5rem 0.9rem;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: color-mix(in oklab, white 60%, transparent);
+  background: var(--chip);
 }
 
 .cue-row {
@@ -271,7 +271,7 @@
   padding: 0.7rem 0.9rem;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: color-mix(in oklab, white 55%, transparent);
+  background: var(--chip);
   cursor: pointer;
 }
 
@@ -321,7 +321,7 @@
   padding: 0.9rem 1rem;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: white;
+  background: var(--elevated);
   font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
   font-size: 0.8rem;
   line-height: 1.65;

@@ -1,15 +1,37 @@
 /* YT Furigana site — sumi ink + vermillion editorial */
 :root {
+  color-scheme: light;
   --sumi: #1c1917;
   --sumi-soft: #44403c;
+  --ink: var(--sumi);
   --paper: #f3efe6;
   --paper-deep: #e7e0d2;
+  --elevated: #fffaf3;
+  --chip: color-mix(in oklab, white 45%, transparent);
   --vermilion: #c23b22;
   --vermilion-deep: #9a2e1b;
   --line: color-mix(in oklab, var(--sumi) 14%, transparent);
+  --muted: #5c5348;
+  --ok: #166534;
   --display: "Shippori Mincho", "Hiragino Mincho ProN", serif;
   --body: "Zen Kaku Gothic New", "Hiragino Sans", sans-serif;
   --max: 68rem;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --sumi: #f0ebe3;
+  --sumi-soft: #c4bbb0;
+  --ink: var(--sumi);
+  --paper: #1a1714;
+  --paper-deep: #12100e;
+  --elevated: #24201c;
+  --chip: color-mix(in oklab, var(--elevated) 72%, transparent);
+  --vermilion: #e05840;
+  --vermilion-deep: #f07a64;
+  --line: color-mix(in oklab, var(--sumi) 18%, transparent);
+  --muted: #a89f94;
+  --ok: #86efac;
 }
 
 * {
@@ -47,10 +69,55 @@ a:hover {
 
 .site-header {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.75rem 1rem;
+  flex-wrap: wrap;
   padding: 1.25rem 0 0.5rem;
+}
+
+.site-header .brand {
+  margin-right: auto;
+}
+
+.theme-switch {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--elevated);
+  flex: 0 0 auto;
+}
+
+.theme-switch__btn {
+  appearance: none;
+  border: 0;
+  margin: 0;
+  padding: 0.35rem 0.7rem;
+  font: inherit;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  color: var(--sumi-soft);
+  background: transparent;
+  cursor: pointer;
+  line-height: 1.3;
+}
+
+.theme-switch__btn + .theme-switch__btn {
+  border-left: 1px solid var(--line);
+}
+
+.theme-switch__btn[aria-pressed="true"] {
+  color: var(--paper);
+  background: var(--sumi);
+  font-weight: 600;
+}
+
+.theme-switch__btn:focus-visible {
+  outline: 2px solid var(--vermilion);
+  outline-offset: -2px;
+  z-index: 1;
 }
 
 .brand {
@@ -190,7 +257,7 @@ a:hover {
 .plan {
   padding: 1.35rem 1.4rem 1.5rem;
   border: 1px solid var(--line);
-  background: color-mix(in oklab, white 55%, var(--paper));
+  background: color-mix(in oklab, var(--elevated) 70%, var(--paper));
 }
 
 .plan.featured {
@@ -308,7 +375,8 @@ a:hover {
   padding: 0.7rem 0.85rem;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: white;
+  background: var(--elevated);
+  color: var(--sumi);
   font: inherit;
 }
 
@@ -318,7 +386,7 @@ a:hover {
 }
 
 .status.ok {
-  color: #166534;
+  color: var(--ok);
 }
 
 .status.err {
@@ -328,7 +396,7 @@ a:hover {
 .site-footer .trademark-note {
   font-size: 0.85rem;
   margin-top: 0.75rem;
-  color: var(--muted, #5c5348);
+  color: var(--muted);
   max-width: 42rem;
   line-height: 1.55;
 }
@@ -337,7 +405,7 @@ code.key {
   display: inline-block;
   margin-top: 0.5rem;
   padding: 0.45rem 0.65rem;
-  background: white;
+  background: var(--elevated);
   border: 1px dashed var(--line);
   border-radius: 8px;
   font-size: 0.9rem;
