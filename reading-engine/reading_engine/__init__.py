@@ -73,6 +73,75 @@ def clause_context(text: str, span: tuple[int, int] | None) -> str:
     return text[left:right]
 
 
+def _cue_rule_score(rule: dict[str, Any], local: str) -> float:
+    hits = [c for c in rule.get("cues") or [] if c in local]
+    if not hits:
+        return 0.0
+    longest = max(len(h) for h in hits)
+    score = 0.7 + 0.05 * min(len(hits), 4) + 0.02 * rule.get("weight", 1)
+    score += min(longest, 8) * 0.01
+    return min(score, 0.99)
+
+
+def collect_context_rule_spans(
+    text: str,
+) -> list[tuple[int, int, str, str, float, list[str]]]:
+    """
+    形態素が「一日」→「一」「日」に割っても、CONTEXT_RULES の複合表層を
+    文節ローカルなキューで拾う（同一文の二重出現デモ用）。
+    """
+    if not text:
+        return []
+    surfaces = sorted(
+        {str(r["surface"]) for r in CONTEXT_RULES if len(str(r.get("surface") or "")) >= 2},
+        key=len,
+        reverse=True,
+    )
+    if not surfaces:
+        return []
+
+    occupied = [False] * len(text)
+    spans: list[tuple[int, int, str, str, float, list[str]]] = []
+    i = 0
+    while i < len(text):
+        if occupied[i]:
+            i += 1
+            continue
+        hit: tuple[int, int, str, str, float, list[str]] | None = None
+        for surface in surfaces:
+            end = i + len(surface)
+            if end > len(text) or text[i:end] != surface:
+                continue
+            if any(occupied[j] for j in range(i, end)):
+                continue
+            local = clause_context(text, (i, end))
+            best_reading = ""
+            best_score = 0.0
+            cands: list[str] = []
+            for rule in CONTEXT_RULES:
+                if rule.get("surface") != surface:
+                    continue
+                reading = normalize_reading(str(rule.get("reading") or ""))
+                if reading and reading not in cands:
+                    cands.append(reading)
+                score = _cue_rule_score(rule, local)
+                if score > best_score:
+                    best_score = score
+                    best_reading = reading
+            if best_reading and best_score >= 0.7:
+                hit = (i, end, surface, best_reading, best_score, cands or [best_reading])
+                break
+        if hit:
+            start, end, surface, reading, score, cands = hit
+            for j in range(start, end):
+                occupied[j] = True
+            spans.append(hit)
+            i = end
+        else:
+            i += 1
+    return spans
+
+
 CONTEXT_RULES: list[dict[str, Any]] = [
     {"surface": "忙しい", "reading": "せわしい", "weight": 3, "cues": ["暇もない", "世界", "恋", "心", "胸", "街", "夜", "夢", "涙", "君", "僕"]},
     {"surface": "忙しい", "reading": "いそがしい", "weight": 3, "cues": ["仕事", "予定", "会議", "残業"]},
@@ -106,8 +175,8 @@ CONTEXT_RULES: list[dict[str, Any]] = [
     {"surface": "人気", "reading": "にんき", "weight": 4, "cues": ["人気が高", "人気者", "人気曲", "大人気"]},
     {"surface": "一行", "reading": "いちぎょう", "weight": 5, "cues": ["一行だけ", "一行書", "一行メモ", "一行残"]},
     {"surface": "一行", "reading": "いっこう", "weight": 5, "cues": ["観光客の一行", "一行が到", "一行が到着", "一行の旅"]},
-    {"surface": "一日", "reading": "ついたち", "weight": 5, "cues": ["毎月一日", "一日に給料", "月の一日", "一日付"]},
-    {"surface": "一日", "reading": "いちにち", "weight": 4, "cues": ["丸一日", "一日かか", "一日で読", "一日中"]},
+    {"surface": "一日", "reading": "ついたち", "weight": 5, "cues": ["毎月一日", "一日に給料", "月の一日", "一日付", "一日には", "結局一日"]},
+    {"surface": "一日", "reading": "いちにち", "weight": 5, "cues": ["丸一日", "一日かか", "一日で読", "一日中", "一日中粘"]},
     {"surface": "上手", "reading": "じょうず", "weight": 5, "cues": ["が上手", "歌が上手", "絵が上手", "上手だ"]},
     {"surface": "上手", "reading": "うわて", "weight": 5, "cues": ["上手に回", "上手に出", "交渉では上手"]},
 ]
@@ -328,6 +397,18 @@ class ReadingEngine:
         phrase_map.update(user_map)
         phrase_spans = collect_phrase_spans(text, phrase_map)
 
+        words = list(self.tagger(text))
+        cursor = 0
+        exact_word_spans: set[tuple[int, int, str]] = set()
+        for word in words:
+            surface = word.surface
+            start = text.find(surface, cursor)
+            if start < 0:
+                start = cursor
+            end = start + len(surface)
+            cursor = end
+            exact_word_spans.add((start, end, surface))
+
         tokens: list[dict[str, Any]] = []
         for start, end, surface, reading in phrase_spans:
             tokens.append(
@@ -341,13 +422,38 @@ class ReadingEngine:
                 }
             )
 
-        def overlaps_phrase(start: int, end: int) -> bool:
-            for p0, p1, _s, _r in phrase_spans:
+        # 同形異音の複合表層（一日・町中など）を形態素分割前にキューで確定
+        def overlaps_existing(start: int, end: int) -> bool:
+            for t in tokens:
+                p0, p1 = t["span"]
                 if start < p1 and end > p0:
                     return True
             return False
 
-        words = list(self.tagger(text))
+        for start, end, surface, reading, conf, cands in collect_context_rule_spans(text):
+            if overlaps_existing(start, end):
+                continue
+            # 既に単一トークンとして扱える表層は通常ラティスへ流し、候補を減らさない。
+            if (start, end, surface) in exact_word_spans:
+                continue
+            tokens.append(
+                {
+                    "surface": surface,
+                    "span": [start, end],
+                    "reading": reading,
+                    "confidence": conf,
+                    "source": "cue",
+                    "candidates": cands,
+                }
+            )
+
+        def overlaps_phrase(start: int, end: int) -> bool:
+            for t in tokens:
+                p0, p1 = t["span"]
+                if start < p1 and end > p0:
+                    return True
+            return False
+
         cursor = 0
 
         for word in words:
@@ -417,32 +523,62 @@ class ReadingEngine:
                 }
             )
 
-        # Creative multi-char surfaces (氷菓) — still lattice-local
+        # 創作ルビの複合表層（氷菓など）。1文字（星・月）は形態素側の
+        # _score_cue に任せ、ここで差し込むと「金星」を「星」だけに壊す。
+        creative_extra: list[dict[str, Any]] = []
         for entry in self.creative:
-            idx = text.find(entry.surface)
-            if idx < 0:
+            surface = entry.surface
+            if len(surface) < 2:
                 continue
-            hits = [c for c in entry.cues if c in text]
-            if not hits and entry.genre not in ("lyric", "novel"):
-                continue
-            if not hits and not any(k in text for k in ("夏", "君", "恋", "風", "木陰", "口に")):
-                if entry.surface != "氷菓":
+            search_from = 0
+            while True:
+                idx = text.find(surface, search_from)
+                if idx < 0:
+                    break
+                end = idx + len(surface)
+                search_from = idx + 1
+                local = clause_context(text, (idx, end))
+                hits = [c for c in entry.cues if c in local]
+                if not hits and entry.genre not in ("lyric", "novel"):
                     continue
-            end = idx + len(entry.surface)
-            tokens = [t for t in tokens if not (t["span"][0] < end and t["span"][1] > idx)]
-            creative_cands = [entry.reading]
-            if "ひょうか" not in creative_cands:
-                creative_cands.append("ひょうか")
-            tokens.append(
-                {
-                    "surface": entry.surface,
-                    "span": [idx, end],
-                    "reading": entry.reading,
-                    "confidence": 0.94 if hits else 0.8,
-                    "source": "creative_ruby",
-                    "candidates": creative_cands,
-                }
-            )
+                if not hits and not any(
+                    k in local for k in ("夏", "君", "恋", "風", "木陰", "口に")
+                ):
+                    if surface != "氷菓":
+                        continue
+                # より長い既存トークンの内部をくり抜かない（金星⊃星 の保険）
+                if any(
+                    t["span"][0] <= idx
+                    and t["span"][1] >= end
+                    and (t["span"][1] - t["span"][0]) > len(surface)
+                    for t in tokens
+                ):
+                    continue
+                creative_cands = [entry.reading]
+                if surface == "氷菓" and "ひょうか" not in creative_cands:
+                    creative_cands.append("ひょうか")
+                creative_extra.append(
+                    {
+                        "surface": surface,
+                        "span": [idx, end],
+                        "reading": entry.reading,
+                        "confidence": 0.94 if hits else 0.8,
+                        "source": "creative_ruby",
+                        "candidates": creative_cands,
+                    }
+                )
+
+        if creative_extra:
+            def overlaps_creative(t: dict[str, Any]) -> bool:
+                a, b = t["span"]
+                for c in creative_extra:
+                    c0, c1 = c["span"]
+                    if a < c1 and b > c0:
+                        return True
+                return False
+
+            tokens = [t for t in tokens if not overlaps_creative(t)]
+            tokens.extend(creative_extra)
         tokens.sort(key=lambda t: t["span"][0])
         # 数字ラン（21 など）をギャップに載せる。助数詞漢字は別トークンのまま。
         tokens = merge_number_tokens(text, tokens)
