@@ -4,11 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    <title>開発者インジェスト — YT Furigana</title>
-    <meta
-      name="description"
-      content="運用専用: 検索で選別した文を貼り付け、LLM が学習候補を抽出します。"
-    />
+    <title>開発者インジェスト（ローカル）— YT Furigana</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -29,31 +25,23 @@
         } catch (e) {}
       })();
     </script>
-    <link rel="stylesheet" href="./styles.css" />
-    <link rel="stylesheet" href="./learning-report.css" />
-    <link rel="stylesheet" href="./dev-ingest.css?v=20260807a" />
-    <script src="./config.js"></script>
+    <!-- リポジトリルートで http.server したとき用 -->
+    <link rel="stylesheet" href="../../site/styles.css" />
+    <link rel="stylesheet" href="../../site/learning-report.css" />
+    <link rel="stylesheet" href="./dev-ingest.css" />
   </head>
   <body class="report-page dev-ingest-page">
     <div class="wrap">
       <header class="site-header">
-        <a class="brand" href="./">YT Furigana</a>
-        <nav class="nav" aria-label="主要ナビ">
-          <a href="./">ホーム</a>
-          <a href="./lattice.html">ラティス（運用）</a>
-          <a href="./learning-report.html">学習ログ</a>
-          <a href="./dev-ingest.html" aria-current="page">開発者インジェスト</a>
-          <a href="https://github.com/Blackphi6/yt-furigana-extension">GitHub</a>
-        </nav>
+        <span class="brand">YT Furigana · ローカル運用</span>
       </header>
 
       <section class="report-hero fade-up">
-        <p class="eyebrow">運用 · noindex · admin token</p>
+        <p class="eyebrow">公開 Pages には載せません · admin token</p>
         <h1>開発者インジェスト</h1>
         <p class="lead">
-          Google などで見つけた文を選別して貼ると、LLM が
-          <strong>表層→読み</strong>の学習候補を抜き出します。
-          確認してから proposals キューへ送れます（即公開しません）。
+          選別した文を貼ると LLM が表層→読み候補を抜き出します。
+          確認後に Render の proposals キューへ送ります（即公開しません）。
         </p>
         <p class="report-status" id="status" role="status">トークンを入力してください</p>
       </section>
@@ -61,8 +49,8 @@
       <section class="panel fade-up" aria-labelledby="auth-heading">
         <h2 id="auth-heading">認証</h2>
         <p class="hint">
-          Render の <code>YT_FURIGANA_ADMIN_TOKEN</code> と同じ値です。ブラウザの
-          localStorage にだけ保存します。
+          Render → <code>yt-furigana-readings</code> → Environment →
+          <code>YT_FURIGANA_ADMIN_TOKEN</code>
         </p>
         <label class="field-label" for="admin-token">Admin token</label>
         <div class="dev-auth-row">
@@ -125,18 +113,7 @@
           </table>
         </div>
       </section>
-
-      <footer class="site-footer">
-        <p>
-          <a href="./lattice.html">ラティス</a>
-          ·
-          <a href="./learning-report.html">学習ログ</a>
-          ·
-          <a href="./privacy.html">プライバシー</a>
-        </p>
-      </footer>
     </div>
-    <script src="./dev-ingest.js?v=20260807a" type="module"></script>
-    <script type="module" src="./theme.js?v=20260806a"></script>
+    <script src="./dev-ingest.js" type="module"></script>
   </body>
 </html>

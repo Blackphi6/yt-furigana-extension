@@ -1,10 +1,8 @@
 /**
- * 開発者専用: 貼り付け → LLM 抽出 → proposals キュー
+ * 開発者専用（tools/・Pages非公開）: 貼り付け → LLM 抽出 → proposals
  */
 const TOKEN_KEY = "ytf_admin_token";
-const DEFAULT_API =
-  (window.YT_FURIGANA_SITE && window.YT_FURIGANA_SITE.readingApiUrl) ||
-  "https://yt-furigana-readings.onrender.com";
+const DEFAULT_API = "https://yt-furigana-readings.onrender.com";
 
 const $ = (sel) => document.querySelector(sel);
 
