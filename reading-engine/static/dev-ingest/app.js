@@ -159,10 +159,17 @@ async function refreshSummary() {
       `proposals ${data.total ?? "—"} 件（デモ系 ${data.demoRelated ?? "—"}） / 票ペア ${data.contributions?.totalPairs ?? "—"}`
     );
   } catch (err) {
-    showError(String(err.message || err));
-    setStatus("件数取得に失敗（スリープ起き直後なら再試行）");
+    const msg = String(err.message || err);
+    showError(msg);
+    if (/forbidden|unauthorized|401|403/i.test(msg)) {
+      setStatus(
+        "認証失敗: Render の YT_FURIGANA_ADMIN_TOKEN と一致するか確認（未設定なら Environment で追加→Save→デプロイ）"
+      );
+    } else {
+      setStatus("件数取得に失敗（スリープ起き直後なら再試行）");
+    }
   }
-}
+
 
 async function onExtract() {
   showError("");
