@@ -187,7 +187,7 @@ class ProposalAdminRequest(BaseModel):
 
 class LearningIngestExtractRequest(BaseModel):
     adminToken: str = ""
-    text: str = Field(default="", max_length=12000)
+    text: str = Field(default="", max_length=20000)
     note: str = Field(default="", max_length=200)
     focusSurfaces: list[str] = Field(default_factory=list, max_length=20)
 
@@ -195,7 +195,7 @@ class LearningIngestExtractRequest(BaseModel):
 class LearningIngestCommitRequest(BaseModel):
     adminToken: str = ""
     note: str = Field(default="", max_length=200)
-    items: list[dict[str, Any]] = Field(default_factory=list, max_length=50)
+    items: list[dict[str, Any]] = Field(default_factory=list, max_length=80)
 
 
 @app.get("/")

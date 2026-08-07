@@ -20,8 +20,8 @@ from reading_engine.proposals import append_proposals
 DEV_INGEST_FILE = DATA_DIR / "dev-ingest.jsonl"
 _file_lock = Lock()
 
-_MAX_TEXT = 12000
-_MAX_ITEMS = 40
+_MAX_TEXT = 20000
+_MAX_ITEMS = 80
 
 
 def _utcnow() -> str:
@@ -62,11 +62,17 @@ def _groq_extract(
         "\"surface\":\"kanji word\",\"gold\":\"hiragana reading\","
         "\"note\":\"why this reading\"}]}\n"
         "Rules:\n"
-        "- gold must be hiragana or katakana only\n"
+        "- gold must be hiragana or katakana only (one reading per item)\n"
         "- surface must appear in text\n"
         "- text should be a short excerpt (≤80 chars) containing the surface\n"
         "- skip pure kana, punctuation-only, and jokes\n"
-        "- max 25 items; dedupe by surface+gold\n"
+        "- max 60 items; dedupe by surface+gold+text\n"
+        "If the paste has 【問題】 and 【解答】 (or 問題/解答) sections:\n"
+        "- Match numbered lines (e.g. 55.) between question and answer\n"
+        "- Answers like きんせい・きんぼし mean multiple readings for the SAME surface "
+        "in that sentence — emit ONE item per reading, with a short excerpt that "
+        "fits that sense (split the sentence at 、 if needed)\n"
+        "- Prefer the kanji compound that differs in reading (金星, 町中, etc.)\n"
         f"{focus_line}\n"
         f"{note_line}"
         f"PASTE:\n{text[:_MAX_TEXT]}"
