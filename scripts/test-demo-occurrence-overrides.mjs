@@ -6,6 +6,7 @@ import {
   applyOccurrenceOverrides,
   countSurfaceOccurrences,
   expandOverrideSpan,
+  fillUncoveredTokenGaps,
   shouldPinGlobally,
   spanFromTokenRange,
   upsertOccurrenceOverride,
@@ -133,6 +134,21 @@ assert.equal(shouldPinGlobally("一日中だけ。", "一日"), true);
   assert.equal(head[2].surface, "ない");
   // 後ろの「大人」は触らない
   assert.equal(out.find((tok) => tok.span[0] === 6)?.reading, "おとな");
+}
+
+// 金星だけ上書きされ、見上げ／挙げるが欠けたとき unset で埋まる
+{
+  const kinsei = "金星を見上げ、金星を挙げる。";
+  const sparse = [
+    { surface: "金星", span: [0, 2], reading: "すたー", source: "occurrence" },
+    { surface: "金星", span: [7, 9], reading: "きんぼし", source: "occurrence" },
+  ];
+  const filled = fillUncoveredTokenGaps(kinsei, sparse, { kanjiOnly: true });
+  const unset = filled.filter((t) => t.source === "unset");
+  assert.equal(unset.length, 2);
+  assert.equal(unset[0].surface, "見上げ");
+  assert.equal(unset[1].surface, "挙げる");
+  assert.equal(unset[0].reading, "");
 }
 
 console.log("test-demo-occurrence-overrides: ok");

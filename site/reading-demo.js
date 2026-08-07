@@ -12,10 +12,11 @@ import {
 import {
   applyOccurrenceOverrides,
   expandOverrideSpan,
+  fillUncoveredTokenGaps,
   shouldPinGlobally,
   spanFromTokenRange,
   upsertOccurrenceOverride,
-} from "./demo-occurrence-overrides.js?v=20260807a";
+} from "./demo-occurrence-overrides.js?v=20260807b";
 
 const DEFAULT_API =
   (window.YT_FURIGANA_SITE && window.YT_FURIGANA_SITE.readingApiUrl) ||
@@ -690,6 +691,8 @@ function renderResult(text, data) {
     tokens,
     occurrenceByText[displayText] || []
   );
+  // API が漢字を落とす／上書きで隣が消えても、後から登録できる
+  tokens = fillUncoveredTokenGaps(displayText, tokens, { kanjiOnly: true });
   const strippedMarkers = displayText !== String(text ?? "");
   lastResult = { text: displayText, tokens };
   closeDemoPicker();

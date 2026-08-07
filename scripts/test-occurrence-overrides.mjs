@@ -7,6 +7,7 @@ import {
   assignTokenSpans,
   countSurfaceOccurrences,
   expandOverrideSpan,
+  fillUncoveredTokenGaps,
   installOccurrenceOverridesForTests,
   shouldPinGlobally,
   spanFromTokenRange,
@@ -52,6 +53,37 @@ import {
     surface: "一日",
     reading: "いちにち",
   });
+}
+
+// 金星だけ残して見上げ／挙げるが欠けても unset で埋まる
+{
+  const text = "金星を見上げ、金星を挙げる。";
+  const sparse = [
+    { surface: "金星", span: [0, 2], reading: "すたー", source: "occurrence" },
+    { surface: "金星", span: [7, 9], reading: "きんぼし", source: "occurrence" },
+  ];
+  const filled = fillUncoveredTokenGaps(text, sparse);
+  const unset = filled.filter((t) => t.source === "unset");
+  assert.equal(unset.length, 2);
+  assert.equal(unset[0].surface, "見上げ");
+  assert.deepEqual(unset[0].span, [3, 6]);
+  assert.equal(unset[0].reading, "");
+  assert.equal(unset[1].surface, "挙げる");
+  assert.deepEqual(unset[1].span, [10, 13]);
+
+  // span 欠落トークンは先頭上書きに巻き込まれない
+  const withMissing = applyOccurrenceOverrides(
+    text,
+    [
+      { surface: "見上げ", reading: "みあげ" }, // span なし
+      { surface: "金星", span: [0, 2], reading: "きんぼし" },
+    ],
+    [{ start: 0, end: 2, surface: "金星", reading: "すたー" }]
+  );
+  assert.ok(
+    withMissing.some((t) => (t.surface || t.surface_form) === "見上げ"),
+    "span 欠落の見上げが消えないこと"
+  );
 }
 
 console.log("test-occurrence-overrides: ok");

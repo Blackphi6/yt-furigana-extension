@@ -81,6 +81,22 @@ export function upsertOccurrenceOverride(overrides, entry) {
   return next;
 }
 
+function tokenSpan(tok) {
+  if (!Array.isArray(tok?.span) || tok.span.length < 2) return null;
+  const a = Number(tok.span[0]);
+  const b = Number(tok.span[1]);
+  if (!Number.isFinite(a) || !Number.isFinite(b) || b <= a) return null;
+  return [a, b];
+}
+
+function isKanjiChar(ch) {
+  return /[\u3400-\u9fff\uF900-\uFAFF々〻]/.test(ch);
+}
+
+function isHiraganaChar(ch) {
+  return /[\u3041-\u3096]/.test(ch);
+}
+
 /**
  * @param {string} text
  * @param {object[]} tokens  demo形 { surface, span, reading } または形態素形
@@ -92,13 +108,11 @@ export function applyOccurrenceOverrides(text, tokens, overrides) {
   const rules = Array.isArray(overrides) ? overrides : [];
   if (!rules.length) return base;
 
-  const spanOf = (tok) =>
-    Array.isArray(tok?.span) ? tok.span : [0, 0];
-  const surfaceOf = (tok) =>
-    String(tok?.surface || tok?.surface_form || "");
-
+  // span 欠落を [0,0] 扱いすると、先頭の上書きに巻き込まれるので除外しない
   const kept = base.filter((tok) => {
-    const [a, b] = spanOf(tok);
+    const span = tokenSpan(tok);
+    if (!span) return true;
+    const [a, b] = span;
     return !rules.some((o) => a >= o.start && b <= o.end);
   });
 
@@ -111,8 +125,8 @@ export function applyOccurrenceOverrides(text, tokens, overrides) {
     const reading = String(o.reading || "");
     if (!surface || !reading) continue;
     const prev = base.find((tok) => {
-      const [a, b] = spanOf(tok);
-      return a === start && b === end;
+      const span = tokenSpan(tok);
+      return span && span[0] === start && span[1] === end;
     });
     const prevCands = Array.isArray(prev?.candidates) ? prev.candidates : [];
     const candidates = [reading, ...prevCands.filter((c) => c !== reading)];
@@ -128,7 +142,81 @@ export function applyOccurrenceOverrides(text, tokens, overrides) {
       preserveKatakana: /[\u30a1-\u30f6]/.test(reading),
     });
   }
-  return kept.sort((a, b) => (spanOf(a)[0] ?? 0) - (spanOf(b)[0] ?? 0));
+  return kept.sort((a, b) => (tokenSpan(a)?.[0] ?? 0) - (tokenSpan(b)?.[0] ?? 0));
+}
+
+/**
+ * トークンが覆っていない漢字（＋続く送り仮名）を unset トークンで埋める。
+ * API が語を落とす／上書きで隣が消えたときも、後からクリック登録できる。
+ * @param {string} text
+ * @param {object[]} tokens
+ */
+export function fillUncoveredTokenGaps(text, tokens) {
+  const t = String(text || "");
+  const list = Array.isArray(tokens) ? [...tokens] : [];
+  if (!t) return list;
+
+  const covered = new Uint8Array(t.length);
+  for (const tok of list) {
+    const span = tokenSpan(tok);
+    if (!span) continue;
+    const a = Math.max(0, span[0]);
+    const b = Math.min(t.length, span[1]);
+    for (let i = a; i < b; i += 1) covered[i] = 1;
+  }
+
+  const extras = [];
+  let i = 0;
+  while (i < t.length) {
+    if (covered[i]) {
+      i += 1;
+      continue;
+    }
+    let j = i + 1;
+    while (j < t.length && !covered[j]) j += 1;
+    // ギャップ内を「非漢字」と「漢字＋送り仮名」に分割
+    let k = i;
+    while (k < j) {
+      if (!isKanjiChar(t[k])) {
+        let m = k + 1;
+        while (m < j && !isKanjiChar(t[m])) m += 1;
+        const surface = t.slice(k, m);
+        extras.push({
+          surface,
+          surface_form: surface,
+          span: [k, m],
+          reading: "",
+          pronunciation: "",
+          source: "gap",
+          confidence: 0,
+          candidates: [],
+        });
+        k = m;
+        continue;
+      }
+      let m = k + 1;
+      while (m < j && isKanjiChar(t[m])) m += 1;
+      while (m < j && isHiraganaChar(t[m])) m += 1;
+      const surface = t.slice(k, m);
+      extras.push({
+        surface,
+        surface_form: surface,
+        span: [k, m],
+        reading: "",
+        pronunciation: "",
+        source: "unset",
+        confidence: 0,
+        candidates: [],
+      });
+      k = m;
+    }
+    i = j;
+  }
+
+  if (!extras.length) return list;
+  return [...list, ...extras].sort(
+    (a, b) => (tokenSpan(a)?.[0] ?? 0) - (tokenSpan(b)?.[0] ?? 0)
+  );
 }
 
 /**

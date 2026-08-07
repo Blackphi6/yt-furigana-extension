@@ -266,6 +266,7 @@ import {
 import {
   assignTokenSpans,
   applyOccurrenceOverrides,
+  fillUncoveredTokenGaps,
   getOccurrenceOverridesForText,
 } from "./occurrence-overrides.js";
 
@@ -363,6 +364,8 @@ export function buildFuriganaHtml(text, tokenize) {
   if (occurrenceRules.length) {
     tokens = applyOccurrenceOverrides(spanBase, tokens, occurrenceRules);
   }
+  // 上書きで隣の漢字が消えた／解析漏れでも、クリック登録できる unset を残す
+  tokens = fillUncoveredTokenGaps(spanBase, tokens);
 
   let wrapIndex = 0;
   return tokens
