@@ -25,6 +25,11 @@ export const DEFAULT_SETTINGS = {
   sharedDictEnabled: true,
   /** クリック訂正を匿名でみんなの辞書づくりに送る（オプトイン） */
   contributionEnabled: false,
+  /**
+   * 初回訂正後の「みんなに送る？」プロンプトを出したか。
+   * true なら再表示しない（拒否・同意どちらでも）。
+   */
+  contributionPromptSeen: false,
   /** Free: 起動時に共有読みパックを受け取る（既定オン・オフ可） */
   sharedPackEnabled: true,
   /** GitHub Sponsors URL */

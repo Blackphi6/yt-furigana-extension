@@ -215,6 +215,17 @@ function main() {
   const mb = (statSync(zipPath).size / (1024 * 1024)).toFixed(1);
   console.log(`Store zip → ${zipPath} (${mb} MB)`);
   console.log("Upload this zip in Chrome Web Store Developer Dashboard.");
+
+  // GitHub Release も同じ zip で更新（SKIP_GITHUB_RELEASE=1 で省略可）
+  const release = spawnSync(
+    process.execPath,
+    [path.join(root, "scripts", "github-release.mjs"), "--product", "furigana"],
+    { cwd: root, encoding: "utf8", stdio: "inherit" }
+  );
+  if (release.status !== 0) {
+    console.error("GitHub Release 更新に失敗しました（zip 自体は作成済み）");
+    process.exit(release.status || 1);
+  }
 }
 
 main();

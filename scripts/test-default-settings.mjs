@@ -113,6 +113,9 @@ if (DEFAULT_SETTINGS.learningInboxEnabled !== true) {
 if (DEFAULT_SETTINGS.contributionEnabled !== false) {
   throw new Error("contributionEnabled should default to false (opt-in)");
 }
+if (DEFAULT_SETTINGS.contributionPromptSeen !== false) {
+  throw new Error("contributionPromptSeen should default to false");
+}
 
 if (DEFAULT_SETTINGS.sharedPackEnabled !== true) {
   throw new Error("sharedPackEnabled should default to true");

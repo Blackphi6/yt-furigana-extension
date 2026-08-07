@@ -1,4 +1,4 @@
-import { buildRuby, isNumberReadingTipSurface } from "./furigana.js";
+import { buildRuby, isNumberReadingTipSurface, isRegisterableSurface, wrapFuriganaWord } from "./furigana.js";
 import { collectReadingCandidates } from "./reading-candidates.js";
 import {
   saveUserReadingChoice,
@@ -18,6 +18,11 @@ import {
 } from "./reading-learning.js";
 import { fitRubyReadings } from "./ruby-layout.js";
 import { splitContributionContext } from "./contributions.js";
+import {
+  saveOccurrenceOverrideForText,
+  shouldPinGlobally,
+  spanFromTokenRange,
+} from "./occurrence-overrides.js";
 
 const POPUP_ID = "yt-furigana-reading-picker";
 
@@ -81,14 +86,22 @@ function isKanaOnlyReading(value) {
 
 /**
  * @param {HTMLElement} wordEl
- * @param {{ contextText?: string }} [options]
+ * @param {{ contextText?: string, surface?: string, currentReading?: string, span?: [number, number], merged?: boolean, selectedEls?: HTMLElement[] }} [options]
  */
 export async function openReadingPicker(wordEl, options = {}) {
   closeReadingPicker();
 
-  const surface = wordEl.getAttribute("data-surface") || "";
-  const currentReading = wordEl.getAttribute("data-reading") || "";
+  const surface =
+    options.surface != null
+      ? String(options.surface)
+      : wordEl.getAttribute("data-surface") || "";
+  const currentReading =
+    options.currentReading != null
+      ? String(options.currentReading)
+      : wordEl.getAttribute("data-reading") || "";
   if (!surface) return;
+  const isMerge = Boolean(options.merged);
+  const spanOverride = Array.isArray(options.span) ? options.span : null;
 
   const contextText =
     options.contextText ||
@@ -103,31 +116,45 @@ export async function openReadingPicker(wordEl, options = {}) {
   // 表示単位（結合後の data-surface）だけで候補を出す。
   // 「何」クリックで「なぜか」が出るような表層の勝手な拡張はしない。
   const userStore = await loadUserReadingStore();
-  const candidates = collectReadingCandidates(
-    surface,
-    currentReading,
-    contextText,
-    userStore
-  );
+  const candidates = isMerge
+    ? []
+    : collectReadingCandidates(
+        surface,
+        currentReading,
+        contextText,
+        userStore
+      );
 
-  const customLabel = currentReading
-    ? "候補にない読み"
-    : "読みを入力（未登録）";
-  const customHint = currentReading
-    ? "例: とわ / ウィークエンド。ひらがな・カタカナ可。"
-    : "ひらがなまたはカタカナで入力（例: おんりー / オンリー）。";
+  const headLabel = isMerge
+    ? `${surface}（まとめて指定）`
+    : surface;
+  const customLabel = isMerge
+    ? "まとめた読みを入力"
+    : currentReading
+      ? "候補にない読み"
+      : "読みを入力（未登録）";
+  const customHint = isMerge
+    ? "例: おとなげ。ひらがな・カタカナ可。"
+    : currentReading
+      ? "例: とわ / ウィークエンド。ひらがな・カタカナ可。"
+      : "ひらがなまたはカタカナで入力（例: おんりー / オンリー）。";
 
   const popup = document.createElement("div");
   popup.id = POPUP_ID;
   popup.className = "yt-furigana-picker";
   popup.setAttribute("role", "dialog");
-  popup.setAttribute("aria-label", `${surface}の読みを選ぶ`);
+  popup.setAttribute(
+    "aria-label",
+    isMerge ? `${surface}をまとめて読み登録` : `${surface}の読みを選ぶ`
+  );
   popup.innerHTML = `
-    <div class="yt-furigana-picker__head">${escapeAttr(surface)}</div>
+    <div class="yt-furigana-picker__head">${escapeAttr(headLabel)}</div>
     <ul class="yt-furigana-picker__list" role="listbox">
-      ${candidates
-        .map(
-          (c, index) => `
+      ${
+        candidates.length
+          ? candidates
+              .map(
+                (c, index) => `
         <li>
           <button type="button" class="yt-furigana-picker__item${
             c.reading === normalizeUserReading(currentReading) ||
@@ -139,8 +166,12 @@ export async function openReadingPicker(wordEl, options = {}) {
             <span class="yt-furigana-picker__label">${escapeAttr(c.label)}</span>
           </button>
         </li>`
-        )
-        .join("")}
+              )
+              .join("")
+          : `<li class="yt-furigana-picker__empty">${
+              isMerge ? "下に読みを入力（例: おとなげ）" : "候補なし — 下に入力"
+            }</li>`
+      }
     </ul>
     <form class="yt-furigana-picker__custom" autocomplete="off">
       <label class="yt-furigana-picker__custom-label" for="${POPUP_ID}-input">${customLabel}</label>
@@ -211,6 +242,15 @@ export async function openReadingPicker(wordEl, options = {}) {
   const input = popup.querySelector(".yt-furigana-picker__input");
   const form = popup.querySelector(".yt-furigana-picker__custom");
 
+  const runApply = async (reading) => {
+    await applyReadingChoice(wordEl, surface, reading, contextText, {
+      span: spanOverride,
+      merged: isMerge,
+      selectedEls: options.selectedEls,
+    });
+    closeReadingPicker();
+  };
+
   popup.addEventListener("click", async (event) => {
     const button = event.target.closest(".yt-furigana-picker__item");
     if (!button) return;
@@ -218,8 +258,7 @@ export async function openReadingPicker(wordEl, options = {}) {
     event.stopPropagation();
 
     const reading = button.getAttribute("data-reading") || "";
-    await applyReadingChoice(wordEl, surface, reading, contextText);
-    closeReadingPicker();
+    await runApply(reading);
   });
 
   form?.addEventListener("submit", async (event) => {
@@ -234,13 +273,7 @@ export async function openReadingPicker(wordEl, options = {}) {
       return;
     }
     if (input) input.setCustomValidity("");
-    await applyReadingChoice(
-      wordEl,
-      surface,
-      normalizeUserReading(raw),
-      contextText
-    );
-    closeReadingPicker();
+    await runApply(normalizeUserReading(raw));
   });
 
   // クリックが外側扱いにならないよう入力欄の伝播を止める
@@ -249,50 +282,112 @@ export async function openReadingPicker(wordEl, options = {}) {
   input?.focus();
 }
 
-async function applyReadingChoice(wordEl, surface, reading, contextText) {
+/**
+ * @param {HTMLElement} wordEl
+ * @param {string} surface
+ * @param {string} reading
+ * @param {string} contextText
+ * @param {{ span?: [number, number] | null, merged?: boolean, selectedEls?: HTMLElement[] }} [extra]
+ */
+async function applyReadingChoice(wordEl, surface, reading, contextText, extra = {}) {
   // ユーザー入力はカタカナ保持済みの想定。既存候補はひらがなのまま可。
   const normalized = /[\u30a1-\u30f6]/.test(reading)
     ? normalizeUserReading(reading)
     : normalizeReading(reading) || normalizeUserReading(reading);
-  wordEl.setAttribute("data-surface", surface);
-  wordEl.setAttribute("data-reading", normalized);
-  wordEl.classList.remove("yt-furigana-word--unset");
-  const preserveKatakana = /[\u30a1-\u30f6]/.test(normalized);
-  wordEl.innerHTML = buildRuby(surface, normalized, { preserveKatakana });
 
-  // 数字系はルビではなくツールチップ
-  if (isNumberReadingTipSurface(surface) && normalized) {
-    wordEl.classList.add("yt-furigana-word--tip");
-    wordEl.setAttribute("data-tip", normalized);
-    wordEl.title = normalized;
-  } else {
-    wordEl.classList.remove("yt-furigana-word--tip");
-    wordEl.removeAttribute("data-tip");
-    wordEl.title = "クリックで読み候補";
+  let span = Array.isArray(extra.span) ? extra.span : null;
+  if (!span) {
+    const a = Number.parseInt(wordEl.getAttribute("data-span-start") || "", 10);
+    const b = Number.parseInt(wordEl.getAttribute("data-span-end") || "", 10);
+    if (Number.isFinite(a) && Number.isFinite(b) && b > a) span = [a, b];
   }
-  requestAnimationFrame(() => fitRubyReadings(wordEl));
 
-  const cues = buildLearningCues(surface, contextText);
-  if (cues.length > 0) {
-    // 文脈付き: グローバル上書きにしない（別文の「えいえん」を守る）
-    MANUAL_PHRASE_READINGS.delete(surface);
-    CONTEXT_READING_RULES.push({
+  const displayText = String(contextText || "");
+  if (span && displayText) {
+    await saveOccurrenceOverrideForText(displayText, {
+      start: span[0],
+      end: span[1],
       surface,
       reading: normalized,
-      weight: 5,
-      cues
     });
-    rebuildManualPhraseIndex();
-  } else {
-    MANUAL_PHRASE_READINGS.set(surface, normalized);
-    rebuildManualPhraseIndex();
   }
 
-  await saveUserReadingChoice({
-    surface,
-    reading: normalized,
-    contextText
-  });
+  if (extra.merged && Array.isArray(extra.selectedEls) && extra.selectedEls.length > 1) {
+    const preserveKatakana = /[\u30a1-\u30f6]/.test(normalized);
+    const ruby = buildRuby(surface, normalized, { preserveKatakana });
+    const html = wrapFuriganaWord(surface, normalized, ruby, {
+      preserveKatakana,
+      spanStart: span?.[0],
+      spanEnd: span?.[1],
+      tokenIndex: 0,
+    });
+    const tmp = document.createElement("div");
+    tmp.innerHTML = html;
+    const newEl = tmp.firstElementChild;
+    if (newEl && extra.selectedEls[0]?.parentNode) {
+      extra.selectedEls[0].replaceWith(newEl);
+      for (let i = 1; i < extra.selectedEls.length; i += 1) {
+        extra.selectedEls[i]?.remove();
+      }
+      requestAnimationFrame(() => fitRubyReadings(newEl));
+    }
+  } else {
+    wordEl.setAttribute("data-surface", surface);
+    wordEl.setAttribute("data-reading", normalized);
+    if (span) {
+      wordEl.setAttribute("data-span-start", String(span[0]));
+      wordEl.setAttribute("data-span-end", String(span[1]));
+    }
+    wordEl.classList.remove("yt-furigana-word--unset");
+    const preserveKatakana = /[\u30a1-\u30f6]/.test(normalized);
+    wordEl.innerHTML = buildRuby(surface, normalized, { preserveKatakana });
+
+    // 数字系はルビではなくツールチップ
+    if (isNumberReadingTipSurface(surface) && normalized) {
+      wordEl.classList.add("yt-furigana-word--tip");
+      wordEl.setAttribute("data-tip", normalized);
+      wordEl.title = normalized;
+    } else {
+      wordEl.classList.remove("yt-furigana-word--tip");
+      wordEl.removeAttribute("data-tip");
+      wordEl.title = "クリックで読み候補。ドラッグで複数語をまとめて指定";
+    }
+    requestAnimationFrame(() => fitRubyReadings(wordEl));
+  }
+
+  // 出現が1つだけなら従来どおりグローバル／文脈学習。複数なら出現上書きのみ。
+  const pinGlobally = !displayText || shouldPinGlobally(displayText, surface);
+  if (pinGlobally && !extra.merged) {
+    const cues = buildLearningCues(surface, contextText);
+    if (cues.length > 0) {
+      MANUAL_PHRASE_READINGS.delete(surface);
+      CONTEXT_READING_RULES.push({
+        surface,
+        reading: normalized,
+        weight: 5,
+        cues
+      });
+      rebuildManualPhraseIndex();
+    } else {
+      MANUAL_PHRASE_READINGS.set(surface, normalized);
+      rebuildManualPhraseIndex();
+    }
+
+    await saveUserReadingChoice({
+      surface,
+      reading: normalized,
+      contextText
+    });
+  } else if (extra.merged && pinGlobally) {
+    // 結合語が文中1回だけ → フレーズとしても覚える（他の文でも効く）
+    MANUAL_PHRASE_READINGS.set(surface, normalized);
+    rebuildManualPhraseIndex();
+    await saveUserReadingChoice({
+      surface,
+      reading: normalized,
+      contextText
+    });
+  }
 
   if (typeof chrome !== "undefined" && chrome?.storage?.local) {
     const stored = await chrome.storage.local.get({ [LEARNING_INBOX_KEY]: [] });
@@ -308,8 +403,8 @@ async function applyReadingChoice(wordEl, surface, reading, contextText) {
         surface,
         want: normalized,
         reading: normalized,
-        cues,
-        source: "user",
+        cues: extra.merged ? [] : buildLearningCues(surface, contextText),
+        source: extra.merged ? "user-span" : "user",
         videoUrl: typeof location !== "undefined" ? location.href : ""
       },
       LEARNING_INBOX_LIMIT
@@ -319,27 +414,147 @@ async function applyReadingChoice(wordEl, surface, reading, contextText) {
 
   // 匿名貢献（オプトイン）。失敗しても UI は止めない。
   try {
-    if (typeof chrome !== "undefined" && chrome?.runtime?.sendMessage) {
-      const { contributionEnabled } = await chrome.storage.sync.get({
-        contributionEnabled: false
-      });
-      if (contributionEnabled) {
-        const { contextLeft, contextRight } = splitContributionContext(
-          contextText,
-          surface
-        );
-        chrome.runtime.sendMessage({
-          type: "SUBMIT_CONTRIBUTION",
-          surface,
-          reading: normalized,
-          contextLeft,
-          contextRight
-        });
-      }
+    if (typeof chrome === "undefined" || !chrome?.storage?.sync) return;
+    const flags = await chrome.storage.sync.get({
+      contributionEnabled: false,
+      contributionPromptSeen: false
+    });
+    if (flags.contributionEnabled) {
+      await submitContributionVote(surface, normalized, contextText);
+      return;
+    }
+    // 初回だけ「みんなに送る？」を聞く（既定オフのまま送らない）
+    if (!flags.contributionPromptSeen) {
+      askContributionConsent(surface, normalized, contextText);
     }
   } catch {
     /* ignore */
   }
+}
+
+/**
+ * 票を送って短いトーストを出す。
+ * @param {string} surface
+ * @param {string} reading
+ * @param {string} contextText
+ */
+async function submitContributionVote(surface, reading, contextText) {
+  if (typeof chrome === "undefined" || !chrome?.runtime?.sendMessage) return;
+  const { contextLeft, contextRight } = splitContributionContext(
+    contextText,
+    surface
+  );
+  const response = await new Promise((resolve) => {
+    try {
+      chrome.runtime.sendMessage(
+        {
+          type: "SUBMIT_CONTRIBUTION",
+          surface,
+          reading,
+          contextLeft,
+          contextRight
+        },
+        (res) => resolve(res || { ok: false })
+      );
+    } catch {
+      resolve({ ok: false });
+    }
+  });
+  if (!response?.ok || response.skipped) return;
+  const votes = Number(response.votes) || 0;
+  const needed = Number(response.votesNeeded);
+  const minVotes = Number(response.minVotes) || 0;
+  let msg = "みんなの辞書づくりに送りました";
+  if (response.inPack) {
+    msg = `共有パックに入りました（${votes}票）`;
+  } else if (Number.isFinite(needed) && needed > 0 && minVotes > 0) {
+    msg = `送信済み（${votes}/${minVotes}票・あと${needed}）`;
+  } else if (votes > 0) {
+    msg = `送信済み（現在 ${votes}票）`;
+  }
+  showContributionToast(msg);
+}
+
+/**
+ * 初回訂正時の同意ダイアログ（オプトイン維持）。
+ * @param {string} surface
+ * @param {string} reading
+ * @param {string} contextText
+ */
+function askContributionConsent(surface, reading, contextText) {
+  const existing = document.getElementById("yt-furigana-contrib-consent");
+  if (existing) existing.remove();
+
+  const dialog = document.createElement("div");
+  dialog.id = "yt-furigana-contrib-consent";
+  dialog.className = "yt-furigana-contrib-consent";
+  dialog.setAttribute("role", "dialog");
+  dialog.setAttribute("aria-modal", "true");
+  dialog.setAttribute("aria-labelledby", "yt-furigana-contrib-consent-title");
+  dialog.innerHTML = `
+    <div class="yt-furigana-contrib-consent__card">
+      <h2 id="yt-furigana-contrib-consent-title">みんなの辞書づくりに送りますか？</h2>
+      <p>
+        「${escapeAttr(surface)}」→「${escapeAttr(reading)}」を匿名で送れます。
+        送るのは表層・読み・短い前後だけです（動画の住所は送りません）。
+        いつでもポップアップでオフにできます。
+      </p>
+      <div class="yt-furigana-contrib-consent__actions">
+        <button type="button" class="yt-furigana-contrib-consent__yes" data-action="yes">
+          送る（オンにする）
+        </button>
+        <button type="button" class="yt-furigana-contrib-consent__no" data-action="no">
+          この端末だけ
+        </button>
+      </div>
+    </div>
+  `;
+
+  const mountRoot = resolveOverlayMountRoot(null);
+  mountRoot.append(dialog);
+
+  const finish = async (enable) => {
+    dialog.remove();
+    try {
+      if (chrome?.storage?.sync) {
+        await chrome.storage.sync.set({
+          contributionPromptSeen: true,
+          ...(enable ? { contributionEnabled: true } : {})
+        });
+      }
+    } catch {
+      /* ignore */
+    }
+    if (enable) {
+      try {
+        await submitContributionVote(surface, reading, contextText);
+      } catch {
+        /* ignore */
+      }
+    }
+  };
+
+  dialog.addEventListener("click", (event) => {
+    const target = /** @type {HTMLElement} */ (event.target);
+    const action = target.closest("[data-action]")?.getAttribute("data-action");
+    if (action === "yes") finish(true);
+    if (action === "no") finish(false);
+  });
+}
+
+/**
+ * @param {string} message
+ */
+function showContributionToast(message) {
+  const id = "yt-furigana-contrib-toast";
+  document.getElementById(id)?.remove();
+  const toast = document.createElement("div");
+  toast.id = id;
+  toast.className = "yt-furigana-contrib-toast";
+  toast.setAttribute("role", "status");
+  toast.textContent = message;
+  resolveOverlayMountRoot(null).append(toast);
+  window.setTimeout(() => toast.remove(), 3200);
 }
 
 const FLOAT_RT_CLASS = "yt-furigana-float-rt";
@@ -505,44 +720,202 @@ function resolveActivatedWord(event, root) {
   return null;
 }
 
+const SPAN_DRAG_THRESHOLD_PX = 6;
+
+function clearSpanSelecting(root) {
+  root
+    ?.querySelectorAll?.(".yt-furigana-word.is-span-selecting")
+    ?.forEach((el) => el.classList.remove("is-span-selecting"));
+  root
+    ?.querySelectorAll?.(".yt-furigana-word")
+    ?.forEach((el) => {
+      const host = el.closest?.(
+        ".ytp-caption-segment, .caption-visual-line, .segment-text, .vjs-text-track-cue-line, yt-live-chat-paid-message-renderer #message, yt-live-chat-ticker-paid-message-item-renderer #message, [data-yt-furigana-original], [data-ytscf-original]"
+      );
+      host?.classList.remove("yt-furigana-span-dragging");
+    });
+}
+
 /**
- * 字幕上のクリック／キーボードで候補を開く。
+ * @param {ParentNode} root
+ * @param {number} i0
+ * @param {number} i1
+ * @param {Element} host
+ */
+function highlightSpanRange(root, i0, i1, host) {
+  clearSpanSelecting(root);
+  host?.classList.add("yt-furigana-span-dragging");
+  const lo = Math.min(i0, i1);
+  const hi = Math.max(i0, i1);
+  const scope = host || root;
+  scope.querySelectorAll?.(".yt-furigana-word")?.forEach((el) => {
+    const idx = Number.parseInt(el.getAttribute("data-token-index") || "", 10);
+    if (idx >= lo && idx <= hi) el.classList.add("is-span-selecting");
+  });
+}
+
+function resolveContextTextFromWord(wordEl) {
+  return (
+    wordEl.closest("[data-yt-furigana-original]")?.getAttribute("data-yt-furigana-original") ||
+    wordEl.closest("[data-ytscf-original]")?.getAttribute("data-ytscf-original") ||
+    wordEl.closest(
+      ".ytp-caption-segment, .caption-visual-line, .segment-text, .vjs-text-track-cue-line, yt-live-chat-paid-message-renderer #message, yt-live-chat-ticker-paid-message-item-renderer #message"
+    )?.textContent ||
+    ""
+  );
+}
+
+/**
+ * 字幕上のクリック／ドラッグ／キーボードで候補を開く。
  * TVer は操作レイヤーが字幕の上に乗るため、座標ヒットも併用する。
  */
 export function installReadingPicker(root = document) {
   let openedAt = 0;
+  /** @type {{ pointerId: number, startX: number, startY: number, startIndex: number, endIndex: number, moved: boolean, startEl: HTMLElement, host: Element | null } | null} */
+  let dragState = null;
 
-  const onActivate = (event) => {
+  const onPointerDown = (event) => {
     if (event.target.closest?.(`#${POPUP_ID}`)) return;
-    if (
-      event.type === "pointerdown" &&
-      typeof event.button === "number" &&
-      event.button !== 0
-    ) {
-      return;
-    }
+    if (typeof event.button === "number" && event.button !== 0) return;
 
     const wordEl = resolveActivatedWord(event, root);
     if (!wordEl) {
-      // 同じ操作の pointerdown→click で直後に閉じない
-      if (Date.now() - openedAt > 400) {
-        closeReadingPicker();
-      }
+      if (Date.now() - openedAt > 400) closeReadingPicker();
+      return;
+    }
+    const idx = Number.parseInt(wordEl.getAttribute("data-token-index") || "", 10);
+    if (!Number.isFinite(idx)) {
+      // span 無し（旧HTML）は従来どおり即ピッカー
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation?.();
+      const now = Date.now();
+      if (now - openedAt < 400) return;
+      openedAt = now;
+      void openReadingPicker(wordEl);
       return;
     }
 
+    const host =
+      wordEl.closest(
+        "[data-yt-furigana-original], [data-ytscf-original], .ytp-caption-segment, .caption-visual-line, .segment-text, .vjs-text-track-cue-line, yt-live-chat-paid-message-renderer #message, yt-live-chat-ticker-paid-message-item-renderer #message"
+      ) || wordEl.parentElement;
+
+    dragState = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startIndex: idx,
+      endIndex: idx,
+      moved: false,
+      startEl: wordEl,
+      host,
+    };
+    try {
+      wordEl.setPointerCapture(event.pointerId);
+    } catch {
+      /* ignore */
+    }
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation?.();
-
-    const now = Date.now();
-    if (now - openedAt < 400) return;
-    openedAt = now;
-    void openReadingPicker(wordEl);
   };
 
-  root.addEventListener("pointerdown", onActivate, true);
-  root.addEventListener("click", onActivate, true);
+  const onPointerMove = (event) => {
+    if (!dragState || event.pointerId !== dragState.pointerId) return;
+    const dx = event.clientX - dragState.startX;
+    const dy = event.clientY - dragState.startY;
+    if (Math.hypot(dx, dy) >= SPAN_DRAG_THRESHOLD_PX) dragState.moved = true;
+    const under = document
+      .elementFromPoint(event.clientX, event.clientY)
+      ?.closest?.(".yt-furigana-word");
+    const scope = dragState.host || root;
+    if (under && scope.contains(under)) {
+      const idx = Number.parseInt(under.getAttribute("data-token-index") || "", 10);
+      if (Number.isFinite(idx) && idx !== dragState.endIndex) {
+        dragState.endIndex = idx;
+        dragState.moved = true;
+      }
+    }
+    if (dragState.moved) {
+      highlightSpanRange(root, dragState.startIndex, dragState.endIndex, dragState.host);
+    }
+  };
+
+  const finishDrag = (event) => {
+    if (!dragState || event.pointerId !== dragState.pointerId) return;
+    const state = dragState;
+    dragState = null;
+    clearSpanSelecting(root);
+
+    const now = Date.now();
+    if (now - openedAt < 400 && !state.moved) return;
+    openedAt = now;
+
+    const contextText = resolveContextTextFromWord(state.startEl);
+    const scope = state.host || root;
+    const words = [...(scope.querySelectorAll?.(".yt-furigana-word") || [])];
+    const tokens = words.map((el) => ({
+      surface: el.getAttribute("data-surface") || "",
+      span: [
+        Number.parseInt(el.getAttribute("data-span-start") || "", 10),
+        Number.parseInt(el.getAttribute("data-span-end") || "", 10),
+      ],
+    }));
+
+    if (state.moved && state.startIndex !== state.endIndex) {
+      const merged = spanFromTokenRange(
+        contextText,
+        tokens,
+        state.startIndex,
+        state.endIndex
+      );
+      if (merged && isRegisterableSurface(merged.surface)) {
+        const lo = Math.min(state.startIndex, state.endIndex);
+        const hi = Math.max(state.startIndex, state.endIndex);
+        const selectedEls = words.filter((el) => {
+          const i = Number.parseInt(el.getAttribute("data-token-index") || "", 10);
+          return i >= lo && i <= hi;
+        });
+        void openReadingPicker(state.startEl, {
+          surface: merged.surface,
+          currentReading: "",
+          span: [merged.start, merged.end],
+          merged: true,
+          selectedEls,
+          contextText,
+        });
+        return;
+      }
+    }
+
+    const word =
+      words.find(
+        (el) =>
+          Number.parseInt(el.getAttribute("data-token-index") || "", 10) ===
+          state.startIndex
+      ) || state.startEl;
+    void openReadingPicker(word, { contextText });
+  };
+
+  const onClickBlock = (event) => {
+    // pointer 経路で処理済み。合成 click で二重起動しない
+    if (event.target.closest?.(".yt-furigana-word")) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation?.();
+    }
+  };
+
+  root.addEventListener("pointerdown", onPointerDown, true);
+  root.addEventListener("pointermove", onPointerMove, true);
+  root.addEventListener("pointerup", finishDrag, true);
+  root.addEventListener("pointercancel", (event) => {
+    if (!dragState || event.pointerId !== dragState.pointerId) return;
+    dragState = null;
+    clearSpanSelecting(root);
+  }, true);
+  root.addEventListener("click", onClickBlock, true);
   root.addEventListener(
     "keydown",
     (event) => {

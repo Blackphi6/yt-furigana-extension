@@ -341,6 +341,14 @@ async function completeEngineOnboarding(engine) {
 enabledInput.addEventListener("change", saveSettings);
 learningInboxEnabledInput?.addEventListener("change", saveSettings);
 contributionEnabledInput?.addEventListener("change", async () => {
+  // ポップアップで明示選択したら初回プロンプトは出さない
+  const current = await getMergedSettings();
+  await saveMergedSettings({
+    ...current,
+    contributionEnabled: Boolean(contributionEnabledInput.checked),
+    contributionPromptSeen: true
+  });
+  // 他フォーム項目も同期
   await saveSettings();
 });
 sharedPackEnabledInput?.addEventListener("change", async () => {

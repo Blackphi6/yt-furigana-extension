@@ -44,7 +44,9 @@ import {
   applyUserReadingLearning,
   loadUserReadingStore
 } from "./user-reading-dict.js";
+import { loadOccurrenceOverrideStore } from "./occurrence-overrides.js";
 import { createCaptionProcessScheduler } from "./caption-process-schedule.js";
+import { shouldReplaceProvisionalFurigana } from "./reading-api-cache.js";
 import {
   ORIGINAL_ATTR,
   PROCESSED_ATTR,
@@ -903,14 +905,32 @@ async function convertLocalAndCache(normalized) {
 
 async function applyRemoteFurigana(normalized, processingKey) {
   const cacheKey = getCacheKey(normalized);
+  // API とローカルを並行。画面には先に端末内ルビを載せ、API 完了で差し替える。
+  const remotePromise = convertText(normalized);
+  let provisionalHtml = "";
   try {
-    const html = await convertText(normalized);
+    provisionalHtml = await convertWithLocalDictionary(normalized);
+    if (enabled && provisionalHtml && !cache.has(cacheKey)) {
+      applyFuriganaToLiveCaptions(normalized, provisionalHtml, processingKey);
+    }
+  } catch {
+    /* 楽観表示に失敗しても API 待ちへ */
+  }
+
+  try {
+    const html = await remotePromise;
     if (!enabled) return;
-    // 変換完了時点の DOM が別ノードでも、キャッシュしてから現字幕へ適用
     cache.set(cacheKey, html);
-    applyFuriganaToLiveCaptions(normalized, html, processingKey);
+    if (shouldReplaceProvisionalFurigana(provisionalHtml, html)) {
+      applyFuriganaToLiveCaptions(normalized, html, processingKey);
+    } else if (!provisionalHtml && html) {
+      applyFuriganaToLiveCaptions(normalized, html, processingKey);
+    }
   } catch (error) {
     console.warn("[YT Furigana] conversion failed:", error.message);
+    if (enabled && provisionalHtml && !cache.has(cacheKey)) {
+      cache.set(cacheKey, provisionalHtml);
+    }
   }
 }
 
@@ -1384,6 +1404,15 @@ async function applySettings() {
     settings.engine === "hybrid"
   ) {
     await ensureLocalTokenizer();
+  } else if (settings.engine === "reading-api" && shouldUseRemoteConversion(settings)) {
+    await ensureLocalTokenizer().catch(() => {});
+    try {
+      chrome.runtime.sendMessage({ type: "WARM_READING_API" }, () => {
+        void chrome.runtime.lastError;
+      });
+    } catch {
+      /* ignore */
+    }
   }
 
   scheduleProcess();
@@ -1507,6 +1536,7 @@ function startVideoNavigationWatch() {
 
 async function bootstrap() {
   await loadSettings();
+  await loadOccurrenceOverrideStore();
   await reapplyAllReadingLearning();
 
   installReadingPicker(document);
@@ -1593,8 +1623,15 @@ async function bootstrap() {
     if (useLocal) {
       await ensureLocalTokenizer();
     } else if (settings.engine === "reading-api") {
-      // URL あり: フォールバック用に裏で暖機
-      void ensureLocalTokenizer().catch(() => {});
+      // 楽観表示用に端末内辞書を先に暖機し、並行で公開 API も起こす
+      await ensureLocalTokenizer().catch(() => {});
+      try {
+        chrome.runtime.sendMessage({ type: "WARM_READING_API" }, () => {
+          void chrome.runtime.lastError;
+        });
+      } catch {
+        /* ignore */
+      }
     }
     scheduleProcess();
     currentVideoId = getSiteVideoKey();

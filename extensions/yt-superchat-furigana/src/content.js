@@ -21,6 +21,7 @@ import {
   applyUserReadingLearning,
   loadUserReadingStore
 } from "../../../src/user-reading-dict.js";
+import { loadOccurrenceOverrideStore } from "../../../src/occurrence-overrides.js";
 import { loadNeologdPhrases } from "../../../src/neologd-phrases.js";
 import {
   loadPersonalNamePhrases,
@@ -85,6 +86,7 @@ function clearHtmlCache() {
  */
 async function reapplyUserReadings() {
   reloadBundledReadingMaps();
+  await loadOccurrenceOverrideStore();
   const userStore = await loadUserReadingStore();
   applyUserReadingLearning(
     MANUAL_PHRASE_READINGS,

@@ -46,6 +46,23 @@ yt-live-chat-ticker-paid-message-item-renderer #message rt {
   background: rgba(255, 255, 255, 0.18);
 }
 
+.yt-furigana-span-dragging {
+  user-select: none;
+}
+
+.yt-furigana-word.is-span-selecting {
+  background: rgba(255, 200, 80, 0.35);
+  box-shadow: inset 0 -2px 0 rgba(255, 180, 40, 0.95);
+}
+
+.yt-furigana-picker__empty {
+  list-style: none;
+  margin: 0;
+  padding: 0.35em 0.45em;
+  opacity: 0.75;
+  font-size: 0.85em;
+}
+
 .yt-furigana-picker {
   position: fixed;
   z-index: 2147483646;

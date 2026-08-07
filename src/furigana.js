@@ -263,6 +263,12 @@ import {
   stripVariationSelectors
 } from "./kanji-normalize.js";
 
+import {
+  assignTokenSpans,
+  applyOccurrenceOverrides,
+  getOccurrenceOverridesForText,
+} from "./occurrence-overrides.js";
+
 function escapeAttr(value) {
   return escapeHtml(value);
 }
@@ -289,10 +295,10 @@ export function wrapFuriganaWord(surface, reading, rubyHtml, options = {}) {
       : normalized
     : "";
   const title = unset
-    ? "クリックで読みを登録"
+    ? "クリックで読みを登録。ドラッグで複数語をまとめて指定"
     : tip
       ? tipReading
-      : "クリックで読み候補";
+      : "クリックで読み候補。ドラッグで複数語をまとめて指定";
   const className = [
     "yt-furigana-word",
     unset ? "yt-furigana-word--unset" : "",
@@ -301,7 +307,16 @@ export function wrapFuriganaWord(surface, reading, rubyHtml, options = {}) {
     .filter(Boolean)
     .join(" ");
   const tipAttr = tip ? ` data-tip="${escapeAttr(tipReading)}"` : "";
-  return `<span class="${className}" data-surface="${escapeAttr(surface)}" data-reading="${escapeAttr(normalized)}"${tipAttr} tabindex="0" role="button" title="${escapeAttr(title)}">${rubyHtml || escapeHtml(surface)}</span>`;
+  const spanStart = Number.isFinite(options.spanStart)
+    ? ` data-span-start="${options.spanStart}"`
+    : "";
+  const spanEnd = Number.isFinite(options.spanEnd)
+    ? ` data-span-end="${options.spanEnd}"`
+    : "";
+  const tokenIndex = Number.isFinite(options.tokenIndex)
+    ? ` data-token-index="${options.tokenIndex}"`
+    : "";
+  return `<span class="${className}" data-surface="${escapeAttr(surface)}" data-reading="${escapeAttr(normalized)}"${spanStart}${spanEnd}${tokenIndex}${tipAttr} tabindex="0" role="button" title="${escapeAttr(title)}">${rubyHtml || escapeHtml(surface)}</span>`;
 }
 
 /**
@@ -338,20 +353,33 @@ export function buildFuriganaHtml(text, tokenize) {
     ? remapTokenSurfacesToOriginal(withManualOnLookup, prepared, lookupText)
     : withManualOnLookup;
   // 原文キーのユーザー辞書（髙橋）も拾う
-  const tokens = applyInlineParenReadings(
+  let tokens = applyInlineParenReadings(
     useLookup ? applyManualPhraseReadings(remapped) : remapped,
     inlineSpans
   );
+  const spanBase = useLookup ? prepared : prepared;
+  tokens = assignTokenSpans(tokens, spanBase);
+  const occurrenceRules = getOccurrenceOverridesForText(spanBase);
+  if (occurrenceRules.length) {
+    tokens = applyOccurrenceOverrides(spanBase, tokens, occurrenceRules);
+  }
 
+  let wrapIndex = 0;
   return tokens
     .map((token) => {
-      const surface = token.surface_form;
+      const surface = token.surface_form || token.surface || "";
       let preserveKatakana = token.preserveKatakana === true;
       const raw = token.reading || token.pronunciation || "";
       // 形態素のカタカナ読みはひらがな化。ユーザー登録カタカナは保持。
       let reading = preserveKatakana
         ? displayReading(raw)
         : normalizeReading(raw);
+      if (token.source === "occurrence" && raw) {
+        reading = /[\u30a1-\u30f6]/.test(raw)
+          ? displayReading(raw)
+          : normalizeReading(raw);
+        if (/[\u30a1-\u30f6]/.test(raw)) preserveKatakana = true;
+      }
       if (isLatinWord(surface)) {
         // 欧文: 英字読みは捨てる。かな読みはカタカナ表示（インフォメーション等と同型）
         if (!isUsefulLatinReading(reading)) {
@@ -363,7 +391,18 @@ export function buildFuriganaHtml(text, tokenize) {
       }
       const ruby = buildRuby(surface, reading, { preserveKatakana });
       if (!isRegisterableSurface(surface)) return ruby;
-      return wrapFuriganaWord(surface, reading, ruby, { preserveKatakana });
+      const [spanStart, spanEnd] = Array.isArray(token.span)
+        ? token.span
+        : [NaN, NaN];
+      // クリック可能語だけの連番（ドラッグ選択の index と一致させる）
+      const tokenIndex = wrapIndex;
+      wrapIndex += 1;
+      return wrapFuriganaWord(surface, reading, ruby, {
+        preserveKatakana,
+        spanStart,
+        spanEnd,
+        tokenIndex,
+      });
     })
     .join("");
 }

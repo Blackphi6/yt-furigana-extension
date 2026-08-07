@@ -48,11 +48,23 @@ import {
   repairSegmentsToOriginal,
   segmentsToHtml
 } from "./segment-html.js";
+import {
+  READING_API_DISK_CACHE_KEY,
+  normalizeReadingApiDiskCache,
+  putReadingApiDiskCache,
+  readingApiDiskEntryKey,
+  serializeReadingApiDiskCache
+} from "./reading-api-cache.js";
 import { fetchJapaneseCaptionCuesForExport } from "./caption-export.js";
 
 const LLM_CACHE_LIMIT = 500;
 const llmCache = new Map();
 const READING_API_TIMEOUT_MS = 30_000;
+
+/** @type {Map<string, { html: string, ts: number }> | null} */
+let readingApiDiskCache = null;
+let readingApiDiskCacheSaveTimer = 0;
+let readingApiWarmPromise = null;
 
 export function normalizeOllamaUrl(url) {
   return (url || DEFAULT_SETTINGS.ollamaUrl).replace(/\/+$/, "");
@@ -131,6 +143,70 @@ function setCache(key, html) {
     llmCache.delete(oldestKey);
   }
   llmCache.set(key, html);
+}
+
+async function loadReadingApiDiskCache() {
+  if (readingApiDiskCache) return readingApiDiskCache;
+  try {
+    const stored = await chrome.storage.local.get({
+      [READING_API_DISK_CACHE_KEY]: null
+    });
+    readingApiDiskCache = normalizeReadingApiDiskCache(
+      stored[READING_API_DISK_CACHE_KEY]
+    );
+  } catch {
+    readingApiDiskCache = new Map();
+  }
+  return readingApiDiskCache;
+}
+
+function schedulePersistReadingApiDiskCache() {
+  if (readingApiDiskCacheSaveTimer) return;
+  readingApiDiskCacheSaveTimer = setTimeout(() => {
+    readingApiDiskCacheSaveTimer = 0;
+    if (!readingApiDiskCache) return;
+    void chrome.storage.local
+      .set({
+        [READING_API_DISK_CACHE_KEY]: serializeReadingApiDiskCache(
+          readingApiDiskCache
+        )
+      })
+      .catch(() => {});
+  }, 800);
+}
+
+/**
+ * Render 等のコールドスタートを先に起こす（timedtext は使わない）。
+ * @param {typeof DEFAULT_SETTINGS} settings
+ */
+export async function warmReadingApi(settings) {
+  const base = resolveReadingApiBaseUrl(settings);
+  if (!base) return { ok: false, skipped: true };
+  if (readingApiWarmPromise) return readingApiWarmPromise;
+
+  readingApiWarmPromise = (async () => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15_000);
+    try {
+      // スリープ解除
+      await fetch(`${base.replace(/\/+$/, "")}/health`, {
+        method: "GET",
+        signal: controller.signal,
+        headers: { Accept: "application/json" }
+      }).catch(() => null);
+      // エンジン本体の初回ロードも先に済ませる（短いダミー文）
+      await callReadingApi("暖機", settings, {});
+      return { ok: true, endpoint: base };
+    } finally {
+      clearTimeout(timeoutId);
+      // 連続ナビゲーションで再暖機できるように短時間で解放
+      setTimeout(() => {
+        readingApiWarmPromise = null;
+      }, 60_000);
+    }
+  })();
+
+  return readingApiWarmPromise;
 }
 
 export async function callOllama(text, settings, resolvedModel) {
@@ -305,12 +381,26 @@ async function convertWithReadingApi(text) {
     return llmCache.get(cacheKey);
   }
 
+  const endpoint = normalizeReadingApiUrl(resolveReadingApiBaseUrl(settings));
+  const diskKey = readingApiDiskEntryKey(endpoint, text);
+  const disk = await loadReadingApiDiskCache();
+  const hit = disk.get(diskKey);
+  if (hit?.html) {
+    setCache(cacheKey, hit.html);
+    return hit.html;
+  }
+
+  // 未暖機なら並行で起こす（timedtext は使わない）
+  void warmReadingApi(settings).catch(() => {});
+
   const store = await ensureDictionarySideReady();
   const userPhrases = { ...(store.phrases || {}) };
   // NEologd/固定句ヒット + 学習 phrases → 読み API の user_dict（固有名詞は辞書、文脈依存は API）
   const userDict = buildCombinedUserDict(text, userPhrases);
   const html = await callReadingApi(text, settings, userDict, userPhrases);
   setCache(cacheKey, html);
+  putReadingApiDiskCache(disk, diskKey, html);
+  schedulePersistReadingApiDiskCache();
   return html;
 }
 
@@ -329,8 +419,18 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return true;
   }
 
+  if (message?.type === "WARM_READING_API") {
+    getSettings()
+      .then((settings) => warmReadingApi(settings))
+      .then((data) => sendResponse({ ok: true, ...data }))
+      .catch((error) => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+
   if (message?.type === "CLEAR_LLM_CACHE") {
     llmCache.clear();
+    readingApiDiskCache = new Map();
+    void chrome.storage.local.remove(READING_API_DISK_CACHE_KEY).catch(() => {});
     sendResponse({ ok: true });
     return false;
   }
