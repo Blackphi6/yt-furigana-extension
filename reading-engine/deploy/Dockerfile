@@ -22,6 +22,7 @@ COPY reading-engine/requirements.txt /app/reading-engine/requirements.txt
 RUN pip install --upgrade pip && pip install -r /app/reading-engine/requirements.txt
 
 COPY reading-engine/reading_engine /app/reading-engine/reading_engine
+COPY reading-engine/static /app/reading-engine/static
 COPY reading-engine/data /app/reading-engine/data
 COPY data/generated/heteronym-candidates.json /app/data/generated/heteronym-candidates.json
 COPY data/generated/shared-readings-seed.json /app/data/generated/shared-readings-seed.json
