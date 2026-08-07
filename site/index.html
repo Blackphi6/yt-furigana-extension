@@ -30,7 +30,7 @@
     </script>
 
     <link rel="stylesheet" href="./styles.css" />
-    <link rel="stylesheet" href="./reading-demo.css?v=20260806b" />
+    <link rel="stylesheet" href="./reading-demo.css?v=20260807a" />
     <link rel="stylesheet" href="./home.css?v=20260806a" />
     <script src="./config.js"></script>
   </head>
@@ -225,8 +225,8 @@
             <h3>ルビ結果</h3>
             <p class="hint result-edit-hint">
               <strong>直し方:</strong>
-              あいまいな語は下の<strong>3択</strong>、またはルビ／表のクリックで直せます。
-              直すとこの文にすぐ反映し、チェックがオンなら審査キュー（LLM）へも送ります。
+              1語はクリック、分割ミス（例: 大＋人気）は<strong>ドラッグでまとめて選択</strong>して読みを付けます。
+              あいまいな語は下の<strong>3択</strong>でも直せます。直すとこの文にすぐ反映し、チェックがオンなら審査キュー（LLM）へも送ります。
             </p>
             <div class="ruby-out" id="ruby-out" lang="ja"></div>
             <p class="full-reading" id="full-reading"></p>
@@ -367,7 +367,7 @@ curl -s https://yt-furigana-readings.onrender.com/v1/readings \
       </footer>
     </div>
     <script src="./home-metrics.js?v=20260718d" type="module"></script>
-    <script src="./reading-demo.js?v=20260806b" type="module"></script>
+    <script src="./reading-demo.js?v=20260807a" type="module"></script>
     <script type="module" src="./theme.js?v=20260806a"></script>
   </body>
 </html>

@@ -334,6 +334,16 @@
   box-shadow: inset 0 -2px 0 color-mix(in oklab, var(--vermilion) 55%, transparent);
 }
 
+.ruby-out.is-dragging {
+  user-select: none;
+  cursor: text;
+}
+
+.ruby-out .demo-ruby-word.is-span-selecting {
+  background: color-mix(in oklab, var(--vermilion) 28%, transparent);
+  box-shadow: inset 0 -2px 0 var(--vermilion);
+}
+
 .ruby-out .demo-ruby-word::after {
   content: "直す";
   position: absolute;

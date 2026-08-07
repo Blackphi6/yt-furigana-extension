@@ -123,3 +123,33 @@ export function applyOccurrenceOverrides(text, tokens, overrides) {
 export function shouldPinGlobally(text, surface) {
   return countSurfaceOccurrences(text, surface) <= 1;
 }
+
+/**
+ * ソート済みトークン配列の index 範囲を文字 span に変換する。
+ * ドラッグで「大」「人気」をまたいだとき → 大人気。
+ * @param {string} text
+ * @param {object[]} tokens 表示順（span[0] 昇順）
+ * @param {number} indexA
+ * @param {number} indexB
+ * @returns {{ start: number, end: number, surface: string, tokenIndexes: number[] } | null}
+ */
+export function spanFromTokenRange(text, tokens, indexA, indexB) {
+  const t = String(text || "");
+  const list = Array.isArray(tokens) ? tokens : [];
+  if (!list.length || !t) return null;
+  const a = Math.min(Number(indexA), Number(indexB));
+  const b = Math.max(Number(indexA), Number(indexB));
+  if (!Number.isFinite(a) || !Number.isFinite(b) || a < 0 || b >= list.length) {
+    return null;
+  }
+  const first = list[a];
+  const last = list[b];
+  const start = Array.isArray(first?.span) ? Number(first.span[0]) : NaN;
+  const end = Array.isArray(last?.span) ? Number(last.span[1]) : NaN;
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return null;
+  const surface = t.slice(start, end);
+  if (!surface) return null;
+  const tokenIndexes = [];
+  for (let i = a; i <= b; i += 1) tokenIndexes.push(i);
+  return { start, end, surface, tokenIndexes };
+}

@@ -13,8 +13,9 @@ import {
   applyOccurrenceOverrides,
   expandOverrideSpan,
   shouldPinGlobally,
+  spanFromTokenRange,
   upsertOccurrenceOverride,
-} from "./demo-occurrence-overrides.js?v=20260806b";
+} from "./demo-occurrence-overrides.js?v=20260807a";
 
 const DEFAULT_API =
   (window.YT_FURIGANA_SITE && window.YT_FURIGANA_SITE.readingApiUrl) ||
@@ -378,12 +379,12 @@ function buildRubyHtml(text, tokens) {
       const unsetClass = reading ? "" : " demo-ruby-word--unset";
       const tipClass = tip ? " demo-ruby-word--tip" : "";
       const title = !reading
-        ? "クリックで読みを登録"
+        ? "クリックで読みを登録。ドラッグで複数語をまとめて指定"
         : tip
           ? reading
-          : "クリックして読みを変更";
+          : "クリックで読みを変更。ドラッグで複数語をまとめて指定";
       const tipAttr = tip ? ` data-tip="${escapeHtml(reading)}"` : "";
-      html += `<span class="demo-ruby-word${unsetClass}${tipClass}" data-hit data-token-index="${i}" data-surface="${escapeHtml(surface)}" data-reading="${escapeHtml(reading)}" data-source="${escapeHtml(t.source || "")}"${tipAttr} role="button" tabindex="0" title="${escapeHtml(title)}">${rubyInner}</span>`;
+      html += `<span class="demo-ruby-word${unsetClass}${tipClass}" data-hit data-token-index="${i}" data-span-start="${start}" data-span-end="${end}" data-surface="${escapeHtml(surface)}" data-reading="${escapeHtml(reading)}" data-source="${escapeHtml(t.source || "")}"${tipAttr} role="button" tabindex="0" title="${escapeHtml(title)}">${rubyInner}</span>`;
     } else {
       html += `<span data-hit data-source="${escapeHtml(t.source || "")}">${rubyInner}</span>`;
     }
@@ -477,27 +478,61 @@ function openDemoPickerAt(anchor, surface, current, tokenIndex) {
 }
 
 /**
- * @param {HTMLElement} wordEl
+ * ドラッグで結合した表層用ピッカー。
+ * @param {{ start: number, end: number, surface: string }} merged
  * @param {HTMLElement} [anchorEl]
  */
-function openDemoPicker(wordEl, anchorEl) {
+function openMergedPicker(merged, anchorEl) {
+  const fake = document.createElement("span");
+  fake.className = "demo-ruby-word";
+  fake.setAttribute("data-surface", merged.surface);
+  fake.setAttribute("data-reading", "");
+  openDemoPicker(fake, anchorEl, {
+    surface: merged.surface,
+    current: "",
+    span: [merged.start, merged.end],
+    merged: true,
+  });
+}
+
+/**
+ * @param {HTMLElement} wordEl
+ * @param {HTMLElement} [anchorEl]
+ * @param {{ surface?: string, current?: string, span?: [number, number], merged?: boolean }} [options]
+ */
+function openDemoPicker(wordEl, anchorEl, options = {}) {
   closeDemoPicker();
-  const surface = wordEl.getAttribute("data-surface") || "";
-  const current = wordEl.getAttribute("data-reading") || "";
+  const surface =
+    options.surface != null
+      ? String(options.surface)
+      : wordEl.getAttribute("data-surface") || "";
+  const current =
+    options.current != null
+      ? String(options.current)
+      : wordEl.getAttribute("data-reading") || "";
   if (!surface) return;
 
   const idx = Number.parseInt(wordEl.getAttribute("data-token-index") || "", 10);
-  const token =
-    lastResult?.tokens && Number.isFinite(idx)
-      ? [...lastResult.tokens].sort((a, b) => a.span[0] - b.span[0])[idx]
-      : null;
-  const candidates = uniqueCandidates(token, current);
+  const sorted =
+    lastResult?.tokens
+      ? [...lastResult.tokens].sort((a, b) => a.span[0] - b.span[0])
+      : [];
+  const token = Number.isFinite(idx) ? sorted[idx] : null;
+  const candidates = options.merged
+    ? uniqueCandidates(null, current)
+    : uniqueCandidates(token, current);
+  const isMerge = Boolean(options.merged);
+  const actionLabel = isMerge
+    ? "をまとめて読み登録"
+    : current
+      ? "の読みを直す"
+      : "の読みを登録";
 
   const popup = document.createElement("div");
   popup.id = PICKER_ID;
   popup.className = "demo-reading-picker";
   popup.setAttribute("role", "dialog");
-  popup.setAttribute("aria-label", `${surface}の読みを${current ? "変更" : "登録"}`);
+  popup.setAttribute("aria-label", `${surface}${actionLabel}`);
 
   const candHtml = candidates
     .map(
@@ -509,13 +544,13 @@ function openDemoPicker(wordEl, anchorEl) {
   popup.innerHTML = `
     <div class="demo-pick-head">
       <strong>${escapeHtml(surface)}</strong>
-      <span>${current ? "の読みを直す" : "の読みを登録"}</span>
+      <span>${actionLabel}</span>
       <button type="button" class="demo-pick-close" aria-label="閉じる">×</button>
     </div>
-    <div class="demo-pick-cands">${candHtml || "<span class='hint'>候補なし — 下に入力</span>"}</div>
+    <div class="demo-pick-cands">${candHtml || "<span class='hint'>候補なし — 下に入力（例: おとなげ）</span>"}</div>
     <label class="demo-pick-custom">
-      <span>${current ? "候補にない読み（ひらがな／カタカナ）" : "読みを入力（ひらがな／カタカナ）"}</span>
-      <input type="text" inputmode="kana" autocomplete="off" spellcheck="false" placeholder="例: つねざわ" value="" />
+      <span>${current || isMerge ? "読みを入力（ひらがな／カタカナ）" : "読みを入力（ひらがな／カタカナ）"}</span>
+      <input type="text" inputmode="kana" autocomplete="off" spellcheck="false" placeholder="${isMerge ? "例: おとなげ" : "例: つねざわ"}" value="" />
     </label>
     <div class="demo-pick-actions">
       <button type="button" class="btn small" data-apply-custom>この読みにする</button>
@@ -554,8 +589,11 @@ function openDemoPicker(wordEl, anchorEl) {
       }
       return;
     }
-    const span =
-      token && Array.isArray(token.span) ? /** @type {[number, number]} */ (token.span) : null;
+    const span = Array.isArray(options.span)
+      ? options.span
+      : token && Array.isArray(token.span)
+        ? /** @type {[number, number]} */ (token.span)
+        : null;
     const text = lastResult?.text || inputEl?.value || "";
     rememberReadingFix(text, surface, read, span);
     closeDemoPicker();
@@ -1055,12 +1093,116 @@ async function runAnalyze(options = {}) {
   }
 }
 
-rubyOut?.addEventListener("click", (e) => {
+const RUBY_DRAG_THRESHOLD_PX = 6;
+/** @type {{ pointerId: number, startX: number, startY: number, startIndex: number, endIndex: number, moved: boolean, startEl: HTMLElement } | null} */
+let rubyDragState = null;
+
+function clearRubySpanHighlight() {
+  rubyOut?.querySelectorAll?.(".is-span-selecting")?.forEach((el) => {
+    el.classList.remove("is-span-selecting");
+  });
+  rubyOut?.classList.remove("is-dragging");
+}
+
+/**
+ * @param {number} i0
+ * @param {number} i1
+ */
+function highlightRubyTokenRange(i0, i1) {
+  clearRubySpanHighlight();
+  rubyOut?.classList.add("is-dragging");
+  const lo = Math.min(i0, i1);
+  const hi = Math.max(i0, i1);
+  rubyOut?.querySelectorAll?.(".demo-ruby-word")?.forEach((el) => {
+    const idx = Number.parseInt(el.getAttribute("data-token-index") || "", 10);
+    if (idx >= lo && idx <= hi) el.classList.add("is-span-selecting");
+  });
+}
+
+function sortedResultTokens() {
+  return lastResult?.tokens
+    ? [...lastResult.tokens].sort((a, b) => a.span[0] - b.span[0])
+    : [];
+}
+
+rubyOut?.addEventListener("pointerdown", (e) => {
+  if (e.button !== 0) return;
   const word = e.target?.closest?.(".demo-ruby-word");
   if (!word || !rubyOut.contains(word)) return;
+  const idx = Number.parseInt(word.getAttribute("data-token-index") || "", 10);
+  if (!Number.isFinite(idx)) return;
+  rubyDragState = {
+    pointerId: e.pointerId,
+    startX: e.clientX,
+    startY: e.clientY,
+    startIndex: idx,
+    endIndex: idx,
+    moved: false,
+    startEl: word,
+  };
+  try {
+    word.setPointerCapture(e.pointerId);
+  } catch {
+    /* ignore */
+  }
   e.preventDefault();
-  openDemoPicker(word);
 });
+
+rubyOut?.addEventListener("pointermove", (e) => {
+  if (!rubyDragState || e.pointerId !== rubyDragState.pointerId) return;
+  const dx = e.clientX - rubyDragState.startX;
+  const dy = e.clientY - rubyDragState.startY;
+  if (Math.hypot(dx, dy) >= RUBY_DRAG_THRESHOLD_PX) {
+    rubyDragState.moved = true;
+  }
+  const under = document
+    .elementFromPoint(e.clientX, e.clientY)
+    ?.closest?.(".demo-ruby-word");
+  if (under && rubyOut.contains(under)) {
+    const idx = Number.parseInt(under.getAttribute("data-token-index") || "", 10);
+    if (Number.isFinite(idx) && idx !== rubyDragState.endIndex) {
+      rubyDragState.endIndex = idx;
+      rubyDragState.moved = true;
+    }
+  }
+  if (rubyDragState.moved) {
+    highlightRubyTokenRange(rubyDragState.startIndex, rubyDragState.endIndex);
+  }
+});
+
+function finishRubyPointer(e) {
+  if (!rubyDragState || e.pointerId !== rubyDragState.pointerId) return;
+  const state = rubyDragState;
+  rubyDragState = null;
+  clearRubySpanHighlight();
+  const text = lastResult?.text || stripAnnotationMarkers(inputEl?.value || "");
+  const tokens = sortedResultTokens();
+  if (state.moved && state.startIndex !== state.endIndex) {
+    const merged = spanFromTokenRange(
+      text,
+      tokens,
+      state.startIndex,
+      state.endIndex
+    );
+    if (merged && isRegisterableSurface(merged.surface)) {
+      openMergedPicker(merged, state.startEl);
+      return;
+    }
+  }
+  const word =
+    rubyOut.querySelector(
+      `.demo-ruby-word[data-token-index="${state.startIndex}"]`
+    ) || state.startEl;
+  if (word) openDemoPicker(word);
+}
+
+rubyOut?.addEventListener("pointerup", finishRubyPointer);
+rubyOut?.addEventListener("pointercancel", (e) => {
+  if (!rubyDragState || e.pointerId !== rubyDragState.pointerId) return;
+  rubyDragState = null;
+  clearRubySpanHighlight();
+});
+
 rubyOut?.addEventListener("keydown", (e) => {
   if (e.key !== "Enter" && e.key !== " ") return;
   const word = e.target?.closest?.(".demo-ruby-word");

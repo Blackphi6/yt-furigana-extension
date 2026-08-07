@@ -7,6 +7,7 @@ import {
   countSurfaceOccurrences,
   expandOverrideSpan,
   shouldPinGlobally,
+  spanFromTokenRange,
   upsertOccurrenceOverride,
 } from "../site/demo-occurrence-overrides.js";
 
@@ -98,6 +99,40 @@ assert.equal(shouldPinGlobally("一日中だけ。", "一日"), true);
   assert.equal(out[2].reading, "つの");
   assert.equal(out[2].source, "occurrence");
   assert.equal(out[3].reading, "かど");
+}
+
+// 大人気: 大＋人気に割れていても範囲指定でおとなげにまとめられる
+{
+  const otonageText = "大人気のない大人が、大人気のアニメグッズを大人買いした。";
+  const tokens = [
+    { surface: "大", span: [0, 1], reading: "だい", source: "base_engine" },
+    { surface: "人気", span: [1, 3], reading: "ひとけ", source: "base_engine" },
+    { surface: "の", span: [3, 4], reading: "の", source: "base_engine" },
+    { surface: "ない", span: [4, 6], reading: "ない", source: "base_engine" },
+    { surface: "大人", span: [6, 8], reading: "おとな", source: "base_engine" },
+  ];
+  const merged = spanFromTokenRange(otonageText, tokens, 0, 1);
+  assert.deepEqual(merged, {
+    start: 0,
+    end: 3,
+    surface: "大人気",
+    tokenIndexes: [0, 1],
+  });
+  const overrides = upsertOccurrenceOverride([], {
+    start: merged.start,
+    end: merged.end,
+    surface: merged.surface,
+    reading: "おとなげ",
+  });
+  const out = applyOccurrenceOverrides(otonageText, tokens, overrides);
+  const head = out.filter((tok) => tok.span[0] < 6);
+  assert.equal(head[0].surface, "大人気");
+  assert.equal(head[0].reading, "おとなげ");
+  assert.equal(head[0].source, "occurrence");
+  assert.equal(head[1].surface, "の");
+  assert.equal(head[2].surface, "ない");
+  // 後ろの「大人」は触らない
+  assert.equal(out.find((tok) => tok.span[0] === 6)?.reading, "おとな");
 }
 
 console.log("test-demo-occurrence-overrides: ok");
