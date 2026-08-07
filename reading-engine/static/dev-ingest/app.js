@@ -169,7 +169,7 @@ async function refreshSummary() {
       setStatus("件数取得に失敗（スリープ起き直後なら再試行）");
     }
   }
-
+}
 
 async function onExtract() {
   showError("");
@@ -239,9 +239,23 @@ async function onCommit() {
   }
 }
 
-$("#save-token")?.addEventListener("click", () => {
+$("#save-token")?.addEventListener("click", async () => {
+  const btn = $("#save-token");
   saveToken();
-  void refreshSummary();
+  const savedMsg = token() ? "トークンを保存しました（この端末のブラウザのみ）" : "トークンをクリアしました";
+  if (btn) {
+    btn.textContent = "OK";
+    setTimeout(() => {
+      if (btn) btn.textContent = "保存";
+    }, 1500);
+  }
+  if (token()) {
+    await refreshSummary();
+    const after = statusEl?.textContent || "";
+    setStatus(`${savedMsg} · ${after}`);
+  } else {
+    setStatus(savedMsg);
+  }
 });
 $("#refresh-summary")?.addEventListener("click", () => void refreshSummary());
 extractBtn?.addEventListener("click", () => void onExtract());
