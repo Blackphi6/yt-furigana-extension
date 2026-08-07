@@ -33,7 +33,7 @@
 
 人名・異体字の運用方針: [`docs/PROPER-NOUN-READINGS.md`](PROPER-NOUN-READINGS.md)。
 
-**使わないデータ（意図的）:** JMdict、Wiktionary 等の ShareAlike 系を英語カタカナ辞書に使わない（[`docs/ENGLISH-KATAKANA.md`](ENGLISH-KATAKANA.md)）。
+**使わないデータ（意図的）:** JMdict、Wiktionary 等の ShareAlike 系を英語カタカナ辞書に使わない（[`docs/ENGLISH-KATAKANA.md`](ENGLISH-KATAKANA.md)、調査 [`docs/FOREIGN-LOANWORD-DATASETS.md`](FOREIGN-LOANWORD-DATASETS.md)）。
 
 ## 4. 技術設計の参照
 

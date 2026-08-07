@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { arpabetToKatakana, englishWordToKatakana } from "../src/arpabet-katakana.js";
 import {
   applyEnglishKatakanaReadings,
@@ -6,6 +9,8 @@ import {
   lookupEnglishKatakana
 } from "../src/english-katakana-reading.js";
 import { buildFuriganaHtml } from "../src/furigana.js";
+
+const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 // You / know
 assert.equal(arpabetToKatakana("Y UW1"), "ユー");
@@ -56,5 +61,26 @@ assert.equal(
   englishWordToKatakana("food", { food: ["F", "UW1", "D"] }),
   "フード"
 );
+
+// 日本語慣用上書き（CMUdict 米音とズレる定番外来語）
+{
+  const convention = JSON.parse(
+    readFileSync(
+      path.join(root, "data", "english-katakana-ja-convention.json"),
+      "utf8"
+    )
+  );
+  assert.equal(convention.information, "インフォメーション");
+  assert.equal(convention.youtube, "ユーチューブ");
+  assert.equal(convention.software, "ソフトウェア");
+  installEnglishKatakanaDictForTests({
+    information: convention.information,
+    youtube: convention.youtube,
+    software: convention.software,
+  });
+  assert.equal(lookupEnglishKatakana("Information"), "インフォメーション");
+  assert.equal(lookupEnglishKatakana("YouTube"), "ユーチューブ");
+  assert.equal(lookupEnglishKatakana("software"), "ソフトウェア");
+}
 
 console.log("English katakana / CMUdict rule tests passed.");

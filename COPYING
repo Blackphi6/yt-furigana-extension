@@ -105,6 +105,9 @@ v-2. CMU Pronouncing Dictionary (CMUdict) — BSD-2-Clause
    本拡張では ARPAbet をカタカナへ事前変換した一覧
    （data/generated/english-katakana.json.gz）を同梱する。
    変換規則は src/arpabet-katakana.js（本プロジェクト MIT）。
+   日本語として定着した表記は data/english-katakana-ja-convention.json
+   （本プロジェクト MIT）で上書きする。Wiktionary / JMdict は使わない。
+   調査: docs/FOREIGN-LOANWORD-DATASETS.md
    ライセンス全文: third_party/BSD-CMUdict.txt
 
 
