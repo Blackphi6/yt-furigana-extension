@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>開発者インジェスト — YT Furigana</title>
+    <link rel="stylesheet" href="./app.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <p class="brand">YT Furigana · 運用</p>
+      <p class="eyebrow">非公開 URL · admin token · スマホ可</p>
+      <h1>開発者インジェスト</h1>
+      <p class="lead">
+        選別した文を貼ると LLM が表層→読み候補を抜き出します。確認後に proposals
+        キューへ（即公開しません）。
+      </p>
+      <p class="report-status" id="status" role="status">トークンを入力してください</p>
+
+      <section class="panel" aria-labelledby="auth-heading">
+        <h2 id="auth-heading">認証</h2>
+        <p class="hint">
+          Render Dashboard → Environment → <code>YT_FURIGANA_ADMIN_TOKEN</code>
+        </p>
+        <label class="field-label" for="admin-token">Admin token</label>
+        <div class="dev-auth-row">
+          <input
+            id="admin-token"
+            type="password"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="YT_FURIGANA_ADMIN_TOKEN"
+          />
+          <button type="button" class="btn ghost" id="save-token">保存</button>
+          <button type="button" class="btn ghost" id="refresh-summary">件数</button>
+        </div>
+        <pre class="dev-summary" id="summary" hidden></pre>
+      </section>
+
+      <section class="panel" aria-labelledby="paste-heading">
+        <h2 id="paste-heading">貼り付け</h2>
+        <label class="field-label" for="paste-text">本文（最大 12000 文字）</label>
+        <textarea id="paste-text" rows="10" maxlength="12000" placeholder="例文を貼る…"></textarea>
+        <label class="field-label" for="focus-surfaces">注目表層（任意）</label>
+        <input id="focus-surfaces" type="text" placeholder="金星, 町中" autocomplete="off" />
+        <label class="field-label" for="paste-note">メモ（任意）</label>
+        <input id="paste-note" type="text" maxlength="200" placeholder="出典メモ" />
+        <div class="cta-row">
+          <button type="button" class="btn" id="extract-btn">LLM で抽出</button>
+          <button type="button" class="btn ghost" id="commit-btn" disabled>選択分を送る</button>
+          <span class="hint" id="char-count">0 文字</span>
+        </div>
+        <p class="error" id="error" hidden></p>
+      </section>
+
+      <section class="panel" aria-labelledby="items-heading">
+        <h2 id="items-heading">抽出結果</h2>
+        <p class="hint" id="items-hint">まだありません</p>
+        <div class="table-wrap">
+          <table class="result-table">
+            <thead>
+              <tr>
+                <th><input type="checkbox" id="check-all" checked /></th>
+                <th>表層</th>
+                <th>読み</th>
+                <th>抜粋</th>
+                <th>メモ</th>
+              </tr>
+            </thead>
+            <tbody id="items-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+    <script src="./app.js" type="module"></script>
+  </body>
+</html>

@@ -6,7 +6,10 @@ from typing import Any
 
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
+from pathlib import Path
 
 from reading_engine import get_engine
 from reading_engine.premium import (
@@ -80,6 +83,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(RateLimitMiddleware)
+
+_STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
+_DEV_INGEST_DIR = _STATIC_DIR / "dev-ingest"
+if _DEV_INGEST_DIR.is_dir():
+    app.mount(
+        "/admin/dev-ingest",
+        StaticFiles(directory=str(_DEV_INGEST_DIR), html=True),
+        name="dev-ingest",
+    )
+
+
+@app.get("/admin/ingest")
+def admin_ingest_shortcut() -> RedirectResponse:
+    """スマホ用ショートカット（末尾スラッシュ付きへ）。"""
+    return RedirectResponse(url="/admin/dev-ingest/", status_code=307)
 
 
 @app.on_event("startup")

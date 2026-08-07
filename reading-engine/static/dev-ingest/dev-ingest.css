@@ -1,0 +1,60 @@
+.dev-ingest-page .dev-auth-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.dev-ingest-page #admin-token {
+  flex: 1 1 16rem;
+  min-width: 12rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9rem;
+}
+
+.dev-ingest-page textarea,
+.dev-ingest-page input[type="text"],
+.dev-ingest-page input[type="password"] {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 0.65rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--elevated);
+  color: var(--ink);
+  font: inherit;
+}
+
+.dev-ingest-page textarea {
+  resize: vertical;
+  min-height: 10rem;
+  line-height: 1.55;
+}
+
+.dev-ingest-page .dev-summary {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: 6px;
+  background: color-mix(in oklab, var(--elevated) 80%, var(--paper));
+  border: 1px solid var(--line);
+  font-size: 0.82rem;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+.dev-ingest-page .result-table th:first-child,
+.dev-ingest-page .result-table td:first-child {
+  width: 2.2rem;
+  text-align: center;
+}
+
+.dev-ingest-page .result-table td {
+  vertical-align: top;
+}
+
+.dev-ingest-page .error {
+  color: var(--vermilion-deep);
+  white-space: pre-wrap;
+}
