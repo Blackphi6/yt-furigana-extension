@@ -8,13 +8,14 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
 from threading import Lock
 from typing import Any
 
-from reading_engine.contributions import DATA_DIR, validate_pair
+from reading_engine.contributions import DATA_DIR, READING_RE, validate_pair
 from reading_engine.proposals import append_proposals
 
 DEV_INGEST_FILE = DATA_DIR / "dev-ingest.jsonl"
@@ -22,6 +23,24 @@ _file_lock = Lock()
 
 _MAX_TEXT = 20000
 _MAX_ITEMS = 80
+
+# 番号付き行: "21. …" / "21．…" / "21、…"
+_NUM_LINE_RE = re.compile(
+    r"^\s*(\d+)\s*[.．、]\s*(.+?)\s*$",
+    re.MULTILINE,
+)
+# 漢字（必須）+ 送りがなっぽい末尾かな（広めに取り、後で短縮候補を展開）
+_SURFACE_CAND_RE = re.compile(
+    r"[\u3400-\u9fff\uF900-\uFAFF々〻]+[\u3040-\u309fー]*"
+)
+_SECTION_Q_RE = re.compile(
+    r"(?:【\s*問題\s*】|^\s*問題\s*[:：]?\s*$)",
+    re.MULTILINE | re.IGNORECASE,
+)
+_SECTION_A_RE = re.compile(
+    r"(?:【\s*解答\s*】|^\s*解答\s*[:：]?\s*$)",
+    re.MULTILINE | re.IGNORECASE,
+)
 
 
 def _utcnow() -> str:
@@ -37,6 +56,242 @@ def ensure_dev_ingest_store() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     if not DEV_INGEST_FILE.exists():
         DEV_INGEST_FILE.write_text("", encoding="utf-8")
+
+
+def _parse_numbered_map(block: str) -> dict[int, str]:
+    """番号→本文。同一番号が複数なら後勝ち（セクション内の重複用）。"""
+    out: dict[int, str] = {}
+    for m in _NUM_LINE_RE.finditer(block or ""):
+        num = int(m.group(1))
+        body = m.group(2).strip()
+        if body:
+            out[num] = body
+    return out
+
+
+def _parse_numbered_entries(block: str) -> list[tuple[int, str]]:
+    """番号付き行を出現順のまま返す（同一番号の問題行+解答行に対応）。"""
+    out: list[tuple[int, str]] = []
+    for m in _NUM_LINE_RE.finditer(block or ""):
+        body = m.group(2).strip()
+        if body:
+            out.append((int(m.group(1)), body))
+    return out
+
+
+def _split_quiz_sections(text: str) -> tuple[str, str] | None:
+    """問題/解答ブロックに分ける。見つからなければ None。"""
+    raw = str(text or "")
+    q_marks = list(_SECTION_Q_RE.finditer(raw))
+    a_marks = list(_SECTION_A_RE.finditer(raw))
+    if not q_marks or not a_marks:
+        return None
+    q0 = q_marks[0]
+    a0 = a_marks[0]
+    if a0.start() > q0.start():
+        q_body = raw[q0.end() : a0.start()]
+        a_body = raw[a0.end() :]
+    else:
+        a_body = raw[a0.end() : q0.start()]
+        q_body = raw[q0.end() :]
+    return q_body, a_body
+
+
+def _split_readings(answer: str) -> list[str]:
+    parts = re.split(r"[・･·/／|｜]+", str(answer or ""))
+    out: list[str] = []
+    for p in parts:
+        gold = p.strip()
+        if not gold:
+            continue
+        if not READING_RE.match(gold):
+            continue
+        out.append(gold)
+    return out
+
+
+def _split_clauses(question: str) -> list[str]:
+    # 読点・句点で区切り、各節に表層を割り当てる
+    parts = re.split(r"[、。！？!\?]+", str(question or ""))
+    return [p.strip() for p in parts if p.strip()]
+
+
+def _surface_candidates(clause: str) -> list[str]:
+    """表層候補。『入れると』から『入れる』『入』なども展開する。"""
+    # 助詞っぽい末尾は表層に含めない
+    particle_tail = re.compile(r"[のにとをはがともでへやへ]+$")
+    found: set[str] = set()
+    for raw0 in _SURFACE_CAND_RE.findall(clause or ""):
+        raw = particle_tail.sub("", raw0)
+        if not raw or not any(
+            "\u3400" <= c <= "\u9fff" or "\uF900" <= c <= "\uFAFF" or c in "々〻"
+            for c in raw
+        ):
+            continue
+        m = re.match(
+            r"^([\u3400-\u9fff\uF900-\uFAFF々〻]+)([\u3040-\u309fー]*)$",
+            raw,
+        )
+        if not m:
+            found.add(raw)
+            continue
+        core, okuri = m.group(1), m.group(2)
+        # 送りがなに助詞が混ざっていたらそこで切る
+        okuri = re.split(r"[のにとをはがともでへや]", okuri, maxsplit=1)[0]
+        found.add(core)
+        for i in range(len(okuri) + 1):
+            found.add(core + okuri[:i])
+    # 漢字が多く、同じなら長い表層を優先（入れる > 入、内輪 > 話）
+    def score(s: str) -> tuple[int, int]:
+        kanji = sum(
+            1
+            for c in s
+            if "\u3400" <= c <= "\u9fff"
+            or "\uF900" <= c <= "\uFAFF"
+            or c in "々〻"
+        )
+        return (kanji, len(s))
+
+    return sorted(found, key=score, reverse=True)
+
+
+def _pick_shared_surface(clauses: list[str]) -> str | None:
+    if not clauses:
+        return None
+    cand_sets = [set(_surface_candidates(c)) for c in clauses]
+    shared = set.intersection(*cand_sets) if cand_sets else set()
+    pool = shared if shared else set(_surface_candidates(clauses[0]))
+    if not pool:
+        return None
+
+    def score(s: str) -> tuple[int, int]:
+        kanji = sum(
+            1
+            for c in s
+            if "\u3400" <= c <= "\u9fff"
+            or "\uF900" <= c <= "\uFAFF"
+            or c in "々〻"
+        )
+        return (kanji, len(s))
+
+    return sorted(pool, key=score, reverse=True)[0]
+
+
+def _pair_quiz_item(
+    surface: str, gold: str, excerpt: str, *, note: str = ""
+) -> dict[str, str] | None:
+    try:
+        surf, reading = validate_pair(surface, gold)
+    except ValueError:
+        return None
+    text = (excerpt or surf).strip()[:120]
+    if surf not in text:
+        text = surf
+    return {
+        "text": text,
+        "surface": surf,
+        "gold": reading,
+        "reading": reading,
+        "note": (note or "quiz-parse")[:120],
+    }
+
+
+def parse_quiz_paste(text: str) -> list[dict[str, str]]:
+    """【問題】/【解答】の番号対応を決定的に表層→読みへ。
+
+    例: 21. 水を入れると、ここには入れる。 / 21. いれる・はいれる
+    → 入れる=いれる（水を入れると）と 入れる=はいれる（ここには入れる）の2件。
+    """
+    raw = str(text or "").strip()
+    if not raw:
+        return []
+
+    sections = _split_quiz_sections(raw)
+    if sections:
+        q_map = _parse_numbered_map(sections[0])
+        a_map = _parse_numbered_map(sections[1])
+    else:
+        # セクション無し: かなのみの番号行を解答、漢字を含む番号行を問題とみなす
+        # （同一番号が2行あっても dict 上書きせず両方取る）
+        q_map = {}
+        a_map = {}
+        for num, body in _parse_numbered_entries(raw):
+            readings = _split_readings(body)
+            has_kanji = bool(_SURFACE_CAND_RE.search(body))
+            if readings and not has_kanji:
+                a_map[num] = body
+            elif has_kanji:
+                q_map[num] = body
+
+    out: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for num in sorted(set(q_map) & set(a_map)):
+        question = q_map[num]
+        readings = _split_readings(a_map[num])
+        if not readings:
+            continue
+        clauses = _split_clauses(question)
+        surface = _pick_shared_surface(clauses if clauses else [question])
+        if not surface:
+            continue
+
+        if len(readings) > 1 and len(clauses) >= len(readings):
+            # 読点区切りの節に読みを1:1対応（いれる・はいれる の本線）
+            for gold, clause in zip(readings, clauses):
+                if surface not in clause:
+                    # この節に表層が無いなら質問全文を使う
+                    clause = question
+                row = _pair_quiz_item(
+                    surface,
+                    gold,
+                    clause,
+                    note=f"quiz#{num}",
+                )
+                if not row:
+                    continue
+                key = f"{row['surface']}\t{row['gold']}\t{row['text']}"
+                if key in seen:
+                    continue
+                seen.add(key)
+                out.append(row)
+                if len(out) >= _MAX_ITEMS:
+                    return out
+        else:
+            # 読み1つ、または節が足りない → 全文を共有し読みごとに1件
+            for gold in readings:
+                row = _pair_quiz_item(
+                    surface,
+                    gold,
+                    question,
+                    note=f"quiz#{num}",
+                )
+                if not row:
+                    continue
+                key = f"{row['surface']}\t{row['gold']}\t{row['text']}"
+                if key in seen:
+                    continue
+                seen.add(key)
+                out.append(row)
+                if len(out) >= _MAX_ITEMS:
+                    return out
+    return out
+
+
+def _merge_extract_items(
+    primary: list[dict[str, str]], secondary: list[dict[str, str]]
+) -> list[dict[str, str]]:
+    """primary 優先。surface+gold が同じなら primary の抜粋を残す。"""
+    out: list[dict[str, str]] = []
+    seen_sg: set[str] = set()
+    for row in primary + secondary:
+        sg = f"{row.get('surface')}\t{row.get('gold') or row.get('reading')}"
+        if sg in seen_sg:
+            continue
+        seen_sg.add(sg)
+        out.append(row)
+        if len(out) >= _MAX_ITEMS:
+            break
+    return out
 
 
 def _normalize_groq_key(raw: str) -> str:
@@ -208,6 +463,7 @@ def extract_learning_items(
     *,
     focus_surfaces: list[str] | None = None,
     note: str = "",
+    quiz_only: bool = False,
 ) -> dict[str, Any]:
     raw = str(text or "").strip()
     if not raw:
@@ -219,12 +475,33 @@ def extract_learning_items(
         for s in (focus_surfaces or [])
         if str(s).strip()
     ][:20]
-    items = _groq_extract(raw, focus=focus, note=str(note or "").strip()[:200])
+    # 問題/解答の番号対応は LLM より先に決定的パース（いれる・はいれる漏れ防止）
+    quiz_items = parse_quiz_paste(raw)
+    if quiz_only:
+        items = quiz_items
+        via = "quiz"
+    else:
+        llm_items: list[dict[str, str]] = []
+        llm_err = ""
+        try:
+            llm_items = _groq_extract(
+                raw, focus=focus, note=str(note or "").strip()[:200]
+            )
+        except ValueError as exc:
+            llm_err = str(exc)
+            if not quiz_items:
+                raise
+        items = _merge_extract_items(quiz_items, llm_items)
+        via = "quiz+llm" if quiz_items and llm_items else ("quiz" if quiz_items else "llm")
+        if llm_err and quiz_items:
+            via = f"quiz(llm_skipped:{llm_err[:40]})"
     return {
         "ok": True,
         "count": len(items),
         "items": items,
         "chars": len(raw),
+        "quizCount": len(quiz_items),
+        "via": via,
     }
 
 

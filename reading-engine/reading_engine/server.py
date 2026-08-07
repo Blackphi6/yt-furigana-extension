@@ -190,6 +190,8 @@ class LearningIngestExtractRequest(BaseModel):
     text: str = Field(default="", max_length=20000)
     note: str = Field(default="", max_length=200)
     focusSurfaces: list[str] = Field(default_factory=list, max_length=20)
+    # True なら Groq を呼ばず問題/解答の決定的パースのみ
+    quizOnly: bool = False
 
 
 class LearningIngestCommitRequest(BaseModel):
@@ -434,6 +436,7 @@ def admin_learning_ingest_extract(
             body.text,
             focus_surfaces=body.focusSurfaces,
             note=body.note,
+            quiz_only=bool(body.quizOnly),
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc

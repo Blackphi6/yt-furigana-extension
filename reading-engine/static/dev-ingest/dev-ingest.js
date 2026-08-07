@@ -274,6 +274,192 @@ function normalizeClientItems(rawItems, text) {
   return out;
 }
 
+/** 問題/解答の番号対応を決定的にパース（LLM の「・」読み漏れ対策） */
+function parseQuizPaste(text) {
+  const raw = String(text || "");
+  if (!raw.trim()) return [];
+  const numRe = /^\s*(\d+)\s*[.．、]\s*(.+?)\s*$/gm;
+  const surfRe = /[\u3400-\u9fff\uF900-\uFAFF々〻]+[\u3040-\u309fー]*/g;
+  const kanaRe = /^[\u3040-\u309f\u30a0-\u30ffーゝゞヽヾ]+$/;
+  const qSec = /(?:【\s*問題\s*】|^\s*問題\s*[:：]?\s*$)/im;
+  const aSec = /(?:【\s*解答\s*】|^\s*解答\s*[:：]?\s*$)/im;
+
+  function numberedMap(block) {
+    const out = new Map();
+    const re = new RegExp(numRe.source, "gm");
+    let m;
+    while ((m = re.exec(block || ""))) {
+      out.set(Number(m[1]), m[2].trim());
+    }
+    return out;
+  }
+  function splitReadings(answer) {
+    return String(answer || "")
+      .split(/[・･·/／|｜]+/)
+      .map((s) => s.trim())
+      .filter((s) => kanaRe.test(s));
+  }
+  function splitClauses(q) {
+    return String(q || "")
+      .split(/[、。！？!?]+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  function surfaceCands(clause) {
+    const found = new Set();
+    const particleTail = /[のにとをはがともでへや]+$/;
+    const re = new RegExp(surfRe.source, "g");
+    let m;
+    while ((m = re.exec(String(clause || "")))) {
+      let raw = m[0].replace(particleTail, "");
+      if (!/[\u3400-\u9fff\uF900-\uFAFF々〻]/.test(raw)) continue;
+      const mm = raw.match(
+        /^([\u3400-\u9fff\uF900-\uFAFF々〻]+)([\u3040-\u309fー]*)$/
+      );
+      if (!mm) {
+        found.add(raw);
+        continue;
+      }
+      const core = mm[1];
+      let okuri = mm[2].split(/[のにとをはがともでへや]/)[0];
+      found.add(core);
+      for (let i = 0; i <= okuri.length; i++) found.add(core + okuri.slice(0, i));
+    }
+    const score = (s) => {
+      let kanji = 0;
+      for (const c of s) {
+        const code = c.codePointAt(0);
+        if (
+          (code >= 0x3400 && code <= 0x9fff) ||
+          (code >= 0xf900 && code <= 0xfaff) ||
+          "々〻".includes(c)
+        ) {
+          kanji += 1;
+        }
+      }
+      return kanji * 1000 + s.length;
+    };
+    return [...found].sort((a, b) => score(b) - score(a));
+  }
+  function sharedSurface(clauses) {
+    if (!clauses.length) return null;
+    let shared = null;
+    for (const c of clauses) {
+      const set = new Set(surfaceCands(c));
+      shared = shared == null ? set : new Set([...shared].filter((x) => set.has(x)));
+    }
+    const pool =
+      shared && shared.size ? [...shared] : surfaceCands(clauses[0]);
+    if (!pool.length) return null;
+    const score = (s) => {
+      let kanji = 0;
+      for (const c of s) {
+        const code = c.codePointAt(0);
+        if (
+          (code >= 0x3400 && code <= 0x9fff) ||
+          (code >= 0xf900 && code <= 0xfaff) ||
+          "々〻".includes(c)
+        ) {
+          kanji += 1;
+        }
+      }
+      return kanji * 1000 + s.length;
+    };
+    return pool.sort((a, b) => score(b) - score(a))[0];
+  }
+
+  let qMap;
+  let aMap;
+  const qMatch = raw.match(qSec);
+  const aMatch = raw.match(aSec);
+  const qIdx = qMatch ? raw.search(qSec) : -1;
+  const aIdx = aMatch ? raw.search(aSec) : -1;
+  if (qIdx >= 0 && aIdx >= 0 && qMatch && aMatch) {
+    let qBody;
+    let aBody;
+    if (aIdx > qIdx) {
+      qBody = raw.slice(qIdx + qMatch[0].length, aIdx);
+      aBody = raw.slice(aIdx + aMatch[0].length);
+    } else {
+      aBody = raw.slice(aIdx + aMatch[0].length, qIdx);
+      qBody = raw.slice(qIdx + qMatch[0].length);
+    }
+    qMap = numberedMap(qBody);
+    aMap = numberedMap(aBody);
+  } else {
+    // 同一番号の問題行+解答行が並ぶ形式に対応（dict 上書きしない）
+    qMap = new Map();
+    aMap = new Map();
+    const re = new RegExp(numRe.source, "gm");
+    let m;
+    while ((m = re.exec(raw))) {
+      const num = Number(m[1]);
+      const body = m[2].trim();
+      const readings = splitReadings(body);
+      const hasKanji = /[\u3400-\u9fff\uF900-\uFAFF々〻]/.test(body);
+      if (readings.length && !hasKanji) aMap.set(num, body);
+      else if (hasKanji) qMap.set(num, body);
+    }
+  }
+
+  const out = [];
+  const seen = new Set();
+  const nums = [...qMap.keys()].filter((n) => aMap.has(n)).sort((a, b) => a - b);
+  for (const num of nums) {
+    const question = qMap.get(num);
+    const readings = splitReadings(aMap.get(num));
+    if (!readings.length) continue;
+    const clauses = splitClauses(question);
+    const surface = sharedSurface(clauses.length ? clauses : [question]);
+    if (!surface) continue;
+    if (readings.length > 1 && clauses.length >= readings.length) {
+      for (let i = 0; i < readings.length; i++) {
+        let clause = clauses[i];
+        if (!clause.includes(surface)) clause = question;
+        const key = `${surface}\t${readings[i]}\t${clause}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push({
+          text: clause.slice(0, 120),
+          surface,
+          gold: readings[i],
+          reading: readings[i],
+          note: `quiz#${num}`,
+        });
+        if (out.length >= 80) return out;
+      }
+    } else {
+      for (const gold of readings) {
+        const key = `${surface}\t${gold}\t${question}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push({
+          text: question.slice(0, 120),
+          surface,
+          gold,
+          reading: gold,
+          note: `quiz#${num}`,
+        });
+        if (out.length >= 80) return out;
+      }
+    }
+  }
+  return out;
+}
+
+function mergeExtractItems(primary, secondary) {
+  const out = [];
+  const seen = new Set();
+  for (const row of [...(primary || []), ...(secondary || [])]) {
+    const sg = `${row.surface}\t${row.gold || row.reading}`;
+    if (seen.has(sg)) continue;
+    seen.add(sg);
+    out.push(row);
+    if (out.length >= 80) break;
+  }
+  return out;
+}
+
 async function extractViaBrowserGroq(text, focus, note) {
   const key = groqKey();
   if (!key.startsWith("gsk_") || key.includes("...")) {
@@ -339,15 +525,27 @@ async function onExtract() {
   extractBtn.disabled = true;
   extractBtn.textContent = "抽出中…";
 
+  // 問題/解答は先に決定的パース（いれる・はいれるの片方漏れを防ぐ）
+  const quizItems = parseQuizPaste(text);
+
   // ブラウザ直呼びを優先（Render→Groq の 403 を回避）
   if (groqKey()) {
     setStatus("ブラウザ→Groq で抽出中…");
     try {
       const data = await extractViaBrowserGroq(text, focus, note);
-      renderItems(data.items || []);
-      setStatus(`抽出 ${data.count ?? 0} 件（ブラウザ直・${data.model}）`);
+      const merged = mergeExtractItems(quizItems, data.items || []);
+      renderItems(merged);
+      setStatus(
+        `抽出 ${merged.length} 件（quiz ${quizItems.length} + LLM ${data.count ?? 0}・${data.model}）`
+      );
       return;
     } catch (err) {
+      if (quizItems.length) {
+        renderItems(quizItems);
+        showError(`LLM 失敗のため quiz のみ: ${String(err.message || err)}`);
+        setStatus(`抽出 ${quizItems.length} 件（quiz のみ）`);
+        return;
+      }
       showError(String(err.message || err));
       setStatus("ブラウザ抽出失敗");
       return;
@@ -355,6 +553,14 @@ async function onExtract() {
       extractBtn.disabled = false;
       extractBtn.textContent = "LLM で抽出";
     }
+  }
+
+  if (quizItems.length && !token()) {
+    renderItems(quizItems);
+    setStatus(`抽出 ${quizItems.length} 件（quiz・キュー送信には Admin が必要）`);
+    extractBtn.disabled = false;
+    extractBtn.textContent = "LLM で抽出";
+    return;
   }
 
   const t = token();
@@ -372,16 +578,24 @@ async function onExtract() {
       note,
       focusSurfaces: focus,
     });
-    renderItems(data.items || []);
-    setStatus(`抽出 ${data.count ?? 0} 件（サーバー）`);
+    // サーバーも quiz マージするが、クライアント側 quiz も足して漏れを防ぐ
+    const merged = mergeExtractItems(quizItems, data.items || []);
+    renderItems(merged);
+    setStatus(`抽出 ${merged.length} 件（${data.via || "サーバー"}）`);
   } catch (err) {
-    const msg = String(err.message || err);
-    showError(
-      msg.includes("403") || msg.includes("groq_failed")
-        ? `${msg}\n→ Groq キー欄に gsk_ 全文を入れて「保存」後、再抽出（ブラウザ直呼び）`
-        : msg
-    );
-    setStatus("抽出失敗");
+    if (quizItems.length) {
+      renderItems(quizItems);
+      showError(`サーバー失敗のため quiz のみ: ${String(err.message || err)}`);
+      setStatus(`抽出 ${quizItems.length} 件（quiz のみ）`);
+    } else {
+      const msg = String(err.message || err);
+      showError(
+        msg.includes("403") || msg.includes("groq_failed")
+          ? `${msg}\n→ Groq キー欄に gsk_ 全文を入れて「保存」後、再抽出（ブラウザ直呼び）`
+          : msg
+      );
+      setStatus("抽出失敗");
+    }
   } finally {
     extractBtn.disabled = false;
     extractBtn.textContent = "LLM で抽出";
