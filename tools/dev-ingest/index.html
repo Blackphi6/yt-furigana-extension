@@ -49,8 +49,8 @@
       <section class="panel fade-up" aria-labelledby="auth-heading">
         <h2 id="auth-heading">認証</h2>
         <p class="hint">
-          Render → <code>yt-furigana-readings</code> → Environment →
-          <code>YT_FURIGANA_ADMIN_TOKEN</code>
+          Admin は Render の <code>YT_FURIGANA_ADMIN_TOKEN</code>。抽出は
+          Groq キーをこの端末に保存してブラウザ直呼び（推奨）。
         </p>
         <label class="field-label" for="admin-token">Admin token</label>
         <div class="dev-auth-row">
@@ -63,6 +63,17 @@
           />
           <button type="button" class="btn ghost" id="save-token">保存</button>
           <button type="button" class="btn ghost" id="refresh-summary">件数を更新</button>
+        </div>
+        <label class="field-label" for="groq-key">Groq API key（抽出用・この端末のみ）</label>
+        <div class="dev-auth-row">
+          <input
+            id="groq-key"
+            type="password"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="gsk_…"
+          />
+          <button type="button" class="btn ghost" id="save-groq">保存</button>
         </div>
         <pre class="dev-summary" id="summary" hidden></pre>
       </section>

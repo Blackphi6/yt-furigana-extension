@@ -22,7 +22,8 @@
       <section class="panel" aria-labelledby="auth-heading">
         <h2 id="auth-heading">認証</h2>
         <p class="hint">
-          Render Dashboard → Environment → <code>YT_FURIGANA_ADMIN_TOKEN</code>
+          Admin は Render の <code>YT_FURIGANA_ADMIN_TOKEN</code>。抽出用 Groq
+          はブラウザ直呼び（Render 経由の 403 を避ける）。キー全文は作成時のみ表示。
         </p>
         <label class="field-label" for="admin-token">Admin token</label>
         <div class="dev-auth-row">
@@ -35,6 +36,17 @@
           />
           <button type="button" class="btn ghost" id="save-token">保存</button>
           <button type="button" class="btn ghost" id="refresh-summary">件数</button>
+        </div>
+        <label class="field-label" for="groq-key">Groq API key（抽出用・この端末のみ）</label>
+        <div class="dev-auth-row">
+          <input
+            id="groq-key"
+            type="password"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="gsk_…"
+          />
+          <button type="button" class="btn ghost" id="save-groq">保存</button>
         </div>
         <pre class="dev-summary" id="summary" hidden></pre>
       </section>

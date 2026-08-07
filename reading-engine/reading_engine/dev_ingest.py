@@ -39,17 +39,48 @@ def ensure_dev_ingest_store() -> None:
         DEV_INGEST_FILE.write_text("", encoding="utf-8")
 
 
+def _normalize_groq_key(raw: str) -> str:
+    """貼り付けミス（引用符・Bearer 接頭・空白）を除去する。"""
+    key = str(raw or "").strip().strip('"').strip("'")
+    if key.lower().startswith("bearer "):
+        key = key[7:].strip()
+    return key
+
+
+def _groq_http_error_detail(exc: BaseException) -> str:
+    if isinstance(exc, urllib.error.HTTPError):
+        try:
+            body = exc.read().decode("utf-8", errors="replace")[:400]
+        except Exception:
+            body = ""
+        if body:
+            return f"HTTP {exc.code}: {body}"
+        return f"HTTP Error {exc.code}: {exc.reason}"
+    return str(exc)
+
+
 def _groq_extract(
     text: str, *, focus: list[str], note: str
 ) -> list[dict[str, str]]:
-    api_key = os.environ.get("GROQ_API_KEY", "").strip()
+    api_key = _normalize_groq_key(os.environ.get("GROQ_API_KEY", ""))
     if not api_key:
         raise ValueError("groq_key_missing")
+    if "..." in api_key or not api_key.startswith("gsk_"):
+        raise ValueError(
+            "groq_key_invalid: gsk_ で始まる全文を Render の GROQ_API_KEY に設定"
+            "（マスク表示 gsk_…xxx は不可。作成直後にコピー）"
+        )
 
-    model = os.environ.get(
+    primary = os.environ.get(
         "YT_FURIGANA_DEV_INGEST_MODEL",
         os.environ.get("YT_FURIGANA_PROPOSAL_LLM_MODEL", "llama-3.1-8b-instant"),
     ).strip()
+    # 403（モデル権限・リージョン）時に順に試す
+    models = [primary]
+    for alt in ("llama-3.3-70b-versatile", "llama-3.1-8b-instant", "openai/gpt-oss-20b"):
+        if alt and alt not in models:
+            models.append(alt)
+
     focus_line = (
         "Prefer these surfaces when present: " + ", ".join(focus[:20])
         if focus
@@ -77,35 +108,46 @@ def _groq_extract(
         f"{note_line}"
         f"PASTE:\n{text[:_MAX_TEXT]}"
     )
-    body = json.dumps(
-        {
-            "model": model,
-            "temperature": 0.2,
-            "max_tokens": 2200,
-            "messages": [
-                {
-                    "role": "system",
-                    "content": "Return compact JSON only. No markdown.",
-                },
-                {"role": "user", "content": prompt},
-            ],
-            "response_format": {"type": "json_object"},
-        }
-    ).encode("utf-8")
-    req = urllib.request.Request(
-        "https://api.groq.com/openai/v1/chat/completions",
-        data=body,
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=45) as resp:
-            payload = json.loads(resp.read().decode("utf-8"))
-    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError) as exc:
-        raise ValueError(f"groq_failed:{exc}") from exc
+
+    last_err = ""
+    payload: dict[str, Any] | None = None
+    for model in models:
+        body = json.dumps(
+            {
+                "model": model,
+                "temperature": 0.2,
+                "max_tokens": 2200,
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "Return compact JSON only. No markdown.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                "response_format": {"type": "json_object"},
+            }
+        ).encode("utf-8")
+        req = urllib.request.Request(
+            "https://api.groq.com/openai/v1/chat/completions",
+            data=body,
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=45) as resp:
+                payload = json.loads(resp.read().decode("utf-8"))
+            break
+        except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError) as exc:
+            last_err = _groq_http_error_detail(exc)
+            # 401 はキー自体が無効 → モデル切替しても無駄
+            if isinstance(exc, urllib.error.HTTPError) and exc.code in (401, 400):
+                raise ValueError(f"groq_failed:{last_err}") from exc
+            continue
+    if payload is None:
+        raise ValueError(f"groq_failed:{last_err or 'unknown'}")
 
     try:
         content = payload["choices"][0]["message"]["content"]

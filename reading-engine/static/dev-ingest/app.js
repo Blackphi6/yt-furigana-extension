@@ -1,11 +1,20 @@
 /**
  * Render /admin/dev-ingest 用（同一オリジン API）
+ * 抽出はブラウザ→Groq 直呼びを優先（Render 経由 403 回避）
  */
 const TOKEN_KEY = "ytf_admin_token";
+const GROQ_KEY = "ytf_groq_key";
+const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+const GROQ_MODELS = [
+  "llama-3.1-8b-instant",
+  "llama-3.3-70b-versatile",
+  "openai/gpt-oss-20b",
+];
 
 const $ = (sel) => document.querySelector(sel);
 
 const tokenEl = $("#admin-token");
+const groqEl = $("#groq-key");
 const pasteEl = $("#paste-text");
 const focusEl = $("#focus-surfaces");
 const noteEl = $("#paste-note");
@@ -32,6 +41,12 @@ function token() {
   return String(tokenEl?.value || "").trim();
 }
 
+function groqKey() {
+  let key = String(groqEl?.value || "").trim().replace(/^["']|["']$/g, "");
+  if (/^bearer\s+/i.test(key)) key = key.replace(/^bearer\s+/i, "").trim();
+  return key;
+}
+
 function showError(msg) {
   if (!errorEl) return;
   if (!msg) {
@@ -47,10 +62,12 @@ function setStatus(msg) {
   if (statusEl) statusEl.textContent = msg;
 }
 
-function loadToken() {
+function loadSecrets() {
   try {
     const saved = localStorage.getItem(TOKEN_KEY);
     if (saved && tokenEl && !tokenEl.value) tokenEl.value = saved;
+    const g = localStorage.getItem(GROQ_KEY);
+    if (g && groqEl && !groqEl.value) groqEl.value = g;
   } catch {
     /* ignore */
   }
@@ -64,7 +81,28 @@ function saveToken() {
   } catch {
     /* ignore */
   }
-  setStatus(t ? "トークンを保存しました" : "トークンをクリアしました");
+  setStatus(t ? "Admin を保存しました（この端末のみ）" : "Admin をクリアしました");
+}
+
+function saveGroq() {
+  const k = groqKey();
+  try {
+    if (k) localStorage.setItem(GROQ_KEY, k);
+    else localStorage.removeItem(GROQ_KEY);
+  } catch {
+    /* ignore */
+  }
+  if (!k) {
+    setStatus("Groq キーをクリアしました");
+    return;
+  }
+  if (!k.startsWith("gsk_") || k.includes("...")) {
+    showError("Groq キーは gsk_ で始まる全文（マスク gsk_… は不可）");
+    setStatus("Groq キー形式が不正");
+    return;
+  }
+  showError("");
+  setStatus("Groq キーを保存しました（この端末のブラウザのみ・Render 不要）");
 }
 
 function updateCharCount() {
@@ -171,13 +209,123 @@ async function refreshSummary() {
   }
 }
 
+function buildExtractPrompt(text, focus, note) {
+  const focusLine = focus.length
+    ? `Prefer these surfaces when present: ${focus.slice(0, 20).join(", ")}`
+    : "Prefer heteronyms / ambiguous kanji useful for caption furigana.";
+  const noteLine = note ? `Operator note: ${note}\n` : "";
+  return (
+    "You extract Japanese furigana training examples from pasted text.\n" +
+    'Return ONLY JSON: {"items":[{"text":"short sentence",' +
+    '"surface":"kanji word","gold":"hiragana reading",' +
+    '"note":"why this reading"}]}\n' +
+    "Rules:\n" +
+    "- gold must be hiragana or katakana only (one reading per item)\n" +
+    "- surface must appear in text\n" +
+    "- text should be a short excerpt (≤80 chars) containing the surface\n" +
+    "- skip pure kana, punctuation-only, and jokes\n" +
+    "- max 60 items; dedupe by surface+gold+text\n" +
+    "If the paste has 【問題】 and 【解答】 (or 問題/解答) sections:\n" +
+    "- Match numbered lines (e.g. 55.) between question and answer\n" +
+    "- Answers like きんせい・きんぼし mean multiple readings for the SAME surface " +
+    "in that sentence — emit ONE item per reading, with a short excerpt that " +
+    "fits that sense (split the sentence at 、 if needed)\n" +
+    "- Prefer the kanji compound that differs in reading (金星, 町中, etc.)\n" +
+    `${focusLine}\n` +
+    noteLine +
+    `PASTE:\n${text.slice(0, 20000)}`
+  );
+}
+
+function normalizeClientItems(rawItems, text) {
+  const kanaRe = /^[\u3040-\u309F\u30A0-\u30FFー]+$/;
+  const kanjiRe = /[\u4E00-\u9FFF]/
+  const out = [];
+  const seen = new Set();
+  for (const item of rawItems || []) {
+    if (!item || typeof item !== "object") continue;
+    const surface = String(item.surface || "").trim();
+    const gold = String(item.gold || item.reading || "").trim();
+    let excerpt = String(item.text || "").trim().slice(0, 120);
+    const itemNote = String(item.note || "").trim().slice(0, 120);
+    if (!surface || !gold || !kanjiRe.test(surface) || !kanaRe.test(gold)) continue;
+    if (excerpt && !excerpt.includes(surface)) {
+      if (!text.includes(surface)) continue;
+    }
+    if (!excerpt) {
+      const idx = text.indexOf(surface);
+      if (idx < 0) continue;
+      const a = Math.max(0, idx - 12);
+      const b = Math.min(text.length, idx + surface.length + 12);
+      excerpt = text.slice(a, b);
+    }
+    const key = `${surface}\t${gold}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({
+      text: excerpt,
+      surface,
+      gold,
+      reading: gold,
+      note: itemNote,
+    });
+    if (out.length >= 80) break;
+  }
+  return out;
+}
+
+async function extractViaBrowserGroq(text, focus, note) {
+  const key = groqKey();
+  if (!key.startsWith("gsk_") || key.includes("...")) {
+    throw new Error("Groq キーは gsk_ で始まる全文を入力（マスク表示は不可）");
+  }
+  const prompt = buildExtractPrompt(text, focus, note);
+  let lastErr = "";
+  for (const model of GROQ_MODELS) {
+    const res = await fetch(GROQ_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        temperature: 0.2,
+        max_tokens: 2200,
+        messages: [
+          { role: "system", content: "Return compact JSON only. No markdown." },
+          { role: "user", content: prompt },
+        ],
+        response_format: { type: "json_object" },
+      }),
+    });
+    const raw = await res.text();
+    if (!res.ok) {
+      lastErr = `HTTP ${res.status}: ${raw.slice(0, 240)}`;
+      if (res.status === 401 || res.status === 400) throw new Error(`groq_failed:${lastErr}`);
+      continue;
+    }
+    let payload;
+    try {
+      payload = JSON.parse(raw);
+    } catch {
+      throw new Error("groq_bad_json");
+    }
+    const content = payload?.choices?.[0]?.message?.content;
+    let parsed;
+    try {
+      parsed = JSON.parse(content);
+    } catch {
+      throw new Error("groq_bad_json");
+    }
+    const items = normalizeClientItems(parsed?.items, text);
+    return { ok: true, count: items.length, items, via: "browser", model };
+  }
+  throw new Error(`groq_failed:${lastErr || "unknown"}`);
+}
+
 async function onExtract() {
   showError("");
-  const t = token();
-  if (!t) {
-    showError("Admin token を入力してください");
-    return;
-  }
   const text = String(pasteEl?.value || "").trim();
   if (!text) {
     showError("本文を貼り付けてください");
@@ -187,20 +335,52 @@ async function onExtract() {
     .split(/[,、\s]+/)
     .map((s) => s.trim())
     .filter(Boolean);
+  const note = noteEl?.value || "";
   extractBtn.disabled = true;
   extractBtn.textContent = "抽出中…";
-  setStatus("LLM 抽出中…");
+
+  // ブラウザ直呼びを優先（Render→Groq の 403 を回避）
+  if (groqKey()) {
+    setStatus("ブラウザ→Groq で抽出中…");
+    try {
+      const data = await extractViaBrowserGroq(text, focus, note);
+      renderItems(data.items || []);
+      setStatus(`抽出 ${data.count ?? 0} 件（ブラウザ直・${data.model}）`);
+      return;
+    } catch (err) {
+      showError(String(err.message || err));
+      setStatus("ブラウザ抽出失敗");
+      return;
+    } finally {
+      extractBtn.disabled = false;
+      extractBtn.textContent = "LLM で抽出";
+    }
+  }
+
+  const t = token();
+  if (!t) {
+    showError("Groq API key（推奨）か Admin token を入力してください");
+    extractBtn.disabled = false;
+    extractBtn.textContent = "LLM で抽出";
+    return;
+  }
+  setStatus("サーバー経由で LLM 抽出中…");
   try {
     const data = await postJson("/v1/admin/learning-ingest/extract", {
       adminToken: t,
       text,
-      note: noteEl?.value || "",
+      note,
       focusSurfaces: focus,
     });
     renderItems(data.items || []);
-    setStatus(`抽出 ${data.count ?? 0} 件`);
+    setStatus(`抽出 ${data.count ?? 0} 件（サーバー）`);
   } catch (err) {
-    showError(String(err.message || err));
+    const msg = String(err.message || err);
+    showError(
+      msg.includes("403") || msg.includes("groq_failed")
+        ? `${msg}\n→ Groq キー欄に gsk_ 全文を入れて「保存」後、再抽出（ブラウザ直呼び）`
+        : msg
+    );
     setStatus("抽出失敗");
   } finally {
     extractBtn.disabled = false;
@@ -212,7 +392,7 @@ async function onCommit() {
   showError("");
   const t = token();
   if (!t) {
-    showError("Admin token を入力してください");
+    showError("Admin token を入力してください（キュー送信に必要）");
     return;
   }
   const items = selectedItems();
@@ -242,7 +422,7 @@ async function onCommit() {
 $("#save-token")?.addEventListener("click", async () => {
   const btn = $("#save-token");
   saveToken();
-  const savedMsg = token() ? "トークンを保存しました（この端末のブラウザのみ）" : "トークンをクリアしました";
+  const savedMsg = token() ? "Admin を保存しました（この端末のみ）" : "Admin をクリアしました";
   if (btn) {
     btn.textContent = "OK";
     setTimeout(() => {
@@ -257,6 +437,16 @@ $("#save-token")?.addEventListener("click", async () => {
     setStatus(savedMsg);
   }
 });
+$("#save-groq")?.addEventListener("click", () => {
+  const btn = $("#save-groq");
+  saveGroq();
+  if (btn && groqKey().startsWith("gsk_") && !groqKey().includes("...")) {
+    btn.textContent = "OK";
+    setTimeout(() => {
+      if (btn) btn.textContent = "保存";
+    }, 1500);
+  }
+});
 $("#refresh-summary")?.addEventListener("click", () => void refreshSummary());
 extractBtn?.addEventListener("click", () => void onExtract());
 commitBtn?.addEventListener("click", () => void onCommit());
@@ -267,6 +457,6 @@ checkAll?.addEventListener("change", () => {
   });
 });
 
-loadToken();
+loadSecrets();
 updateCharCount();
 if (token()) void refreshSummary();
