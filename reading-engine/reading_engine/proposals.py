@@ -300,6 +300,7 @@ def append_proposals(
     note: str = "",
     use_llm: bool | None = None,
     queue_llm: bool = True,
+    skip_cooldown: bool = False,
 ) -> dict[str, Any]:
     """
     Stage proposals. Never writes shared-readings.json directly.
@@ -307,7 +308,7 @@ def append_proposals(
     """
     ensure_proposals_store()
     voter = voter_id_from_ip(client_ip)
-    cooldown = proposal_cooldown_sec()
+    cooldown = 0.0 if skip_cooldown else proposal_cooldown_sec()
     now = time.monotonic()
     with _recent_lock:
         for entry in entries:
@@ -494,6 +495,29 @@ def list_proposals(
         rows = [r for r in rows if r.get("status") == status]
     rows = list(reversed(rows))[: max(1, min(1000, int(limit)))]
     return {"ok": True, "count": len(rows), "proposals": rows}
+
+
+def summarize_proposals() -> dict[str, Any]:
+    """Counts for ops dashboard (demo /dev-paste corrections)."""
+    rows = iter_proposal_rows()
+    by_status: dict[str, int] = {}
+    by_source: dict[str, int] = {}
+    demo_sources = ("demo", "demo-click", "dev-paste")
+    demo_total = 0
+    for row in rows:
+        st = str(row.get("status") or "unknown")
+        src = str(row.get("source") or "unknown")
+        by_status[st] = by_status.get(st, 0) + 1
+        by_source[src] = by_source.get(src, 0) + 1
+        if src in demo_sources or src.startswith("demo"):
+            demo_total += 1
+    return {
+        "ok": True,
+        "total": len(rows),
+        "demoRelated": demo_total,
+        "byStatus": by_status,
+        "bySource": by_source,
+    }
 
 
 def process_pending_proposals(

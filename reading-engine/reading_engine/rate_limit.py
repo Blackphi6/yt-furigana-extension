@@ -66,6 +66,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         )
         self.get_prefixes = get_prefixes or (
             "/v1/shared-readings",
+            "/v1/contribution-stats",
             "/v1/billing/order",
         )
         self._hits: dict[str, deque[float]] = defaultdict(deque)

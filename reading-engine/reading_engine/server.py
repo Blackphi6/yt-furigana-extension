@@ -20,6 +20,7 @@ from reading_engine.premium import (
 )
 from reading_engine.contributions import (
     append_contribution,
+    get_contribution_stats,
     get_shared_readings_pack,
     merge_curated_entries,
     normalize_entries,
@@ -30,7 +31,13 @@ from reading_engine.proposals import (
     list_proposals,
     process_pending_proposals,
     promote_accepted_proposals,
+    summarize_proposals,
     validate_proposal_entries,
+)
+from reading_engine.dev_ingest import (
+    commit_learning_items,
+    extract_learning_items,
+    ingest_stats,
 )
 from reading_engine.rate_limit import RateLimitMiddleware, client_ip_from_request
 from reading_engine.stripe_billing import (
@@ -160,6 +167,19 @@ class ProposalAdminRequest(BaseModel):
     surfaces: list[str] = Field(default_factory=list, max_length=500)
 
 
+class LearningIngestExtractRequest(BaseModel):
+    adminToken: str = ""
+    text: str = Field(default="", max_length=12000)
+    note: str = Field(default="", max_length=200)
+    focusSurfaces: list[str] = Field(default_factory=list, max_length=20)
+
+
+class LearningIngestCommitRequest(BaseModel):
+    adminToken: str = ""
+    note: str = Field(default="", max_length=200)
+    items: list[dict[str, Any]] = Field(default_factory=list, max_length=50)
+
+
 @app.get("/")
 def root() -> dict[str, Any]:
     return {
@@ -172,6 +192,7 @@ def root() -> dict[str, Any]:
                 "BYO localhost readings",
                 "/v1/shared-readings",
                 "/v1/contributions (opt-in votes)",
+                "/v1/contribution-stats (surface/reading/votes only)",
                 "/v1/proposals (demo staged review)",
             ],
             "premium": [
@@ -322,6 +343,24 @@ def shared_readings_get() -> dict[str, Any]:
     )
 
 
+@app.get("/v1/contribution-stats")
+def contribution_stats_get() -> dict[str, Any]:
+    """
+    公開用の票集計。表層・読み・票数のみ（文脈・voter・IP なし）。
+    学習パイプライン／ラティス連携向け。
+    """
+    from fastapi.responses import JSONResponse
+
+    stats = get_contribution_stats()
+    return JSONResponse(
+        content=stats,
+        headers={
+            "Cache-Control": "public, max-age=120",
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
+
+
 def _admin_token_ok(provided: str) -> bool:
     expected = os.environ.get("YT_FURIGANA_ADMIN_TOKEN", "").strip()
     if not expected or not provided:
@@ -345,6 +384,58 @@ def admin_proposals_list(body: ProposalAdminRequest) -> dict[str, Any]:
     if not _admin_token_ok(body.adminToken):
         raise HTTPException(status_code=403, detail="forbidden")
     return list_proposals(status=body.status, limit=body.limit)
+
+
+@app.post("/v1/admin/proposals/summary")
+def admin_proposals_summary(body: ProposalAdminRequest) -> dict[str, Any]:
+    """デモ／貼り付け修正の件数サマリ（開発者ダッシュボード用）。"""
+    if not _admin_token_ok(body.adminToken):
+        raise HTTPException(status_code=403, detail="forbidden")
+    summary = summarize_proposals()
+    contrib = get_contribution_stats()
+    return {
+        **summary,
+        "contributions": {
+            "totalPairs": contrib.get("totalPairs"),
+            "minVotes": contrib.get("minVotes"),
+            "revisedAt": contrib.get("revisedAt"),
+        },
+        "devIngest": ingest_stats(),
+    }
+
+
+@app.post("/v1/admin/learning-ingest/extract")
+def admin_learning_ingest_extract(
+    body: LearningIngestExtractRequest,
+) -> dict[str, Any]:
+    """貼り付け文から学習候補を LLM 抽出（まだ保存しない）。"""
+    if not _admin_token_ok(body.adminToken):
+        raise HTTPException(status_code=403, detail="forbidden")
+    try:
+        return extract_learning_items(
+            body.text,
+            focus_surfaces=body.focusSurfaces,
+            note=body.note,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/v1/admin/learning-ingest/commit")
+def admin_learning_ingest_commit(
+    request: Request, body: LearningIngestCommitRequest
+) -> dict[str, Any]:
+    """抽出済み候補を ingest ログ＋proposals に保存。"""
+    if not _admin_token_ok(body.adminToken):
+        raise HTTPException(status_code=403, detail="forbidden")
+    try:
+        return commit_learning_items(
+            body.items,
+            note=body.note,
+            client_ip=client_ip_from_request(request),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @app.post("/v1/admin/proposals/process")

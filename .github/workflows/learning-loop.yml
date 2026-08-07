@@ -110,7 +110,17 @@ jobs:
         run: |
           git config user.name "yt-furigana-learning-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdir -p data/learning/corpus data/learning/reports site/data
+          # 未生成でも pathspec で git add が落ちないように空ファイルを用意
+          touch data/learning/corpus/contributions.jsonl
+          # 作業ツリーの一時成果物を隠してから rebase
+          git stash push -u -m "learning-loop-tmp" -- \
+            data/learning/synth-accepted.jsonl \
+            data/learning/synth-rejected.jsonl \
+            data/learning/synth-log.jsonl \
+            || true
           git pull --rebase origin "$(git rev-parse --abbrev-ref HEAD)" || true
+          git stash pop || true
           git add \
             data/learning/corpus/synth-open.jsonl \
             data/learning/corpus/contributions.jsonl \
@@ -155,7 +165,15 @@ jobs:
         run: |
           git config user.name "yt-furigana-learning-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdir -p data/learning/corpus data/learning/reports site/data
+          touch data/learning/corpus/contributions.jsonl
+          git stash push -u -m "learning-loop-tmp" -- \
+            data/learning/synth-accepted.jsonl \
+            data/learning/synth-rejected.jsonl \
+            data/learning/synth-log.jsonl \
+            || true
           git pull --rebase origin "$(git rev-parse --abbrev-ref HEAD)" || true
+          git stash pop || true
           git add \
             data/learning/gate-baseline.json \
             data/learning/corpus/synth-open.jsonl \

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>開発者インジェスト — YT Furigana</title>
+    <meta
+      name="description"
+      content="運用専用: 検索で選別した文を貼り付け、LLM が学習候補を抽出します。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      (function () {
+        try {
+          var key = "ytf-theme";
+          var pref = localStorage.getItem(key) || "system";
+          if (pref !== "light" && pref !== "dark" && pref !== "system") pref = "system";
+          var dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var theme = pref === "dark" || (pref === "system" && dark) ? "dark" : "light";
+          document.documentElement.setAttribute("data-theme", theme);
+          document.documentElement.setAttribute("data-theme-pref", pref);
+          document.documentElement.style.colorScheme = theme;
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./learning-report.css" />
+    <link rel="stylesheet" href="./dev-ingest.css?v=20260807a" />
+    <script src="./config.js"></script>
+  </head>
+  <body class="report-page dev-ingest-page">
+    <div class="wrap">
+      <header class="site-header">
+        <a class="brand" href="./">YT Furigana</a>
+        <nav class="nav" aria-label="主要ナビ">
+          <a href="./">ホーム</a>
+          <a href="./lattice.html">ラティス（運用）</a>
+          <a href="./learning-report.html">学習ログ</a>
+          <a href="./dev-ingest.html" aria-current="page">開発者インジェスト</a>
+          <a href="https://github.com/Blackphi6/yt-furigana-extension">GitHub</a>
+        </nav>
+      </header>
+
+      <section class="report-hero fade-up">
+        <p class="eyebrow">運用 · noindex · admin token</p>
+        <h1>開発者インジェスト</h1>
+        <p class="lead">
+          Google などで見つけた文を選別して貼ると、LLM が
+          <strong>表層→読み</strong>の学習候補を抜き出します。
+          確認してから proposals キューへ送れます（即公開しません）。
+        </p>
+        <p class="report-status" id="status" role="status">トークンを入力してください</p>
+      </section>
+
+      <section class="panel fade-up" aria-labelledby="auth-heading">
+        <h2 id="auth-heading">認証</h2>
+        <p class="hint">
+          Render の <code>YT_FURIGANA_ADMIN_TOKEN</code> と同じ値です。ブラウザの
+          localStorage にだけ保存します。
+        </p>
+        <label class="field-label" for="admin-token">Admin token</label>
+        <div class="dev-auth-row">
+          <input
+            id="admin-token"
+            type="password"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="YT_FURIGANA_ADMIN_TOKEN"
+          />
+          <button type="button" class="btn ghost" id="save-token">保存</button>
+          <button type="button" class="btn ghost" id="refresh-summary">件数を更新</button>
+        </div>
+        <pre class="dev-summary" id="summary" hidden></pre>
+      </section>
+
+      <section class="panel fade-up" aria-labelledby="paste-heading">
+        <h2 id="paste-heading">貼り付け</h2>
+        <label class="field-label" for="paste-text">本文（最大 12000 文字）</label>
+        <textarea
+          id="paste-text"
+          rows="12"
+          maxlength="12000"
+          placeholder="記事・辞書例文・字幕っぽい文など…"
+        ></textarea>
+        <label class="field-label" for="focus-surfaces">注目表層（任意・カンマ区切り）</label>
+        <input
+          id="focus-surfaces"
+          type="text"
+          placeholder="例: 金星, 町中, 博士"
+          autocomplete="off"
+        />
+        <label class="field-label" for="paste-note">メモ（任意）</label>
+        <input id="paste-note" type="text" maxlength="200" placeholder="出典メモなど" />
+        <div class="cta-row">
+          <button type="button" class="btn" id="extract-btn">LLM で抽出</button>
+          <button type="button" class="btn ghost" id="commit-btn" disabled>
+            選択分をキューへ
+          </button>
+          <span class="hint" id="char-count">0 文字</span>
+        </div>
+        <p class="error" id="error" hidden></p>
+      </section>
+
+      <section class="panel fade-up" aria-labelledby="items-heading">
+        <h2 id="items-heading">抽出結果</h2>
+        <p class="hint" id="items-hint">まだありません</p>
+        <div class="table-wrap">
+          <table class="result-table" id="items-table">
+            <thead>
+              <tr>
+                <th><input type="checkbox" id="check-all" checked /></th>
+                <th>表層</th>
+                <th>読み</th>
+                <th>抜粋</th>
+                <th>メモ</th>
+              </tr>
+            </thead>
+            <tbody id="items-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <footer class="site-footer">
+        <p>
+          <a href="./lattice.html">ラティス</a>
+          ·
+          <a href="./learning-report.html">学習ログ</a>
+          ·
+          <a href="./privacy.html">プライバシー</a>
+        </p>
+      </footer>
+    </div>
+    <script src="./dev-ingest.js?v=20260807a" type="module"></script>
+    <script type="module" src="./theme.js?v=20260806a"></script>
+  </body>
+</html>

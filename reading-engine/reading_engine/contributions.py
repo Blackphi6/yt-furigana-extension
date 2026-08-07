@@ -272,7 +272,29 @@ def append_contribution(
         except (ImportError, OSError):
             pass
     pack = rebuild_shared_readings()
-    return {"ok": True, "accepted": True, "pack": pack}
+    # UX 用: この表層・読みの現在票とパック入りまでの残り
+    tallies = list_vote_tallies()
+    surface = str(entry.get("surface") or "")
+    reading = str(entry.get("reading") or "")
+    match = next(
+        (
+            row
+            for row in tallies
+            if row["surface"] == surface and row["reading"] == reading
+        ),
+        None,
+    )
+    votes = int(match["votes"]) if match else 1
+    thr = min_votes()
+    return {
+        "ok": True,
+        "accepted": True,
+        "votes": votes,
+        "minVotes": thr,
+        "votesNeeded": max(0, thr - votes),
+        "inPack": bool(match and match.get("inPack")),
+        "pack": pack,
+    }
 
 
 def iter_contribution_rows() -> list[dict[str, Any]]:
@@ -322,23 +344,67 @@ def aggregate_entries(
 ) -> dict[str, str]:
     """Unique voters per (surface, reading); curated merge happens in rebuild."""
     thr = min_votes() if threshold is None else max(1, int(threshold))
-    latest = unique_votes_by_surface(rows)
-    counts: Counter[tuple[str, str]] = Counter()
-    for (voter, surface), (_ts, reading) in latest.items():
-        counts[(surface, reading)] += 1
-
-    by_surface: dict[str, list[tuple[int, str]]] = {}
-    for (surface, reading), count in counts.items():
-        if count < thr:
-            continue
-        by_surface.setdefault(surface, []).append((count, reading))
-
+    tallies = list_vote_tallies(rows)
     entries: dict[str, str] = {}
+    by_surface: dict[str, list[tuple[int, str]]] = {}
+    for row in tallies:
+        if row["votes"] < thr:
+            continue
+        by_surface.setdefault(row["surface"], []).append(
+            (row["votes"], row["reading"])
+        )
     for surface, options in by_surface.items():
         options.sort(key=lambda item: (-item[0], item[1]))
         entries[surface] = options[0][1]
     return entries
 
+
+def list_vote_tallies(
+    rows: list[dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
+    """
+    公開用の票集計（表層・読み・票数のみ。文脈・voter・IP は載せない）。
+    """
+    latest = unique_votes_by_surface(rows)
+    counts: Counter[tuple[str, str]] = Counter()
+    latest_ts: dict[tuple[str, str], str] = {}
+    for (voter, surface), (ts, reading) in latest.items():
+        key = (surface, reading)
+        counts[key] += 1
+        prev = latest_ts.get(key, "")
+        if ts >= prev:
+            latest_ts[key] = ts
+
+    curated = load_curated_entries()
+    thr = min_votes()
+    out: list[dict[str, Any]] = []
+    for (surface, reading), votes in counts.items():
+        out.append(
+            {
+                "surface": surface,
+                "reading": reading,
+                "votes": int(votes),
+                "revisedAt": latest_ts.get((surface, reading), ""),
+                "inPack": votes >= thr and (
+                    surface not in curated or curated.get(surface) == reading
+                ),
+                "inCurated": curated.get(surface) == reading,
+            }
+        )
+    out.sort(key=lambda r: (-r["votes"], r["surface"], r["reading"]))
+    return out
+
+
+def get_contribution_stats() -> dict[str, Any]:
+    """GET /v1/contribution-stats 用。字幕文脈は含めない。"""
+    ensure_contrib_store()
+    tallies = list_vote_tallies()
+    return {
+        "revisedAt": _utcnow(),
+        "minVotes": min_votes(),
+        "totalPairs": len(tallies),
+        "entries": tallies[:2000],
+    }
 
 def rebuild_shared_readings(*, threshold: int | None = None) -> dict[str, Any]:
     ensure_contrib_store()
