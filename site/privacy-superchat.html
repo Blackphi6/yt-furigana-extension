@@ -86,6 +86,11 @@
           <li>
             タイムコード付きカード画像（PNG）は端末内で生成し、ユーザーのダウンロードフォルダへ保存します。
           </li>
+          <li>
+            「読み API（高精度・任意）」をオンにした場合のみ、チャット本文を公開読み API
+            （<code>yt-furigana-readings.onrender.com</code>）へ送信してルビを取得します。
+            既定はオフ（端末内 kuromoji のみ）です。開発者サーバー以外への転送は行いません。
+          </li>
           <li>アカウント情報・位置情報・閲覧履歴リストは収集しません。</li>
         </ul>
 
@@ -99,6 +104,10 @@
           <li>
             <code>streamyard.com</code> …
             StreamYard スタジオ上のステージコメントバナー DOM へアクセスするため
+          </li>
+          <li>
+            <code>yt-furigana-readings.onrender.com</code> …
+            ユーザーが「読み API」をオンにしたときだけ、チャット本文の読み付けのため
           </li>
         </ul>
         <p>YouTube timedtext / 字幕配信 API は使用しません。動画ページ下のコメント欄は対象外です。</p>
