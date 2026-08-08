@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>読み分けの差 — YT Furigana</title>
+    <meta
+      name="description"
+      content="同じ漢字でも前後で読みが分かれる例を、文脈なし形態素の典型と YT Furigana で並べて示します。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      (function () {
+        try {
+          var key = "ytf-theme";
+          var pref = localStorage.getItem(key) || "system";
+          if (pref !== "light" && pref !== "dark" && pref !== "system") pref = "system";
+          var dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var theme = pref === "dark" || (pref === "system" && dark) ? "dark" : "light";
+          document.documentElement.setAttribute("data-theme", theme);
+          document.documentElement.setAttribute("data-theme-pref", pref);
+          document.documentElement.style.colorScheme = theme;
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./compare.css?v=20260808a" />
+    <script src="./config.js"></script>
+  </head>
+  <body class="compare-page">
+    <div class="wrap">
+      <header class="site-header">
+        <a class="brand" href="./">YT Furigana</a>
+        <nav class="nav" aria-label="主要ナビ">
+          <a href="./">ホーム</a>
+          <a href="./#demo">試す</a>
+          <a href="./compare.html" aria-current="page">読み分けの差</a>
+          <a href="./install.html">拡張</a>
+          <a href="./superchat.html">ライブチャット</a>
+          <a href="https://github.com/Blackphi6/yt-furigana-extension">GitHub</a>
+        </nav>
+      </header>
+
+      <section class="compare-hero fade-up">
+        <p class="eyebrow">差別化デモ · 固定例</p>
+        <h1>同じ漢字でも、<em>文脈で読みが分かれる</em></h1>
+        <p class="lead">
+          左は「文脈なし形態素の典型」（辞書の第一候補を機械的に振るイメージ）。
+          右は YT Furigana（文脈キュー・信頼句・候補制約）。
+          外部製品名の優劣表ではなく、<strong>一目で差が分かる固定例</strong>です。
+        </p>
+        <div class="cta-row">
+          <button type="button" class="btn" id="live-btn">右列を公開APIで再検証</button>
+          <a class="btn ghost" href="./#demo">自由入力デモへ</a>
+        </div>
+        <p class="compare-status" id="status" role="status">固定例を表示中（API不要）</p>
+      </section>
+
+      <div id="cases" class="compare-list" aria-live="polite"></div>
+
+      <section class="section compare-note fade-up">
+        <h2>見方</h2>
+        <ul>
+          <li>赤い下線は、左右で読みが食い違う箇所です。</li>
+          <li>「再検証」は右列だけ公開読みAPIで取り直し、固定の期待読みと一致するか確認します。</li>
+          <li>パートナー向けにはこのページ URL を渡せば足ります。名指し比較はしません。</li>
+        </ul>
+      </section>
+    </div>
+    <script type="module" src="./compare.js?v=20260808a"></script>
+    <script src="./theme.js" type="module"></script>
+  </body>
+</html>

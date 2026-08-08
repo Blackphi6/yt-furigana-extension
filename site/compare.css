@@ -1,0 +1,145 @@
+/* 読み分け並比デモ */
+
+.compare-page .compare-hero {
+  padding: 2.5rem 0 1.25rem;
+  max-width: 44rem;
+}
+
+.compare-page .compare-hero h1 {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(1.75rem, 4vw, 2.45rem);
+  line-height: 1.35;
+  margin: 0.35rem 0 0.75rem;
+}
+
+.compare-page .compare-hero h1 em {
+  font-style: normal;
+  color: var(--vermilion-deep);
+}
+
+.compare-page .eyebrow {
+  margin: 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.compare-page .lead {
+  margin: 0 0 1rem;
+  color: var(--sumi-soft);
+}
+
+.compare-status {
+  margin: 0.85rem 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.compare-list {
+  display: grid;
+  gap: 1.25rem;
+  padding: 0.5rem 0 2rem;
+}
+
+.compare-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--elevated);
+  padding: 1.1rem 1.15rem 1.2rem;
+  box-shadow: 0 10px 28px color-mix(in oklab, var(--sumi) 6%, transparent);
+}
+
+.compare-card h2 {
+  margin: 0 0 0.35rem;
+  font-family: var(--display);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.compare-card .why {
+  margin: 0 0 0.9rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+@media (max-width: 720px) {
+  .compare-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.compare-col {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.75rem 0.85rem;
+  background: color-mix(in oklab, var(--paper) 70%, transparent);
+}
+
+.compare-col .label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+.compare-col.is-ours .label strong {
+  color: var(--ok);
+}
+
+.compare-col.is-naive .label strong {
+  color: var(--vermilion-deep);
+}
+
+.compare-col .ruby-line {
+  font-size: clamp(1.05rem, 2.2vw, 1.25rem);
+  line-height: 1.85;
+  font-weight: 500;
+}
+
+.compare-col ruby {
+  ruby-position: over;
+}
+
+.compare-col rt {
+  font-size: 0.45em;
+  font-weight: 600;
+}
+
+mark.diff {
+  background: color-mix(in oklab, var(--vermilion) 22%, transparent);
+  color: inherit;
+  border-radius: 3px;
+  padding: 0 0.1em;
+  box-shadow: inset 0 -2px 0 color-mix(in oklab, var(--vermilion) 55%, transparent);
+}
+
+.compare-meta {
+  margin: 0.75rem 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.compare-meta[data-live="ok"] {
+  color: var(--ok);
+}
+
+.compare-meta[data-live="ng"] {
+  color: var(--vermilion-deep);
+}
+
+.compare-note ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.2rem;
+  color: var(--sumi-soft);
+}
