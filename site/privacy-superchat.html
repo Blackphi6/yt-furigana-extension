@@ -41,7 +41,7 @@
 
       <article class="section prose" style="border-top: none; padding-top: 2rem">
         <h1>プライバシーポリシー</h1>
-        <p>最終更新: 2026-08-01</p>
+        <p>最終更新: 2026-08-08</p>
         <p>
           対象: <strong>YT Live Chat Furigana</strong>（Chrome 拡張。旧称 YT Super Chat Furigana）。
           字幕向けの YT Furigana 本体とは別製品です。本体のポリシーは
@@ -74,12 +74,17 @@
             Super Chat / 通常チャットの個別オン／オフ設定と、ユーザーが手動登録した読みは
             <code>chrome.storage.local</code> に端末内保存します（サーバーへ送りません）。
           </li>
+          <li>
+            「スパチャ台帳」は、拡張が動作中に画面上に流れた Super Chat の投稿者・金額・本文・時刻を
+            <code>chrome.storage.session</code> に一時保存します（ブラウザ終了で消え、サーバーへ送りません）。
+            配信開始前の全件保証や公式 API による履歴取得は行いません。
+          </li>
           <li>アカウント情報・位置情報・閲覧履歴リストは収集しません。</li>
         </ul>
 
         <h2>3. 権限</h2>
         <ul>
-          <li><code>storage</code> … 設定・手動登録読みの端末内保存</li>
+          <li><code>storage</code> … 設定・手動登録読み・セッション台帳の端末内保存</li>
           <li>
             <code>youtube.com</code> / <code>m.youtube.com</code> …
             ライブチャット（iframe 含む）内のチャット DOM へアクセスするため
