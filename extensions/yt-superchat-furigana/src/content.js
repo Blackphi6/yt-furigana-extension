@@ -1,5 +1,6 @@
 /**
- * YouTube ライブチャット iframe 内の Super Chat / 通常チャットにふりがなを付ける。
+ * YouTube ライブチャット iframe 内の Super Chat / 通常チャット、
+ * および StreamYard ステージ上のコメントバナーにふりがなを付ける。
  * timedtext / Innertube は使わない。
  * 読み未登録の漢字はクリックで手動登録できる。
  */
@@ -37,13 +38,29 @@ import {
   restoreChatMessages,
   restoreSuperChatMessages
 } from "./process.js";
-import { isAnyTargetEnabled, normalizeYtscfState } from "./state.js";
+import {
+  HIDE_TEXT_MESSAGES_CLASS,
+  isAnyTargetEnabled,
+  normalizeYtscfState
+} from "./state.js";
 
 const STORAGE_KEY = "ytscfState";
 const CACHE_MAX = 400;
 
-/** @type {{ superChatEnabled: boolean, chatEnabled: boolean }} */
-let state = { superChatEnabled: true, chatEnabled: true };
+/** @type {import("./state.js").YtscfState} */
+let state = {
+  superChatEnabled: true,
+  chatEnabled: true,
+  hideTextMessages: false
+};
+
+/**
+ * Stylus 相当: 通常チャット行を表示／非表示。
+ * @param {boolean} on
+ */
+function applyHideTextMessages(on) {
+  document.documentElement.classList.toggle(HIDE_TEXT_MESSAGES_CLASS, Boolean(on));
+}
 
 /** @type {((text: string) => any[]) | null} */
 let tokenize = null;
@@ -67,6 +84,7 @@ function setStatus(partial) {
         processedCount,
         superChatEnabled: state.superChatEnabled,
         chatEnabled: state.chatEnabled,
+        hideTextMessages: state.hideTextMessages,
         enabled: isAnyTargetEnabled(state),
         href: location.href,
         ...partial
@@ -243,8 +261,8 @@ function queueScan() {
 
 /**
  * フラグ差分でオフにした側だけ restore。
- * @param {{ superChatEnabled: boolean, chatEnabled: boolean }} prev
- * @param {{ superChatEnabled: boolean, chatEnabled: boolean }} next
+ * @param {import("./state.js").YtscfState} prev
+ * @param {import("./state.js").YtscfState} next
  */
 function applyStateTransition(prev, next) {
   if (prev.superChatEnabled && !next.superChatEnabled) {
@@ -253,6 +271,9 @@ function applyStateTransition(prev, next) {
   if (prev.chatEnabled && !next.chatEnabled) {
     restoreChatMessages(document);
   }
+  if (prev.hideTextMessages !== next.hideTextMessages) {
+    applyHideTextMessages(next.hideTextMessages);
+  }
 }
 
 async function loadState() {
@@ -260,8 +281,13 @@ async function loadState() {
     const data = await chrome.storage.local.get(STORAGE_KEY);
     state = normalizeYtscfState(data?.[STORAGE_KEY]);
   } catch {
-    state = { superChatEnabled: true, chatEnabled: true };
+    state = {
+      superChatEnabled: true,
+      chatEnabled: true,
+      hideTextMessages: false
+    };
   }
+  applyHideTextMessages(state.hideTextMessages);
   setStatus({});
   if (isAnyTargetEnabled(state)) {
     void Promise.all([ensureTokenizer(), reapplyUserReadings(), loadPhraseDicts()])
@@ -305,6 +331,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       ok: true,
       superChatEnabled: state.superChatEnabled,
       chatEnabled: state.chatEnabled,
+      hideTextMessages: state.hideTextMessages,
       enabled: isAnyTargetEnabled(state),
       ready: Boolean(tokenize),
       processedCount,

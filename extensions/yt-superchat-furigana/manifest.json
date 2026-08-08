@@ -1,12 +1,26 @@
 {
   "manifest_version": 3,
   "name": "YT Live Chat Furigana",
-  "version": "1.1.1",
-  "version_name": "1.1.1",
-  "description": "YouTube ライブの Super Chat と通常チャットにひらがなルビ（非公式）。個別オン／オフ。端末内処理。字幕APIは使いません。",
+  "version": "1.1.3",
+  "version_name": "1.1.3",
+  "description": "YouTube ライブの Super Chat / 通常チャット、StreamYard のステージコメントにひらがなルビ（非公式）。個別オン／オフ・スパチャのみ表示。端末内処理。字幕APIは使いません。",
   "homepage_url": "https://blackphi6.github.io/yt-furigana-extension/superchat.html",
   "permissions": ["storage"],
-  "host_permissions": ["*://www.youtube.com/*", "*://m.youtube.com/*"],
+  "commands": {
+    "toggle-hide-text-messages": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+L",
+        "mac": "MacCtrl+Shift+L"
+      },
+      "description": "スパチャのみ表示を切り替え"
+    }
+  },
+  "host_permissions": [
+    "*://www.youtube.com/*",
+    "*://m.youtube.com/*",
+    "*://streamyard.com/*",
+    "*://www.streamyard.com/*"
+  ],
   "background": {
     "service_worker": "dist/background.js",
     "type": "module"
@@ -29,7 +43,9 @@
     {
       "matches": [
         "*://www.youtube.com/*",
-        "*://m.youtube.com/*"
+        "*://m.youtube.com/*",
+        "*://streamyard.com/*",
+        "*://www.streamyard.com/*"
       ],
       "js": ["dist/content.js"],
       "css": ["dist/content.css"],
@@ -40,7 +56,12 @@
   "web_accessible_resources": [
     {
       "resources": ["dict/*"],
-      "matches": ["*://www.youtube.com/*", "*://m.youtube.com/*"]
+      "matches": [
+        "*://www.youtube.com/*",
+        "*://m.youtube.com/*",
+        "*://streamyard.com/*",
+        "*://www.streamyard.com/*"
+      ]
     }
   ]
 }

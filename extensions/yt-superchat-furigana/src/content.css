@@ -1,5 +1,10 @@
 /* Super Chat / 通常チャット / ティッカー上のルビ。背景色は YouTube 側に任せる */
 
+/* Stylus「スパチャのみ表示」相当（html にクラスが付いたときだけ） */
+html.ytscf-hide-text-messages yt-live-chat-text-message-renderer {
+  display: none !important;
+}
+
 yt-live-chat-paid-message-renderer #message.ytscf-done,
 yt-live-chat-ticker-paid-message-item-renderer #message.ytscf-done,
 yt-live-chat-paid-message-renderer #message[data-ytscf-done],
@@ -15,6 +20,25 @@ yt-live-chat-ticker-paid-message-item-renderer #message ruby {
 
 yt-live-chat-paid-message-renderer #message rt,
 yt-live-chat-ticker-paid-message-item-renderer #message rt {
+  font-size: 0.45em;
+  font-weight: 500;
+  line-height: 1.1;
+  color: inherit;
+  opacity: 0.92;
+}
+
+/* StreamYard ステージコメント（Bubbles） */
+span[class*=BubblesComment__ContentSpan].ytscf-done,
+span[class*=BubblesComment__ContentSpan][data-ytscf-done] {
+  line-height: 1.55;
+}
+
+span[class*=BubblesComment__ContentSpan] ruby {
+  ruby-position: over;
+  ruby-align: center;
+}
+
+span[class*=BubblesComment__ContentSpan] rt {
   font-size: 0.45em;
   font-weight: 500;
   line-height: 1.1;

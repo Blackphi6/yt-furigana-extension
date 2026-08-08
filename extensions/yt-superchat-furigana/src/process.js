@@ -18,7 +18,17 @@ export const TICKER_MESSAGE_SELECTOR =
 export const CHAT_MESSAGE_SELECTOR =
   "yt-live-chat-text-message-renderer #message";
 
+/**
+ * StreamYard ステージ上のコメントバナー本文（Bubbles テーマ）。
+ * styled-components のハッシュは変わるので前方一致。
+ */
+export const STREAMYARD_COMMENT_SELECTOR =
+  'span[class*=BubblesComment__ContentSpan]';
+
 export const SUPERCHAT_TARGET_SELECTOR = `${PAID_MESSAGE_SELECTOR}, ${TICKER_MESSAGE_SELECTOR}`;
+
+/** 通常チャット + StreamYard バナー（chatEnabled でまとめて扱う） */
+export const CHAT_TARGET_SELECTOR = `${CHAT_MESSAGE_SELECTOR}, ${STREAMYARD_COMMENT_SELECTOR}`;
 
 /** @deprecated 互換: Super Chat + ティッカーのみ（通常チャットは含まない） */
 export const TARGET_SELECTOR = SUPERCHAT_TARGET_SELECTOR;
@@ -61,7 +71,16 @@ export function collectSuperChatMessageElements(root) {
  * @returns {HTMLElement[]}
  */
 export function collectChatMessageElements(root) {
-  return collectBySelector(root, CHAT_MESSAGE_SELECTOR);
+  return collectBySelector(root, CHAT_TARGET_SELECTOR);
+}
+
+/**
+ * StreamYard バナーのみ。
+ * @param {ParentNode | null | undefined} root
+ * @returns {HTMLElement[]}
+ */
+export function collectStreamYardCommentElements(root) {
+  return collectBySelector(root, STREAMYARD_COMMENT_SELECTOR);
 }
 
 /**
@@ -157,11 +176,19 @@ export function restoreSuperChatMessages(root) {
 }
 
 /**
- * 通常チャットだけ元に戻す。
+ * 通常チャット + StreamYard バナーを元に戻す。
  * @param {ParentNode | null | undefined} root
  */
 export function restoreChatMessages(root) {
-  restoreMessagesMatching(root, CHAT_MESSAGE_SELECTOR);
+  restoreMessagesMatching(root, CHAT_TARGET_SELECTOR);
+}
+
+/**
+ * StreamYard バナーだけ元に戻す。
+ * @param {ParentNode | null | undefined} root
+ */
+export function restoreStreamYardComments(root) {
+  restoreMessagesMatching(root, STREAMYARD_COMMENT_SELECTOR);
 }
 
 /**

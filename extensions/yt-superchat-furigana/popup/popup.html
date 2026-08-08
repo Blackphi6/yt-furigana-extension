@@ -10,7 +10,7 @@
     <main>
       <header>
         <h1>Live Chat Furigana</h1>
-        <p class="sub">ライブの Super Chat / 通常チャットにふりがな</p>
+        <p class="sub">ライブチャット / StreamYard コメントにふりがな</p>
       </header>
 
       <label class="toggle" for="superChatEnabled">
@@ -19,14 +19,22 @@
       </label>
 
       <label class="toggle" for="chatEnabled">
-        <span>通常チャット</span>
+        <span>通常チャット（ふりがな）</span>
         <input type="checkbox" id="chatEnabled" checked />
+      </label>
+
+      <label class="toggle" for="hideTextMessages">
+        <span>スパチャのみ表示</span>
+        <input type="checkbox" id="hideTextMessages" />
       </label>
 
       <p class="status" id="status" role="status"></p>
 
       <p class="note">
-        Super Chat と通常チャットは個別にオン／オフできます（動画ページ下のコメント欄は対象外）。
+        Super Chat と通常チャットのふりがなは個別にオン／オフできます。
+        「スパチャのみ表示」は通常チャット行（text-message）を隠し、Stylus と同じ見え方です（ふりがな設定とは別）。
+        既定ショートカットは Ctrl+Shift+L（Mac も Control+Shift+L）。変更は chrome://extensions/shortcuts。
+        StreamYard のステージコメントは「通常チャット」オン時に対象。動画ページ下のコメント欄は対象外。
         読みが付かない漢字はクリックして手動登録できます（端末内に保存）。
         YouTube timedtext は使いません。辞書は端末内の kuromoji です。
       </p>
