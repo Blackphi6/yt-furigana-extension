@@ -123,6 +123,12 @@ function alignMiddleSegments(segments, reading) {
       continue;
     }
 
+    // 欧文・記号はルビ対象外（読みを消費しない）。CTP社 のズレ防止
+    if (segment.type === "other") {
+      result += escapeHtml(segment.text);
+      continue;
+    }
+
     const nextSegment = segments[index + 1];
     if (nextSegment?.type === "kana") {
       const nextKana = toHiragana(nextSegment.text);
@@ -228,20 +234,32 @@ export function buildRuby(surface, reading, options = {}) {
     return result + trailing.join("");
   }
 
-  if (middleSegments.length === 1 && middleSegments[0].type === "kanji") {
-    result += `<ruby>${escapeHtml(middleSegments[0].text)}<rt>${escapeHtml(middleReadingShown || middleReadingHira)}</rt></ruby>`;
-  } else if (
-    middleSegments.length > 0 &&
-    middleSegments.every((segment) => segment.type === "kanji" || segment.type === "other") &&
-    middleSegments.some((segment) => segment.type === "kanji") &&
-    !middleSegments.some((segment) => segment.type === "kana")
-  ) {
-    const joined = middleSegments.map((segment) => segment.text).join("");
+  // 先頭・末尾の other（CTP / ※ / 括弧など）はルビの外へ出す。
+  // 結合すると rt が全体中央になり「CTP社」で「しゃ」が P の上に来る。
+  const core = [...middleSegments];
+  const leadingOther = [];
+  while (core.length && core[0].type === "other") {
+    leadingOther.push(escapeHtml(core.shift().text));
+  }
+  const trailingOther = [];
+  while (core.length && core[core.length - 1].type === "other") {
+    trailingOther.unshift(escapeHtml(core.pop().text));
+  }
+
+  result += leadingOther.join("");
+
+  if (core.length === 0) {
+    // other のみ
+  } else if (core.length === 1 && core[0].type === "kanji") {
+    result += `<ruby>${escapeHtml(core[0].text)}<rt>${escapeHtml(middleReadingShown || middleReadingHira)}</rt></ruby>`;
+  } else if (core.every((segment) => segment.type === "kanji")) {
+    const joined = core.map((segment) => segment.text).join("");
     result += `<ruby>${escapeHtml(joined)}<rt>${escapeHtml(middleReadingShown || middleReadingHira)}</rt></ruby>`;
   } else {
     // 送り仮名合わせはひらがな長でアライン。表示もひらがな（混在は稀）
-    result += alignMiddleSegments(middleSegments, middleReadingHira);
+    result += alignMiddleSegments(core, middleReadingHira);
   }
 
+  result += trailingOther.join("");
   return result + trailing.join("");
 }
