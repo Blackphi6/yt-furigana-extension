@@ -295,6 +295,7 @@ export const CONTEXT_READING_RULES = [
 
 /** フレーズ単位の強制読み（最長一致） */
 export const MANUAL_PHRASE_READINGS = new Map([
+  ["一段落", "いちだんらく"],
   ["一組目", "ひとくみめ"],
   ["二組目", "ふたくみめ"],
   ["三組目", "みくみめ"],

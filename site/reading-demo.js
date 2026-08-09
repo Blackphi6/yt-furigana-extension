@@ -199,11 +199,26 @@ function overlayPhraseTokens(text, tokens, phrases, source, maxLen = 16) {
     }
   }
   if (!hits.length) return tokens || [];
+
+  // API/既存トークンがより長い漢字まとまりを持っているとき、短いフレーズで食い荒らさない
+  // 例: 一段落（いちだんらく）← UniDic「一段」（いちだん）
+  const safeHits = hits.filter((h) => {
+    const coveredByLonger = (tokens || []).some((t) => {
+      const [a, b] = t.span || [0, 0];
+      const surface = String(t.surface || "");
+      const reading = String(t.reading || "");
+      if (!reading || surface.length <= h.surface.length) return false;
+      return a <= h.start && b >= h.end;
+    });
+    return !coveredByLonger;
+  });
+  if (!safeHits.length) return tokens || [];
+
   const kept = (tokens || []).filter((t) => {
     const [a, b] = t.span || [0, 0];
-    return !hits.some((h) => a < h.end && b > h.start);
+    return !safeHits.some((h) => a < h.end && b > h.start);
   });
-  for (const h of hits) {
+  for (const h of safeHits) {
     kept.push({
       surface: h.surface,
       span: [h.start, h.end],

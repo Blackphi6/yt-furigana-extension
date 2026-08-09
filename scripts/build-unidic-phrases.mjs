@@ -38,6 +38,11 @@ const LEX_URL =
 const ONLY_KANJI = /^[\u3400-\u9fff\uF900-\uFAFF々〆〇]+$/;
 const KATA = /^[\u30a1-\u30f6ー]+$/;
 
+/** UniDic 抽出から漏れやすいが字幕で頻出の複合（BSD 帰属のまま手置き） */
+const FORCE_PHRASES = {
+  一段落: "いちだんらく"
+};
+
 function toHiragana(text) {
   return String(text || "").replace(/[\u30a1-\u30f6]/g, (ch) =>
     String.fromCharCode(ch.charCodeAt(0) - 0x60)
@@ -107,6 +112,9 @@ async function buildPhrases() {
   console.log(
     `Rows ${rows}; phrases ${Object.keys(phrases).length}; skipped proper ${skippedProper}`
   );
+  for (const [surface, reading] of Object.entries(FORCE_PHRASES)) {
+    phrases[surface] = reading;
+  }
   return phrases;
 }
 
@@ -127,10 +135,11 @@ async function main() {
   const phrases = await buildPhrases();
   const bytes = await writeJsonGz(outJson, outGz, phrases);
 
-  // Pages 用: 先頭から件数制限（デモ用。フルは拡張のみ）
-  const site = {};
-  let n = 0;
+  // Pages 用: FORCE を必ず載せたうえで先頭から件数制限
+  const site = { ...FORCE_PHRASES };
+  let n = Object.keys(site).length;
   for (const [k, v] of Object.entries(phrases)) {
+    if (site[k]) continue;
     if (n >= 4000) break;
     site[k] = v;
     n += 1;
