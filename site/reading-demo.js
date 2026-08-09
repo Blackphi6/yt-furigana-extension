@@ -50,6 +50,8 @@ const OCCURRENCE_STORAGE_KEY = "ytf_reading_occurrence_overrides";
 let occurrenceByText = {};
 let personalNamePhrases = {};
 let personalNamesPromise = null;
+let placeNamePhrases = {};
+let placeNamesPromise = null;
 
 async function ensurePersonalNamePhrases() {
   if (Object.keys(personalNamePhrases).length) return personalNamePhrases;
@@ -80,19 +82,50 @@ async function ensurePersonalNamePhrases() {
   return personalNamesPromise;
 }
 
+async function ensurePlaceNamePhrases() {
+  if (Object.keys(placeNamePhrases).length) return placeNamePhrases;
+  if (placeNamesPromise) return placeNamesPromise;
+  placeNamesPromise = (async () => {
+    try {
+      const res = await fetch("./place-name-phrases.json", {
+        cache: "force-cache"
+      });
+      if (!res.ok) {
+        const fallback = await fetch(
+          "https://raw.githubusercontent.com/Blackphi6/yt-furigana-extension/main/data/generated/place-name-phrases-site.json"
+        );
+        if (!fallback.ok) return placeNamePhrases;
+        const data = await fallback.json();
+        if (data && typeof data === "object") placeNamePhrases = data;
+        return placeNamePhrases;
+      }
+      const data = await res.json();
+      if (data && typeof data === "object") {
+        placeNamePhrases = data;
+      }
+    } catch {
+      /* ignore */
+    }
+    return placeNamePhrases;
+  })();
+  return placeNamesPromise;
+}
+
 /**
- * API トークンに人名最長一致を重ねる（サーバ未デプロイ時の保険）。
+ * フレーズ最長一致を API トークンに重ねる。
  * @param {string} text
  * @param {any[]} tokens
+ * @param {Record<string, string>} phrases
+ * @param {string} source
+ * @param {number} [maxLen]
  */
-function overlayPersonalNameTokens(text, tokens) {
-  const phrases = personalNamePhrases;
+function overlayPhraseTokens(text, tokens, phrases, source, maxLen = 16) {
   if (!text || !phrases || !Object.keys(phrases).length) return tokens || [];
   const hits = [];
   let i = 0;
   while (i < text.length) {
     let best = null;
-    for (let len = 2; len <= Math.min(8, text.length - i); len += 1) {
+    for (let len = 2; len <= Math.min(maxLen, text.length - i); len += 1) {
       const surface = text.slice(i, i + len);
       if (phrases[surface]) best = { surface, reading: phrases[surface], start: i, end: i + len };
     }
@@ -114,11 +147,29 @@ function overlayPersonalNameTokens(text, tokens) {
       span: [h.start, h.end],
       reading: h.reading,
       confidence: 1,
-      source: "personal_name",
+      source,
       candidates: [h.reading]
     });
   }
   return kept.sort((a, b) => a.span[0] - b.span[0]);
+}
+
+/**
+ * API トークンに人名最長一致を重ねる（サーバ未デプロイ時の保険）。
+ * @param {string} text
+ * @param {any[]} tokens
+ */
+function overlayPersonalNameTokens(text, tokens) {
+  return overlayPhraseTokens(text, tokens, personalNamePhrases, "personal_name", 8);
+}
+
+/**
+ * 地名フレーズ（Pages 用サブセット）。人名より先に当て、同表層は後段の人名が勝つ。
+ * @param {string} text
+ * @param {any[]} tokens
+ */
+function overlayPlaceNameTokens(text, tokens) {
+  return overlayPhraseTokens(text, tokens, placeNamePhrases, "place_name", 20);
 }
 
 function loadPinsFromStorage() {
@@ -682,6 +733,7 @@ function renderResult(text, data) {
   let tokens = data.tokens || [];
   // API は注釈マーカー除去後の span を返す。元テキストに重ねるとルビが右へズレる。
   const displayText = stripAnnotationMarkers(text);
+  tokens = overlayPlaceNameTokens(displayText, tokens);
   tokens = overlayPersonalNameTokens(displayText, tokens);
   // 公開 API が未デプロイでも数字を編集できるようクライアント側で載せる
   tokens = overlayNumberTokens(displayText, tokens);
@@ -1032,7 +1084,7 @@ async function runAnalyze(options = {}) {
     if (occurrenceOverrides.some((o) => o.surface === e.surface)) return false;
     return true;
   });
-  await ensurePersonalNamePhrases();
+  await Promise.all([ensurePersonalNamePhrases(), ensurePlaceNamePhrases()]);
   // ピッカーからの再実行では勝手に共有送信しない
   const share =
     !options.fromPicker && Boolean($("#pin-share-proposal")?.checked);
@@ -1296,6 +1348,7 @@ inputEl.addEventListener("keydown", (e) => {
 
 loadPinsFromStorage();
 void ensurePersonalNamePhrases();
+void ensurePlaceNamePhrases();
 
 const params = new URLSearchParams(location.search);
 const qText = params.get("text");
