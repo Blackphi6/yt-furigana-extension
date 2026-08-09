@@ -52,6 +52,8 @@ let personalNamePhrases = {};
 let personalNamesPromise = null;
 let placeNamePhrases = {};
 let placeNamesPromise = null;
+let unidicPhrases = {};
+let unidicPromise = null;
 
 async function ensurePersonalNamePhrases() {
   if (Object.keys(personalNamePhrases).length) return personalNamePhrases;
@@ -109,6 +111,35 @@ async function ensurePlaceNamePhrases() {
     return placeNamePhrases;
   })();
   return placeNamesPromise;
+}
+
+async function ensureUnidicPhrases() {
+  if (Object.keys(unidicPhrases).length) return unidicPhrases;
+  if (unidicPromise) return unidicPromise;
+  unidicPromise = (async () => {
+    try {
+      const res = await fetch("./unidic-phrases.json", {
+        cache: "force-cache"
+      });
+      if (!res.ok) {
+        const fallback = await fetch(
+          "https://raw.githubusercontent.com/Blackphi6/yt-furigana-extension/main/data/generated/unidic-phrases-site.json"
+        );
+        if (!fallback.ok) return unidicPhrases;
+        const data = await fallback.json();
+        if (data && typeof data === "object") unidicPhrases = data;
+        return unidicPhrases;
+      }
+      const data = await res.json();
+      if (data && typeof data === "object") {
+        unidicPhrases = data;
+      }
+    } catch {
+      /* ignore */
+    }
+    return unidicPhrases;
+  })();
+  return unidicPromise;
 }
 
 /**
@@ -170,6 +201,10 @@ function overlayPersonalNameTokens(text, tokens) {
  */
 function overlayPlaceNameTokens(text, tokens) {
   return overlayPhraseTokens(text, tokens, placeNamePhrases, "place_name", 20);
+}
+
+function overlayUnidicTokens(text, tokens) {
+  return overlayPhraseTokens(text, tokens, unidicPhrases, "unidic", 8);
 }
 
 function loadPinsFromStorage() {
@@ -733,6 +768,7 @@ function renderResult(text, data) {
   let tokens = data.tokens || [];
   // API は注釈マーカー除去後の span を返す。元テキストに重ねるとルビが右へズレる。
   const displayText = stripAnnotationMarkers(text);
+  tokens = overlayUnidicTokens(displayText, tokens);
   tokens = overlayPlaceNameTokens(displayText, tokens);
   tokens = overlayPersonalNameTokens(displayText, tokens);
   // 公開 API が未デプロイでも数字を編集できるようクライアント側で載せる
@@ -1084,7 +1120,11 @@ async function runAnalyze(options = {}) {
     if (occurrenceOverrides.some((o) => o.surface === e.surface)) return false;
     return true;
   });
-  await Promise.all([ensurePersonalNamePhrases(), ensurePlaceNamePhrases()]);
+  await Promise.all([
+    ensurePersonalNamePhrases(),
+    ensurePlaceNamePhrases(),
+    ensureUnidicPhrases()
+  ]);
   // ピッカーからの再実行では勝手に共有送信しない
   const share =
     !options.fromPicker && Boolean($("#pin-share-proposal")?.checked);
@@ -1349,6 +1389,7 @@ inputEl.addEventListener("keydown", (e) => {
 loadPinsFromStorage();
 void ensurePersonalNamePhrases();
 void ensurePlaceNamePhrases();
+void ensureUnidicPhrases();
 
 const params = new URLSearchParams(location.search);
 const qText = params.get("text");
