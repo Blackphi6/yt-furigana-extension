@@ -22,7 +22,7 @@
 | [kuromoji.js](https://github.com/takuyaa/kuromoji.js) | Apache-2.0 | 形態素解析（既定） | [NOTICE](../NOTICE) / [Apache-2.0](../third_party/Apache-2.0.txt) |
 | mecab-ipadic（kuromoji 経由） | NAIST / ICOT 条件付き | 日本語辞書データ | [NOTICE-kuromoji.md](../third_party/NOTICE-kuromoji.md) |
 | [mecab-ipadic-NEologd](https://github.com/neologd/mecab-ipadic-neologd) | Apache-2.0 | 固有名詞フレーズ（抽出・圧縮同梱） | [NOTICE](../NOTICE) / 上流 COPYING |
-| Geolonia / ABR / 地名集日本 / GeoNLP / KEN_ALL | CC BY 4.0 / PDL1.0 / 郵便番号データ利用許諾 | 地名フレーズ（抽出・圧縮同梱） | [NOTICE](../NOTICE) / [PLACE-NAME-DATASETS](PLACE-NAME-DATASETS.md) |
+| Geolonia / ABR / 地名集日本 / GeoNLP / KEN_ALL / NEologd 地域 | CC BY 4.0 / PDL1.0 / 郵便番号データ利用許諾 / Apache-2.0 | 地名フレーズ（抽出・裸派生・extra） | [NOTICE](../NOTICE) / [PLACE-NAME-DATASETS](PLACE-NAME-DATASETS.md) |
 | NEologd `*駅`（駅フレーズ） | Apache-2.0 | 駅名・駅なし表層（抽出・圧縮同梱） | [NOTICE](../NOTICE) / [PLACE-NAME-DATASETS](PLACE-NAME-DATASETS.md) |
 | [sudachi-wasm333](https://github.com/Benjas333/sudachi-wasm333) | Apache-2.0 | Sudachi 解析 | [NOTICE](../NOTICE) |
 | SudachiDict | Apache-2.0（上流） | Sudachi 辞書 | 上流プロジェクトの NOTICE を参照 |

@@ -31,14 +31,19 @@ if (existsSync(generated)) {
     getPlaceNameReading("富士山") || getPlaceNameReading("沖ノ鳥島"),
     "gazetteer sample should exist"
   );
-  // KEN_ALL ギャップ例（ABR/Geolonia に無い町域が載っていれば）
-  if (getPlaceNameReading("青宿")) {
-    assert.ok(getPlaceNameReading("青宿").length >= 2);
+  // KEN_ALL / NEologd / bare / extra で難読が載っていること
+  assert.ok(getPlaceNameReading("神子畑") === "みこばた" || getPlaceNameReading("神子畑村"),
+    "mikobata should exist as bare or 村");
+  if (getPlaceNameReading("神子畑")) {
+    assert.equal(getPlaceNameReading("神子畑"), "みこばた");
+  }
+  if (getPlaceNameReading("神子畑選鉱場跡")) {
+    assert.equal(getPlaceNameReading("神子畑選鉱場跡"), "みこばたせんこうじょうあと");
   }
   if (existsSync(metaPath)) {
     const meta = JSON.parse(readFileSync(metaPath, "utf8"));
     assert.ok(meta.contentNotice);
-    assert.ok(Array.isArray(meta.sources) && meta.sources.length >= 4);
+    assert.ok(Array.isArray(meta.sources) && meta.sources.length >= 5);
   }
 } else {
   installPlaceNamePhrasesForTests({

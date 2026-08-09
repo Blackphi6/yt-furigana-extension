@@ -69,7 +69,7 @@ Rare surnames used in demos may also appear in data/personal-name-extra.json
 Full license text: third_party/MIT-japanese-personal-name-dataset.txt
 
 -------------------------------------------------------------------------------
-Place-name phrases (Geolonia / ABR / 地名集日本 / GeoNLP / KEN_ALL)
+Place-name phrases (Geolonia / ABR / 地名集日本 / GeoNLP / KEN_ALL / NEologd 地域)
 -------------------------------------------------------------------------------
 Bundled as a filtered phrase list (surface → reading):
   data/generated/place-name-phrases.json.gz
@@ -85,9 +85,11 @@ Sources (attribution required):
   https://geonlp.ex.nii.ac.jp/dictionary/
 - 日本郵便 郵便番号データ（KEN_ALL）— 郵便番号データ利用許諾（商用可）
   https://www.post.japanpost.jp/zipcode/dl/utf-zip.html
-  （ABR/Geolonia 等に無い町域のみギャップ埋め）
+- mecab-ipadic-NEologd（固有名詞/地域ギャップ埋め）— Apache-2.0
+- 複合表層からの裸表層派生、および data/place-name-extra.json
 
-Not bundled: 電子国土基本図（地名情報）測量成果（測量法の複製・使用承認が絡みうる）。
+Not bundled: 電子国土基本図（地名情報）測量成果; GeoNLP/ISJ without kana;
+OpenStreetMap (ODbL); JMnedict (CC BY-SA); paid address masters.
 
 Build: npm run dict:place-names
 Survey: docs/PLACE-NAME-DATASETS.md

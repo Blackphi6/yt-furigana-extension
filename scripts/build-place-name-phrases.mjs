@@ -8,9 +8,15 @@
  * - GeoNLP（読み付きのみ）: 都道府県 / 日本歴史地名大系 地名・POI … CC BY 4.0
  * - 日本郵便 KEN_ALL（utf_ken_all）… 郵便番号データ利用許諾（商用可）
  *   ※ ABR/Geolonia に無い表層のみギャップ埋め（既存読みは上書きしない）
+ * - mecab-ipadic-NEologd 種子の 固有名詞/地域 … Apache-2.0（ギャップ埋め）
+ * - 複合表層からの裸表層派生（村/跡/選鉱所 等を剥がす）
+ * - data/place-name-extra.json（手置き。商用可ソースに無い観光表記など）
  *
  * 同梱しない: 電子国土基本図（地名情報）測量成果（複製・使用承認が絡みうる）
- *            GeoNLP の読み無し KSJ（空港・道の駅・駅など）
+ *            GeoNLP の読み無し KSJ / 歴史地名298k（カナ無し）
+ *            国交省位置参照情報（カナ無し）
+ *            OSM name:ja-Hira（ODbL 共有義務が重い）
+ *            JMnedict（CC BY-SA）
  *            駅データ.jp 無料 CSV（station_name_k が空。読みは station-phrases へ）
  *
  * Usage: node scripts/build-place-name-phrases.mjs
@@ -23,7 +29,7 @@ import { fileURLToPath } from "node:url";
 import { createGzip } from "node:zlib";
 import { pipeline } from "node:stream/promises";
 import { Readable } from "node:stream";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
@@ -35,13 +41,42 @@ const outGz = path.join(outDir, "place-name-phrases.json.gz");
 const outMeta = path.join(outDir, "place-name-phrases.meta.json");
 const outSiteJson = path.join(outDir, "place-name-phrases-site.json");
 const outSiteGz = path.join(outDir, "place-name-phrases-site.json.gz");
+const extraPath = path.join(root, "data", "place-name-extra.json");
+const neologdSeedUrl =
+  "https://github.com/neologd/mecab-ipadic-neologd/raw/master/seed/mecab-user-dict-seed.20200910.csv.xz";
+const neologdSeedCache = path.join(root, ".cache", "mecab-user-dict-seed.20200910.csv.xz");
 
 const KANJI = /[\u3400-\u9fff\uF900-\uFAFF]/;
 const HIRA_OK = /^[\u3041-\u309fーゝゞ]+$/;
+const READING_KATA_OK = /^[\u30a1-\u30f6\u3041-\u309fーｰ]+$/;
 const DIGIT = /[0-9０-９]/;
 /** KEN_ALL 町域のノイズ（ビル名・階・「以下に掲載がない場合」等） */
 const KEN_TOWN_SKIP =
   /以下に掲載がない場合|の次に番地でくる場合|[0-9０-９]+階|ビル|マンション|アパート|団地|コーポ|ハイツ|メゾン|ヴィラ|パーク/;
+
+/**
+ * 長い接尾辞から順に。読み末尾が一致すれば裸表層を派生する。
+ * @type {Array<[string, string[]]>}
+ */
+const BARE_SUFFIXES = [
+  ["鉱山跡", ["こうざんあと"]],
+  ["選鉱場跡", ["せんこうじょうあと"]],
+  ["選鉱所", ["せんこうしょ"]],
+  ["選鉱場", ["せんこうじょう"]],
+  ["交流館", ["こうりゅうかん"]],
+  ["鋳鉄橋", ["ちゅうてっきょう"]],
+  ["村", ["むら"]],
+  ["町", ["まち", "ちょう"]],
+  ["市", ["し"]],
+  ["郡", ["ぐん"]],
+  ["区", ["く"]],
+  ["川", ["がわ", "かわ"]],
+  ["峠", ["とうげ"]],
+  ["橋", ["ばし", "はし"]],
+  ["跡", ["あと"]],
+  ["山", ["やま", "さん"]],
+  ["駅", ["えき"]]
+];
 
 const DIGIT_YOMI = {
   "0": "ぜろ",
@@ -474,6 +509,131 @@ async function ingestKenAll(phrases, sitePhrases, counts) {
   );
 }
 
+async function ensureNeologdSeed() {
+  if (existsSync(neologdSeedCache) && statSync(neologdSeedCache).size > 1000) {
+    return neologdSeedCache;
+  }
+  mkdirSync(path.dirname(neologdSeedCache), { recursive: true });
+  console.log("Downloading NEologd seed…");
+  const res = await fetch(neologdSeedUrl);
+  if (!res.ok) throw new Error(`NEologd seed download failed: ${res.status}`);
+  await writeFile(neologdSeedCache, Buffer.from(await res.arrayBuffer()));
+  return neologdSeedCache;
+}
+
+function decompressNeologdSeed(filePath) {
+  const xz = spawnSync("xz", ["-dc", filePath], {
+    maxBuffer: 1024 * 1024 * 512,
+    encoding: "utf8"
+  });
+  if (xz.status === 0 && xz.stdout) return xz.stdout;
+  const py = spawnSync(
+    "python3",
+    [
+      "-c",
+      "import lzma,sys; print(lzma.open(sys.argv[1], 'rt', encoding='utf-8', errors='replace').read(), end='')",
+      filePath
+    ],
+    { maxBuffer: 1024 * 1024 * 512, encoding: "utf8" }
+  );
+  if (py.status !== 0) {
+    throw new Error(`xz decompress failed: ${String(xz.stderr || py.stderr)}`);
+  }
+  return py.stdout;
+}
+
+/**
+ * NEologd 種子の 固有名詞/地域 — 既存に無い表層だけ追加（駅は station-phrases 側）。
+ * @param {Record<string, string>} phrases
+ * @param {Record<string, string>} sitePhrases
+ * @param {Record<string, number>} counts
+ */
+async function ingestNeologdChiiki(phrases, sitePhrases, counts) {
+  const seedPath = await ensureNeologdSeed();
+  console.log("Decompressing NEologd seed for 地域…");
+  const csv = decompressNeologdSeed(seedPath);
+  /** @type {Map<string, { cost: number, reading: string }>} */
+  const best = new Map();
+  for (const line of csv.split("\n")) {
+    if (!line) continue;
+    const parts = line.split(",");
+    if (parts.length < 13) continue;
+    if (parts[5] !== "固有名詞" || parts[6] !== "地域") continue;
+    const surface = parts[0];
+    if (surface.endsWith("駅")) continue;
+    if (!KANJI.test(surface)) continue;
+    if (surface.length < 2 || surface.length > 24) continue;
+    const reading = parts[11];
+    if (!READING_KATA_OK.test(reading || "")) continue;
+    const cost = Number.parseInt(parts[3], 10);
+    if (!Number.isFinite(cost)) continue;
+    const prev = best.get(surface);
+    if (!prev || cost < prev.cost) best.set(surface, { cost, reading });
+  }
+
+  const before = Object.keys(phrases).length;
+  for (const [surface, meta] of best) {
+    const reading = toHiragana(meta.reading);
+    // 拡張のみ（Pages は町丁目級を載せない方針のまま）
+    addPhraseIfMissing(phrases, surface, reading);
+  }
+  counts.neologdChiikiAdded = Object.keys(phrases).length - before;
+  counts.neologdChiikiCandidates = best.size;
+  console.log(
+    `NEologd 地域 gap-fill +${counts.neologdChiikiAdded} (candidates=${best.size})`
+  );
+}
+
+/**
+ * 複合表層から接尾辞を剥がした裸表層をギャップ埋め。
+ * @param {Record<string, string>} phrases
+ * @param {Record<string, string>} sitePhrases
+ * @param {Record<string, number>} counts
+ */
+function deriveBareSurfaces(phrases, sitePhrases, counts) {
+  const before = Object.keys(phrases).length;
+  /** @type {Array<[string, string]>} */
+  const snapshot = Object.entries(phrases);
+  for (const [surface, reading] of snapshot) {
+    for (const [suffix, yomiEnds] of BARE_SUFFIXES) {
+      if (!surface.endsWith(suffix) || surface.length <= suffix.length + 1) continue;
+      const yomiEnd = yomiEnds.find((y) => reading.endsWith(y));
+      if (!yomiEnd) continue;
+      const bare = surface.slice(0, -suffix.length);
+      const bareReading = reading.slice(0, -yomiEnd.length);
+      if (bare.length < 2 || bareReading.length < 2) continue;
+      if (!KANJI.test(bare) || !HIRA_OK.test(bareReading)) continue;
+      if (addPhraseIfMissing(phrases, bare, bareReading)) {
+        if (sitePhrases[surface]) addPhraseIfMissing(sitePhrases, bare, bareReading);
+      }
+      break;
+    }
+  }
+  counts.bareDerived = Object.keys(phrases).length - before;
+  console.log(`Bare-surface derive +${counts.bareDerived}`);
+}
+
+/**
+ * 手置き extra（観光表記などソースに無い表層）。
+ * @param {Record<string, string>} phrases
+ * @param {Record<string, string>} sitePhrases
+ * @param {Record<string, number>} counts
+ */
+async function ingestExtra(phrases, sitePhrases, counts) {
+  if (!existsSync(extraPath)) {
+    counts.extra = 0;
+    return;
+  }
+  const extra = JSON.parse(await readFile(extraPath, "utf8"));
+  let added = 0;
+  for (const [surface, reading] of Object.entries(extra || {})) {
+    // extra は意図的に上書き可（神子畑など既存の誤読・欠落を直す）
+    if (addPhrase(phrases, surface, reading, sitePhrases)) added += 1;
+  }
+  counts.extra = added;
+  console.log(`place-name-extra +${added}`);
+}
+
 async function writeJsonGz(fileJson, fileGz, obj) {
   const json = `${JSON.stringify(obj)}\n`;
   await writeFile(fileJson, json);
@@ -503,6 +663,12 @@ async function main() {
   await ingestGeonlp(phrases, sitePhrases, counts);
   console.log("Ingest KEN_ALL (gap-fill only)…");
   await ingestKenAll(phrases, sitePhrases, counts);
+  console.log("Ingest NEologd 地域 (gap-fill)…");
+  await ingestNeologdChiiki(phrases, sitePhrases, counts);
+  console.log("Derive bare surfaces from compounds…");
+  deriveBareSurfaces(phrases, sitePhrases, counts);
+  console.log("Ingest place-name-extra…");
+  await ingestExtra(phrases, sitePhrases, counts);
 
   mkdirSync(outDir, { recursive: true });
   const bytesUncompressed = await writeJsonGz(outJson, outGz, phrases);
@@ -528,22 +694,45 @@ async function main() {
       {
         name: "GeoNLP 地名語辞書（読み付き）",
         license: "CC BY 4.0",
-        url: "https://geonlp.ex.nii.ac.jp/dictionary/"
+        url: "https://geonlp.ex.nii.ac.jp/dictionary/",
+        note: "都道府県 / 歴史地名大系 地名・POI。カナ無し辞書は除外"
       },
       {
         name: "日本郵便 郵便番号データ（KEN_ALL / utf_ken_all）",
         license: "日本郵便 郵便番号データ ダウンロードサービス利用許諾（商用可）",
         url: "https://www.post.japanpost.jp/zipcode/dl/utf-zip.html",
         note: "既存フレーズに無い町域のみギャップ埋め。ビル名・○階等は除外"
+      },
+      {
+        name: "mecab-ipadic-NEologd seed（固有名詞/地域）",
+        license: "Apache-2.0",
+        url: "https://github.com/neologd/mecab-ipadic-neologd",
+        note: "既存に無い地域表層のみ。*駅は station-phrases"
+      },
+      {
+        name: "複合表層からの裸表層派生",
+        license: "加工（上記ソース由来）",
+        note: "村/町/跡/選鉱所 等を剥がして表層を増やす"
+      },
+      {
+        name: "data/place-name-extra.json",
+        license: "プロジェクト内手置き",
+        note: "オープンデータに無い観光表記などの補完"
       }
     ],
     excluded: [
       "電子国土基本図（地名情報）— 測量成果のため拡張同梱しない",
       "GeoNLP KSJ 読み無し辞書（空港・道の駅・駅など）",
-      "駅データ.jp 無料 CSV — station_name_k が空のため読み無し（駅は station-phrases）"
+      "GeoNLP 歴史地名データ（nihu-placename）— カナ無しのため未使用",
+      "GeoNLP 歴史的行政区域β / 江戸マップ — カナ無しのため未使用",
+      "国交省位置参照情報 — カナ無しのため未使用",
+      "OpenStreetMap name:ja-Hira — ODbL 共有義務が重いため未同梱",
+      "JMnedict / ENAMDICT — CC BY-SA のため未同梱",
+      "国土地理協会・行政区画便覧など有償マスター — 再配布不可",
+      "駅データ.jp 無料 CSV — station_name_k が空（駅は station-phrases）"
     ],
     siteSubset:
-      "都道府県・市区町村・地名集・GeoNLP POI 等。町丁目全文は拡張のみ（Pages 軽量化）",
+      "都道府県・市区町村・地名集・GeoNLP POI・施設っぽい NEologd 地域・extra。町丁目全文は拡張のみ",
     counts,
     count: Object.keys(phrases).length,
     siteCount: Object.keys(sitePhrases).length,
@@ -553,16 +742,17 @@ async function main() {
     siteBytesGzip: statSync(outSiteGz).size,
     generatedAt: new Date().toISOString(),
     contentNotice:
-      "Japanese place-name surface→reading phrases for furigana. Attribution required (CC BY / PDL1.0). Not affiliated with data providers beyond license compliance.",
+      "Japanese place-name surface→reading phrases for furigana. Attribution required (CC BY / PDL1.0 / Apache-2.0). Not affiliated with data providers beyond license compliance.",
     samples: Object.fromEntries(
       [
         "北海道",
         "札幌市",
-        "札幌市中央区",
-        "旭ケ丘",
-        "旭ケ丘一丁目",
         "富士山",
-        "沖ノ鳥島",
+        "神子畑",
+        "神子畑村",
+        "神子畑選鉱場跡",
+        "神子畑鉱山跡",
+        "放出",
         "利根川"
       ].map((s) => [s, phrases[s] || null])
     )

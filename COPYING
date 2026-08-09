@@ -98,10 +98,14 @@ v-1b2. 地名フレーズ（Geolonia / ABR / 地名集日本 / GeoNLP / KEN_ALL�
    - 日本郵便 郵便番号データ（KEN_ALL / utf_ken_all）— 利用許諾（商用可）
      https://www.post.japanpost.jp/zipcode/dl/utf-zip.html
      （既存に無い町域のみギャップ埋め。ビル名・○階等は除外）
+   - mecab-ipadic-NEologd 固有名詞/地域 — Apache-2.0（ギャップ埋め）
+   - 複合表層からの裸表層派生、および data/place-name-extra.json
 
    同梱物: data/generated/place-name-phrases.json.gz
    調査: docs/PLACE-NAME-DATASETS.md
    電子国土基本図（地名情報）の測量成果は同梱しない。
+   カナ無し GeoNLP / 位置参照情報、ODbL の OSM、CC BY-SA の JMnedict、
+   有償住所マスターは同梱しない。
 
 
 v-1b2b. 駅フレーズ（NEologd 種子の「…駅」）
