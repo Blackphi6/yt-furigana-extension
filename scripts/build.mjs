@@ -56,6 +56,54 @@ async function copyPersonalNamePhrases() {
   console.log(`Personal-name phrases ready (${sizeMb.toFixed(2)} MB gz)`);
 }
 
+async function copyPlaceNamePhrases() {
+  const source = path.join(root, "data", "generated", "place-name-phrases.json.gz");
+  const target = path.join(root, "dict", "place-name-phrases.json.gz");
+  const siteJsonSrc = path.join(root, "data", "generated", "place-name-phrases-site.json");
+  const siteJsonDst = path.join(root, "site", "place-name-phrases.json");
+  if (!existsSync(source)) {
+    console.warn(
+      "Place-name phrases missing. Run: node scripts/build-place-name-phrases.mjs"
+    );
+    return;
+  }
+  await mkdir(path.dirname(target), { recursive: true });
+  await cp(source, target, { force: true });
+  if (existsSync(siteJsonSrc)) {
+    await cp(siteJsonSrc, siteJsonDst, { force: true });
+  }
+  const sizeMb = statSync(target).size / (1024 * 1024);
+  console.log(`Place-name phrases ready (${sizeMb.toFixed(2)} MB gz)`);
+  if (existsSync(siteJsonDst)) {
+    const siteKb = statSync(siteJsonDst).size / 1024;
+    console.log(`Place-name site subset ready (${siteKb.toFixed(0)} KB)`);
+  }
+}
+
+async function copyStationPhrases() {
+  const source = path.join(root, "data", "generated", "station-phrases.json.gz");
+  const target = path.join(root, "dict", "station-phrases.json.gz");
+  const siteJsonSrc = path.join(root, "data", "generated", "station-phrases-site.json");
+  const siteJsonDst = path.join(root, "site", "station-phrases.json");
+  if (!existsSync(source)) {
+    console.warn(
+      "Station phrases missing. Run: node scripts/build-station-phrases.mjs"
+    );
+    return;
+  }
+  await mkdir(path.dirname(target), { recursive: true });
+  await cp(source, target, { force: true });
+  if (existsSync(siteJsonSrc)) {
+    await cp(siteJsonSrc, siteJsonDst, { force: true });
+  }
+  const sizeKb = statSync(target).size / 1024;
+  console.log(`Station phrases ready (${sizeKb.toFixed(0)} KB gz)`);
+  if (existsSync(siteJsonDst)) {
+    const siteKb = statSync(siteJsonDst).size / 1024;
+    console.log(`Station site subset ready (${siteKb.toFixed(0)} KB)`);
+  }
+}
+
 async function copyEnglishKatakana() {
   const source = path.join(root, "data", "generated", "english-katakana.json.gz");
   const target = path.join(root, "dict", "english-katakana.json.gz");
@@ -69,6 +117,41 @@ async function copyEnglishKatakana() {
   await cp(source, target, { force: true });
   const sizeMb = statSync(target).size / (1024 * 1024);
   console.log(`English katakana dict ready (${sizeMb.toFixed(2)} MB gz)`);
+}
+
+async function copyKanjiReadings() {
+  const source = path.join(root, "data", "generated", "kanji-readings.json.gz");
+  const target = path.join(root, "dict", "kanji-readings.json.gz");
+  if (!existsSync(source)) {
+    console.warn(
+      "Kanji readings missing. Run: node scripts/build-kanji-readings.mjs"
+    );
+    return;
+  }
+  await mkdir(path.dirname(target), { recursive: true });
+  await cp(source, target, { force: true });
+  const sizeKb = statSync(target).size / 1024;
+  console.log(`Kanji readings ready (${sizeKb.toFixed(0)} KB gz)`);
+}
+
+async function copyUnidicPhrases() {
+  const source = path.join(root, "data", "generated", "unidic-phrases.json.gz");
+  const target = path.join(root, "dict", "unidic-phrases.json.gz");
+  const siteJsonSrc = path.join(root, "data", "generated", "unidic-phrases-site.json");
+  const siteJsonDst = path.join(root, "site", "unidic-phrases.json");
+  if (!existsSync(source)) {
+    console.warn(
+      "UniDic phrases missing. Run: node scripts/build-unidic-phrases.mjs"
+    );
+    return;
+  }
+  await mkdir(path.dirname(target), { recursive: true });
+  await cp(source, target, { force: true });
+  if (existsSync(siteJsonSrc)) {
+    await cp(siteJsonSrc, siteJsonDst, { force: true });
+  }
+  const sizeMb = statSync(target).size / (1024 * 1024);
+  console.log(`UniDic phrases ready (${sizeMb.toFixed(2)} MB gz)`);
 }
 
 async function copySudachiDict() {
@@ -434,8 +517,12 @@ async function run() {
   await mkdir(path.join(root, "dist"), { recursive: true });
   await copyKuromojiDict();
   await copyNeologdPhrases();
+  await copyPlaceNamePhrases();
+  await copyStationPhrases();
   await copyPersonalNamePhrases();
+  await copyUnidicPhrases();
   await copyEnglishKatakana();
+  await copyKanjiReadings();
   await copySudachiDict();
   await extractSudachiWasm();
   await generateIcons();

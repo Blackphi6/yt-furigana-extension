@@ -30,6 +30,8 @@ await Promise.all(
 
 for (const phraseName of [
   "neologd-phrases.json.gz",
+  "place-name-phrases.json.gz",
+  "station-phrases.json.gz",
   "personal-name-phrases.json.gz"
 ]) {
   const src = path.join(dictSrc, phraseName);

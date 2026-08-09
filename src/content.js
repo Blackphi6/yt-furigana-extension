@@ -69,10 +69,26 @@ import { showProgress, showSudachiProgress } from "./sudachi-progress-ui.js";
 import { createHybridTokenize } from "./hybrid-tokenizer.js";
 import { loadNeologdPhrases, getNeologdPhraseCount } from "./neologd-phrases.js";
 import {
+  loadPlaceNamePhrases,
+  getPlaceNamePhraseCount
+} from "./place-name-phrases.js";
+import {
+  loadStationPhrases,
+  getStationPhraseCount
+} from "./station-phrases.js";
+import {
   loadPersonalNamePhrases,
   getPersonalNamePhraseCount,
   rebuildCombinedPhraseTrie
 } from "./personal-name-phrases.js";
+import {
+  loadUnidicPhrases,
+  getUnidicPhraseCount
+} from "./unidic-phrases.js";
+import {
+  loadKanjiReadings,
+  getKanjiReadingCount
+} from "./kanji-readings.js";
 import {
   loadEnglishKatakanaDict,
   getEnglishKatakanaDictCount
@@ -201,6 +217,45 @@ async function initTokenizer() {
         console.warn("[YT Furigana] NEologd phrases skipped:", error?.message || error);
       });
 
+    const placeNameReady = loadPlaceNamePhrases()
+      .then(() => {
+        rebuildCombinedPhraseTrie();
+        console.log(
+          `[YT Furigana] Place-name phrases ready (${getPlaceNamePhraseCount()})`
+        );
+      })
+      .catch((error) => {
+        console.warn(
+          "[YT Furigana] Place-name phrases skipped:",
+          error?.message || error
+        );
+      });
+
+    const stationReady = loadStationPhrases()
+      .then(() => {
+        rebuildCombinedPhraseTrie();
+        console.log(
+          `[YT Furigana] Station phrases ready (${getStationPhraseCount()})`
+        );
+      })
+      .catch((error) => {
+        console.warn(
+          "[YT Furigana] Station phrases skipped:",
+          error?.message || error
+        );
+      });
+
+    const unidicReady = loadUnidicPhrases()
+      .then(() => {
+        rebuildCombinedPhraseTrie();
+        console.log(
+          `[YT Furigana] UniDic phrases ready (${getUnidicPhraseCount()})`
+        );
+      })
+      .catch((error) => {
+        console.warn("[YT Furigana] UniDic phrases skipped:", error?.message || error);
+      });
+
     const personalNameReady = loadPersonalNamePhrases()
       .then(() => {
         console.log(
@@ -212,6 +267,16 @@ async function initTokenizer() {
           "[YT Furigana] Personal-name phrases skipped:",
           error?.message || error
         );
+      });
+
+    const kanjiReady = loadKanjiReadings()
+      .then(() => {
+        console.log(
+          `[YT Furigana] Kanji readings ready (${getKanjiReadingCount()})`
+        );
+      })
+      .catch((error) => {
+        console.warn("[YT Furigana] Kanji readings skipped:", error?.message || error);
       });
 
     const englishReady = loadEnglishKatakanaDict()
@@ -227,7 +292,16 @@ async function initTokenizer() {
         );
       });
 
-    void Promise.all([neologdReady, personalNameReady, englishReady]);
+    const dictReady = [
+      neologdReady,
+      placeNameReady,
+      stationReady,
+      unidicReady,
+      personalNameReady,
+      kanjiReady,
+      englishReady
+    ];
+    void Promise.all(dictReady);
     const builtTokenizer = await new Promise((resolve, reject) => {
       kuromoji
         .builder({ dicPath: chrome.runtime.getURL("dict/") })
@@ -240,7 +314,7 @@ async function initTokenizer() {
         });
     });
     tokenizer = builtTokenizer;
-    await Promise.all([neologdReady, personalNameReady, englishReady]);
+    await Promise.all(dictReady);
     return builtTokenizer;
   })().catch((error) => {
     initPromise = null;
@@ -905,12 +979,45 @@ async function convertLocalAndCache(normalized) {
 
 async function applyRemoteFurigana(normalized, processingKey) {
   const cacheKey = getCacheKey(normalized);
-  // API とローカルを並行。画面には先に端末内ルビを載せ、API 完了で差し替える。
-  const remotePromise = convertText(normalized);
+  if (cache.has(cacheKey)) {
+    applyFuriganaToLiveCaptions(normalized, cache.get(cacheKey), processingKey);
+    return;
+  }
+
+  // API とローカルを並行。短い猶予内に API（ディスクキャッシュ含む）が返れば
+  // 仮の「まるひし」などを出さず、正しい読みだけを載せる。
+  const remotePromise = convertText(normalized).then((html) => {
+    if (html) cache.set(cacheKey, html);
+    return html;
+  });
+  const localPromise = convertWithLocalDictionary(normalized).catch(() => "");
+  const waitMs = 150;
+  const early = await Promise.race([
+    remotePromise.then((html) => ({ kind: "remote", html })),
+    new Promise((resolve) => {
+      setTimeout(() => resolve({ kind: "wait" }), waitMs);
+    })
+  ]);
+
   let provisionalHtml = "";
+  if (early.kind === "remote") {
+    if (!enabled) return;
+    if (early.html) {
+      applyFuriganaToLiveCaptions(normalized, early.html, processingKey);
+    }
+    return;
+  }
+
+  // 猶予超過: 端末内を仮表示（API 遅延・コールドスタート時）
   try {
-    provisionalHtml = await convertWithLocalDictionary(normalized);
-    if (enabled && provisionalHtml && !cache.has(cacheKey)) {
+    provisionalHtml = await localPromise;
+    if (cache.has(cacheKey)) {
+      if (enabled) {
+        applyFuriganaToLiveCaptions(normalized, cache.get(cacheKey), processingKey);
+      }
+      return;
+    }
+    if (enabled && provisionalHtml) {
       applyFuriganaToLiveCaptions(normalized, provisionalHtml, processingKey);
     }
   } catch {
@@ -920,7 +1027,6 @@ async function applyRemoteFurigana(normalized, processingKey) {
   try {
     const html = await remotePromise;
     if (!enabled) return;
-    cache.set(cacheKey, html);
     if (shouldReplaceProvisionalFurigana(provisionalHtml, html)) {
       applyFuriganaToLiveCaptions(normalized, html, processingKey);
     } else if (!provisionalHtml && html) {
@@ -1588,6 +1694,42 @@ async function bootstrap() {
     .catch((error) => {
       console.warn("[YT Furigana] NEologd phrases skipped:", error?.message || error);
     });
+  void loadPlaceNamePhrases()
+    .then(() => {
+      rebuildCombinedPhraseTrie();
+      console.log(
+        `[YT Furigana] Place-name phrases ready (${getPlaceNamePhraseCount()})`
+      );
+    })
+    .catch((error) => {
+      console.warn(
+        "[YT Furigana] Place-name phrases skipped:",
+        error?.message || error
+      );
+    });
+  void loadStationPhrases()
+    .then(() => {
+      rebuildCombinedPhraseTrie();
+      console.log(
+        `[YT Furigana] Station phrases ready (${getStationPhraseCount()})`
+      );
+    })
+    .catch((error) => {
+      console.warn(
+        "[YT Furigana] Station phrases skipped:",
+        error?.message || error
+      );
+    });
+  void loadUnidicPhrases()
+    .then(() => {
+      rebuildCombinedPhraseTrie();
+      console.log(
+        `[YT Furigana] UniDic phrases ready (${getUnidicPhraseCount()})`
+      );
+    })
+    .catch((error) => {
+      console.warn("[YT Furigana] UniDic phrases skipped:", error?.message || error);
+    });
   void loadPersonalNamePhrases()
     .then(() => {
       console.log(
@@ -1599,6 +1741,15 @@ async function bootstrap() {
         "[YT Furigana] Personal-name phrases skipped:",
         error?.message || error
       );
+    });
+  void loadKanjiReadings()
+    .then(() => {
+      console.log(
+        `[YT Furigana] Kanji readings ready (${getKanjiReadingCount()})`
+      );
+    })
+    .catch((error) => {
+      console.warn("[YT Furigana] Kanji readings skipped:", error?.message || error);
     });
   void loadEnglishKatakanaDict()
     .then(() => {

@@ -1,8 +1,7 @@
 /**
  * YouTube ライブチャット iframe 内の Super Chat / 通常チャット、
  * および StreamYard ステージ上のコメントバナーにふりがなを付ける。
- * timedtext / Innertube は使わない。
- * 読み未登録の漢字はクリックで手動登録できる。
+ * timedtext は使わない。アーカイブ全件取得のみチャット再生 API を手動で使う。
  */
 
 import kuromoji from "kuromoji";
@@ -24,6 +23,8 @@ import {
 } from "../../../src/user-reading-dict.js";
 import { loadOccurrenceOverrideStore } from "../../../src/occurrence-overrides.js";
 import { loadNeologdPhrases } from "../../../src/neologd-phrases.js";
+import { loadPlaceNamePhrases } from "../../../src/place-name-phrases.js";
+import { loadStationPhrases } from "../../../src/station-phrases.js";
 import {
   loadPersonalNamePhrases,
   rebuildCombinedPhraseTrie
@@ -43,6 +44,11 @@ import {
   isAnyTargetEnabled,
   normalizeYtscfState
 } from "./state.js";
+import {
+  ingestPaidMessagesFromDocument,
+  resolveVideoId
+} from "./sc-ledger.js";
+import { installScLedgerPanel, isTopYoutubeWatchFrame } from "./sc-ledger-panel.js";
 
 const STORAGE_KEY = "ytscfState";
 const CACHE_MAX = 400;
@@ -51,8 +57,16 @@ const CACHE_MAX = 400;
 let state = {
   superChatEnabled: true,
   chatEnabled: true,
-  hideTextMessages: false
+  hideTextMessages: false,
+  ledgerEnabled: false,
+  readingApiEnabled: false
 };
+
+/** @type {{ refresh?: () => void, destroy?: () => void } | null} */
+let ledgerPanel = null;
+
+/** 読み API 変換中の要素（二重実行防止） */
+const pendingApiEls = new WeakSet();
 
 /**
  * Stylus 相当: 通常チャット行を表示／非表示。
@@ -72,27 +86,49 @@ let tokenizerPromise = null;
 const htmlCache = new Map();
 
 let processedCount = 0;
+let ledgerCount = 0;
 let moTimer = 0;
 let scanQueued = false;
 let learningReady = false;
+let ledgerInflight = false;
+let statusTimer = 0;
+/** @type {Record<string, unknown>} */
+let statusPending = {};
+
+function currentVideoId() {
+  // チャット iframe は v= が無いので top / chatframe も見る
+  return resolveVideoId({ href: location.href, doc: document });
+}
 
 function setStatus(partial) {
-  try {
-    chrome.storage.local.set({
-      ytscfRuntime: {
-        ready: Boolean(tokenize),
-        processedCount,
-        superChatEnabled: state.superChatEnabled,
-        chatEnabled: state.chatEnabled,
-        hideTextMessages: state.hideTextMessages,
-        enabled: isAnyTargetEnabled(state),
-        href: location.href,
-        ...partial
-      }
-    });
-  } catch {
-    /* ignore */
-  }
+  Object.assign(statusPending, partial || {});
+  if (statusTimer) return;
+  // storage 書き込み連打で YouTube が重いので間引く
+  statusTimer = window.setTimeout(() => {
+    statusTimer = 0;
+    const patch = statusPending;
+    statusPending = {};
+    try {
+      chrome.storage.local.set({
+        ytscfRuntime: {
+          ready: Boolean(tokenize),
+          processedCount,
+          ledgerCount,
+          ledgerEnabled: state.ledgerEnabled,
+          readingApiEnabled: state.readingApiEnabled,
+          superChatEnabled: state.superChatEnabled,
+          chatEnabled: state.chatEnabled,
+          hideTextMessages: state.hideTextMessages,
+          enabled: isAnyTargetEnabled(state),
+          href: location.href,
+          videoId: currentVideoId(),
+          ...patch
+        }
+      });
+    } catch {
+      /* ignore */
+    }
+  }, 800);
 }
 
 function clearHtmlCache() {
@@ -117,11 +153,13 @@ async function reapplyUserReadings() {
 }
 
 /**
- * 人名・NEologd フレーズ（失敗しても本体は動く）
+ * 人名・地名・駅・NEologd フレーズ（失敗しても本体は動く）
  */
 async function loadPhraseDicts() {
   await Promise.all([
     loadNeologdPhrases().then(() => rebuildCombinedPhraseTrie()).catch(() => {}),
+    loadPlaceNamePhrases().then(() => rebuildCombinedPhraseTrie()).catch(() => {}),
+    loadStationPhrases().then(() => rebuildCombinedPhraseTrie()).catch(() => {}),
     loadPersonalNamePhrases().catch(() => {})
   ]);
 }
@@ -173,7 +211,7 @@ function ensureTokenizer() {
 /**
  * @param {string} text
  */
-function convert(text) {
+function convertLocal(text) {
   if (!tokenize) return text;
   const key = text;
   const hit = htmlCache.get(key);
@@ -189,11 +227,46 @@ function convert(text) {
 }
 
 /**
+ * @param {string} text
+ * @returns {Promise<string>}
+ */
+async function convertViaReadingApi(text) {
+  try {
+    const res = await chrome.runtime.sendMessage({
+      type: "YTSCF_CONVERT_READING_API",
+      text
+    });
+    if (res?.ok && typeof res.html === "string" && res.html) {
+      return res.html;
+    }
+  } catch {
+    /* fallback below */
+  }
+  return "";
+}
+
+/**
+ * @param {string} text
+ */
+async function convert(text) {
+  if (state.readingApiEnabled) {
+    const apiHtml = await convertViaReadingApi(text);
+    if (apiHtml) return apiHtml;
+    // API 失敗時は端末内へフォールバック
+    if (tokenize) return convertLocal(text);
+    return text;
+  }
+  return convertLocal(text);
+}
+
+/**
  * @param {HTMLElement} el
  * @param {boolean} enabledForKind
  */
-function processOne(el, enabledForKind) {
-  if (!enabledForKind || !tokenize) return;
+async function processOne(el, enabledForKind) {
+  if (!enabledForKind) return;
+  if (!state.readingApiEnabled && !tokenize) return;
+  if (pendingApiEls.has(el)) return;
 
   // 仮想リスト再利用で本文だけ差し替わった場合は付け直す
   if (isAlreadyProcessed(el)) {
@@ -207,33 +280,65 @@ function processOne(el, enabledForKind) {
 
   const plain = extractPlainMessage(el);
   if (!plain || !needsFurigana(plain)) {
-    // 漢字なしでも再処理しないようマークだけ
     el.setAttribute("data-ytscf-done", "1");
     el.classList.add("ytscf-done");
     return;
   }
 
-  const html = convert(plain);
-  if (!html || html === plain) {
-    el.setAttribute("data-ytscf-done", "1");
-    return;
+  pendingApiEls.add(el);
+  try {
+    const html = await convert(plain);
+    if (!html || html === plain) {
+      el.setAttribute("data-ytscf-done", "1");
+      return;
+    }
+    // 待ちのあいだに別スキャンで消された場合はスキップ
+    if (!el.isConnected) return;
+    applyFuriganaToMessage(el, html, plain);
+    processedCount += 1;
+    setStatus({ processedCount });
+  } finally {
+    pendingApiEls.delete(el);
   }
-
-  applyFuriganaToMessage(el, html, plain);
-  processedCount += 1;
-  setStatus({ processedCount });
 }
 
 function scan() {
   scanQueued = false;
+
+  // ふりがな ON/OFF と独立して台帳を拾う（スパチャのみ表示中も蓄積）
+  if (state.ledgerEnabled && !ledgerInflight) {
+    ledgerInflight = true;
+    void ingestPaidMessagesFromDocument(document, {
+      videoId: currentVideoId(),
+      href: location.href
+    })
+      .then((result) => {
+        if (result.total !== ledgerCount) {
+          ledgerCount = result.total;
+          setStatus({ ledgerCount });
+        }
+        // panel は storage.onChanged で更新（ここでは refresh しない）
+      })
+      .catch(() => {})
+      .finally(() => {
+        ledgerInflight = false;
+      });
+  }
+
   if (!isAnyTargetEnabled(state)) return;
+  // 読み API 時もフォールバック用に辞書を用意。API のみでも学習句は載せる
   if (!tokenize || !learningReady) {
     void Promise.all([
       ensureTokenizer(),
       learningReady ? Promise.resolve() : reapplyUserReadings(),
       loadPhraseDicts()
     ])
-      .then(() => queueScan())
+      .then(() => {
+        if (state.readingApiEnabled) {
+          chrome.runtime.sendMessage({ type: "YTSCF_WARM_READING_API" }, () => {});
+        }
+        queueScan();
+      })
       .catch((error) => {
         console.warn("[YT Live Chat Furigana]", error?.message || error);
         setStatus({ ready: false, error: String(error?.message || error) });
@@ -243,12 +348,12 @@ function scan() {
 
   if (state.superChatEnabled) {
     for (const el of collectSuperChatMessageElements(document)) {
-      processOne(el, true);
+      void processOne(el, true);
     }
   }
   if (state.chatEnabled) {
     for (const el of collectChatMessageElements(document)) {
-      processOne(el, true);
+      void processOne(el, true);
     }
   }
 }
@@ -284,11 +389,18 @@ async function loadState() {
     state = {
       superChatEnabled: true,
       chatEnabled: true,
-      hideTextMessages: false
+      hideTextMessages: false,
+      ledgerEnabled: false,
+      readingApiEnabled: false
     };
   }
   applyHideTextMessages(state.hideTextMessages);
   setStatus({});
+  ensureLedgerPanel();
+  if (state.readingApiEnabled) {
+    chrome.runtime.sendMessage({ type: "YTSCF_WARM_READING_API" }, () => {});
+  }
+  queueScan();
   if (isAnyTargetEnabled(state)) {
     void Promise.all([ensureTokenizer(), reapplyUserReadings(), loadPhraseDicts()])
       .then(() => queueScan())
@@ -297,6 +409,26 @@ async function loadState() {
         setStatus({ ready: false, error: String(error?.message || error) });
       });
   }
+}
+
+const LEDGER_PANEL_ROOT_ID = "ytscf-sc-ledger-panel";
+
+function ensureLedgerPanel() {
+  // Shorts や設定オフではパネルを作らず、残骸も消す
+  if (!state.ledgerEnabled || !isTopYoutubeWatchFrame()) {
+    ledgerPanel?.destroy?.();
+    ledgerPanel = null;
+    document.getElementById(LEDGER_PANEL_ROOT_ID)?.remove();
+    return;
+  }
+  if (ledgerPanel) {
+    ledgerPanel.refresh?.();
+    return;
+  }
+  ledgerPanel = installScLedgerPanel({
+    getLedgerEnabled: () => state.ledgerEnabled,
+    getVideoId: () => currentVideoId()
+  });
 }
 
 chrome.storage.onChanged.addListener((changes, area) => {
@@ -314,6 +446,15 @@ chrome.storage.onChanged.addListener((changes, area) => {
   state = next;
   applyStateTransition(prev, next);
   setStatus({});
+  ensureLedgerPanel();
+  if (next.readingApiEnabled && !prev.readingApiEnabled) {
+    chrome.runtime.sendMessage({ type: "YTSCF_CLEAR_READING_API_CACHE" }, () => {});
+    chrome.runtime.sendMessage({ type: "YTSCF_WARM_READING_API" }, () => {});
+    reprocessEnabled();
+  } else if (!next.readingApiEnabled && prev.readingApiEnabled) {
+    reprocessEnabled();
+  }
+  queueScan();
 
   if (!isAnyTargetEnabled(state)) {
     return;
@@ -332,12 +473,39 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       superChatEnabled: state.superChatEnabled,
       chatEnabled: state.chatEnabled,
       hideTextMessages: state.hideTextMessages,
+      ledgerEnabled: state.ledgerEnabled,
+      readingApiEnabled: state.readingApiEnabled,
       enabled: isAnyTargetEnabled(state),
       ready: Boolean(tokenize),
       processedCount,
+      ledgerCount,
       href: location.href,
+      videoId: currentVideoId(),
       hasKanjiProbe: hasKanji("漢字")
     });
+    return false;
+  }
+  // アーカイブ再生: ポップアップから動画タイムコードへシーク
+  if (message?.type === "YTSCF_SEEK") {
+    const sec = Number(message.seconds);
+    if (!Number.isFinite(sec) || sec < 0) {
+      sendResponse({ ok: false, error: "invalid seconds" });
+      return false;
+    }
+    const video =
+      document.querySelector("video.html5-main-video") ||
+      document.querySelector("video");
+    if (!video) {
+      sendResponse({ ok: false, error: "no video" });
+      return false;
+    }
+    try {
+      video.currentTime = sec;
+      void video.play?.();
+      sendResponse({ ok: true, seconds: sec });
+    } catch (err) {
+      sendResponse({ ok: false, error: String(err?.message || err) });
+    }
     return false;
   }
   return false;
