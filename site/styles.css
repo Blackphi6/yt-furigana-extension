@@ -7,19 +7,12 @@
   --paper: #f3efe6;
   --paper-deep: #e7e0d2;
   --elevated: #fffaf3;
-  --chip: color-mix(in oklab, var(--elevated) 55%, transparent);
+  --chip: color-mix(in oklab, white 45%, transparent);
   --vermilion: #c23b22;
   --vermilion-deep: #9a2e1b;
   --line: color-mix(in oklab, var(--sumi) 14%, transparent);
   --muted: #5c5348;
   --ok: #166534;
-  /* フォーム・強調チップ用（ライト／ダークで必ず読める組） */
-  --field-bg: var(--elevated);
-  --field-fg: var(--sumi);
-  --placeholder: #6b635a;
-  --soft-accent-bg: color-mix(in oklab, var(--vermilion) 14%, var(--elevated));
-  --on-soft-accent: var(--vermilion-deep);
-  --track-bg: color-mix(in oklab, var(--line) 70%, var(--elevated));
   --display: "Shippori Mincho", "Hiragino Mincho ProN", serif;
   --body: "Zen Kaku Gothic New", "Hiragino Sans", sans-serif;
   --max: 68rem;
@@ -39,13 +32,6 @@ html[data-theme="dark"] {
   --line: color-mix(in oklab, var(--sumi) 18%, transparent);
   --muted: #a89f94;
   --ok: #86efac;
-  --field-bg: #2c2823;
-  --field-fg: #f0ebe3;
-  /* ダーク背景上でも AA 相当になるプレースホルダ */
-  --placeholder: #9a9186;
-  --soft-accent-bg: color-mix(in oklab, var(--vermilion) 32%, var(--elevated));
-  --on-soft-accent: #ffe8e2;
-  --track-bg: color-mix(in oklab, var(--line) 55%, var(--elevated));
 }
 
 * {
@@ -389,24 +375,9 @@ a:hover {
   padding: 0.7rem 0.85rem;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: var(--field-bg);
-  color: var(--field-fg);
+  background: var(--elevated);
+  color: var(--sumi);
   font: inherit;
-}
-
-/* 全ページ共通: 入力とプレースホルダのコントラストをテーマ変数で保証 */
-input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
-textarea,
-select {
-  color: var(--field-fg);
-  background-color: var(--field-bg);
-  caret-color: var(--field-fg);
-}
-
-input::placeholder,
-textarea::placeholder {
-  color: var(--placeholder);
-  opacity: 1;
 }
 
 .status {
