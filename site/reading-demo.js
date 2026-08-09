@@ -52,6 +52,8 @@ let personalNamePhrases = {};
 let personalNamesPromise = null;
 let placeNamePhrases = {};
 let placeNamesPromise = null;
+let stationPhrases = {};
+let stationPromise = null;
 let unidicPhrases = {};
 let unidicPromise = null;
 
@@ -111,6 +113,35 @@ async function ensurePlaceNamePhrases() {
     return placeNamePhrases;
   })();
   return placeNamesPromise;
+}
+
+async function ensureStationPhrases() {
+  if (Object.keys(stationPhrases).length) return stationPhrases;
+  if (stationPromise) return stationPromise;
+  stationPromise = (async () => {
+    try {
+      const res = await fetch("./station-phrases.json", {
+        cache: "force-cache"
+      });
+      if (!res.ok) {
+        const fallback = await fetch(
+          "https://raw.githubusercontent.com/Blackphi6/yt-furigana-extension/main/data/generated/station-phrases-site.json"
+        );
+        if (!fallback.ok) return stationPhrases;
+        const data = await fallback.json();
+        if (data && typeof data === "object") stationPhrases = data;
+        return stationPhrases;
+      }
+      const data = await res.json();
+      if (data && typeof data === "object") {
+        stationPhrases = data;
+      }
+    } catch {
+      /* ignore */
+    }
+    return stationPhrases;
+  })();
+  return stationPromise;
 }
 
 async function ensureUnidicPhrases() {
@@ -201,6 +232,10 @@ function overlayPersonalNameTokens(text, tokens) {
  */
 function overlayPlaceNameTokens(text, tokens) {
   return overlayPhraseTokens(text, tokens, placeNamePhrases, "place_name", 20);
+}
+
+function overlayStationTokens(text, tokens) {
+  return overlayPhraseTokens(text, tokens, stationPhrases, "station", 16);
 }
 
 function overlayUnidicTokens(text, tokens) {
@@ -770,6 +805,7 @@ function renderResult(text, data) {
   const displayText = stripAnnotationMarkers(text);
   tokens = overlayUnidicTokens(displayText, tokens);
   tokens = overlayPlaceNameTokens(displayText, tokens);
+  tokens = overlayStationTokens(displayText, tokens);
   tokens = overlayPersonalNameTokens(displayText, tokens);
   // 公開 API が未デプロイでも数字を編集できるようクライアント側で載せる
   tokens = overlayNumberTokens(displayText, tokens);
@@ -1123,6 +1159,7 @@ async function runAnalyze(options = {}) {
   await Promise.all([
     ensurePersonalNamePhrases(),
     ensurePlaceNamePhrases(),
+    ensureStationPhrases(),
     ensureUnidicPhrases()
   ]);
   // ピッカーからの再実行では勝手に共有送信しない
@@ -1389,6 +1426,7 @@ inputEl.addEventListener("keydown", (e) => {
 loadPinsFromStorage();
 void ensurePersonalNamePhrases();
 void ensurePlaceNamePhrases();
+void ensureStationPhrases();
 void ensureUnidicPhrases();
 
 const params = new URLSearchParams(location.search);

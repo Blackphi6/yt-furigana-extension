@@ -1,0 +1,65 @@
+{
+  "sources": [
+    {
+      "name": "Geolonia japanese-addresses",
+      "license": "CC BY 4.0",
+      "url": "https://github.com/geolonia/japanese-addresses"
+    },
+    {
+      "name": "デジタル庁 アドレス・ベース・レジストリ（町字等）",
+      "license": "PDL1.0 / CC BY 表記",
+      "url": "https://www.digital.go.jp/policies/base_registry_address"
+    },
+    {
+      "name": "国土地理院 地名集日本（LinkData 機械可読）",
+      "license": "国土地理院コンテンツ利用規約（PDL1.0）・出典必須",
+      "url": "https://www.gsi.go.jp/kihonjohochousa/gazetteer.html"
+    },
+    {
+      "name": "GeoNLP 地名語辞書（読み付き）",
+      "license": "CC BY 4.0",
+      "url": "https://geonlp.ex.nii.ac.jp/dictionary/"
+    },
+    {
+      "name": "日本郵便 郵便番号データ（KEN_ALL / utf_ken_all）",
+      "license": "日本郵便 郵便番号データ ダウンロードサービス利用許諾（商用可）",
+      "url": "https://www.post.japanpost.jp/zipcode/dl/utf-zip.html",
+      "note": "既存フレーズに無い町域のみギャップ埋め。ビル名・○階等は除外"
+    }
+  ],
+  "excluded": [
+    "電子国土基本図（地名情報）— 測量成果のため拡張同梱しない",
+    "GeoNLP KSJ 読み無し辞書（空港・道の駅・駅など）",
+    "駅データ.jp 無料 CSV — station_name_k が空のため読み無し（駅は station-phrases）"
+  ],
+  "siteSubset": "都道府県・市区町村・地名集・GeoNLP POI 等。町丁目全文は拡張のみ（Pages 軽量化）",
+  "counts": {
+    "geolonia": 1069475,
+    "abr": 1964520,
+    "gazetteer": 3869,
+    "geonlpPref": 0,
+    "geonlpNrct": 42148,
+    "geonlpNrctPoi": 23838,
+    "kenAllAdded": 35697,
+    "kenAllRows": 124498,
+    "kenAllSkippedNoise": 5477
+  },
+  "count": 767917,
+  "siteCount": 29567,
+  "bytesUncompressed": 43353794,
+  "bytesGzip": 7114399,
+  "siteBytesUncompressed": 1296314,
+  "siteBytesGzip": 360330,
+  "generatedAt": "2026-08-09T17:00:11.280Z",
+  "contentNotice": "Japanese place-name surface→reading phrases for furigana. Attribution required (CC BY / PDL1.0). Not affiliated with data providers beyond license compliance.",
+  "samples": {
+    "北海道": "ほっかいどう",
+    "札幌市": "さっぽろし",
+    "札幌市中央区": "さっぽろしちゅうおうく",
+    "旭ケ丘": "あさひがおか",
+    "旭ケ丘一丁目": "あさひがおかいちちょうめ",
+    "富士山": "ふじさん",
+    "沖ノ鳥島": "おきのとりしま",
+    "利根川": "とねがわ"
+  }
+}

@@ -22,10 +22,14 @@
 | [kuromoji.js](https://github.com/takuyaa/kuromoji.js) | Apache-2.0 | 形態素解析（既定） | [NOTICE](../NOTICE) / [Apache-2.0](../third_party/Apache-2.0.txt) |
 | mecab-ipadic（kuromoji 経由） | NAIST / ICOT 条件付き | 日本語辞書データ | [NOTICE-kuromoji.md](../third_party/NOTICE-kuromoji.md) |
 | [mecab-ipadic-NEologd](https://github.com/neologd/mecab-ipadic-neologd) | Apache-2.0 | 固有名詞フレーズ（抽出・圧縮同梱） | [NOTICE](../NOTICE) / 上流 COPYING |
+| Geolonia / ABR / 地名集日本 / GeoNLP / KEN_ALL | CC BY 4.0 / PDL1.0 / 郵便番号データ利用許諾 | 地名フレーズ（抽出・圧縮同梱） | [NOTICE](../NOTICE) / [PLACE-NAME-DATASETS](PLACE-NAME-DATASETS.md) |
+| NEologd `*駅`（駅フレーズ） | Apache-2.0 | 駅名・駅なし表層（抽出・圧縮同梱） | [NOTICE](../NOTICE) / [PLACE-NAME-DATASETS](PLACE-NAME-DATASETS.md) |
 | [sudachi-wasm333](https://github.com/Benjas333/sudachi-wasm333) | Apache-2.0 | Sudachi 解析 | [NOTICE](../NOTICE) |
 | SudachiDict | Apache-2.0（上流） | Sudachi 辞書 | 上流プロジェクトの NOTICE を参照 |
 | [BudouX](https://github.com/google/budoux) | Apache-2.0 | 字幕の自然な折り返し（句境界） | [NOTICE](../NOTICE) |
 | [CMUdict](https://github.com/cmusphinx/cmudict) | BSD-2-Clause | 英単語→カタカナ読み（事前変換データ） | [BSD-CMUdict.txt](../third_party/BSD-CMUdict.txt) |
+| [Unicode Unihan](https://www.unicode.org/charts/unihan.html) | Unicode License | 単漢字読みフォールバック（kJapanese 等） | [Unicode-License.txt](../third_party/Unicode-License.txt) |
+| [UniDic 現代書き言葉](https://clrd.ninjal.ac.jp/unidic/) | BSD-3-Clause（トリプルから選択） | 漢語名詞フレーズ（抽出・圧縮同梱） | [BSD-UniDic.txt](../third_party/BSD-UniDic.txt) |
 | 日本語慣用カタカナ上書き（本リポジトリ） | MIT | CMUdict の上に定着表記をマージ | [`english-katakana-ja-convention.json`](../data/english-katakana-ja-convention.json) |
 | [joyokanji](https://github.com/new-village/joyo-kanji) | Apache-2.0 | 旧字体・人名異体字の照合正規化 | [NOTICE](../NOTICE) / [Apache-2.0](../third_party/Apache-2.0.txt) |
 

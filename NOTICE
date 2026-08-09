@@ -69,6 +69,42 @@ Rare surnames used in demos may also appear in data/personal-name-extra.json
 Full license text: third_party/MIT-japanese-personal-name-dataset.txt
 
 -------------------------------------------------------------------------------
+Place-name phrases (Geolonia / ABR / 地名集日本 / GeoNLP / KEN_ALL)
+-------------------------------------------------------------------------------
+Bundled as a filtered phrase list (surface → reading):
+  data/generated/place-name-phrases.json.gz
+
+Sources (attribution required):
+- Geolonia japanese-addresses — CC BY 4.0
+  https://github.com/geolonia/japanese-addresses
+- デジタル庁 アドレス・ベース・レジストリ — PDL1.0 / CC BY 表記
+  https://www.digital.go.jp/policies/base_registry_address
+- 国土地理院 地名集日本（LinkData 機械可読）— 国土地理院コンテンツ利用規約（PDL1.0）
+  https://www.gsi.go.jp/kihonjohochousa/gazetteer.html
+- GeoNLP 地名語辞書（読み付き分）— CC BY 4.0
+  https://geonlp.ex.nii.ac.jp/dictionary/
+- 日本郵便 郵便番号データ（KEN_ALL）— 郵便番号データ利用許諾（商用可）
+  https://www.post.japanpost.jp/zipcode/dl/utf-zip.html
+  （ABR/Geolonia 等に無い町域のみギャップ埋め）
+
+Not bundled: 電子国土基本図（地名情報）測量成果（測量法の複製・使用承認が絡みうる）。
+
+Build: npm run dict:place-names
+Survey: docs/PLACE-NAME-DATASETS.md
+
+-------------------------------------------------------------------------------
+Station phrases (NEologd *駅 entries, Apache-2.0)
+-------------------------------------------------------------------------------
+Bundled as surface → reading (with and without trailing 駅):
+  data/generated/station-phrases.json.gz
+
+Derived from mecab-ipadic-NEologd seed (Apache-2.0).
+駅データ.jp free CSV is not used (empty station_name_k).
+
+Build: npm run dict:stations
+Survey: docs/PLACE-NAME-DATASETS.md
+
+-------------------------------------------------------------------------------
 joyokanji kyūjitai / variant kanji map (Apache License 2.0)
 -------------------------------------------------------------------------------
 https://github.com/new-village/joyo-kanji
@@ -99,6 +135,37 @@ Build: npm run dict:english
 Survey: docs/FOREIGN-LOANWORD-DATASETS.md
 
 Full license text: third_party/BSD-CMUdict.txt
+
+-------------------------------------------------------------------------------
+Unicode Unihan → single-kanji Japanese readings
+-------------------------------------------------------------------------------
+Unicode Consortium — Unihan Database
+https://www.unicode.org/Public/UCD/latest/ucd/Unihan.zip
+
+Licensed under the Unicode License Agreement (commercial use permitted with notice).
+Uses kJapanese (preferred) and kJapaneseOn/Kun fallbacks.
+MJ Character Information List (CC BY-SA) is NOT bundled; Unihan kJapanese already
+redistributes related readings under the Unicode License.
+
+Bundled as: data/generated/kanji-readings.json.gz
+Build: npm run dict:kanji-readings
+Survey: docs/KANJI-READING-DATASETS.md
+
+Full license text: third_party/Unicode-License.txt
+
+-------------------------------------------------------------------------------
+UniDic (Contemporary Written Japanese) → noun phrases (BSD-3-Clause)
+-------------------------------------------------------------------------------
+National Institute for Japanese Language and Linguistics (NINJAL) — UniDic 3.1.1
+https://clrd.ninjal.ac.jp/unidic/
+
+UniDic analysis dictionaries are offered under GPL / LGPL / modified BSD.
+This derivative phrase extract is distributed under BSD-3-Clause with attribution.
+
+Bundled as: data/generated/unidic-phrases.json.gz
+Build: npm run dict:unidic
+
+Full license text: third_party/BSD-UniDic.txt
 
 -------------------------------------------------------------------------------
 BudouX (Apache License 2.0)

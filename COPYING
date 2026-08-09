@@ -84,6 +84,58 @@ v-1b. japanese-personal-name-dataset（姓）— MIT
    ライセンス全文: third_party/MIT-japanese-personal-name-dataset.txt
 
 
+v-1b2. 地名フレーズ（Geolonia / ABR / 地名集日本 / GeoNLP / KEN_ALL）
+
+   - Geolonia japanese-addresses — CC BY 4.0
+     https://github.com/geolonia/japanese-addresses
+   - デジタル庁 アドレス・ベース・レジストリ — PDL1.0（商用可・出典必須）
+     https://www.digital.go.jp/policies/base_registry_address
+   - 国土地理院 地名集日本 — 国土地理院コンテンツ利用規約（PDL1.0）
+     https://www.gsi.go.jp/kihonjohochousa/gazetteer.html
+     （機械可読は LinkData 配布を利用。利用時は地理院への出典を記載）
+   - GeoNLP 地名語辞書（読み付きのみ）— CC BY 4.0
+     https://geonlp.ex.nii.ac.jp/dictionary/
+   - 日本郵便 郵便番号データ（KEN_ALL / utf_ken_all）— 利用許諾（商用可）
+     https://www.post.japanpost.jp/zipcode/dl/utf-zip.html
+     （既存に無い町域のみギャップ埋め。ビル名・○階等は除外）
+
+   同梱物: data/generated/place-name-phrases.json.gz
+   調査: docs/PLACE-NAME-DATASETS.md
+   電子国土基本図（地名情報）の測量成果は同梱しない。
+
+
+v-1b2b. 駅フレーズ（NEologd 種子の「…駅」）
+
+   mecab-ipadic-NEologd seed から *駅 と駅を除いた表層を抽出。
+   ライセンス: Apache License, Version 2.0
+   同梱物: data/generated/station-phrases.json.gz
+   駅データ.jp 無料 CSV は station_name_k が空のため未使用。
+   調査: docs/PLACE-NAME-DATASETS.md
+
+
+v-1b3. Unicode Unihan 単漢字読み — Unicode License Agreement
+
+   https://www.unicode.org/Public/UCD/latest/ucd/Unihan.zip
+   フィールド: kJapanese / kJapaneseKun / kJapaneseOn
+   （kJapanese は文字情報基盤由来の読みを Unicode が再配布したもの）
+
+   読みが無い単漢字トークンへのフォールバック、および候補 UI 用。
+   同梱物: data/generated/kanji-readings.json.gz
+   MJ文字情報一覧表（CC BY-SA 2.1 JP）本体は同梱しない（継承義務を避けるため）。
+   調査: docs/KANJI-READING-DATASETS.md
+   ライセンス全文: third_party/Unicode-License.txt
+
+
+v-1b4. 現代書き言葉 UniDic 漢語名詞フレーズ — BSD-3-Clause（トリプルライセンスから選択）
+
+   国立国語研究所 UniDic 3.1.1
+   https://clrd.ninjal.ac.jp/unidic/
+
+   漢字のみ・長さ2–8の名詞（固有名詞除外）を表層→読みとして同梱。
+   同梱物: data/generated/unidic-phrases.json.gz
+   ライセンス全文: third_party/BSD-UniDic.txt
+
+
 v-1c. joyokanji 旧字体・異体字マップ — Apache License 2.0
 
    https://github.com/new-village/joyo-kanji
