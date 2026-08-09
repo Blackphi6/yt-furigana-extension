@@ -221,6 +221,29 @@ if (!pack.includes("__YTF_STORE_SAFE__") && !read("scripts/build.mjs").includes(
   fail("content build must set __YTF_STORE_SAFE__ store-safe banner");
 }
 
+// --- CWS Red Titanium: Sudachi WASM must not be Base64-inlined in content.js ---
+const buildSrc = read("scripts/build.mjs");
+if (!buildSrc.includes("sudachi-no-inline-wasm") || !buildSrc.includes("extractSudachiWasm")) {
+  fail("build.mjs must extract Sudachi WASM and strip inline Base64 (CWS readability)");
+}
+if (!read("manifest.json").includes("dist/sudachi_bg.wasm")) {
+  fail("manifest.json must list dist/sudachi_bg.wasm in web_accessible_resources");
+}
+const contentDist = path.join(root, "dist/content.js");
+if (existsSync(contentDist)) {
+  const contentJs = readFileSync(contentDist, "utf8");
+  if (
+    contentJs.includes("AGFzbQE") ||
+    contentJs.includes("const wasmBASE64") ||
+    contentJs.includes("atob(wasmBASE64)")
+  ) {
+    fail("dist/content.js contains inline Sudachi WASM Base64 (rebuild after sudachi-no-inline-wasm fix)");
+  }
+  if (!existsSync(path.join(root, "dist/sudachi_bg.wasm"))) {
+    fail("dist/sudachi_bg.wasm missing (run npm run build)");
+  }
+}
+
 // --- meta samples: proper noun disclaimer ---
 const neologdMeta = path.join(root, "data/generated/neologd-phrases.meta.json");
 if (existsSync(neologdMeta)) {

@@ -1,5 +1,5 @@
 import { build, context } from "esbuild";
-import { cp, mkdir, writeFile } from "node:fs/promises";
+import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
 import { existsSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -90,6 +90,115 @@ async function copySudachiDict() {
   await cp(source, target, { force: true });
   const sizeMb = statSync(target).size / (1024 * 1024);
   console.log(`Sudachi dictionary ready (${sizeMb.toFixed(0)} MB)`);
+}
+
+/**
+ * CWS Red Titanium 対策: sudachi.js 内の Base64 WASM を別ファイルへ出す。
+ * @returns {Promise<string>} dist/sudachi_bg.wasm の絶対パス
+ */
+async function extractSudachiWasm() {
+  const sudachiJs = path.join(
+    root,
+    "node_modules",
+    "sudachi-wasm333",
+    "sudachi.js"
+  );
+  const outWasm = path.join(root, "dist", "sudachi_bg.wasm");
+  if (!existsSync(sudachiJs)) {
+    throw new Error("sudachi-wasm333/sudachi.js not found. Run npm install first.");
+  }
+  const source = await readFile(sudachiJs, "utf8");
+  const marker = "const wasmBASE64 = '";
+  const start = source.indexOf(marker);
+  if (start < 0) {
+    throw new Error("wasmBASE64 not found in sudachi-wasm333/sudachi.js");
+  }
+  const q = start + marker.length;
+  const end = source.indexOf("'", q);
+  if (end < 0) {
+    throw new Error("wasmBASE64 closing quote not found");
+  }
+  const bytes = Buffer.from(source.slice(q, end), "base64");
+  // \0asm
+  if (
+    bytes.length < 4 ||
+    bytes[0] !== 0x00 ||
+    bytes[1] !== 0x61 ||
+    bytes[2] !== 0x73 ||
+    bytes[3] !== 0x6d
+  ) {
+    throw new Error("decoded Sudachi WASM missing magic header");
+  }
+  await mkdir(path.dirname(outWasm), { recursive: true });
+  await writeFile(outWasm, bytes);
+  const sizeMb = bytes.length / (1024 * 1024);
+  console.log(`Sudachi WASM ready (${sizeMb.toFixed(2)} MB) → dist/sudachi_bg.wasm`);
+  return outWasm;
+}
+
+/**
+ * sudachi.js から Base64 WASM 定数と末尾の自動 initSync を除去する。
+ * （巨大文字列は RegExp だと失敗しやすいので indexOf で切る）
+ * @param {string} source
+ */
+export function stripSudachiInlineWasmSource(source) {
+  const marker = "const wasmBASE64 = '";
+  const start = source.indexOf(marker);
+  if (start < 0) {
+    return source;
+  }
+  const q = start + marker.length;
+  const end = source.indexOf("'", q);
+  if (end < 0) {
+    throw new Error("sudachi wasmBASE64: closing quote not found");
+  }
+  // 閉じ引用符の直後の `;` まで飛ばす
+  let after = end + 1;
+  if (source[after] === ";") after += 1;
+  let out =
+    source.slice(0, start) +
+    "/* wasmBASE64 extracted to dist/sudachi_bg.wasm (CWS readability) */\n" +
+    source.slice(after);
+
+  const autoInit = out.search(/\nlet bytes;\s*\nif \(typeof atob === 'function'\)/);
+  if (autoInit >= 0) {
+    out =
+      out.slice(0, autoInit) +
+      "\n/* auto initSync removed; extension calls default init(url) */\n";
+  }
+
+  if (
+    out.includes("const wasmBASE64") ||
+    out.includes("atob(wasmBASE64)") ||
+    out.includes("AGFzbQE")
+  ) {
+    throw new Error(
+      "sudachi-no-inline-wasm: failed to strip embedded WASM from sudachi.js"
+    );
+  }
+  return out;
+}
+
+/**
+ * esbuild: sudachi.js から Base64 埋め込みと自動 initSync を除去する。
+ * （CWS が難読化と誤認するパターンを避ける）
+ */
+function sudachiNoInlineWasmPlugin() {
+  return {
+    name: "sudachi-no-inline-wasm",
+    setup(buildApi) {
+      buildApi.onLoad({ filter: /[/\\]sudachi\.js$/ }, async (args) => {
+        if (!args.path.includes(`${path.sep}sudachi-wasm333${path.sep}`)) {
+          return null;
+        }
+        const source = await readFile(args.path, "utf8");
+        return {
+          contents: stripSudachiInlineWasmSource(source),
+          loader: "js"
+        };
+      });
+    }
+  };
 }
 
 function createBrandIconPng(size) {
@@ -240,6 +349,7 @@ async function buildContentScript() {
       js: "globalThis.__YTF_STORE_SAFE__=true;"
     },
     plugins: [
+      sudachiNoInlineWasmPlugin(),
       {
         name: "kuromoji-browser",
         setup(buildApi) {
@@ -263,6 +373,19 @@ async function buildContentScript() {
   }
 
   await build(options);
+
+  // 回帰防止: 完成物に WASM Base64 が戻っていないか
+  const contentOut = path.join(root, "dist", "content.js");
+  const bundled = await readFile(contentOut, "utf8");
+  if (
+    bundled.includes("AGFzbQE") ||
+    bundled.includes("const wasmBASE64") ||
+    bundled.includes("atob(wasmBASE64)")
+  ) {
+    throw new Error(
+      "dist/content.js still contains inline Sudachi WASM (AGFzbQE/wasmBASE64). CWS will reject."
+    );
+  }
 }
 
 async function buildPageCaptionBridge() {
@@ -314,6 +437,7 @@ async function run() {
   await copyPersonalNamePhrases();
   await copyEnglishKatakana();
   await copySudachiDict();
+  await extractSudachiWasm();
   await generateIcons();
   await buildBackgroundScript();
   await buildContentScript();
@@ -326,7 +450,13 @@ async function run() {
   console.log("Build complete.");
 }
 
-run().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+const isMain =
+  process.argv[1] &&
+  path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1]);
+
+if (isMain) {
+  run().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}

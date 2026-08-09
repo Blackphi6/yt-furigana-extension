@@ -1,7 +1,9 @@
-import { SudachiStateless, TokenizeMode } from "sudachi-wasm333";
+import initSudachiWasm, { SudachiStateless, TokenizeMode } from "sudachi-wasm333";
 
 let sudachi = null;
 let initPromise = null;
+/** WASM 本体のロード（Base64 埋め込みを使わず dist/sudachi_bg.wasm を読む） */
+let wasmReadyPromise = null;
 /** @type {{ phase: string, loadedBytes: number, totalBytes: number, percent: number, message: string } | null} */
 let lastProgress = null;
 
@@ -97,6 +99,26 @@ function formatMb(bytes) {
 }
 
 /**
+ * sudachi-wasm333 の default init。拡張では別ファイルの .wasm を渡す。
+ * （パッケージ同梱の Base64 自動 init はビルド時に除去済み）
+ */
+async function ensureSudachiWasm() {
+  if (wasmReadyPromise) return wasmReadyPromise;
+  wasmReadyPromise = (async () => {
+    if (typeof chrome === "undefined" || !chrome?.runtime?.getURL) {
+      // Node テスト等: パッケージ側の自動 init（未ストリップ）に任せる
+      return;
+    }
+    const wasmUrl = chrome.runtime.getURL("dist/sudachi_bg.wasm");
+    await initSudachiWasm(wasmUrl);
+  })().catch((error) => {
+    wasmReadyPromise = null;
+    throw error;
+  });
+  return wasmReadyPromise;
+}
+
+/**
  * SudachiDict (small) を読み込み、既存トークン形式に合わせた tokenize を返す。
  * Mode C = 長いまとまり（1人→ひとり など複合に強い）
  */
@@ -104,6 +126,13 @@ export async function initSudachiTokenizer({ dictUrl, onProgress } = {}) {
   if (initPromise) return initPromise;
 
   initPromise = (async () => {
+    emitProgress(onProgress, {
+      phase: "wasm",
+      percent: 0,
+      message: "Sudachi WASM を読み込み中…"
+    });
+    await ensureSudachiWasm();
+
     const url = dictUrl ?? chrome.runtime.getURL("dict/sudachi/system.dic");
     const bytes = await fetchDictionaryBytes(url, onProgress);
 

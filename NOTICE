@@ -36,6 +36,9 @@ sudachi-wasm333 (Apache License 2.0)
 https://github.com/Benjas333/sudachi-wasm333
 Based on sudachi.rs / SudachiDict (Works Applications / contributors).
 
+The WebAssembly engine is shipped as a separate file `dist/sudachi_bg.wasm`
+(not Base64-inlined in JavaScript) for Chrome Web Store code readability.
+
 Full license text: third_party/Apache-2.0.txt
 
 -------------------------------------------------------------------------------
