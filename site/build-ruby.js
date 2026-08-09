@@ -37,6 +37,92 @@ export function isUsefulLatinReading(reading) {
   return /[\u3040-\u309f\u30a0-\u30ff]/.test(String(reading || ""));
 }
 
+/** 長い候補を先に試す（ティー vs テー、ダブリュー vs ダブリュ） — src/latin-letter-reading.js と同期 */
+const LATIN_LETTER_READINGS = {
+  A: ["エー", "エイ"],
+  B: ["ビー"],
+  C: ["シー"],
+  D: ["ディー", "デー"],
+  E: ["イー"],
+  F: ["エフ"],
+  G: ["ジー"],
+  H: ["エイチ", "エッチ"],
+  I: ["アイ"],
+  J: ["ジェー", "ジェイ"],
+  K: ["ケー", "ケイ"],
+  L: ["エル"],
+  M: ["エム"],
+  N: ["エヌ"],
+  O: ["オー", "オウ"],
+  P: ["ピー"],
+  Q: ["キュー"],
+  R: ["アール"],
+  S: ["エス"],
+  T: ["ティー", "テー"],
+  U: ["ユー"],
+  V: ["ブイ", "ヴィー"],
+  W: ["ダブリュー", "ダブルユー", "ダブリュ"],
+  X: ["エックス"],
+  Y: ["ワイ"],
+  Z: ["ゼット", "ジー"]
+};
+
+function letterVariants(char) {
+  const raw = LATIN_LETTER_READINGS[String(char || "").toUpperCase()];
+  if (!raw) return [];
+  return raw.map((kana) => toHiragana(kana));
+}
+
+function stripLeadingAlphabetReading(latinRun, reading) {
+  const original = String(reading || "");
+  let rest = toHiragana(original);
+  const startLen = rest.length;
+  for (const char of String(latinRun || "")) {
+    if (!/[A-Za-z]/.test(char)) continue;
+    const variants = letterVariants(char);
+    let matched = null;
+    for (const v of variants) {
+      if (v && rest.startsWith(v)) {
+        matched = v;
+        break;
+      }
+    }
+    if (!matched) return original;
+    rest = rest.slice(matched.length);
+  }
+  if (rest.length === startLen) return original;
+  return original.slice(startLen - rest.length);
+}
+
+function stripTrailingAlphabetReading(latinRun, reading) {
+  const original = String(reading || "");
+  let rest = toHiragana(original);
+  const startLen = rest.length;
+  const letters = [...String(latinRun || "")].filter((c) => /[A-Za-z]/.test(c));
+  for (let i = letters.length - 1; i >= 0; i -= 1) {
+    const variants = letterVariants(letters[i]);
+    let matched = null;
+    for (const v of variants) {
+      if (v && rest.endsWith(v)) {
+        matched = v;
+        break;
+      }
+    }
+    if (!matched) return original;
+    rest = rest.slice(0, rest.length - matched.length);
+  }
+  if (rest.length === startLen) return original;
+  return original.slice(0, rest.length);
+}
+
+function isAlphabetLetterSpelling(surface, reading) {
+  const s = String(surface || "");
+  if (!/^[A-Za-z]+$/.test(s)) return false;
+  const hira = toHiragana(reading || "");
+  if (!hira) return false;
+  return stripLeadingAlphabetReading(s, hira) === "";
+}
+
 export function isRegisterableSurface(text) {
   if (hasKanji(text) || isLatinWord(text)) return true;
   const s = String(text || "").normalize("NFKC").trim();
@@ -169,7 +255,9 @@ export function buildRuby(surface, reading, options = {}) {
   if (isLatinWord(surface)) {
     // yeah / happiness など、形態素が英字読みを返すだけのときはルビ不要
     // かな読みがある欧文は和製英語と同様にカタカナ表示（You→ユー）
+    // CTP→シーティーピー のようなアルファベット逐語は略語ルビとして出さない
     if (!isUsefulLatinReading(reading || shown)) return safeSurface;
+    if (isAlphabetLetterSpelling(surface, reading || shown)) return safeSurface;
     const katakana = toKatakana(reading || shown);
     return `<ruby>${safeSurface}<rt>${escapeHtml(katakana)}</rt></ruby>`;
   }
@@ -236,30 +324,53 @@ export function buildRuby(surface, reading, options = {}) {
 
   // 先頭・末尾の other（CTP / ※ / 括弧など）はルビの外へ出す。
   // 結合すると rt が全体中央になり「CTP社」で「しゃ」が P の上に来る。
+  // あわせて CTP→シーティーピー のような逐語読みを漢字の rt から剥がす。
   const core = [...middleSegments];
-  const leadingOther = [];
+  const leadingOtherRaw = [];
   while (core.length && core[0].type === "other") {
-    leadingOther.push(escapeHtml(core.shift().text));
+    leadingOtherRaw.push(core.shift().text);
   }
-  const trailingOther = [];
+  const trailingOtherRaw = [];
   while (core.length && core[core.length - 1].type === "other") {
-    trailingOther.unshift(escapeHtml(core.pop().text));
+    trailingOtherRaw.unshift(core.pop().text);
   }
 
-  result += leadingOther.join("");
+  let coreReadingHira = middleReadingHira;
+  let coreReadingShown = middleReadingShown || middleReadingHira;
+  if (leadingOtherRaw.length) {
+    const joined = leadingOtherRaw.join("");
+    const nextHira = stripLeadingAlphabetReading(joined, coreReadingHira);
+    if (nextHira !== coreReadingHira) {
+      const consumed = coreReadingHira.length - nextHira.length;
+      coreReadingShown = coreReadingShown.slice(consumed);
+      coreReadingHira = nextHira;
+    }
+  }
+  if (trailingOtherRaw.length) {
+    const joined = trailingOtherRaw.join("");
+    const nextHira = stripTrailingAlphabetReading(joined, coreReadingHira);
+    if (nextHira !== coreReadingHira) {
+      coreReadingShown = coreReadingShown.slice(0, nextHira.length);
+      coreReadingHira = nextHira;
+    }
+  }
+
+  result += leadingOtherRaw.map((text) => escapeHtml(text)).join("");
 
   if (core.length === 0) {
     // other のみ
+  } else if (!coreReadingHira) {
+    result += core.map((segment) => escapeHtml(segment.text)).join("");
   } else if (core.length === 1 && core[0].type === "kanji") {
-    result += `<ruby>${escapeHtml(core[0].text)}<rt>${escapeHtml(middleReadingShown || middleReadingHira)}</rt></ruby>`;
+    result += `<ruby>${escapeHtml(core[0].text)}<rt>${escapeHtml(coreReadingShown || coreReadingHira)}</rt></ruby>`;
   } else if (core.every((segment) => segment.type === "kanji")) {
     const joined = core.map((segment) => segment.text).join("");
-    result += `<ruby>${escapeHtml(joined)}<rt>${escapeHtml(middleReadingShown || middleReadingHira)}</rt></ruby>`;
+    result += `<ruby>${escapeHtml(joined)}<rt>${escapeHtml(coreReadingShown || coreReadingHira)}</rt></ruby>`;
   } else {
     // 送り仮名合わせはひらがな長でアライン。表示もひらがな（混在は稀）
-    result += alignMiddleSegments(core, middleReadingHira);
+    result += alignMiddleSegments(core, coreReadingHira);
   }
 
-  result += trailingOther.join("");
+  result += trailingOtherRaw.map((text) => escapeHtml(text)).join("");
   return result + trailing.join("");
 }
