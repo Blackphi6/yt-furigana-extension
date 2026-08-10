@@ -59,6 +59,12 @@ let placeNamePhrases = {};
 let placeNamesPromise = null;
 let stationPhrases = {};
 let stationPromise = null;
+let corporateNamePhrases = {};
+let corporatePromise = null;
+let wikidataKanaPhrases = {};
+let wikidataPromise = null;
+let sudachiFullPhrases = {};
+let sudachiFullPromise = null;
 let unidicPhrases = {};
 let unidicPromise = null;
 let kanjiReadingsPromise = null;
@@ -175,6 +181,87 @@ async function ensureStationPhrases() {
   return stationPromise;
 }
 
+async function ensureCorporateNamePhrases() {
+  if (Object.keys(corporateNamePhrases).length) return corporateNamePhrases;
+  if (corporatePromise) return corporatePromise;
+  corporatePromise = (async () => {
+    try {
+      const res = await fetch("./corporate-name-phrases.json", {
+        cache: "force-cache"
+      });
+      if (!res.ok) {
+        const fallback = await fetch(
+          "https://raw.githubusercontent.com/Blackphi6/yt-furigana-extension/main/data/generated/corporate-name-phrases-site.json"
+        );
+        if (!fallback.ok) return corporateNamePhrases;
+        const data = await fallback.json();
+        if (data && typeof data === "object") corporateNamePhrases = data;
+        return corporateNamePhrases;
+      }
+      const data = await res.json();
+      if (data && typeof data === "object") corporateNamePhrases = data;
+    } catch {
+      /* ignore */
+    }
+    return corporateNamePhrases;
+  })();
+  return corporatePromise;
+}
+
+async function ensureWikidataKanaPhrases() {
+  if (Object.keys(wikidataKanaPhrases).length) return wikidataKanaPhrases;
+  if (wikidataPromise) return wikidataPromise;
+  wikidataPromise = (async () => {
+    try {
+      const res = await fetch("./wikidata-kana-phrases.json", {
+        cache: "force-cache"
+      });
+      if (!res.ok) {
+        const fallback = await fetch(
+          "https://raw.githubusercontent.com/Blackphi6/yt-furigana-extension/main/data/generated/wikidata-kana-phrases-site.json"
+        );
+        if (!fallback.ok) return wikidataKanaPhrases;
+        const data = await fallback.json();
+        if (data && typeof data === "object") wikidataKanaPhrases = data;
+        return wikidataKanaPhrases;
+      }
+      const data = await res.json();
+      if (data && typeof data === "object") wikidataKanaPhrases = data;
+    } catch {
+      /* ignore */
+    }
+    return wikidataKanaPhrases;
+  })();
+  return wikidataPromise;
+}
+
+async function ensureSudachiFullPhrases() {
+  if (Object.keys(sudachiFullPhrases).length) return sudachiFullPhrases;
+  if (sudachiFullPromise) return sudachiFullPromise;
+  sudachiFullPromise = (async () => {
+    try {
+      const res = await fetch("./sudachi-full-phrases.json", {
+        cache: "force-cache"
+      });
+      if (!res.ok) {
+        const fallback = await fetch(
+          "https://raw.githubusercontent.com/Blackphi6/yt-furigana-extension/main/data/generated/sudachi-full-phrases-site.json"
+        );
+        if (!fallback.ok) return sudachiFullPhrases;
+        const data = await fallback.json();
+        if (data && typeof data === "object") sudachiFullPhrases = data;
+        return sudachiFullPhrases;
+      }
+      const data = await res.json();
+      if (data && typeof data === "object") sudachiFullPhrases = data;
+    } catch {
+      /* ignore */
+    }
+    return sudachiFullPhrases;
+  })();
+  return sudachiFullPromise;
+}
+
 async function ensureUnidicPhrases() {
   if (Object.keys(unidicPhrases).length) return unidicPhrases;
   if (unidicPromise) return unidicPromise;
@@ -282,6 +369,18 @@ function overlayPlaceNameTokens(text, tokens) {
 
 function overlayStationTokens(text, tokens) {
   return overlayPhraseTokens(text, tokens, stationPhrases, "station", 16);
+}
+
+function overlayCorporateNameTokens(text, tokens) {
+  return overlayPhraseTokens(text, tokens, corporateNamePhrases, "corporate", 24);
+}
+
+function overlayWikidataKanaTokens(text, tokens) {
+  return overlayPhraseTokens(text, tokens, wikidataKanaPhrases, "wikidata", 16);
+}
+
+function overlaySudachiFullTokens(text, tokens) {
+  return overlayPhraseTokens(text, tokens, sudachiFullPhrases, "sudachi_full", 16);
 }
 
 function overlayUnidicTokens(text, tokens) {
@@ -850,8 +949,11 @@ function renderResult(text, data) {
   // API は注釈マーカー除去後の span を返す。元テキストに重ねるとルビが右へズレる。
   const displayText = stripAnnotationMarkers(text);
   tokens = overlayUnidicTokens(displayText, tokens);
+  tokens = overlayWikidataKanaTokens(displayText, tokens);
+  tokens = overlaySudachiFullTokens(displayText, tokens);
   tokens = overlayPlaceNameTokens(displayText, tokens);
   tokens = overlayStationTokens(displayText, tokens);
+  tokens = overlayCorporateNameTokens(displayText, tokens);
   tokens = overlayPersonalNameTokens(displayText, tokens);
   // 公開 API が未デプロイでも数字を編集できるようクライアント側で載せる
   tokens = overlayNumberTokens(displayText, tokens);
@@ -1208,6 +1310,9 @@ async function runAnalyze(options = {}) {
     ensurePersonalNamePhrases(),
     ensurePlaceNamePhrases(),
     ensureStationPhrases(),
+    ensureCorporateNamePhrases(),
+    ensureWikidataKanaPhrases(),
+    ensureSudachiFullPhrases(),
     ensureUnidicPhrases(),
     ensureKanjiReadings()
   ]);
@@ -1476,6 +1581,9 @@ loadPinsFromStorage();
 void ensurePersonalNamePhrases();
 void ensurePlaceNamePhrases();
 void ensureStationPhrases();
+void ensureCorporateNamePhrases();
+void ensureWikidataKanaPhrases();
+void ensureSudachiFullPhrases();
 void ensureUnidicPhrases();
 void ensureKanjiReadings();
 

@@ -104,6 +104,49 @@ async function copyStationPhrases() {
   }
 }
 
+async function copyPhraseGz(name, buildHint) {
+  const source = path.join(root, "data", "generated", `${name}.json.gz`);
+  const target = path.join(root, "dict", `${name}.json.gz`);
+  const siteJsonSrc = path.join(root, "data", "generated", `${name}-site.json`);
+  const siteJsonDst = path.join(root, "site", `${name}.json`);
+  if (!existsSync(source)) {
+    console.warn(`${name} missing. Run: ${buildHint}`);
+    return;
+  }
+  await mkdir(path.dirname(target), { recursive: true });
+  await cp(source, target, { force: true });
+  if (existsSync(siteJsonSrc)) {
+    await cp(siteJsonSrc, siteJsonDst, { force: true });
+  }
+  const sizeKb = statSync(target).size / 1024;
+  console.log(`${name} ready (${sizeKb.toFixed(0)} KB gz)`);
+  if (existsSync(siteJsonDst)) {
+    const siteKb = statSync(siteJsonDst).size / 1024;
+    console.log(`${name} site subset ready (${siteKb.toFixed(0)} KB)`);
+  }
+}
+
+async function copyCorporateNamePhrases() {
+  await copyPhraseGz(
+    "corporate-name-phrases",
+    "node scripts/build-corporate-name-phrases.mjs"
+  );
+}
+
+async function copyWikidataKanaPhrases() {
+  await copyPhraseGz(
+    "wikidata-kana-phrases",
+    "node scripts/build-wikidata-kana-phrases.mjs"
+  );
+}
+
+async function copySudachiFullPhrases() {
+  await copyPhraseGz(
+    "sudachi-full-phrases",
+    "node scripts/build-sudachi-full-phrases.mjs"
+  );
+}
+
 async function copyEnglishKatakana() {
   const source = path.join(root, "data", "generated", "english-katakana.json.gz");
   const target = path.join(root, "dict", "english-katakana.json.gz");
@@ -528,6 +571,9 @@ async function run() {
   await copyNeologdPhrases();
   await copyPlaceNamePhrases();
   await copyStationPhrases();
+  await copyCorporateNamePhrases();
+  await copyWikidataKanaPhrases();
+  await copySudachiFullPhrases();
   await copyPersonalNamePhrases();
   await copyUnidicPhrases();
   await copyEnglishKatakana();

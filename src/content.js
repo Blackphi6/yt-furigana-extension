@@ -77,6 +77,18 @@ import {
   getStationPhraseCount
 } from "./station-phrases.js";
 import {
+  loadCorporateNamePhrases,
+  getCorporateNamePhraseCount
+} from "./corporate-name-phrases.js";
+import {
+  loadWikidataKanaPhrases,
+  getWikidataKanaPhraseCount
+} from "./wikidata-kana-phrases.js";
+import {
+  loadSudachiFullPhrases,
+  getSudachiFullPhraseCount
+} from "./sudachi-full-phrases.js";
+import {
   loadPersonalNamePhrases,
   getPersonalNamePhraseCount,
   rebuildCombinedPhraseTrie
@@ -245,6 +257,48 @@ async function initTokenizer() {
         );
       });
 
+    const corporateReady = loadCorporateNamePhrases()
+      .then(() => {
+        rebuildCombinedPhraseTrie();
+        console.log(
+          `[YT Furigana] Corporate-name phrases ready (${getCorporateNamePhraseCount()})`
+        );
+      })
+      .catch((error) => {
+        console.warn(
+          "[YT Furigana] Corporate-name phrases skipped:",
+          error?.message || error
+        );
+      });
+
+    const wikidataReady = loadWikidataKanaPhrases()
+      .then(() => {
+        rebuildCombinedPhraseTrie();
+        console.log(
+          `[YT Furigana] Wikidata kana phrases ready (${getWikidataKanaPhraseCount()})`
+        );
+      })
+      .catch((error) => {
+        console.warn(
+          "[YT Furigana] Wikidata kana phrases skipped:",
+          error?.message || error
+        );
+      });
+
+    const sudachiFullReady = loadSudachiFullPhrases()
+      .then(() => {
+        rebuildCombinedPhraseTrie();
+        console.log(
+          `[YT Furigana] Sudachi Full phrases ready (${getSudachiFullPhraseCount()})`
+        );
+      })
+      .catch((error) => {
+        console.warn(
+          "[YT Furigana] Sudachi Full phrases skipped:",
+          error?.message || error
+        );
+      });
+
     const unidicReady = loadUnidicPhrases()
       .then(() => {
         rebuildCombinedPhraseTrie();
@@ -279,6 +333,7 @@ async function initTokenizer() {
         console.warn("[YT Furigana] Kanji readings skipped:", error?.message || error);
       });
 
+
     const englishReady = loadEnglishKatakanaDict()
       .then(() => {
         console.log(
@@ -296,6 +351,9 @@ async function initTokenizer() {
       neologdReady,
       placeNameReady,
       stationReady,
+      corporateReady,
+      wikidataReady,
+      sudachiFullReady,
       unidicReady,
       personalNameReady,
       kanjiReady,
@@ -1717,6 +1775,45 @@ async function bootstrap() {
     .catch((error) => {
       console.warn(
         "[YT Furigana] Station phrases skipped:",
+        error?.message || error
+      );
+    });
+  void loadCorporateNamePhrases()
+    .then(() => {
+      rebuildCombinedPhraseTrie();
+      console.log(
+        `[YT Furigana] Corporate-name phrases ready (${getCorporateNamePhraseCount()})`
+      );
+    })
+    .catch((error) => {
+      console.warn(
+        "[YT Furigana] Corporate-name phrases skipped:",
+        error?.message || error
+      );
+    });
+  void loadWikidataKanaPhrases()
+    .then(() => {
+      rebuildCombinedPhraseTrie();
+      console.log(
+        `[YT Furigana] Wikidata kana phrases ready (${getWikidataKanaPhraseCount()})`
+      );
+    })
+    .catch((error) => {
+      console.warn(
+        "[YT Furigana] Wikidata kana phrases skipped:",
+        error?.message || error
+      );
+    });
+  void loadSudachiFullPhrases()
+    .then(() => {
+      rebuildCombinedPhraseTrie();
+      console.log(
+        `[YT Furigana] Sudachi Full phrases ready (${getSudachiFullPhraseCount()})`
+      );
+    })
+    .catch((error) => {
+      console.warn(
+        "[YT Furigana] Sudachi Full phrases skipped:",
         error?.message || error
       );
     });

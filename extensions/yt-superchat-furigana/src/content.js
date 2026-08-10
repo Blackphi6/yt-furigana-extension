@@ -25,6 +25,9 @@ import { loadOccurrenceOverrideStore } from "../../../src/occurrence-overrides.j
 import { loadNeologdPhrases } from "../../../src/neologd-phrases.js";
 import { loadPlaceNamePhrases } from "../../../src/place-name-phrases.js";
 import { loadStationPhrases } from "../../../src/station-phrases.js";
+import { loadCorporateNamePhrases } from "../../../src/corporate-name-phrases.js";
+import { loadWikidataKanaPhrases } from "../../../src/wikidata-kana-phrases.js";
+import { loadSudachiFullPhrases } from "../../../src/sudachi-full-phrases.js";
 import {
   loadPersonalNamePhrases,
   rebuildCombinedPhraseTrie
@@ -153,13 +156,22 @@ async function reapplyUserReadings() {
 }
 
 /**
- * 人名・地名・駅・NEologd フレーズ（失敗しても本体は動く）
+ * 人名・地名・駅・法人・Wikidata・Sudachi Full固有・NEologd（失敗しても本体は動く）
  */
 async function loadPhraseDicts() {
   await Promise.all([
     loadNeologdPhrases().then(() => rebuildCombinedPhraseTrie()).catch(() => {}),
     loadPlaceNamePhrases().then(() => rebuildCombinedPhraseTrie()).catch(() => {}),
     loadStationPhrases().then(() => rebuildCombinedPhraseTrie()).catch(() => {}),
+    loadCorporateNamePhrases()
+      .then(() => rebuildCombinedPhraseTrie())
+      .catch(() => {}),
+    loadWikidataKanaPhrases()
+      .then(() => rebuildCombinedPhraseTrie())
+      .catch(() => {}),
+    loadSudachiFullPhrases()
+      .then(() => rebuildCombinedPhraseTrie())
+      .catch(() => {}),
     loadPersonalNamePhrases().catch(() => {})
   ]);
 }

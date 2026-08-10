@@ -117,6 +117,34 @@ v-1b2b. 駅フレーズ（NEologd 種子の「…駅」）
    調査: docs/PLACE-NAME-DATASETS.md
 
 
+v-1b2c. 法人名フレーズ（国税庁 法人番号公表サイト）
+
+   全件 CSV（Unicode）の商号＋フリガナ列から抽出。接尾辞剥がしあり。
+   ライセンス: 公共データ利用規約（第1.0版）／政府標準利用規約互換（商用可・出典必須）
+   https://www.houjin-bangou.nta.go.jp/download/zenken/
+   同梱物: data/generated/corporate-name-phrases.json.gz
+   調査: docs/CORPORATE-WIKIDATA-SUDACHI.md
+
+
+v-1b2d. Wikidata かな（P1814）
+
+   Wikidata「name in kana」＋日本語ラベル。
+   ライセンス: CC0-1.0
+   https://www.wikidata.org/wiki/Property:P1814
+   同梱物: data/generated/wikidata-kana-phrases.json.gz
+   調査: docs/CORPORATE-WIKIDATA-SUDACHI.md
+
+
+v-1b2e. Sudachi Full 固有名詞フレーズ
+
+   SudachiDict notcore_lex（Full 専用語彙）から固有名詞の表層→読みを抽出。
+   Full の system.dic 本体はサイズのため同梱しない（既存 system.dic を維持）。
+   ライセンス: Apache License, Version 2.0
+   https://github.com/WorksApplications/SudachiDict
+   同梱物: data/generated/sudachi-full-phrases.json.gz
+   調査: docs/CORPORATE-WIKIDATA-SUDACHI.md
+
+
 v-1b3. Unicode Unihan 単漢字読み — Unicode License Agreement
 
    https://www.unicode.org/Public/UCD/latest/ucd/Unihan.zip

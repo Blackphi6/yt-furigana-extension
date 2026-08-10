@@ -32,7 +32,12 @@ for (const phraseName of [
   "neologd-phrases.json.gz",
   "place-name-phrases.json.gz",
   "station-phrases.json.gz",
-  "personal-name-phrases.json.gz"
+  "personal-name-phrases.json.gz",
+  "corporate-name-phrases.json.gz",
+  "wikidata-kana-phrases.json.gz",
+  "sudachi-full-phrases.json.gz",
+  "unidic-phrases.json.gz",
+  "kanji-readings.json.gz"
 ]) {
   const src = path.join(dictSrc, phraseName);
   try {

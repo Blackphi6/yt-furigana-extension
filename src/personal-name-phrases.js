@@ -4,6 +4,9 @@ import { getNeologdPhrasesObject } from "./neologd-phrases.js";
 import { getPlaceNamePhrasesObject } from "./place-name-phrases.js";
 import { getStationPhrasesObject } from "./station-phrases.js";
 import { getUnidicPhrasesObject } from "./unidic-phrases.js";
+import { getWikidataKanaPhrasesObject } from "./wikidata-kana-phrases.js";
+import { getSudachiFullPhrasesObject } from "./sudachi-full-phrases.js";
+import { getCorporateNamePhrasesObject } from "./corporate-name-phrases.js";
 
 /** @type {Record<string, string>} */
 let personalNamePhrases = {};
@@ -26,17 +29,17 @@ export function getPersonalNamePhraseTrie() {
 }
 
 /**
- * NEologd + UniDic 漢語 + 地名 + 駅 + 人名。
- * 同表層は後勝ち（人名 > 駅 > 地名 > UniDic > NEologd）。
- * 長い表層は Trie の最長一致が勝つ。
- * 駅を地名の後にする理由: KEN_ALL の「十三」→じゅうさん を「じゅうそう」で上書き。
+ * NEologd + UniDic + Wikidata + Sudachi Full固有 + 地名 + 駅 + 法人 + 人名。
+ * 同表層は後勝ち。長い表層は Trie の最長一致が勝つ。
+ * 駅を地名の後: KEN_ALL「十三」じゅうさん → 駅「じゅうそう」。
+ * 法人を駅の後: 長い正式社名を優先。人名を最後: 短い姓を守る。
  */
 export function getCombinedPhraseTrie() {
   if (combinedTrie) return combinedTrie;
   return rebuildCombined();
 }
 
-/** NEologd / 地名 / 駅 / UniDic 再読込後など、キャッシュを捨てて作り直す */
+/** 各フレーズ辞書の再読込後など、キャッシュを捨てて作り直す */
 export function rebuildCombinedPhraseTrie() {
   return rebuildCombined();
 }
@@ -45,8 +48,11 @@ function rebuildCombined() {
   combinedTrie = buildPhraseTrie({
     ...getNeologdPhrasesObject(),
     ...getUnidicPhrasesObject(),
+    ...getWikidataKanaPhrasesObject(),
+    ...getSudachiFullPhrasesObject(),
     ...getPlaceNamePhrasesObject(),
     ...getStationPhrasesObject(),
+    ...getCorporateNamePhrasesObject(),
     ...personalNamePhrases
   });
   return combinedTrie;

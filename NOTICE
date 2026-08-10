@@ -107,6 +107,42 @@ Build: npm run dict:stations
 Survey: docs/PLACE-NAME-DATASETS.md
 
 -------------------------------------------------------------------------------
+Corporate-name phrases (NTA Corporate Number, public data terms)
+-------------------------------------------------------------------------------
+https://www.houjin-bangou.nta.go.jp/download/zenken/
+
+Bundled as surface → reading (official furigana; corporate affixes stripped):
+  data/generated/corporate-name-phrases.json.gz
+
+Attribution required (公共データ利用規約 / government standard terms).
+Build: npm run dict:corporate-names
+Survey: docs/CORPORATE-WIKIDATA-SUDACHI.md
+
+-------------------------------------------------------------------------------
+Wikidata kana (P1814, CC0-1.0)
+-------------------------------------------------------------------------------
+https://www.wikidata.org/wiki/Property:P1814
+
+Bundled as Japanese label → kana:
+  data/generated/wikidata-kana-phrases.json.gz
+
+Build: npm run dict:wikidata-kana
+Survey: docs/CORPORATE-WIKIDATA-SUDACHI.md
+
+-------------------------------------------------------------------------------
+Sudachi Full proper-noun phrases (Apache-2.0)
+-------------------------------------------------------------------------------
+https://github.com/WorksApplications/SudachiDict
+
+Extracted from notcore_lex.csv (Full-only lexicon). Full system.dic is NOT
+bundled (size). Packaged tokenizer dict remains the existing system.dic.
+
+  data/generated/sudachi-full-phrases.json.gz
+
+Build: npm run dict:sudachi-full
+Survey: docs/CORPORATE-WIKIDATA-SUDACHI.md
+
+-------------------------------------------------------------------------------
 joyokanji kyūjitai / variant kanji map (Apache License 2.0)
 -------------------------------------------------------------------------------
 https://github.com/new-village/joyo-kanji
