@@ -136,7 +136,7 @@ assert.equal(shouldPinGlobally("一日中だけ。", "一日"), true);
   assert.equal(out.find((tok) => tok.span[0] === 6)?.reading, "おとな");
 }
 
-// 金星だけ上書きされ、見上げ／挙げるが欠けたとき unset で埋まる
+// 金星だけ上書きされ、見上げ／挙げるが欠けたとき unset で埋まる（漢字1字ずつ）
 {
   const kinsei = "金星を見上げ、金星を挙げる。";
   const sparse = [
@@ -145,9 +145,10 @@ assert.equal(shouldPinGlobally("一日中だけ。", "一日"), true);
   ];
   const filled = fillUncoveredTokenGaps(kinsei, sparse, { kanjiOnly: true });
   const unset = filled.filter((t) => t.source === "unset");
-  assert.equal(unset.length, 2);
-  assert.equal(unset[0].surface, "見上げ");
-  assert.equal(unset[1].surface, "挙げる");
+  assert.equal(unset.length, 3);
+  assert.equal(unset[0].surface, "見");
+  assert.equal(unset[1].surface, "上");
+  assert.equal(unset[2].surface, "挙");
   assert.equal(unset[0].reading, "");
 }
 

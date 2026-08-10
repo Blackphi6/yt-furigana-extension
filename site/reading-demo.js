@@ -16,7 +16,12 @@ import {
   shouldPinGlobally,
   spanFromTokenRange,
   upsertOccurrenceOverride,
-} from "./demo-occurrence-overrides.js?v=20260807b";
+} from "./demo-occurrence-overrides.js?v=20260810a";
+import {
+  applyKanjiReadings,
+  getKanjiReadingCount,
+  installKanjiReadings,
+} from "./demo-kanji-readings.js?v=20260810a";
 
 const DEFAULT_API =
   (window.YT_FURIGANA_SITE && window.YT_FURIGANA_SITE.readingApiUrl) ||
@@ -56,6 +61,32 @@ let stationPhrases = {};
 let stationPromise = null;
 let unidicPhrases = {};
 let unidicPromise = null;
+let kanjiReadingsPromise = null;
+
+async function ensureKanjiReadings() {
+  if (getKanjiReadingCount()) return getKanjiReadingCount();
+  if (kanjiReadingsPromise) return kanjiReadingsPromise;
+  kanjiReadingsPromise = (async () => {
+    try {
+      const res = await fetch("./kanji-readings.json", { cache: "force-cache" });
+      if (!res.ok) {
+        const fallback = await fetch(
+          "https://raw.githubusercontent.com/Blackphi6/yt-furigana-extension/main/data/generated/kanji-readings.json"
+        );
+        if (!fallback.ok) return 0;
+        const data = await fallback.json();
+        if (data && typeof data === "object") installKanjiReadings(data);
+        return getKanjiReadingCount();
+      }
+      const data = await res.json();
+      if (data && typeof data === "object") installKanjiReadings(data);
+    } catch {
+      /* ignore */
+    }
+    return getKanjiReadingCount();
+  })();
+  return kanjiReadingsPromise;
+}
 
 async function ensurePersonalNamePhrases() {
   if (Object.keys(personalNamePhrases).length) return personalNamePhrases;
@@ -832,6 +863,8 @@ function renderResult(text, data) {
   );
   // API が漢字を落とす／上書きで隣が消えても、後から登録できる
   tokens = fillUncoveredTokenGaps(displayText, tokens, { kanjiOnly: true });
+  // 切れ端の単漢字に Unihan 既定（読み無し放置が最悪）
+  tokens = applyKanjiReadings(tokens);
   const strippedMarkers = displayText !== String(text ?? "");
   lastResult = { text: displayText, tokens };
   closeDemoPicker();
@@ -1175,7 +1208,8 @@ async function runAnalyze(options = {}) {
     ensurePersonalNamePhrases(),
     ensurePlaceNamePhrases(),
     ensureStationPhrases(),
-    ensureUnidicPhrases()
+    ensureUnidicPhrases(),
+    ensureKanjiReadings()
   ]);
   // ピッカーからの再実行では勝手に共有送信しない
   const share =
@@ -1443,6 +1477,7 @@ void ensurePersonalNamePhrases();
 void ensurePlaceNamePhrases();
 void ensureStationPhrases();
 void ensureUnidicPhrases();
+void ensureKanjiReadings();
 
 const params = new URLSearchParams(location.search);
 const qText = params.get("text");

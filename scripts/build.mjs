@@ -122,6 +122,8 @@ async function copyEnglishKatakana() {
 async function copyKanjiReadings() {
   const source = path.join(root, "data", "generated", "kanji-readings.json.gz");
   const target = path.join(root, "dict", "kanji-readings.json.gz");
+  const siteJsonSrc = path.join(root, "data", "generated", "kanji-readings.json");
+  const siteJsonDst = path.join(root, "site", "kanji-readings.json");
   if (!existsSync(source)) {
     console.warn(
       "Kanji readings missing. Run: node scripts/build-kanji-readings.mjs"
@@ -130,8 +132,15 @@ async function copyKanjiReadings() {
   }
   await mkdir(path.dirname(target), { recursive: true });
   await cp(source, target, { force: true });
+  if (existsSync(siteJsonSrc)) {
+    await cp(siteJsonSrc, siteJsonDst, { force: true });
+  }
   const sizeKb = statSync(target).size / 1024;
   console.log(`Kanji readings ready (${sizeKb.toFixed(0)} KB gz)`);
+  if (existsSync(siteJsonDst)) {
+    const siteKb = statSync(siteJsonDst).size / 1024;
+    console.log(`Kanji readings site ready (${siteKb.toFixed(0)} KB)`);
+  }
 }
 
 async function copyUnidicPhrases() {

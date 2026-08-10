@@ -55,7 +55,7 @@ import {
   });
 }
 
-// 金星だけ残して見上げ／挙げるが欠けても unset で埋まる
+// 金星だけ残して見上げ／挙げるが欠けても unset で埋まる（漢字は1字ずつ）
 {
   const text = "金星を見上げ、金星を挙げる。";
   const sparse = [
@@ -64,12 +64,14 @@ import {
   ];
   const filled = fillUncoveredTokenGaps(text, sparse);
   const unset = filled.filter((t) => t.source === "unset");
-  assert.equal(unset.length, 2);
-  assert.equal(unset[0].surface, "見上げ");
-  assert.deepEqual(unset[0].span, [3, 6]);
+  assert.equal(unset.length, 3);
+  assert.equal(unset[0].surface, "見");
+  assert.deepEqual(unset[0].span, [3, 4]);
   assert.equal(unset[0].reading, "");
-  assert.equal(unset[1].surface, "挙げる");
-  assert.deepEqual(unset[1].span, [10, 13]);
+  assert.equal(unset[1].surface, "上");
+  assert.deepEqual(unset[1].span, [4, 5]);
+  assert.equal(unset[2].surface, "挙");
+  assert.deepEqual(unset[2].span, [10, 11]);
 
   // span 欠落トークンは先頭上書きに巻き込まれない
   const withMissing = applyOccurrenceOverrides(

@@ -200,15 +200,16 @@ function cleanReading(raw) {
 }
 
 /**
- * 単漢字の既定読み: 短い訓 → 名詞っぽい訓 → 音 → その他訓。
- * 「鬱→しげる」より「うつ」を優先するため。
+ * 単漢字の既定読み: 音 → 短い訓 → 名詞っぽい訓 → その他訓。
+ * 切れ端フォールバックは「落選の落→らく」のように音が役立つことが多い。
+ * 「鬱→しげる」より「うつ」を優先するためにも音を先にする。
  */
 function pickDefaultReading(kun, on) {
+  if (on.length) return on[0];
   const shortKun = kun.filter((k) => k.length <= 2);
   if (shortKun.length) return shortKun[0];
   const nounish = kun.filter((k) => k.length <= 3 && !/[るすむう]$/.test(k));
   if (nounish.length) return nounish[0];
-  if (on.length) return on[0];
   return kun[0] || "";
 }
 

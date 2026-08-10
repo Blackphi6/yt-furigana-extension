@@ -83,10 +83,6 @@ function isKanjiChar(ch) {
   return /[\u3400-\u9fff\uF900-\uFAFF々〻]/.test(ch);
 }
 
-function isHiraganaChar(ch) {
-  return /[\u3041-\u3096]/.test(ch);
-}
-
 /**
  * @param {string} text
  * @param {object[]} tokens
@@ -184,19 +180,16 @@ export function fillUncoveredTokenGaps(text, tokens, options = {}) {
         k = m;
         continue;
       }
-      let m = k + 1;
-      while (m < j && isKanjiChar(t[m])) m += 1;
-      while (m < j && isHiraganaChar(t[m])) m += 1;
-      const surface = t.slice(k, m);
+      // 漢字は1字ずつ（切れ端でも単漢字フォールバック可能に）
       extras.push({
-        surface,
-        span: [k, m],
+        surface: t[k],
+        span: [k, k + 1],
         reading: "",
         confidence: 0,
         source: "unset",
         candidates: [],
       });
-      k = m;
+      k += 1;
     }
     i = j;
   }

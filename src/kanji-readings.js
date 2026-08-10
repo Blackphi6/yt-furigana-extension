@@ -101,10 +101,31 @@ function hasUsefulKanaReading(token) {
   return /[\u3040-\u309f]/.test(reading);
 }
 
+const KANJI_ONLY_RE = /^[\u3400-\u9fff\uF900-\uFAFF々〻]+$/;
+
 /**
- * 漢字1文字で読みが無いトークンに Unihan 既定読みを載せる。
+ * 漢字だけの表層から Unihan 既定読みを連結する。
+ * 複合が取れなくても「落→らく」相当を残す（読み無し放置が最悪）。
+ * @param {string} surface
+ */
+export function lookupKanjiSurfaceReading(surface) {
+  const s = String(surface || "");
+  if (!s || !KANJI_ONLY_RE.test(s)) return "";
+  if (s.length === 1) return lookupKanjiDefaultReading(s);
+  let out = "";
+  for (const ch of s) {
+    const r = lookupKanjiDefaultReading(ch);
+    if (!r) return "";
+    out += r;
+  }
+  return out;
+}
+
+/**
+ * 読みが無い漢字トークンに Unihan 既定読みを載せる。
  * 複合語・文脈ルールより後に掛けると上書きしてしまうので、
  * merge / english の直後・contextual の前に置く。
+ * ギャップ埋めのあとにもう一度掛け、切れ端の単漢字を残さない。
  * @param {Array<object>} tokens
  */
 export function applyKanjiReadings(tokens) {
@@ -113,11 +134,9 @@ export function applyKanjiReadings(tokens) {
 
   return tokens.map((token) => {
     const surface = token?.surface_form || token?.surface || "";
-    if (surface.length !== 1) return token;
-    if (!/[\u3400-\u9fff\uF900-\uFAFF]/.test(surface)) return token;
     if (hasUsefulKanaReading(token)) return token;
     if (token._numberUnit) return token;
-    const reading = lookupKanjiDefaultReading(surface);
+    const reading = lookupKanjiSurfaceReading(surface);
     if (!reading) return token;
     return {
       ...token,

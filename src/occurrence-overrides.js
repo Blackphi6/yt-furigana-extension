@@ -93,10 +93,6 @@ function isKanjiChar(ch) {
   return /[\u3400-\u9fff\uF900-\uFAFF々〻]/.test(ch);
 }
 
-function isHiraganaChar(ch) {
-  return /[\u3041-\u3096]/.test(ch);
-}
-
 /**
  * @param {string} text
  * @param {object[]} tokens  demo形 { surface, span, reading } または形態素形
@@ -146,7 +142,8 @@ export function applyOccurrenceOverrides(text, tokens, overrides) {
 }
 
 /**
- * トークンが覆っていない漢字（＋続く送り仮名）を unset トークンで埋める。
+ * トークンが覆っていない漢字を unset で埋める（漢字は1字ずつ）。
+ * まとめて「見上げ」等にすると Unihan フォールバックが効かず読み無しになる。
  * API が語を落とす／上書きで隣が消えたときも、後からクリック登録できる。
  * @param {string} text
  * @param {object[]} tokens
@@ -174,7 +171,7 @@ export function fillUncoveredTokenGaps(text, tokens) {
     }
     let j = i + 1;
     while (j < t.length && !covered[j]) j += 1;
-    // ギャップ内を「非漢字」と「漢字＋送り仮名」に分割
+    // ギャップ内: 非漢字まとめて / 漢字は1字ずつ（送り仮名は非漢字側）
     let k = i;
     while (k < j) {
       if (!isKanjiChar(t[k])) {
@@ -194,21 +191,18 @@ export function fillUncoveredTokenGaps(text, tokens) {
         k = m;
         continue;
       }
-      let m = k + 1;
-      while (m < j && isKanjiChar(t[m])) m += 1;
-      while (m < j && isHiraganaChar(t[m])) m += 1;
-      const surface = t.slice(k, m);
+      const surface = t[k];
       extras.push({
         surface,
         surface_form: surface,
-        span: [k, m],
+        span: [k, k + 1],
         reading: "",
         pronunciation: "",
         source: "unset",
         confidence: 0,
         candidates: [],
       });
-      k = m;
+      k += 1;
     }
     i = j;
   }

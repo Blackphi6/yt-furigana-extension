@@ -33,6 +33,20 @@ export function isUsefulLatinReading(reading) {
   return /[\u3040-\u309f\u30a0-\u30ff]/.test(String(reading || ""));
 }
 
+export {
+  isAlphabetLetterSpelling,
+  stripLeadingAlphabetReading,
+  stripTrailingAlphabetReading,
+  stripMixedSurfaceAlphabetReading
+} from "./latin-letter-reading.js";
+
+import {
+  isAlphabetLetterSpelling,
+  stripLeadingAlphabetReading,
+  stripTrailingAlphabetReading,
+  stripMixedSurfaceAlphabetReading
+} from "./latin-letter-reading.js";
+
 export function isRegisterableSurface(text) {
   if (hasKanji(text) || isLatinWord(text)) return true;
   if (parseNumberUnitSurface(text)) return true;
@@ -42,6 +56,18 @@ export function isRegisterableSurface(text) {
   if (parseDotSeparatedDigits(text)) return true;
   // 単位単独（Wh 等）
   return isKnownNumberUnit(String(text || "").normalize("NFKC").trim());
+}
+
+/** ひらがな・カタカナのみ（さん / ちゃん など）。単独登録はしないが範囲選択の端点にする */
+export function isKanaOnlySurface(text) {
+  const s = String(text || "").normalize("NFKC").trim();
+  if (!s) return false;
+  return /^[\u3040-\u309f\u30a0-\u30ffーゝゞヽヾ]+$/.test(s);
+}
+
+/** クリック登録 or ドラッグ範囲の端点として包む語か */
+export function isSelectableSurface(text) {
+  return isRegisterableSurface(text) || isKanaOnlySurface(text);
 }
 
 /**
@@ -114,6 +140,12 @@ function alignMiddleSegments(segments, reading) {
       continue;
     }
 
+    // 欧文・記号はルビ対象外（読みを消費しない）。CTP社 のズレ防止
+    if (segment.type === "other") {
+      result += escapeHtml(segment.text);
+      continue;
+    }
+
     const nextSegment = segments[index + 1];
     if (nextSegment?.type === "kana") {
       const nextKana = toHiragana(nextSegment.text);
@@ -154,7 +186,9 @@ export function buildRuby(surface, reading, options = {}) {
   if (isLatinWord(surface)) {
     // yeah / happiness など、形態素が英字読みを返すだけのときはルビ不要
     // かな読みがある欧文は和製英語と同様にカタカナ表示（You→ユー）
+    // CTP→シーティーピー のようなアルファベット逐語は略語ルビとして出さない
     if (!isUsefulLatinReading(reading || shown)) return safeSurface;
+    if (isAlphabetLetterSpelling(surface, reading || shown)) return safeSurface;
     const katakana = toKatakana(reading || shown);
     return `<ruby>${safeSurface}<rt>${escapeHtml(katakana)}</rt></ruby>`;
   }
@@ -219,21 +253,57 @@ export function buildRuby(surface, reading, options = {}) {
     return result + trailing.join("");
   }
 
-  if (middleSegments.length === 1 && middleSegments[0].type === "kanji") {
-    result += `<ruby>${escapeHtml(middleSegments[0].text)}<rt>${escapeHtml(middleReadingShown || middleReadingHira)}</rt></ruby>`;
-  } else if (
-    middleSegments.length > 0 &&
-    middleSegments.every((segment) => segment.type === "kanji" || segment.type === "other") &&
-    middleSegments.some((segment) => segment.type === "kanji") &&
-    !middleSegments.some((segment) => segment.type === "kana")
-  ) {
-    const joined = middleSegments.map((segment) => segment.text).join("");
-    result += `<ruby>${escapeHtml(joined)}<rt>${escapeHtml(middleReadingShown || middleReadingHira)}</rt></ruby>`;
-  } else {
-    // 送り仮名合わせはひらがな長でアライン。表示もひらがな（混在は稀）
-    result += alignMiddleSegments(middleSegments, middleReadingHira);
+  // 先頭・末尾の other（CTP / ※ / 括弧など）はルビの外へ出す。
+  // 結合すると rt が全体中央になり「CTP社」で「しゃ」が P の上に来る。
+  // あわせて CTP→シーティーピー のような逐語読みを漢字の rt から剥がす。
+  const core = [...middleSegments];
+  const leadingOtherRaw = [];
+  while (core.length && core[0].type === "other") {
+    leadingOtherRaw.push(core.shift().text);
+  }
+  const trailingOtherRaw = [];
+  while (core.length && core[core.length - 1].type === "other") {
+    trailingOtherRaw.unshift(core.pop().text);
   }
 
+  let coreReadingHira = middleReadingHira;
+  let coreReadingShown = middleReadingShown || middleReadingHira;
+  if (leadingOtherRaw.length) {
+    const joined = leadingOtherRaw.join("");
+    const nextHira = stripLeadingAlphabetReading(joined, coreReadingHira);
+    if (nextHira !== coreReadingHira) {
+      const consumed = coreReadingHira.length - nextHira.length;
+      coreReadingShown = coreReadingShown.slice(consumed);
+      coreReadingHira = nextHira;
+    }
+  }
+  if (trailingOtherRaw.length) {
+    const joined = trailingOtherRaw.join("");
+    const nextHira = stripTrailingAlphabetReading(joined, coreReadingHira);
+    if (nextHira !== coreReadingHira) {
+      coreReadingShown = coreReadingShown.slice(0, nextHira.length);
+      coreReadingHira = nextHira;
+    }
+  }
+
+  result += leadingOtherRaw.map((text) => escapeHtml(text)).join("");
+
+  if (core.length === 0) {
+    // other のみ
+  } else if (!coreReadingHira) {
+    // 逐語を剥がした結果読みが空 → 漢字も本文のみ
+    result += core.map((segment) => escapeHtml(segment.text)).join("");
+  } else if (core.length === 1 && core[0].type === "kanji") {
+    result += `<ruby>${escapeHtml(core[0].text)}<rt>${escapeHtml(coreReadingShown || coreReadingHira)}</rt></ruby>`;
+  } else if (core.every((segment) => segment.type === "kanji")) {
+    const joined = core.map((segment) => segment.text).join("");
+    result += `<ruby>${escapeHtml(joined)}<rt>${escapeHtml(coreReadingShown || coreReadingHira)}</rt></ruby>`;
+  } else {
+    // 送り仮名合わせはひらがな長でアライン。表示もひらがな（混在は稀）
+    result += alignMiddleSegments(core, coreReadingHira);
+  }
+
+  result += trailingOtherRaw.map((text) => escapeHtml(text)).join("");
   return result + trailing.join("");
 }
 
@@ -252,6 +322,7 @@ import {
 import { mergeTokensForRuby } from "./token-merge.js";
 import { getCombinedPhraseTrie } from "./personal-name-phrases.js";
 import { applyEnglishKatakanaReadings } from "./english-katakana-reading.js";
+import { applyKanjiReadings } from "./kanji-readings.js";
 import {
   extractInlineParenReadings,
   applyInlineParenReadings
@@ -283,25 +354,29 @@ function escapeAttr(value) {
 export function wrapFuriganaWord(surface, reading, rubyHtml, options = {}) {
   if (!surface) return rubyHtml || "";
   const preserveKatakana = options.preserveKatakana === true;
+  const kanaOnly = options.kanaOnly === true || isKanaOnlySurface(surface);
   const normalized = reading
     ? preserveKatakana
       ? displayReading(reading)
       : normalizeReading(reading)
     : "";
-  const unset = !normalized;
-  const tip = !unset && isNumberReadingTipSurface(surface);
+  const unset = !normalized && !kanaOnly;
+  const tip = !unset && !kanaOnly && isNumberReadingTipSurface(surface);
   const tipReading = tip
     ? preserveKatakana
       ? displayReading(normalized) || toKatakana(normalized)
       : normalized
     : "";
-  const title = unset
-    ? "クリックで読みを登録。ドラッグで複数語をまとめて指定"
-    : tip
-      ? tipReading
-      : "クリックで読み候補。ドラッグで複数語をまとめて指定";
+  const title = kanaOnly
+    ? "ドラッグで前後の語とまとめて読みを指定"
+    : unset
+      ? "クリックで読みを登録。ドラッグで複数語をまとめて指定"
+      : tip
+        ? tipReading
+        : "クリックで読み候補。ドラッグで複数語をまとめて指定";
   const className = [
     "yt-furigana-word",
+    kanaOnly ? "yt-furigana-word--kana" : "",
     unset ? "yt-furigana-word--unset" : "",
     tip ? "yt-furigana-word--tip" : ""
   ]
@@ -317,7 +392,12 @@ export function wrapFuriganaWord(surface, reading, rubyHtml, options = {}) {
   const tokenIndex = Number.isFinite(options.tokenIndex)
     ? ` data-token-index="${options.tokenIndex}"`
     : "";
-  return `<span class="${className}" data-surface="${escapeAttr(surface)}" data-reading="${escapeAttr(normalized)}"${spanStart}${spanEnd}${tokenIndex}${tipAttr} tabindex="0" role="button" title="${escapeAttr(title)}">${rubyHtml || escapeHtml(surface)}</span>`;
+  // かな単独はルビ不要（表層そのものが読み）
+  const inner =
+    kanaOnly && (!normalized || normalizeReading(normalized) === toHiragana(surface))
+      ? escapeHtml(surface)
+      : rubyHtml || escapeHtml(surface);
+  return `<span class="${className}" data-surface="${escapeAttr(surface)}" data-reading="${escapeAttr(kanaOnly ? "" : normalized)}"${spanStart}${spanEnd}${tokenIndex}${tipAttr} tabindex="0" role="button" title="${escapeAttr(title)}">${inner}</span>`;
 }
 
 /**
@@ -338,11 +418,13 @@ export function buildFuriganaHtml(text, tokenize) {
   const lookupText = normalizeKanjiForLookup(prepared);
   const useLookup = lookupText !== prepared;
 
-  const analyzed = applyEnglishKatakanaReadings(
-    mergeTokensForRuby(tokenize(useLookup ? lookupText : prepared), {
-      extraSurfaces: MANUAL_PHRASE_READINGS.keys(),
-      phraseTrie: getCombinedPhraseTrie()
-    })
+  const analyzed = applyKanjiReadings(
+    applyEnglishKatakanaReadings(
+      mergeTokensForRuby(tokenize(useLookup ? lookupText : prepared), {
+        extraSurfaces: MANUAL_PHRASE_READINGS.keys(),
+        phraseTrie: getCombinedPhraseTrie()
+      })
+    )
   );
   const contextual = applyContextualReadings(
     analyzed,
@@ -366,6 +448,8 @@ export function buildFuriganaHtml(text, tokenize) {
   }
   // 上書きで隣の漢字が消えた／解析漏れでも、クリック登録できる unset を残す
   tokens = fillUncoveredTokenGaps(spanBase, tokens);
+  // 切れ端の単漢字に Unihan 既定を載せる（読み無し放置が最悪）
+  tokens = applyKanjiReadings(tokens);
 
   let wrapIndex = 0;
   return tokens
@@ -384,20 +468,25 @@ export function buildFuriganaHtml(text, tokenize) {
         if (/[\u30a1-\u30f6]/.test(raw)) preserveKatakana = true;
       }
       if (isLatinWord(surface)) {
-        // 欧文: 英字読みは捨てる。かな読みはカタカナ表示（インフォメーション等と同型）
-        if (!isUsefulLatinReading(reading)) {
+        // 欧文: 英字読み・アルファベット逐語は捨てる。かな語読みはカタカナ表示
+        if (
+          !isUsefulLatinReading(reading) ||
+          isAlphabetLetterSpelling(surface, reading)
+        ) {
           reading = "";
         } else {
           reading = toKatakana(reading);
           preserveKatakana = true;
         }
+      } else if (hasKanji(surface) && /[A-Za-z]/.test(surface)) {
+        reading = stripMixedSurfaceAlphabetReading(surface, reading);
       }
       const ruby = buildRuby(surface, reading, { preserveKatakana });
-      if (!isRegisterableSurface(surface)) return ruby;
+      if (!isSelectableSurface(surface)) return ruby;
       const [spanStart, spanEnd] = Array.isArray(token.span)
         ? token.span
         : [NaN, NaN];
-      // クリック可能語だけの連番（ドラッグ選択の index と一致させる）
+      // クリック／ドラッグ可能な語だけの連番（範囲選択の index と一致）
       const tokenIndex = wrapIndex;
       wrapIndex += 1;
       return wrapFuriganaWord(surface, reading, ruby, {
@@ -405,6 +494,7 @@ export function buildFuriganaHtml(text, tokenize) {
         spanStart,
         spanEnd,
         tokenIndex,
+        kanaOnly: isKanaOnlySurface(surface) && !isRegisterableSurface(surface)
       });
     })
     .join("");
