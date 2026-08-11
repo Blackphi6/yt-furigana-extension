@@ -1,0 +1,312 @@
+{
+  "generatedAt": "2026-08-11T15:01:00.031Z",
+  "datasets": [
+    {
+      "id": "ja-tts-g2p-bench",
+      "license": "MIT",
+      "url": "https://github.com/filmapp/ja-tts-g2p-bench",
+      "article": "https://zenn.dev/tellernovel_inc/articles/ja-tts-g2p-benchmark",
+      "note": "Text-side target reading accuracy on the same 151 items (TTS audio scores are a different modality)."
+    },
+    {
+      "id": "jvs_nonpara_kana",
+      "license": "CC BY-SA 4.0 (eval cache only; not bundled)",
+      "url": "https://github.com/CyberAgentAILab/jvs_nonpara_kana",
+      "note": "Full-sentence kana CER vs manual annotations (Interspeech 2026)."
+    },
+    {
+      "id": "joyo-kanji-yomi-benchmark",
+      "license": "MIT",
+      "url": "https://huggingface.co/datasets/sbintuitions/joyo-kanji-yomi-benchmark",
+      "note": "Kanji-level reading match on Joyo polyphony sentences (text-side)."
+    },
+    {
+      "id": "o24s/japanese-g2p-benchmark",
+      "license": "code Apache-2.0 / data CC BY-SA 4.0",
+      "url": "https://github.com/o24s/japanese-g2p-benchmark",
+      "note": "Published KER baselines for OpenJTalk/Haqumei (reference)."
+    },
+    {
+      "id": "internal-seed-hard-easy",
+      "license": "project",
+      "url": "data/learning/"
+    }
+  ],
+  "publishedTtsLeaderboardRef": [
+    {
+      "engine": "gemini-3.1-flash-tts-preview",
+      "acc": 0.801
+    },
+    {
+      "engine": "gemini-2.5-pro-tts",
+      "acc": 0.775
+    },
+    {
+      "engine": "voicevox (OpenJTalk dict)",
+      "acc": 0.695
+    },
+    {
+      "engine": "openai gpt-4o-mini-tts",
+      "acc": 0.563
+    },
+    {
+      "engine": "qwen3-tts-flash",
+      "acc": 0.523
+    }
+  ],
+  "publishedFullSentenceKerRef": [
+    {
+      "engine": "haqumei (best KER-no_lvs)",
+      "ker": 0.0164,
+      "source": "o24s/japanese-g2p-benchmark results.tsv"
+    },
+    {
+      "engine": "pyopenjtalk-plus",
+      "ker": 0.0168,
+      "source": "o24s/japanese-g2p-benchmark results.tsv"
+    },
+    {
+      "engine": "pyopenjtalk",
+      "ker": 0.0502,
+      "source": "o24s/japanese-g2p-benchmark results.tsv"
+    }
+  ],
+  "internal": {},
+  "jaTtsG2p": [
+    {
+      "label": "sudachi-only",
+      "passed": 97,
+      "total": 151,
+      "rate": 0.6423841059602649,
+      "stimCer": 0.05037260340010022,
+      "byCat": {
+        "heteronym": {
+          "passed": 27,
+          "total": 42
+        },
+        "context_numeral": {
+          "passed": 16,
+          "total": 33
+        },
+        "drama_specific": {
+          "passed": 14,
+          "total": 19
+        },
+        "okurigana": {
+          "passed": 21,
+          "total": 33
+        },
+        "jukujikun": {
+          "passed": 5,
+          "total": 6
+        },
+        "verb_conjugation": {
+          "passed": 3,
+          "total": 6
+        },
+        "juubako_yuto": {
+          "passed": 6,
+          "total": 6
+        },
+        "onkun_domain": {
+          "passed": 5,
+          "total": 6
+        }
+      },
+      "wilson95": [
+        0.5632739984974242,
+        0.7144291510437842
+      ]
+    },
+    {
+      "label": "kuromoji-only",
+      "passed": 95,
+      "total": 151,
+      "rate": 0.6291390728476821,
+      "stimCer": 0.05993677660781785,
+      "byCat": {
+        "heteronym": {
+          "passed": 27,
+          "total": 42
+        },
+        "context_numeral": {
+          "passed": 13,
+          "total": 33
+        },
+        "drama_specific": {
+          "passed": 14,
+          "total": 19
+        },
+        "okurigana": {
+          "passed": 23,
+          "total": 33
+        },
+        "jukujikun": {
+          "passed": 3,
+          "total": 6
+        },
+        "verb_conjugation": {
+          "passed": 4,
+          "total": 6
+        },
+        "juubako_yuto": {
+          "passed": 6,
+          "total": 6
+        },
+        "onkun_domain": {
+          "passed": 5,
+          "total": 6
+        }
+      },
+      "wilson95": [
+        0.5497841088195113,
+        0.7020861896015848
+      ]
+    },
+    {
+      "label": "yt-furigana (Sudachi+phrases+context)",
+      "passed": 109,
+      "total": 151,
+      "rate": 0.7218543046357616,
+      "stimCer": 0.04152534597809662,
+      "byCat": {
+        "heteronym": {
+          "passed": 29,
+          "total": 42
+        },
+        "context_numeral": {
+          "passed": 22,
+          "total": 33
+        },
+        "drama_specific": {
+          "passed": 15,
+          "total": 19
+        },
+        "okurigana": {
+          "passed": 23,
+          "total": 33
+        },
+        "jukujikun": {
+          "passed": 6,
+          "total": 6
+        },
+        "verb_conjugation": {
+          "passed": 3,
+          "total": 6
+        },
+        "juubako_yuto": {
+          "passed": 6,
+          "total": 6
+        },
+        "onkun_domain": {
+          "passed": 5,
+          "total": 6
+        }
+      },
+      "wilson95": [
+        0.6455572029062706,
+        0.7871430533556125
+      ]
+    },
+    {
+      "label": "yt-furigana (Kuromoji+phrases+context)",
+      "passed": 108,
+      "total": 151,
+      "rate": 0.7152317880794702,
+      "stimCer": 0.04670094214894717,
+      "byCat": {
+        "heteronym": {
+          "passed": 29,
+          "total": 42
+        },
+        "context_numeral": {
+          "passed": 20,
+          "total": 33
+        },
+        "drama_specific": {
+          "passed": 14,
+          "total": 19
+        },
+        "okurigana": {
+          "passed": 26,
+          "total": 33
+        },
+        "jukujikun": {
+          "passed": 4,
+          "total": 6
+        },
+        "verb_conjugation": {
+          "passed": 4,
+          "total": 6
+        },
+        "juubako_yuto": {
+          "passed": 6,
+          "total": 6
+        },
+        "onkun_domain": {
+          "passed": 5,
+          "total": 6
+        }
+      },
+      "wilson95": [
+        0.6386060721615949,
+        0.7811777585402319
+      ]
+    }
+  ],
+  "jvsCer": [
+    {
+      "label": "yt-furigana Sudachi+phrases",
+      "cer": 0.08682092843871271,
+      "n": 500
+    },
+    {
+      "label": "sudachi-only",
+      "cer": 0.08627688140719972,
+      "n": 500
+    },
+    {
+      "label": "fugashi UniDic",
+      "cer": 0.1009843376025504,
+      "n": 500
+    }
+  ],
+  "joyoKanjiYomi": [
+    {
+      "label": "sudachi-only",
+      "passed": 12690,
+      "total": 13095,
+      "rate": 0.9690721649484536,
+      "wilson95": [
+        0.9659666267203543,
+        0.971902566231792
+      ]
+    },
+    {
+      "label": "yt-furigana (Sudachi+phrases+context)",
+      "passed": 12704,
+      "total": 13095,
+      "rate": 0.9701412752959144,
+      "wilson95": [
+        0.9670854412783965,
+        0.9729213452759199
+      ]
+    }
+  ],
+  "headline": {
+    "bestLabel": "yt-furigana (Sudachi+phrases+context)",
+    "accuracy": 0.7218543046357616,
+    "passed": 109,
+    "total": 151,
+    "wilson95": [
+      0.6455572029062706,
+      0.7871430533556125
+    ],
+    "joyoBest": {
+      "label": "yt-furigana (Sudachi+phrases+context)",
+      "accuracy": 0.9701412752959144,
+      "passed": 12704,
+      "total": 13095
+    }
+  }
+}

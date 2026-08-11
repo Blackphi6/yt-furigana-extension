@@ -31,7 +31,7 @@
 
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./reading-demo.css?v=20260807a" />
-    <link rel="stylesheet" href="./home.css?v=20260806a" />
+    <link rel="stylesheet" href="./home.css?v=20260812a" />
     <script src="./config.js"></script>
   </head>
   <body class="home-page demo-page">
@@ -87,16 +87,16 @@
 
       <section class="stats-strip fade-up" aria-label="公開ベンチ概要" id="stats-strip">
         <article>
+          <p class="stat-value" id="stat-g2p">—</p>
+          <p class="stat-label">異読みベンチ <span class="stat-tag">text</span></p>
+        </article>
+        <article>
+          <p class="stat-value" id="stat-joyo">—</p>
+          <p class="stat-label">常用漢字読み <span class="stat-tag">text</span></p>
+        </article>
+        <article>
           <p class="stat-value" id="stat-hard">—</p>
-          <p class="stat-label">同形異音ベンチ</p>
-        </article>
-        <article>
-          <p class="stat-value" id="stat-seed">—</p>
-          <p class="stat-label">seed ベンチ</p>
-        </article>
-        <article>
-          <p class="stat-value" id="stat-corpus">—</p>
-          <p class="stat-label">学習コーパス行数</p>
+          <p class="stat-label">内部・同形異音</p>
         </article>
       </section>
 
@@ -267,10 +267,47 @@
       </section>
 
       <section class="section" id="accuracy" aria-labelledby="accuracy-title">
-        <h2 id="accuracy-title">固定ベンチ（自前）</h2>
+        <h2 id="accuracy-title">公開ベンチ（読みの数値）</h2>
         <p class="sub">
-          リポジトリ内の seed / hard / easy セットです。外部サービスのスコア表ではありません。
-          日次の増減は学習ログで追えます。
+          外部の評価セットで、ふりがなエンジンの読み一致を自動採点しています。
+          TTS の「耳で聞いた順位」ではなく、<strong>テキスト側のルビ読み</strong>です。
+        </p>
+
+        <div class="bench-panel fade-up" aria-labelledby="g2p-chart-title">
+          <div class="bench-panel-head">
+            <h3 id="g2p-chart-title">ja-tts-g2p-bench · 対象漢字の読み一致</h3>
+            <p class="bench-meta" id="g2p-meta">151 問 · text-side</p>
+          </div>
+          <div class="bar-chart" id="g2p-bars" role="img" aria-label="異読みベンチの棒グラフ"></div>
+          <p class="hint bench-caveat">
+            薄い棒は公開 TTS 音声リーダーボードの参考値（同一問題・別モダリティ）。
+            出典:
+            <a href="https://zenn.dev/tellernovel_inc/articles/ja-tts-g2p-benchmark" rel="noopener">Zenn</a>
+            ·
+            <a href="https://github.com/filmapp/ja-tts-g2p-bench" rel="noopener">GitHub</a>
+          </p>
+        </div>
+
+        <div class="bench-side-grid fade-up">
+          <article class="bench-panel" aria-labelledby="joyo-chart-title">
+            <div class="bench-panel-head">
+              <h3 id="joyo-chart-title">常用漢字読み（Joyo）</h3>
+              <p class="bench-meta" id="joyo-meta">—</p>
+            </div>
+            <div class="bar-chart bar-chart--compact" id="joyo-bars" role="img" aria-label="常用漢字ベンチの棒グラフ"></div>
+          </article>
+          <article class="bench-panel" aria-labelledby="jvs-chart-title">
+            <div class="bench-panel-head">
+              <h3 id="jvs-chart-title">JVS 全文かな CER</h3>
+              <p class="bench-meta" id="jvs-meta">低いほど良い · n=500</p>
+            </div>
+            <div class="bar-chart bar-chart--compact bar-chart--cer" id="jvs-bars" role="img" aria-label="JVS CERの棒グラフ"></div>
+          </article>
+        </div>
+
+        <h3 class="bench-subhead" id="internal-bench-title">固定ベンチ（自前）</h3>
+        <p class="sub bench-subcopy">
+          リポジトリ内の seed / hard / easy。日次の増減は学習ログで追えます。
         </p>
         <div class="score-grid home-scores" id="accuracy-cards">
           <article class="score-card">
@@ -294,6 +331,8 @@
           <a href="./compare.html">読み分けの差</a>
           · 推移とサンプル:
           <a href="./learning-report.html">学習ログ</a>
+          · 手法メモ:
+          <a href="https://github.com/Blackphi6/yt-furigana-extension/blob/main/docs/G2P-BENCHMARKS.md">G2P-BENCHMARKS.md</a>
         </p>
       </section>
 
@@ -370,7 +409,7 @@ curl -s https://yt-furigana-readings.onrender.com/v1/readings \
         </p>
       </footer>
     </div>
-    <script src="./home-metrics.js?v=20260718d" type="module"></script>
+    <script src="./home-metrics.js?v=20260812a" type="module"></script>
     <script src="./reading-demo.js?v=20260807a" type="module"></script>
     <script type="module" src="./theme.js?v=20260806a"></script>
   </body>

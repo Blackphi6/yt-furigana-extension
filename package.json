@@ -32,6 +32,7 @@
     "learn:synth:dry": "node scripts/learning/llm-synth.mjs --dry-run",
     "learn:merge": "node scripts/learning/merge-synth-corpus.mjs",
     "learn:gate": "node scripts/learning/evaluate-three-benches.mjs",
+    "eval:g2p": "node scripts/eval/run-public-g2p-benches.mjs",
     "learn:autoloop": "node scripts/learning/run-autoloop.mjs",
     "learn:autoloop:smoke": "node scripts/learning/run-autoloop.mjs --phase=smoke",
     "learn:autoloop:synth": "node scripts/learning/run-autoloop.mjs --phase=synth --provider groq",
