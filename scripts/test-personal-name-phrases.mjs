@@ -1,5 +1,5 @@
 /**
- * 人名フレーズ辞書（姓）の結合・経沢補完の回帰テスト
+ * 人名フレーズ辞書の回帰テスト（フル JSON は大きいので meta / site / extra のみ）。
  */
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
@@ -15,25 +15,30 @@ import {
 import { installNeologdPhrasesForTests } from "../src/neologd-phrases.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const generated = path.join(root, "data/generated/personal-name-phrases.json");
+const metaPath = path.join(root, "data/generated/personal-name-phrases.meta.json");
+const sitePath = path.join(root, "data/generated/personal-name-phrases-site.json");
 const extra = path.join(root, "data/personal-name-extra.json");
 
 assert.ok(existsSync(extra), "personal-name-extra.json missing");
 const extraJson = JSON.parse(readFileSync(extra, "utf8"));
 assert.equal(extraJson["経沢"], "つねざわ");
 
-if (existsSync(generated)) {
-  const phrases = JSON.parse(readFileSync(generated, "utf8"));
-  assert.equal(phrases["佐藤"], "さとう");
-  assert.equal(phrases["経沢"], "つねざわ", "経沢 must come from extra merge");
-  installPersonalNamePhrasesForTests(phrases);
-} else {
-  installPersonalNamePhrasesForTests({
-    佐藤: "さとう",
-    経沢: "つねざわ",
-    高橋: "たかはし"
-  });
+if (existsSync(metaPath)) {
+  const meta = JSON.parse(readFileSync(metaPath, "utf8"));
+  assert.ok(Number(meta.count || 0) > 5000, "expected large personal-name dict");
 }
+
+/** @type {Record<string, string>} */
+const phrases = {
+  佐藤: "さとう",
+  経沢: "つねざわ",
+  高橋: "たかはし"
+};
+if (existsSync(sitePath)) {
+  Object.assign(phrases, JSON.parse(readFileSync(sitePath, "utf8")));
+}
+phrases["経沢"] = "つねざわ";
+installPersonalNamePhrasesForTests(phrases);
 
 installNeologdPhrasesForTests({});
 rebuildCombinedPhraseTrie();

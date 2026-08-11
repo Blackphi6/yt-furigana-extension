@@ -36,6 +36,8 @@ for (const phraseName of [
   "corporate-name-phrases.json.gz",
   "wikidata-kana-phrases.json.gz",
   "sudachi-full-phrases.json.gz",
+  "joyo-jukuji-phrases.json.gz",
+  "ja-furigana-phrases.json.gz",
   "unidic-phrases.json.gz",
   "kanji-readings.json.gz"
 ]) {

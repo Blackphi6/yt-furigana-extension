@@ -10,6 +10,8 @@
 |--------|------------|------|--------|
 | [Unicode Unihan](https://www.unicode.org/Public/UCD/latest/ucd/Unihan.zip) | Unicode License | `kanji-readings.json.gz` | 読み無しの**単漢字**フォールバック + 候補 |
 | [現代書き言葉 UniDic 3.1.1](https://clrd.ninjal.ac.jp/unidic/) | GPL/LGPL/BSD → **BSD** | `unidic-phrases.json.gz` | 漢字のみ名詞フレーズ（固有名詞除外） |
+| [常用漢字表付表](https://github.com/mimneko/kanji-data)（mimneko CC0） | CC0-1.0 | `joyo-jukuji-phrases.json.gz` | 熟字訓・当て字（明日→あす 等） |
+| [ja-furigana-dict](https://github.com/RyuuNeko1107/ja-furigana-dict) jukugo | MIT | `ja-furigana-phrases.json.gz` | コミュニティ熟語（works 除外） |
 
 ## 同梱しない
 

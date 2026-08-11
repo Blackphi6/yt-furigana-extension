@@ -10,6 +10,7 @@
  *   ※ ABR/Geolonia に無い表層のみギャップ埋め（既存読みは上書きしない）
  * - mecab-ipadic-NEologd 種子の 固有名詞/地域 … Apache-2.0（ギャップ埋め）
  * - 複合表層からの裸表層派生（村/跡/選鉱所 等を剥がす）
+ * - 沖縄辞書 o-dic（city/address/island/geo/mountain/park/school 等）… Public Domain（ギャップ埋め）
  * - data/place-name-extra.json（手置き。商用可ソースに無い観光表記など）
  *
  * 同梱しない: 電子国土基本図（地名情報）測量成果（複製・使用承認が絡みうる）
@@ -634,6 +635,57 @@ async function ingestExtra(phrases, sitePhrases, counts) {
   console.log(`place-name-extra +${added}`);
 }
 
+/**
+ * 沖縄辞書（Public Domain）— 地名系 .dic のみギャップ埋め。
+ * 形式: よみ[空白+]漢字…
+ */
+async function ingestOdic(phrases, sitePhrases, counts) {
+  const files = [
+    "city.dic",
+    "address.dic",
+    "island.dic",
+    "geo.dic",
+    "mountain.dic",
+    "park.dic",
+    "school.dic",
+    "tunnel.dic",
+    "bus.dic"
+  ];
+  const odicCache = path.join(cacheDir, "o-dic");
+  mkdirSync(odicCache, { recursive: true });
+  let added = 0;
+  for (const file of files) {
+    const dest = path.join(odicCache, file);
+    if (!(existsSync(dest) && statSync(dest).size > 50)) {
+      const url = `https://raw.githubusercontent.com/makotoga/o-dic/main/${file}`;
+      console.log(`Downloading o-dic ${file}…`);
+      const res = await fetch(url);
+      if (!res.ok) {
+        console.warn(`o-dic ${file} skip: ${res.status}`);
+        continue;
+      }
+      await writeFile(dest, Buffer.from(await res.arrayBuffer()));
+    }
+    const text = await readFile(dest, "utf8");
+    for (const line of text.split("\n")) {
+      const t = line.trim();
+      if (!t || t.startsWith("#")) continue;
+      const parts = t.split(/\s+/);
+      if (parts.length < 2) continue;
+      const reading = parts[0];
+      const surface = parts[1];
+      if (addPhraseIfMissing(phrases, surface, reading)) {
+        added += 1;
+        const sc = cleanSurface(surface);
+        const rd = cleanReading(reading);
+        if (sc && rd && sc.length <= 10) sitePhrases[sc] = rd;
+      }
+    }
+  }
+  counts.odic = added;
+  console.log(`o-dic gap-fill +${added}`);
+}
+
 async function writeJsonGz(fileJson, fileGz, obj) {
   const json = `${JSON.stringify(obj)}\n`;
   await writeFile(fileJson, json);
@@ -665,6 +717,8 @@ async function main() {
   await ingestKenAll(phrases, sitePhrases, counts);
   console.log("Ingest NEologd 地域 (gap-fill)…");
   await ingestNeologdChiiki(phrases, sitePhrases, counts);
+  console.log("Ingest 沖縄辞書 o-dic (gap-fill)…");
+  await ingestOdic(phrases, sitePhrases, counts);
   console.log("Derive bare surfaces from compounds…");
   deriveBareSurfaces(phrases, sitePhrases, counts);
   console.log("Ingest place-name-extra…");
@@ -708,6 +762,12 @@ async function main() {
         license: "Apache-2.0",
         url: "https://github.com/neologd/mecab-ipadic-neologd",
         note: "既存に無い地域表層のみ。*駅は station-phrases"
+      },
+      {
+        name: "沖縄辞書 o-dic（地名系）",
+        license: "Public Domain",
+        url: "https://github.com/makotoga/o-dic",
+        note: "city/address/island/geo 等。既存に無い表層のみ"
       },
       {
         name: "複合表層からの裸表層派生",

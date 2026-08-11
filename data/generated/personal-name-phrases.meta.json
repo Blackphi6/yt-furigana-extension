@@ -1,18 +1,46 @@
 {
-  "source": "shuheilocale/japanese-personal-name-dataset last_name_org.csv (+ data/personal-name-extra.json)",
-  "license": "MIT",
-  "upstreamUrl": "https://github.com/shuheilocale/japanese-personal-name-dataset",
-  "contentNotice": "Japanese surnames (kanji→hiragana) for furigana only. MIT. No affiliation with dataset author beyond license compliance.",
-  "count": 1925,
-  "upstreamLastNameCount": 1924,
+  "sources": [
+    {
+      "name": "工藤拓 personal_name.zip（Mozc 人名抽出）",
+      "license": "Mozc OSS 辞書由来（IPAdic/NAIST 条件付き・再配布可）",
+      "url": "http://chasen.org/~taku/software/misc/personal_name.zip",
+      "note": "NEologd COPYING でも利用。姓は全件、名は長さ2–4"
+    },
+    {
+      "name": "shuheilocale/japanese-personal-name-dataset last_name_org.csv",
+      "license": "MIT",
+      "url": "https://github.com/shuheilocale/japanese-personal-name-dataset",
+      "note": "頻度上位姓で読みを上書き"
+    },
+    {
+      "name": "沖縄辞書 name.dic",
+      "license": "Public Domain",
+      "url": "https://github.com/makotoga/o-dic",
+      "note": "既存に無い姓のみギャップ埋め"
+    },
+    {
+      "name": "data/personal-name-extra.json",
+      "license": "プロジェクト内手置き"
+    }
+  ],
+  "count": 56401,
+  "kudouSei": 18518,
+  "kudouMei": 38403,
+  "mitSurnames": 1924,
+  "odicGapFilled": 205,
   "extraCount": 1,
-  "bytesUncompressed": 43397,
-  "generatedAt": "2026-08-01T03:55:04.332Z",
+  "siteCount": 8000,
+  "bytesUncompressed": 1322595,
+  "generatedAt": "2026-08-11T05:32:46.352Z",
+  "contentNotice": "Japanese personal-name surface→reading for furigana. Attribution required. Not affiliated with data providers beyond license compliance.",
   "samples": {
     "佐藤": "さとう",
     "鈴木": "すずき",
     "高橋": "たかはし",
     "経沢": "つねざわ",
-    "田中": "たなか"
+    "田中": "たなか",
+    "東里": "ひがしざと",
+    "太郎": "たろう",
+    "花子": "はなこ"
   }
 }

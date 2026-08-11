@@ -65,6 +65,10 @@ let wikidataKanaPhrases = {};
 let wikidataPromise = null;
 let sudachiFullPhrases = {};
 let sudachiFullPromise = null;
+let joyoJukujiPhrases = {};
+let joyoPromise = null;
+let jaFuriganaPhrases = {};
+let jaFuriganaPromise = null;
 let unidicPhrases = {};
 let unidicPromise = null;
 let kanjiReadingsPromise = null;
@@ -262,6 +266,60 @@ async function ensureSudachiFullPhrases() {
   return sudachiFullPromise;
 }
 
+async function ensureJoyoJukujiPhrases() {
+  if (Object.keys(joyoJukujiPhrases).length) return joyoJukujiPhrases;
+  if (joyoPromise) return joyoPromise;
+  joyoPromise = (async () => {
+    try {
+      const res = await fetch("./joyo-jukuji-phrases.json", {
+        cache: "force-cache"
+      });
+      if (!res.ok) {
+        const fallback = await fetch(
+          "https://raw.githubusercontent.com/Blackphi6/yt-furigana-extension/main/data/generated/joyo-jukuji-phrases-site.json"
+        );
+        if (!fallback.ok) return joyoJukujiPhrases;
+        const data = await fallback.json();
+        if (data && typeof data === "object") joyoJukujiPhrases = data;
+        return joyoJukujiPhrases;
+      }
+      const data = await res.json();
+      if (data && typeof data === "object") joyoJukujiPhrases = data;
+    } catch {
+      /* ignore */
+    }
+    return joyoJukujiPhrases;
+  })();
+  return joyoPromise;
+}
+
+async function ensureJaFuriganaPhrases() {
+  if (Object.keys(jaFuriganaPhrases).length) return jaFuriganaPhrases;
+  if (jaFuriganaPromise) return jaFuriganaPromise;
+  jaFuriganaPromise = (async () => {
+    try {
+      const res = await fetch("./ja-furigana-phrases.json", {
+        cache: "force-cache"
+      });
+      if (!res.ok) {
+        const fallback = await fetch(
+          "https://raw.githubusercontent.com/Blackphi6/yt-furigana-extension/main/data/generated/ja-furigana-phrases-site.json"
+        );
+        if (!fallback.ok) return jaFuriganaPhrases;
+        const data = await fallback.json();
+        if (data && typeof data === "object") jaFuriganaPhrases = data;
+        return jaFuriganaPhrases;
+      }
+      const data = await res.json();
+      if (data && typeof data === "object") jaFuriganaPhrases = data;
+    } catch {
+      /* ignore */
+    }
+    return jaFuriganaPhrases;
+  })();
+  return jaFuriganaPromise;
+}
+
 async function ensureUnidicPhrases() {
   if (Object.keys(unidicPhrases).length) return unidicPhrases;
   if (unidicPromise) return unidicPromise;
@@ -381,6 +439,14 @@ function overlayWikidataKanaTokens(text, tokens) {
 
 function overlaySudachiFullTokens(text, tokens) {
   return overlayPhraseTokens(text, tokens, sudachiFullPhrases, "sudachi_full", 16);
+}
+
+function overlayJoyoJukujiTokens(text, tokens) {
+  return overlayPhraseTokens(text, tokens, joyoJukujiPhrases, "joyo_jukuji", 12);
+}
+
+function overlayJaFuriganaTokens(text, tokens) {
+  return overlayPhraseTokens(text, tokens, jaFuriganaPhrases, "ja_furigana", 16);
 }
 
 function overlayUnidicTokens(text, tokens) {
@@ -949,6 +1015,8 @@ function renderResult(text, data) {
   // API は注釈マーカー除去後の span を返す。元テキストに重ねるとルビが右へズレる。
   const displayText = stripAnnotationMarkers(text);
   tokens = overlayUnidicTokens(displayText, tokens);
+  tokens = overlayJoyoJukujiTokens(displayText, tokens);
+  tokens = overlayJaFuriganaTokens(displayText, tokens);
   tokens = overlayWikidataKanaTokens(displayText, tokens);
   tokens = overlaySudachiFullTokens(displayText, tokens);
   tokens = overlayPlaceNameTokens(displayText, tokens);
@@ -1313,6 +1381,8 @@ async function runAnalyze(options = {}) {
     ensureCorporateNamePhrases(),
     ensureWikidataKanaPhrases(),
     ensureSudachiFullPhrases(),
+    ensureJoyoJukujiPhrases(),
+    ensureJaFuriganaPhrases(),
     ensureUnidicPhrases(),
     ensureKanjiReadings()
   ]);
@@ -1584,6 +1654,8 @@ void ensureStationPhrases();
 void ensureCorporateNamePhrases();
 void ensureWikidataKanaPhrases();
 void ensureSudachiFullPhrases();
+void ensureJoyoJukujiPhrases();
+void ensureJaFuriganaPhrases();
 void ensureUnidicPhrases();
 void ensureKanjiReadings();
 

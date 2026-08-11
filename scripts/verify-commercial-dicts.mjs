@@ -32,6 +32,8 @@ const REQUIRED = [
   "dict/corporate-name-phrases.json.gz",
   "dict/wikidata-kana-phrases.json.gz",
   "dict/sudachi-full-phrases.json.gz",
+  "dict/joyo-jukuji-phrases.json.gz",
+  "dict/ja-furigana-phrases.json.gz",
   "dict/unidic-phrases.json.gz",
   "dict/kanji-readings.json.gz",
   "dict/english-katakana.json.gz"

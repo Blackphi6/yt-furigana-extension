@@ -89,6 +89,14 @@ import {
   getSudachiFullPhraseCount
 } from "./sudachi-full-phrases.js";
 import {
+  loadJoyoJukujiPhrases,
+  getJoyoJukujiPhraseCount
+} from "./joyo-jukuji-phrases.js";
+import {
+  loadJaFuriganaPhrases,
+  getJaFuriganaPhraseCount
+} from "./ja-furigana-phrases.js";
+import {
   loadPersonalNamePhrases,
   getPersonalNamePhraseCount,
   rebuildCombinedPhraseTrie
@@ -299,6 +307,34 @@ async function initTokenizer() {
         );
       });
 
+    const joyoReady = loadJoyoJukujiPhrases()
+      .then(() => {
+        rebuildCombinedPhraseTrie();
+        console.log(
+          `[YT Furigana] Joyo jukuji phrases ready (${getJoyoJukujiPhraseCount()})`
+        );
+      })
+      .catch((error) => {
+        console.warn(
+          "[YT Furigana] Joyo jukuji phrases skipped:",
+          error?.message || error
+        );
+      });
+
+    const jaFuriganaReady = loadJaFuriganaPhrases()
+      .then(() => {
+        rebuildCombinedPhraseTrie();
+        console.log(
+          `[YT Furigana] ja-furigana phrases ready (${getJaFuriganaPhraseCount()})`
+        );
+      })
+      .catch((error) => {
+        console.warn(
+          "[YT Furigana] ja-furigana phrases skipped:",
+          error?.message || error
+        );
+      });
+
     const unidicReady = loadUnidicPhrases()
       .then(() => {
         rebuildCombinedPhraseTrie();
@@ -354,6 +390,8 @@ async function initTokenizer() {
       corporateReady,
       wikidataReady,
       sudachiFullReady,
+      joyoReady,
+      jaFuriganaReady,
       unidicReady,
       personalNameReady,
       kanjiReady,
@@ -1814,6 +1852,32 @@ async function bootstrap() {
     .catch((error) => {
       console.warn(
         "[YT Furigana] Sudachi Full phrases skipped:",
+        error?.message || error
+      );
+    });
+  void loadJoyoJukujiPhrases()
+    .then(() => {
+      rebuildCombinedPhraseTrie();
+      console.log(
+        `[YT Furigana] Joyo jukuji phrases ready (${getJoyoJukujiPhraseCount()})`
+      );
+    })
+    .catch((error) => {
+      console.warn(
+        "[YT Furigana] Joyo jukuji phrases skipped:",
+        error?.message || error
+      );
+    });
+  void loadJaFuriganaPhrases()
+    .then(() => {
+      rebuildCombinedPhraseTrie();
+      console.log(
+        `[YT Furigana] ja-furigana phrases ready (${getJaFuriganaPhraseCount()})`
+      );
+    })
+    .catch((error) => {
+      console.warn(
+        "[YT Furigana] ja-furigana phrases skipped:",
         error?.message || error
       );
     });

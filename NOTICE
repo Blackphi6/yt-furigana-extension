@@ -55,18 +55,22 @@ Upstream COPYING notes additional language-resource attributions
 Full license text: third_party/Apache-2.0.txt
 
 -------------------------------------------------------------------------------
-japanese-personal-name-dataset surnames (MIT)
+Personal-name phrases (Kudou Mozc / MIT surnames / Okinawa o-dic)
 -------------------------------------------------------------------------------
-Copyright (c) 2022 shuheilocale
-https://github.com/shuheilocale/japanese-personal-name-dataset
-
-Bundled as a surname phrase list (kanji → hiragana), not the full Python package:
+Bundled as surface → reading:
   data/generated/personal-name-phrases.json.gz
 
-Rare surnames used in demos may also appear in data/personal-name-extra.json
-(project-maintained supplements; not from upstream).
+Sources:
+- Taku Kudo personal_name.zip (Mozc named-entity extract)
+  http://chasen.org/~taku/software/misc/personal_name.zip
+- Copyright (c) 2022 shuheilocale — japanese-personal-name-dataset (MIT)
+  https://github.com/shuheilocale/japanese-personal-name-dataset
+- Okinawa dictionary name.dic — Public Domain
+  https://github.com/makotoga/o-dic
+- data/personal-name-extra.json (project-maintained supplements)
 
-Full license text: third_party/MIT-japanese-personal-name-dataset.txt
+Build: npm run dict:personal-names
+Full MIT surname license text: third_party/MIT-japanese-personal-name-dataset.txt
 
 -------------------------------------------------------------------------------
 Place-name phrases (Geolonia / ABR / 地名集日本 / GeoNLP / KEN_ALL / NEologd 地域)
@@ -86,6 +90,8 @@ Sources (attribution required):
 - 日本郵便 郵便番号データ（KEN_ALL）— 郵便番号データ利用許諾（商用可）
   https://www.post.japanpost.jp/zipcode/dl/utf-zip.html
 - mecab-ipadic-NEologd（固有名詞/地域ギャップ埋め）— Apache-2.0
+- 沖縄辞書 o-dic（地名系ギャップ埋め）— Public Domain
+  https://github.com/makotoga/o-dic
 - 複合表層からの裸表層派生、および data/place-name-extra.json
 
 Not bundled: 電子国土基本図（地名情報）測量成果; GeoNLP/ISJ without kana;
@@ -141,6 +147,27 @@ bundled (size). Packaged tokenizer dict remains the existing system.dic.
 
 Build: npm run dict:sudachi-full
 Survey: docs/CORPORATE-WIKIDATA-SUDACHI.md
+
+-------------------------------------------------------------------------------
+Joyo kanji appendix jukuji (CC0-1.0)
+-------------------------------------------------------------------------------
+https://github.com/mimneko/kanji-data (常用漢字表付表.json)
+Official: 文化庁 常用漢字表付表
+
+  data/generated/joyo-jukuji-phrases.json.gz
+
+Build: npm run dict:joyo-jukuji
+
+-------------------------------------------------------------------------------
+ja-furigana-dict jukugo phrases (MIT)
+-------------------------------------------------------------------------------
+https://github.com/RyuuNeko1107/ja-furigana-dict
+
+core/jukugo only (works / surname-given TOML excluded).
+
+  data/generated/ja-furigana-phrases.json.gz
+
+Build: npm run dict:ja-furigana
 
 -------------------------------------------------------------------------------
 joyokanji kyūjitai / variant kanji map (Apache License 2.0)

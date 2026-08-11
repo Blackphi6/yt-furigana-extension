@@ -72,19 +72,24 @@ v. 本ソフトウェアは、mecab-ipadic-NEologd（Toshinori Sato / @overlast�
    圧縮フレーズ一覧（data/generated/neologd-phrases.json.gz）である。
 
 
-v-1b. japanese-personal-name-dataset（姓）— MIT
+v-1b. 人名フレーズ（工藤 Mozc 人名 / MIT 姓 / 沖縄辞書）
 
-   Copyright (c) 2022 shuheilocale
-   https://github.com/shuheilocale/japanese-personal-name-dataset
+   - 工藤拓 personal_name.zip（Mozc 人名抽出）
+     http://chasen.org/~taku/software/misc/personal_name.zip
+     （NEologd COPYING でも利用。姓全件・名は長さ 2–4）
+   - japanese-personal-name-dataset 姓 — MIT
+     Copyright (c) 2022 shuheilocale
+     https://github.com/shuheilocale/japanese-personal-name-dataset
+     （頻度上位姓で読みを上書き）
+   - 沖縄辞書 name.dic — Public Domain
+     https://github.com/makotoga/o-dic
+   - data/personal-name-extra.json（手置き）
 
-   日本人の姓（漢字→ひらがな）を読み付け用フレーズとして同梱する。
-   上流 last_name_org.csv は推定人数上位約 1999 姓。レア姓は
-   data/personal-name-extra.json で補完する場合がある（プロジェクト側）。
    同梱物: data/generated/personal-name-phrases.json.gz
-   ライセンス全文: third_party/MIT-japanese-personal-name-dataset.txt
+   ライセンス全文（MIT 姓）: third_party/MIT-japanese-personal-name-dataset.txt
 
 
-v-1b2. 地名フレーズ（Geolonia / ABR / 地名集日本 / GeoNLP / KEN_ALL）
+v-1b2. 地名フレーズ（Geolonia / ABR / 地名集日本 / GeoNLP / KEN_ALL / 沖縄辞書）
 
    - Geolonia japanese-addresses — CC BY 4.0
      https://github.com/geolonia/japanese-addresses
@@ -99,6 +104,8 @@ v-1b2. 地名フレーズ（Geolonia / ABR / 地名集日本 / GeoNLP / KEN_ALL�
      https://www.post.japanpost.jp/zipcode/dl/utf-zip.html
      （既存に無い町域のみギャップ埋め。ビル名・○階等は除外）
    - mecab-ipadic-NEologd 固有名詞/地域 — Apache-2.0（ギャップ埋め）
+   - 沖縄辞書 o-dic（地名系）— Public Domain（ギャップ埋め）
+     https://github.com/makotoga/o-dic
    - 複合表層からの裸表層派生、および data/place-name-extra.json
 
    同梱物: data/generated/place-name-phrases.json.gz
@@ -143,6 +150,21 @@ v-1b2e. Sudachi Full 固有名詞フレーズ
    https://github.com/WorksApplications/SudachiDict
    同梱物: data/generated/sudachi-full-phrases.json.gz
    調査: docs/CORPORATE-WIKIDATA-SUDACHI.md
+
+
+v-1b2f. 常用漢字表付表（熟字訓・当て字）— CC0-1.0
+
+   mimneko/kanji-data の機械可読化（文化庁 常用漢字表付表）。
+   https://github.com/mimneko/kanji-data
+   公式: https://www.bunka.go.jp/kokugo_nihongo/sisaku/joho/joho/kijun/naikaku/kanji/
+   同梱物: data/generated/joyo-jukuji-phrases.json.gz
+
+
+v-1b2g. ja-furigana-dict 熟語 — MIT
+
+   https://github.com/RyuuNeko1107/ja-furigana-dict
+   core/jukugo のみ（works / 姓・名 TOML は除外）。
+   同梱物: data/generated/ja-furigana-phrases.json.gz
 
 
 v-1b3. Unicode Unihan 単漢字読み — Unicode License Agreement

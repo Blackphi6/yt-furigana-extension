@@ -22,11 +22,14 @@
 | [kuromoji.js](https://github.com/takuyaa/kuromoji.js) | Apache-2.0 | 形態素解析（既定） | [NOTICE](../NOTICE) / [Apache-2.0](../third_party/Apache-2.0.txt) |
 | mecab-ipadic（kuromoji 経由） | NAIST / ICOT 条件付き | 日本語辞書データ | [NOTICE-kuromoji.md](../third_party/NOTICE-kuromoji.md) |
 | [mecab-ipadic-NEologd](https://github.com/neologd/mecab-ipadic-neologd) | Apache-2.0 | 固有名詞フレーズ（抽出・圧縮同梱） | [NOTICE](../NOTICE) / 上流 COPYING |
-| Geolonia / ABR / 地名集日本 / GeoNLP / KEN_ALL / NEologd 地域 | CC BY 4.0 / PDL1.0 / 郵便番号データ利用許諾 / Apache-2.0 | 地名フレーズ（抽出・裸派生・extra） | [NOTICE](../NOTICE) / [PLACE-NAME-DATASETS](PLACE-NAME-DATASETS.md) |
+| Geolonia / ABR / 地名集日本 / GeoNLP / KEN_ALL / NEologd 地域 / 沖縄辞書 o-dic | CC BY 4.0 / PDL1.0 / 郵便番号データ利用許諾 / Apache-2.0 / PD | 地名フレーズ | [NOTICE](../NOTICE) / [PLACE-NAME-DATASETS](PLACE-NAME-DATASETS.md) |
 | NEologd `*駅`（駅フレーズ） | Apache-2.0 | 駅名・駅なし表層（抽出・圧縮同梱） | [NOTICE](../NOTICE) / [PLACE-NAME-DATASETS](PLACE-NAME-DATASETS.md) |
 | 国税庁 法人番号（商号＋フリガナ） | 公共データ利用規約 | 法人名フレーズ | [NOTICE](../NOTICE) / [CORPORATE-WIKIDATA-SUDACHI](CORPORATE-WIKIDATA-SUDACHI.md) |
 | Wikidata P1814 | CC0-1.0 | エンティティかな | [NOTICE](../NOTICE) / [CORPORATE-WIKIDATA-SUDACHI](CORPORATE-WIKIDATA-SUDACHI.md) |
 | SudachiDict notcore_lex | Apache-2.0 | Full 固有名詞フレーズ（dic 本体は非同梱） | [NOTICE](../NOTICE) / [CORPORATE-WIKIDATA-SUDACHI](CORPORATE-WIKIDATA-SUDACHI.md) |
+| 工藤 Mozc 人名 / MIT 姓 / 沖縄辞書 name.dic | 再配布可 / MIT / PD | 人名フレーズ | [NOTICE](../NOTICE) / [PROPER-NOUN-READINGS](PROPER-NOUN-READINGS.md) |
+| 常用漢字表付表（mimneko/kanji-data） | CC0-1.0 | 熟字訓フレーズ | [NOTICE](../NOTICE) / [KANJI-READING-DATASETS](KANJI-READING-DATASETS.md) |
+| ja-furigana-dict jukugo | MIT | 熟語フレーズ | [NOTICE](../NOTICE) |
 | [sudachi-wasm333](https://github.com/Benjas333/sudachi-wasm333) | Apache-2.0 | Sudachi 解析 | [NOTICE](../NOTICE) |
 | SudachiDict | Apache-2.0（上流） | Sudachi 辞書 | 上流プロジェクトの NOTICE を参照 |
 | [BudouX](https://github.com/google/budoux) | Apache-2.0 | 字幕の自然な折り返し（句境界） | [NOTICE](../NOTICE) |

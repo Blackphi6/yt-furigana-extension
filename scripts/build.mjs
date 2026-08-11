@@ -39,7 +39,12 @@ async function copyNeologdPhrases() {
 async function copyPersonalNamePhrases() {
   const source = path.join(root, "data", "generated", "personal-name-phrases.json.gz");
   const target = path.join(root, "dict", "personal-name-phrases.json.gz");
-  const siteJsonSrc = path.join(root, "data", "generated", "personal-name-phrases.json");
+  const siteJsonSrc = path.join(
+    root,
+    "data",
+    "generated",
+    "personal-name-phrases-site.json"
+  );
   const siteJsonDst = path.join(root, "site", "personal-name-phrases.json");
   if (!existsSync(source)) {
     console.warn(
@@ -144,6 +149,20 @@ async function copySudachiFullPhrases() {
   await copyPhraseGz(
     "sudachi-full-phrases",
     "node scripts/build-sudachi-full-phrases.mjs"
+  );
+}
+
+async function copyJoyoJukujiPhrases() {
+  await copyPhraseGz(
+    "joyo-jukuji-phrases",
+    "node scripts/build-joyo-jukuji-phrases.mjs"
+  );
+}
+
+async function copyJaFuriganaPhrases() {
+  await copyPhraseGz(
+    "ja-furigana-phrases",
+    "node scripts/build-ja-furigana-phrases.mjs"
   );
 }
 
@@ -574,6 +593,8 @@ async function run() {
   await copyCorporateNamePhrases();
   await copyWikidataKanaPhrases();
   await copySudachiFullPhrases();
+  await copyJoyoJukujiPhrases();
+  await copyJaFuriganaPhrases();
   await copyPersonalNamePhrases();
   await copyUnidicPhrases();
   await copyEnglishKatakana();

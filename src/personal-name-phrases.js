@@ -4,6 +4,8 @@ import { getNeologdPhrasesObject } from "./neologd-phrases.js";
 import { getPlaceNamePhrasesObject } from "./place-name-phrases.js";
 import { getStationPhrasesObject } from "./station-phrases.js";
 import { getUnidicPhrasesObject } from "./unidic-phrases.js";
+import { getJoyoJukujiPhrasesObject } from "./joyo-jukuji-phrases.js";
+import { getJaFuriganaPhrasesObject } from "./ja-furigana-phrases.js";
 import { getWikidataKanaPhrasesObject } from "./wikidata-kana-phrases.js";
 import { getSudachiFullPhrasesObject } from "./sudachi-full-phrases.js";
 import { getCorporateNamePhrasesObject } from "./corporate-name-phrases.js";
@@ -29,8 +31,10 @@ export function getPersonalNamePhraseTrie() {
 }
 
 /**
- * NEologd + UniDic + Wikidata + Sudachi Full固有 + 地名 + 駅 + 法人 + 人名。
+ * NEologd + UniDic + 常用漢字付表 + ja-furigana熟語 + Wikidata + Sudachi Full固有
+ * + 地名 + 駅 + 法人 + 人名。
  * 同表層は後勝ち。長い表層は Trie の最長一致が勝つ。
+ * 付表/ja-furigana を UniDic の後: 熟字訓・難読を優先。
  * 駅を地名の後: KEN_ALL「十三」じゅうさん → 駅「じゅうそう」。
  * 法人を駅の後: 長い正式社名を優先。人名を最後: 短い姓を守る。
  */
@@ -48,6 +52,8 @@ function rebuildCombined() {
   combinedTrie = buildPhraseTrie({
     ...getNeologdPhrasesObject(),
     ...getUnidicPhrasesObject(),
+    ...getJoyoJukujiPhrasesObject(),
+    ...getJaFuriganaPhrasesObject(),
     ...getWikidataKanaPhrasesObject(),
     ...getSudachiFullPhrasesObject(),
     ...getPlaceNamePhrasesObject(),

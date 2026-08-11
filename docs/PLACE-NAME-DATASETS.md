@@ -34,10 +34,11 @@ Pages デモ用:
 | [GeoNLP](https://geonlp.ex.nii.ac.jp/dictionary/)（読み付きのみ） | CC BY 4.0 | 都道府県 / 歴史地名大系 地名・POI |
 | [日本郵便 KEN_ALL](https://www.post.japanpost.jp/zipcode/dl/utf-zip.html) | 郵便番号データ利用許諾 | 既存に無い町域のみギャップ埋め |
 | [NEologd](https://github.com/neologd/mecab-ipadic-neologd) 固有名詞/地域 | Apache-2.0 | 既存に無い地域表層（`*駅`は駅辞書へ） |
+| [沖縄辞書 o-dic](https://github.com/makotoga/o-dic)（地名系） | Public Domain | city/address/island/geo 等のギャップ埋め |
 | 複合→裸表層派生 | 加工 | `神子畑村`→`神子畑` のように接尾辞を剥がす |
 | `data/place-name-extra.json` | 手置き | オープンデータに無い観光表記など |
 
-優先: Geolonia → ABR → 地名集 → GeoNLP → KEN_ALL → NEologd 地域 → 裸派生 → **extra（上書き可）**。
+優先: Geolonia → ABR → 地名集 → GeoNLP → KEN_ALL → NEologd 地域 → **o-dic** → 裸派生 → **extra（上書き可）**。
 
 ## 取り込み済み（駅）
 

@@ -28,6 +28,8 @@ import { loadStationPhrases } from "../../../src/station-phrases.js";
 import { loadCorporateNamePhrases } from "../../../src/corporate-name-phrases.js";
 import { loadWikidataKanaPhrases } from "../../../src/wikidata-kana-phrases.js";
 import { loadSudachiFullPhrases } from "../../../src/sudachi-full-phrases.js";
+import { loadJoyoJukujiPhrases } from "../../../src/joyo-jukuji-phrases.js";
+import { loadJaFuriganaPhrases } from "../../../src/ja-furigana-phrases.js";
 import {
   loadPersonalNamePhrases,
   rebuildCombinedPhraseTrie
@@ -170,6 +172,12 @@ async function loadPhraseDicts() {
       .then(() => rebuildCombinedPhraseTrie())
       .catch(() => {}),
     loadSudachiFullPhrases()
+      .then(() => rebuildCombinedPhraseTrie())
+      .catch(() => {}),
+    loadJoyoJukujiPhrases()
+      .then(() => rebuildCombinedPhraseTrie())
+      .catch(() => {}),
+    loadJaFuriganaPhrases()
       .then(() => rebuildCombinedPhraseTrie())
       .catch(() => {}),
     loadPersonalNamePhrases().catch(() => {})
