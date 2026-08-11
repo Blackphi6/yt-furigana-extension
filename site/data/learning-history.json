@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-11T18:03:26.645Z",
+  "updatedAt": "2026-08-11T18:05:59.198Z",
   "entries": [
     {
       "ts": "2026-07-18T12:08:38.759Z",
@@ -2949,6 +2949,72 @@
           "note": "仕事・予定・日常の忙しさ"
         }
       ]
+    },
+    {
+      "ts": "2026-08-11T18:05:59.198Z",
+      "mode": "retrain",
+      "note": "素材増なし / 本体ルール変化あり",
+      "gateOk": true,
+      "floorsOk": true,
+      "regress": false,
+      "corpus": {
+        "total": 342,
+        "delta": 0,
+        "acceptedThisRun": 0,
+        "rejectedThisRun": 0
+      },
+      "benches": {
+        "seed-bench": {
+          "passed": 22,
+          "total": 22,
+          "rate": 1,
+          "minPassRate": 1,
+          "failed": []
+        },
+        "hard-heteronym": {
+          "passed": 41,
+          "total": 41,
+          "rate": 1,
+          "minPassRate": 0.85,
+          "failed": []
+        },
+        "easy-regression": {
+          "passed": 8,
+          "total": 8,
+          "rate": 1,
+          "minPassRate": 0.9,
+          "failed": []
+        }
+      },
+      "vsBaseline": {
+        "seed-bench": {
+          "rate": 1,
+          "passed": 22,
+          "total": 22,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "hard-heteronym": {
+          "rate": 1,
+          "passed": 41,
+          "total": 41,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "easy-regression": {
+          "rate": 1,
+          "passed": 8,
+          "total": 8,
+          "baselineRate": 1,
+          "deltaRate": 0
+        }
+      },
+      "overrides": {
+        "phraseCount": 13,
+        "contextRuleCount": 71,
+        "changed": true
+      },
+      "newSamples": []
     }
   ]
 }
