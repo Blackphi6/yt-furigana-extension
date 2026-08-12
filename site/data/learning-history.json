@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-12T13:28:46.114Z",
+  "updatedAt": "2026-08-12T19:15:07.476Z",
   "entries": [
     {
       "ts": "2026-07-18T12:08:38.759Z",
@@ -3557,6 +3557,143 @@
         },
         {
           "text": "予定が多くて忙しいので、明日は早めに起きます。",
+          "surface": "忙しい",
+          "gold": "いそがしい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "仕事・予定・日常の忙しさ"
+        }
+      ]
+    },
+    {
+      "ts": "2026-08-12T19:15:07.476Z",
+      "mode": "synth",
+      "note": "素材 +47 / 本体ルール変化なし（日次は主に素材集め）",
+      "gateOk": true,
+      "floorsOk": true,
+      "regress": false,
+      "corpus": {
+        "total": 577,
+        "delta": 47,
+        "acceptedThisRun": 48,
+        "rejectedThisRun": 30
+      },
+      "benches": {
+        "seed-bench": {
+          "passed": 22,
+          "total": 22,
+          "rate": 1,
+          "minPassRate": 1,
+          "failed": []
+        },
+        "hard-heteronym": {
+          "passed": 41,
+          "total": 41,
+          "rate": 1,
+          "minPassRate": 0.85,
+          "failed": []
+        },
+        "easy-regression": {
+          "passed": 8,
+          "total": 8,
+          "rate": 1,
+          "minPassRate": 0.9,
+          "failed": []
+        }
+      },
+      "vsBaseline": {
+        "seed-bench": {
+          "rate": 1,
+          "passed": 22,
+          "total": 22,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "hard-heteronym": {
+          "rate": 1,
+          "passed": 41,
+          "total": 41,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "easy-regression": {
+          "rate": 1,
+          "passed": 8,
+          "total": 8,
+          "baselineRate": 1,
+          "deltaRate": 0
+        }
+      },
+      "overrides": {
+        "phraseCount": 13,
+        "contextRuleCount": 71,
+        "changed": false
+      },
+      "newSamples": [
+        {
+          "text": "明日は、学校へ行く予定だから、早く起きろ。",
+          "surface": "行く",
+          "gold": "いく",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "学校へ行く／明日行く（日常のいく）"
+        },
+        {
+          "text": "車に気をつけながら、角を曲がる必要がある。",
+          "surface": "角",
+          "gold": "かど",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "街角／角を曲がる（かど）"
+        },
+        {
+          "text": "牛は角が生えています。",
+          "surface": "角",
+          "gold": "つの",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "牛の角／角が生える（つの）"
+        },
+        {
+          "text": "角が生える牛はよく見ます。",
+          "surface": "角",
+          "gold": "つの",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "牛の角／角が生える（つの）"
+        },
+        {
+          "text": "ラーメンはとても辛いです。",
+          "surface": "辛い",
+          "gold": "からい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "ラーメン・カレー・味・唐辛子"
+        },
+        {
+          "text": "唐辛子の香味が辛いのは食べる人の感覚に違いがあります。",
+          "surface": "辛い",
+          "gold": "からい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "ラーメン・カレー・味・唐辛子"
+        },
+        {
+          "text": "天国は永遠の平和で、人々は愛と喜びを永遠に感じる。",
+          "surface": "永遠",
+          "gold": "えいえん",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
+        },
+        {
+          "text": "愛は永遠に終わらない、そして人は愛を永遠に求める。",
+          "surface": "永遠",
+          "gold": "えいえん",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
+        },
+        {
+          "text": "仕事が忙しい日々だ。",
+          "surface": "忙しい",
+          "gold": "いそがしい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "仕事・予定・日常の忙しさ"
+        },
+        {
+          "text": "予定がたくさんあるので、忙しい",
           "surface": "忙しい",
           "gold": "いそがしい",
           "source": "llm-synth:groq:verify_agree",
