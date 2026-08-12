@@ -1,15 +1,15 @@
 {
-  "ts": "2026-08-12T07:46:46.735Z",
+  "ts": "2026-08-12T13:28:46.114Z",
   "mode": "synth",
-  "note": "素材 +45 / 本体ルール変化なし（日次は主に素材集め）",
+  "note": "素材 +50 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 480,
-    "delta": 45,
-    "acceptedThisRun": 47,
-    "rejectedThisRun": 31
+    "total": 530,
+    "delta": 50,
+    "acceptedThisRun": 51,
+    "rejectedThisRun": 27
   },
   "benches": {
     "seed-bench": {
@@ -64,70 +64,70 @@
   },
   "newSamples": [
     {
-      "text": "彼は会社に入る前、挨拶を覚えるようにした。",
+      "text": "新しい仲間に入るのは楽しいことだ。",
       "surface": "入る",
       "gold": "いる",
       "source": "llm-synth:groq:verify_agree",
       "note": "気に入る／手に入る／仲間に入る（いる）"
     },
     {
-      "text": "新しい友達が仲間に入るのがとても楽しみだ。",
-      "surface": "入る",
-      "gold": "いる",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "気に入る／手に入る／仲間に入る（いる）"
-    },
-    {
-      "text": "角を曲がって右手に進んだら、海が見えるようになった。",
+      "text": "角を曲がると、道が分かれます。",
       "surface": "角",
       "gold": "かど",
       "source": "llm-synth:groq:arbitrate_agree",
       "note": "街角／角を曲がる（かど）"
     },
     {
-      "text": "牛の角は大きい",
+      "text": "牛が角を折る",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:arbitrate_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "ラーメンは辛いです。",
+      "text": "金融の市場は急騰し、株主の心配が増えました。",
+      "surface": "市場",
+      "gold": "しじょう",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "株式・規模・経済・金融の文脈"
+    },
+    {
+      "text": "ラーメンの辛い味が好きです。",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "唐辛子にカレー粉を混ぜて作った辛い食事は、誰もが好むようです。",
+      "text": "カレーは辛いので、唐辛子を少なくしてみます。",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "時は永遠に流れるが、人生はたまには一瞬で終わる。",
+      "text": "永遠の友情は、人生の終わりを知らない。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "人は永遠の愛を求め、人生の終わりも永遠の記憶に留める。",
+      "text": "人生の旅は、終わりを知らない永遠の旅である。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "仕事をこなす日が忙しいので、休みを取る必要がある。",
+      "text": "仕事が増えて忙しいので、早く帰りたいです。",
       "surface": "忙しい",
       "gold": "いそがしい",
       "source": "llm-synth:groq:verify_agree",
       "note": "仕事・予定・日常の忙しさ"
     },
     {
-      "text": "予定が多すぎて、毎日忙しい日が続いている。",
+      "text": "予定が多くて忙しいので、明日は早めに起きます。",
       "surface": "忙しい",
       "gold": "いそがしい",
       "source": "llm-synth:groq:verify_agree",
