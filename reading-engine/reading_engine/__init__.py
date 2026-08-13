@@ -179,7 +179,46 @@ CONTEXT_RULES: list[dict[str, Any]] = [
     {"surface": "一日", "reading": "いちにち", "weight": 5, "cues": ["丸一日", "一日かか", "一日で読", "一日中", "一日中粘"]},
     {"surface": "上手", "reading": "じょうず", "weight": 5, "cues": ["が上手", "歌が上手", "絵が上手", "上手だ"]},
     {"surface": "上手", "reading": "うわて", "weight": 5, "cues": ["上手に回", "上手に出", "交渉では上手"]},
+    # JKYB-Parakeet 誤答補正（拡張 reading-context.js と同期）
+    {"surface": "公", "reading": "おおやけ", "weight": 5, "cues": ["公の場", "公の機関", "公にする", "公には"]},
+    {"surface": "香", "reading": "か", "weight": 5, "cues": ["梅の香", "花の香", "の香が", "の香を", "残香"]},
+    {"surface": "紅", "reading": "べに", "weight": 5, "cues": ["紅を引", "紅をさ", "紅を差", "紅筆", "口紅"]},
+    {"surface": "候", "reading": "そうろう", "weight": 5, "cues": ["申し上げ候", "ござ候", "候。", "候ふ", "候へ"]},
+    {"surface": "呉", "reading": "ご", "weight": 5, "cues": ["呉の時代", "呉の国", "中国の呉", "呉越", "三国"]},
+    {"surface": "込", "reading": "こ", "weight": 5, "cues": ["道が込む", "が込む", "込むから"]},
+    {"surface": "込む", "reading": "こむ", "weight": 5, "cues": ["道が込む", "が込む", "込むから"]},
+    {"surface": "際", "reading": "きわ", "weight": 5, "cues": ["崖の際", "窓の際", "水際", "の際で", "の際に立"]},
+    {"surface": "札", "reading": "ふだ", "weight": 5, "cues": ["示す札", "小さな札", "札を吊る", "札を受け取", "お札", "絵馬"]},
+    {"surface": "氏", "reading": "うじ", "weight": 5, "cues": ["氏より育ち", "氏が社会", "氏族", "氏姓", "古代日本では、氏"]},
+    {"surface": "社", "reading": "やしろ", "weight": 5, "cues": ["この社は", "小さな社", "社に集ま", "村人がみんな社", "雪化粧した小さな社"]},
+    {"surface": "字", "reading": "じ", "weight": 5, "cues": ["彼の字", "字はとても", "字が上手", "字がきれい", "読みやすい"]},
+    {"surface": "痕", "reading": "あと", "weight": 5, "cues": ["足痕", "傷痕", "血痕", "痕が残"]},
+    {"surface": "根", "reading": "こん", "weight": 5, "cues": ["平方根", "立方根", "累乗根"]},
 ]
+
+# 複合語の強制読み（拡張 MANUAL_PHRASE_READINGS と同期）
+MANUAL_PHRASES: dict[str, str] = {
+    "故郷": "こきょう",
+    "太后": "たいこう",
+    "紅色": "べにいろ",
+    "命綱": "いのちつな",
+    "筋骨": "きんこつ",
+    "平方根": "へいほうこん",
+    "今帝": "きんてい",
+    "撮了": "さつりょう",
+    "揚子江": "ようすこう",
+    "足痕": "あしあと",
+    "骨董市": "こっとういち",
+    "滋雨": "じう",
+    "黄金千貫": "こがねせんがん",
+    "七五三": "しちごさん",
+    "七福神": "しちふくじん",
+    "七日": "なのか",
+    "四つ": "よっつ",
+    "四時": "よじ",
+    "氷室": "ひむろ",
+    "字は": "じは",
+}
 
 
 @dataclass
@@ -394,6 +433,7 @@ class ReadingEngine:
         }
         # 人名＋固定リストは形態素分割前に最長一致（経沢→つねざわ など）
         phrase_map = dict(load_personal_name_phrases())
+        phrase_map.update(MANUAL_PHRASES)
         phrase_map.update(user_map)
         phrase_spans = collect_phrase_spans(text, phrase_map)
 

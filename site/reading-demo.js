@@ -22,6 +22,10 @@ import {
   getKanjiReadingCount,
   installKanjiReadings,
 } from "./demo-kanji-readings.js?v=20260810a";
+import {
+  DEMO_MANUAL_PHRASES,
+  applyDemoContextReadings,
+} from "./context-reading-overlay.js?v=20260814a";
 
 const DEFAULT_API =
   (window.YT_FURIGANA_SITE && window.YT_FURIGANA_SITE.readingApiUrl) ||
@@ -1023,8 +1027,18 @@ function renderResult(text, data) {
   tokens = overlayStationTokens(displayText, tokens);
   tokens = overlayCorporateNameTokens(displayText, tokens);
   tokens = overlayPersonalNameTokens(displayText, tokens);
+  // Parakeet 補正の複合語（地名誤爆より後で勝たせる）
+  tokens = overlayPhraseTokens(
+    displayText,
+    tokens,
+    DEMO_MANUAL_PHRASES,
+    "manual_phrase",
+    24
+  );
   // 公開 API が未デプロイでも数字を編集できるようクライアント側で載せる
   tokens = overlayNumberTokens(displayText, tokens);
+  // 単漢字の文脈読み（公の場→おおやけ など）。Render 未更新でもデモで効く
+  tokens = applyDemoContextReadings(displayText, tokens);
   // 同一文の同表層を出現位置ごとに上書き（グローバル固定の巻き添え防止）
   tokens = applyOccurrenceOverrides(
     displayText,
