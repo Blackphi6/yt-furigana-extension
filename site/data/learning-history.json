@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-13T02:33:54.580Z",
+  "updatedAt": "2026-08-13T07:48:02.804Z",
   "entries": [
     {
       "ts": "2026-07-18T12:08:38.759Z",
@@ -3831,6 +3831,143 @@
         },
         {
           "text": "今日は予定が多いため、忙しいので朝早く起きる必要がある。",
+          "surface": "忙しい",
+          "gold": "いそがしい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "仕事・予定・日常の忙しさ"
+        }
+      ]
+    },
+    {
+      "ts": "2026-08-13T07:48:02.804Z",
+      "mode": "synth",
+      "note": "素材 +40 / 本体ルール変化なし（日次は主に素材集め）",
+      "gateOk": true,
+      "floorsOk": true,
+      "regress": false,
+      "corpus": {
+        "total": 661,
+        "delta": 40,
+        "acceptedThisRun": 41,
+        "rejectedThisRun": 37
+      },
+      "benches": {
+        "seed-bench": {
+          "passed": 22,
+          "total": 22,
+          "rate": 1,
+          "minPassRate": 1,
+          "failed": []
+        },
+        "hard-heteronym": {
+          "passed": 41,
+          "total": 41,
+          "rate": 1,
+          "minPassRate": 0.85,
+          "failed": []
+        },
+        "easy-regression": {
+          "passed": 8,
+          "total": 8,
+          "rate": 1,
+          "minPassRate": 0.9,
+          "failed": []
+        }
+      },
+      "vsBaseline": {
+        "seed-bench": {
+          "rate": 1,
+          "passed": 22,
+          "total": 22,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "hard-heteronym": {
+          "rate": 1,
+          "passed": 41,
+          "total": 41,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "easy-regression": {
+          "rate": 1,
+          "passed": 8,
+          "total": 8,
+          "baselineRate": 1,
+          "deltaRate": 0
+        }
+      },
+      "overrides": {
+        "phraseCount": 13,
+        "contextRuleCount": 71,
+        "changed": false
+      },
+      "newSamples": [
+        {
+          "text": "会社の売り上げを店を開く前と比べてみました。",
+          "surface": "開く",
+          "gold": "ひらく",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "本を開く／店を開く／会議を開く（ひらく）"
+        },
+        {
+          "text": "ドアが自動で開く",
+          "surface": "開く",
+          "gold": "あく",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "ドアが開く／蓋が開く（あく・自動）"
+        },
+        {
+          "text": "学校の図書館に入る前は、必ず本を借りておくことになっています。",
+          "surface": "入る",
+          "gold": "いる",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "気に入る／手に入る／仲間に入る（いる）"
+        },
+        {
+          "text": "彼は家族に入ることで、本当の家族として受け入れられました。",
+          "surface": "入る",
+          "gold": "いる",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "気に入る／手に入る／仲間に入る（いる）"
+        },
+        {
+          "text": "ラーメンは辛いですが、好きな人もいます。",
+          "surface": "辛い",
+          "gold": "からい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "ラーメン・カレー・味・唐辛子"
+        },
+        {
+          "text": "カレーを食べると辛いが、美味しいです。",
+          "surface": "辛い",
+          "gold": "からい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "ラーメン・カレー・味・唐辛子"
+        },
+        {
+          "text": "天国は永遠に続きます。",
+          "surface": "永遠",
+          "gold": "えいえん",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
+        },
+        {
+          "text": "人間の知性は永遠に追求されるものです。",
+          "surface": "永遠",
+          "gold": "えいえん",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
+        },
+        {
+          "text": "仕事が多いため忙しい朝を迎えました。",
+          "surface": "忙しい",
+          "gold": "いそがしい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "仕事・予定・日常の忙しさ"
+        },
+        {
+          "text": "予定が多くて忙しい日を過ごした後、寝る時間が早くなりました。",
           "surface": "忙しい",
           "gold": "いそがしい",
           "source": "llm-synth:groq:verify_agree",
