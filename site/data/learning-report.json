@@ -1,15 +1,15 @@
 {
-  "ts": "2026-08-13T07:48:02.804Z",
+  "ts": "2026-08-13T13:30:39.428Z",
   "mode": "synth",
-  "note": "素材 +40 / 本体ルール変化なし（日次は主に素材集め）",
+  "note": "素材 +39 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 661,
-    "delta": 40,
-    "acceptedThisRun": 41,
-    "rejectedThisRun": 37
+    "total": 700,
+    "delta": 39,
+    "acceptedThisRun": 42,
+    "rejectedThisRun": 36
   },
   "benches": {
     "seed-bench": {
@@ -64,70 +64,70 @@
   },
   "newSamples": [
     {
-      "text": "会社の売り上げを店を開く前と比べてみました。",
-      "surface": "開く",
-      "gold": "ひらく",
+      "text": "この店には、人気のランチメニューが手に入る。",
+      "surface": "入る",
+      "gold": "いる",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "気に入る／手に入る／仲間に入る（いる）"
+    },
+    {
+      "text": "角を曲がったら右に進んでください。",
+      "surface": "角",
+      "gold": "かど",
       "source": "llm-synth:groq:arbitrate_agree",
-      "note": "本を開く／店を開く／会議を開く（ひらく）"
+      "note": "街角／角を曲がる（かど）"
     },
     {
-      "text": "ドアが自動で開く",
-      "surface": "開く",
-      "gold": "あく",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "ドアが開く／蓋が開く（あく・自動）"
+      "text": "路地の角に電柱が立っている",
+      "surface": "角",
+      "gold": "かど",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "街角／角を曲がる（かど）"
     },
     {
-      "text": "学校の図書館に入る前は、必ず本を借りておくことになっています。",
-      "surface": "入る",
-      "gold": "いる",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "気に入る／手に入る／仲間に入る（いる）"
+      "text": "牛の角は大きくて怖い。",
+      "surface": "角",
+      "gold": "つの",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "彼は家族に入ることで、本当の家族として受け入れられました。",
-      "surface": "入る",
-      "gold": "いる",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "気に入る／手に入る／仲間に入る（いる）"
-    },
-    {
-      "text": "ラーメンは辛いですが、好きな人もいます。",
+      "text": "ラーメンが辛いです",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "カレーを食べると辛いが、美味しいです。",
+      "text": "唐辛子を多く入れたカレーが辛いです",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "天国は永遠に続きます。",
+      "text": "人生は永遠の旅で、人々は終わらない。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "人間の知性は永遠に追求されるものです。",
+      "text": "時は永遠に流れ、世の中は絶えず変化する。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "仕事が多いため忙しい朝を迎えました。",
+      "text": "今日は会社の仕事がたくさんあり忙しいので、日曜日に予定を立てよう",
       "surface": "忙しい",
       "gold": "いそがしい",
       "source": "llm-synth:groq:verify_agree",
       "note": "仕事・予定・日常の忙しさ"
     },
     {
-      "text": "予定が多くて忙しい日を過ごした後、寝る時間が早くなりました。",
+      "text": "朝から予定が多く忙しいので、週末に休みを取ってリフレッシュしよう",
       "surface": "忙しい",
       "gold": "いそがしい",
       "source": "llm-synth:groq:verify_agree",
