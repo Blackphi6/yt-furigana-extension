@@ -18,7 +18,10 @@
 | データセット | 規模 | ライセンス | 本 eval | 備考 |
 |--------------|------|------------|---------|------|
 | [filmapp/ja-tts-g2p-bench](https://github.com/filmapp/ja-tts-g2p-bench) | 151 問（採点対象） | MIT | ✅ 本丸 | 同形異音・数字・義訓など 8 カテゴリ |
+| [ja-tts-g2p blindspot v1](https://github.com/filmapp/ja-tts-g2p-bench) | 151 問 | MIT | ✅ | LLM 生成の盲点セット（text-side） |
+| [YOMI-Bench](https://github.com/benchmark-release/YOMI-Bench) | 377 問 | MIT | ✅ | 語内漢字の複数読み予測（few-shot 0） |
 | [sbintuitions/joyo-kanji-yomi-benchmark](https://huggingface.co/datasets/sbintuitions/joyo-kanji-yomi-benchmark) | 13,095 文 / 常用漢字全読み | MIT | ✅ | 漢字レベル。ASR/TTS キットあり |
+| [Parakeet-Inc/JKYB-Parakeet](https://huggingface.co/datasets/Parakeet-Inc/joyo-kanji-yomi-benchmark-parakeet) | 13,536 文（修正＋付表） | MIT | ✅ | [Zenn](https://zenn.dev/parakeet_tech/articles/936532be817118)。natural 読みで採点 |
 | [CyberAgentAILab/jvs_nonpara_kana](https://github.com/CyberAgentAILab/jvs_nonpara_kana) | 3,000 文 | **CC BY-SA 4.0** | ✅ cache のみ | 拡張に同梱しない。Interspeech 2026 |
 | [o24s/japanese-g2p-benchmark](https://github.com/o24s/japanese-g2p-benchmark) | 複合 | code Apache / data SA | 参照 | Haqumei / OpenJTalk の KER 公表値 |
 | [passaglia/yomikata](https://github.com/passaglia/yomikata) | 異読み ~130 | MIT | 未同梱 | BERT 異読み特化。比較相手として有用 |
@@ -49,12 +52,23 @@ ShareAlike のデータは `.cache/eval/` に置き、**数値だけ**をリポ�
 
 ### 2. Joyo Kanji Yomi（常用漢字・対象漢字読み）
 
-| システム | 正解率（全 13,095 文） |
+| システム | 正解率（全 13,095 文・元 JKYB） |
 |----------|------------------------|
 | yt-furigana | **97.0%** (12704/13095) |
 | Sudachi のみ | 96.9% (12690/13095) |
 
 常用漢字の「文脈で一意な読み」では辞書ベースが既に強い。差は小さく、**異読みベンチ（ja-tts-g2p）の方が製品差別化が見える**。
+
+### 2b. JKYB-Parakeet（修正＋付表）
+
+先頭 2,000 文（2026-08-13 text-side）。全件は `--joyo-parakeet-limit=13536`。
+
+| システム | 正解率 |
+|----------|--------|
+| yt-furigana（Sudachi+phrases） | **97.8%** (1956/2000) |
+| Sudachi のみ | 97.7% (1954/2000) |
+
+付表（`joyo_appendix_reading`）はこの 2,000 件スライスにほぼ含まれず、差は小さい。Parayomi 99.8% は専用 G2P＋全件で、同列比較しない。
 
 ### 3. JVS-nonpara-kana（全文 CER, n=500）
 
@@ -82,12 +96,15 @@ NODE_OPTIONS=--max-old-space-size=12288 npm run eval:g2p -- --with-corporate
 
 # Joyo 全件
 NODE_OPTIONS=--max-old-space-size=8192 npm run eval:g2p -- --joyo-limit=13095 --skip-internal
+
+# JKYB-Parakeet のみ（site JSON は上書きしない）
+NODE_OPTIONS=--max-old-space-size=8192 npm run eval:g2p -- --skip-internal --jvs-limit=0 --joyo-limit=0 --joyo-parakeet-limit=2000 --no-site
 ```
 
 ## 外部説明の言い方（推奨）
 
 - 「公開の文脈依存漢字読みベンチ（ja-tts-g2p-bench）で **text-side 72%**。辞書のみ Sudachi より +8pt。音声ベンチの VOICEVOX 帯に相当」
-- 「常用漢字読みベンチ（Joyo）では text-side **97%** 台」
+- 「常用漢字読みベンチ（Joyo）では text-side **97%** 台。Parakeet 改訂版は付表込みで別掲」
 - 「TTS デモの耳コピ順位そのものではない。読みの正しさを自動採点した」
 
 ## 変更ファイル

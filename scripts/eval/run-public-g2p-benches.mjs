@@ -4,7 +4,10 @@
  *
  * 対象:
  * - filmapp/ja-tts-g2p-bench（MIT）… 文脈依存漢字読み 151 問（TTS 論文と同項目）
- * - sbintuitions/joyo-kanji-yomi-benchmark（MIT）… 常用漢字読み
+ * - filmapp/ja-tts-g2p-bench blindspot v1 … 追加 151 問（LLM 生成・盲点）
+ * - benchmark-release/YOMI-Bench（MIT）… 複数読み予測 377 問（語内漢字）
+ * - sbintuitions/joyo-kanji-yomi-benchmark（MIT）… 常用漢字読み（元）
+ * - Parakeet-Inc/joyo-kanji-yomi-benchmark-parakeet（MIT）… 常用漢字読み（修正＋付表）
  * - CyberAgentAILab/jvs_nonpara_kana（CC BY-SA 4.0・評価用のみ、同梱しない）
  * - リポジトリ内 seed / hard / easy ゲート
  *
@@ -12,6 +15,7 @@
  *   node scripts/eval/run-public-g2p-benches.mjs
  *   node scripts/eval/run-public-g2p-benches.mjs --jvs-limit=500 --joyo-limit=2000
  *   node scripts/eval/run-public-g2p-benches.mjs --skip-internal --joyo-limit=13095
+ *   node scripts/eval/run-public-g2p-benches.mjs --joyo-parakeet-limit=2000 --no-site
  *
  * 注意: JVS データは ShareAlike のため .cache に置き、結果の数値のみ報告する。
  * 詳細: docs/G2P-BENCHMARKS.md
@@ -53,6 +57,8 @@ import {
   rebuildCombinedPhraseTrie
 } from "../../src/personal-name-phrases.js";
 import { installKanjiReadingsForTests } from "../../src/kanji-readings.js";
+import { scoreJoyoParakeetItems } from "./joyo-parakeet-score.mjs";
+import { parseYomiBenchRows } from "./yomi-bench-parse.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "../..");
@@ -60,20 +66,29 @@ const cacheDir = path.join(root, ".cache", "eval");
 const outDir = path.join(root, "data", "eval");
 const G2P_URL =
   "https://raw.githubusercontent.com/filmapp/ja-tts-g2p-bench/main/data/items_read_bench_v1.jsonl";
+const G2P_BLINDSPOT_URL =
+  "https://raw.githubusercontent.com/filmapp/ja-tts-g2p-bench/main/data/items_blindspot_v1.jsonl";
+const YOMI_BENCH_URL =
+  "https://raw.githubusercontent.com/benchmark-release/YOMI-Bench/main/tasks/kanji_reading_prediction/multiple/kanji_multiple_reading_hiragana_fewshot_0.jsonl";
 const JVS_URL =
   "https://raw.githubusercontent.com/CyberAgentAILab/jvs_nonpara_kana/main/jvs_nonpara_kana.csv";
 
-const jvsLimitArg = process.argv.find((a) => a.startsWith("--jvs-limit="));
-const JVS_LIMIT = jvsLimitArg
-  ? Number(jvsLimitArg.split("=")[1]) || 500
-  : 500;
-const joyoLimitArg = process.argv.find((a) => a.startsWith("--joyo-limit="));
-const JOYO_LIMIT = joyoLimitArg
-  ? Number(joyoLimitArg.split("=")[1]) || 2000
-  : 2000;
+function parseLimit(flag, fallback) {
+  const arg = process.argv.find((a) => a.startsWith(`${flag}=`));
+  if (!arg) return fallback;
+  const n = Number(arg.slice(flag.length + 1));
+  return Number.isFinite(n) && n >= 0 ? n : fallback;
+}
+
+const JVS_LIMIT = parseLimit("--jvs-limit", 500);
+const JOYO_LIMIT = parseLimit("--joyo-limit", 2000);
+const JOYO_PARAKEET_LIMIT = parseLimit("--joyo-parakeet-limit", 2000);
 const JOYO_URL =
   "https://huggingface.co/datasets/sbintuitions/joyo-kanji-yomi-benchmark/resolve/main/common_kanji_source.jsonl";
+const JOYO_PARAKEET_URL =
+  "https://huggingface.co/datasets/Parakeet-Inc/joyo-kanji-yomi-benchmark-parakeet/resolve/main/data/common_kanji_source.jsonl";
 const SKIP_INTERNAL = process.argv.includes("--skip-internal");
+const NO_SITE = process.argv.includes("--no-site");
 
 function toHiragana(text) {
   return String(text || "")
@@ -346,7 +361,7 @@ for line in sys.stdin:
   return r.stdout.trimEnd().split("\n");
 }
 
-function scoreG2pItems(items, tokenize, label) {
+function scoreG2pItems(items, tokenize, label, logTag = "ja-tts-g2p") {
   const byCat = {};
   let passed = 0;
   let stimCerSum = 0;
@@ -387,7 +402,7 @@ function scoreG2pItems(items, tokenize, label) {
   const rate = total ? passed / total : 0;
   const stimCer = total ? stimCerSum / total : 1;
   console.log(
-    `[ja-tts-g2p] ${label}: ${passed}/${total} (${(100 * rate).toFixed(1)}%)` +
+    `[${logTag}] ${label}: ${passed}/${total} (${(100 * rate).toFixed(1)}%)` +
       ` stimCER=${(100 * stimCer).toFixed(2)}%` +
       (failed.length ? `  failed=${failed.length}` : "")
   );
@@ -498,6 +513,14 @@ async function main() {
     G2P_URL,
     path.join(cacheDir, "items_read_bench_v1.jsonl")
   );
+  const blindspotPath = await ensureFile(
+    G2P_BLINDSPOT_URL,
+    path.join(cacheDir, "items_blindspot_v1.jsonl")
+  );
+  const yomiPath = await ensureFile(
+    YOMI_BENCH_URL,
+    path.join(cacheDir, "yomi-bench-kanji-multiple-fewshot-0.jsonl")
+  );
   const jvsPath = await ensureFile(
     JVS_URL,
     path.join(cacheDir, "jvs_nonpara_kana.csv")
@@ -506,12 +529,33 @@ async function main() {
     JOYO_URL,
     path.join(cacheDir, "joyo-kanji-yomi-common_kanji_source.jsonl")
   );
+  const joyoParakeetPath =
+    JOYO_PARAKEET_LIMIT > 0
+      ? await ensureFile(
+          JOYO_PARAKEET_URL,
+          path.join(cacheDir, "joyo-kanji-yomi-parakeet.jsonl")
+        )
+      : null;
 
   const g2pAll = (await loadJsonl(g2pPath)).filter((r) => !r.benchmark_exclude);
   console.log(`ja-tts-g2p scored items: ${g2pAll.length}`);
+  const blindspotAll = (await loadJsonl(blindspotPath)).filter(
+    (r) => !r.benchmark_exclude
+  );
+  console.log(`ja-tts-g2p blindspot items: ${blindspotAll.length}`);
+  const yomiAll = parseYomiBenchRows(await loadJsonl(yomiPath));
+  console.log(`YOMI-Bench parsed items: ${yomiAll.length}`);
 
-  const joyoAll = (await loadJsonl(joyoPath)).slice(0, JOYO_LIMIT);
+  const joyoAll =
+    JOYO_LIMIT > 0 ? (await loadJsonl(joyoPath)).slice(0, JOYO_LIMIT) : [];
   console.log(`joyo-kanji-yomi items: ${joyoAll.length} (limit=${JOYO_LIMIT})`);
+  const joyoParakeetAll =
+    joyoParakeetPath && JOYO_PARAKEET_LIMIT > 0
+      ? (await loadJsonl(joyoParakeetPath)).slice(0, JOYO_PARAKEET_LIMIT)
+      : [];
+  console.log(
+    `joyo-parakeet items: ${joyoParakeetAll.length} (limit=${JOYO_PARAKEET_LIMIT})`
+  );
 
   const jvsRows = readFileSync(jvsPath, "utf8")
     .trim()
@@ -589,45 +633,125 @@ async function main() {
     scoreG2pItems(g2pAll, kuromojiTok, "yt-furigana (Kuromoji+phrases+context)")
   );
 
-  // --- JVS CER ---
-  const jvsResults = [];
-  loadFullPhraseDicts();
-  jvsResults.push(
-    scoreJvsCer(
-      jvsRows,
-      (row) => htmlToReadingString(buildFuriganaHtml(row.text, sudachi)),
-      "yt-furigana Sudachi+phrases"
-    )
-  );
-  clearPhraseDicts();
-  jvsResults.push(
-    scoreJvsCer(
-      jvsRows,
-      (row) => htmlToReadingString(buildFuriganaHtml(row.text, sudachi)),
-      "sudachi-only"
-    )
-  );
-
-  const fugashiHyps = fugashiReadings(jvsRows.map((r) => r.text));
-  if (fugashiHyps && fugashiHyps.length === jvsRows.length) {
-    let i = 0;
-    jvsResults.push(
-      scoreJvsCer(jvsRows, () => fugashiHyps[i++], "fugashi UniDic")
+  // --- ja-tts blindspot ---
+  const blindspotResults = [];
+  if (blindspotAll.length) {
+    clearPhraseDicts();
+    blindspotResults.push(
+      scoreG2pItems(blindspotAll, sudachi, "sudachi-only", "ja-tts-blindspot")
+    );
+    loadFullPhraseDicts();
+    blindspotResults.push(
+      scoreG2pItems(
+        blindspotAll,
+        sudachi,
+        "yt-furigana (Sudachi+phrases+context)",
+        "ja-tts-blindspot"
+      )
     );
   }
 
-  // --- Joyo Kanji Yomi (MIT) ---
+  // --- YOMI-Bench（語内漢字・複数読み） ---
+  const yomiResults = [];
+  if (yomiAll.length) {
+    clearPhraseDicts();
+    yomiResults.push(
+      scoreG2pItems(yomiAll, sudachi, "sudachi-only", "yomi-bench")
+    );
+    loadFullPhraseDicts();
+    yomiResults.push(
+      scoreG2pItems(
+        yomiAll,
+        sudachi,
+        "yt-furigana (Sudachi+phrases+context)",
+        "yomi-bench"
+      )
+    );
+  }
+
+  // --- JVS CER ---
+  const jvsResults = [];
+  if (jvsRows.length) {
+    loadFullPhraseDicts();
+    jvsResults.push(
+      scoreJvsCer(
+        jvsRows,
+        (row) => htmlToReadingString(buildFuriganaHtml(row.text, sudachi)),
+        "yt-furigana Sudachi+phrases"
+      )
+    );
+    clearPhraseDicts();
+    jvsResults.push(
+      scoreJvsCer(
+        jvsRows,
+        (row) => htmlToReadingString(buildFuriganaHtml(row.text, sudachi)),
+        "sudachi-only"
+      )
+    );
+
+    const fugashiHyps = fugashiReadings(jvsRows.map((r) => r.text));
+    if (fugashiHyps && fugashiHyps.length === jvsRows.length) {
+      let i = 0;
+      jvsResults.push(
+        scoreJvsCer(jvsRows, () => fugashiHyps[i++], "fugashi UniDic")
+      );
+    }
+  } else {
+    console.log("[jvs-nonpara-kana] skipped (limit=0)");
+  }
+
+  // --- Joyo Kanji Yomi 元（MIT） ---
   const joyoResults = [];
-  clearPhraseDicts();
-  joyoResults.push(scoreJoyoItems(joyoAll, sudachi, "sudachi-only"));
-  loadFullPhraseDicts();
-  joyoResults.push(
-    scoreJoyoItems(joyoAll, sudachi, "yt-furigana (Sudachi+phrases+context)")
-  );
+  if (joyoAll.length) {
+    clearPhraseDicts();
+    joyoResults.push(scoreJoyoItems(joyoAll, sudachi, "sudachi-only"));
+    loadFullPhraseDicts();
+    joyoResults.push(
+      scoreJoyoItems(joyoAll, sudachi, "yt-furigana (Sudachi+phrases+context)")
+    );
+  } else {
+    console.log("[joyo-kanji-yomi] skipped (limit=0)");
+  }
+
+  // --- JKYB-Parakeet（MIT・修正＋付表） ---
+  const joyoParakeetResults = [];
+  if (joyoParakeetAll.length) {
+    clearPhraseDicts();
+    joyoParakeetResults.push(
+      scoreJoyoParakeetItems(
+        joyoParakeetAll,
+        sudachi,
+        (text, tok) => buildFuriganaHtml(text, tok),
+        "sudachi-only"
+      )
+    );
+    loadFullPhraseDicts();
+    joyoParakeetResults.push(
+      scoreJoyoParakeetItems(
+        joyoParakeetAll,
+        sudachi,
+        (text, tok) => buildFuriganaHtml(text, tok),
+        "yt-furigana (Sudachi+phrases+context)"
+      )
+    );
+  } else {
+    console.log("[joyo-parakeet] skipped (limit=0)");
+  }
 
   const bestG2p = g2pResults.reduce((a, b) => (a.rate >= b.rate ? a : b));
   const [lo, hi] = wilsonInterval(bestG2p.passed, bestG2p.total);
-  const bestJoyo = joyoResults.reduce((a, b) => (a.rate >= b.rate ? a : b));
+  const bestJoyo = joyoResults.length
+    ? joyoResults.reduce((a, b) => (a.rate >= b.rate ? a : b))
+    : null;
+  const bestJoyoParakeet = joyoParakeetResults.length
+    ? joyoParakeetResults.reduce((a, b) => (a.rate >= b.rate ? a : b))
+    : null;
+  const bestBlindspot = blindspotResults.length
+    ? blindspotResults.reduce((a, b) => (a.rate >= b.rate ? a : b))
+    : null;
+  const bestYomi = yomiResults.length
+    ? yomiResults.reduce((a, b) => (a.rate >= b.rate ? a : b))
+    : null;
 
   const report = {
     generatedAt: new Date().toISOString(),
@@ -641,6 +765,18 @@ async function main() {
         note: "Text-side target reading accuracy on the same 151 items (TTS audio scores are a different modality)."
       },
       {
+        id: "ja-tts-g2p-blindspot",
+        license: "MIT",
+        url: "https://github.com/filmapp/ja-tts-g2p-bench",
+        note: "Additional 151 LLM-generated blindspot items (text-side target reading)."
+      },
+      {
+        id: "YOMI-Bench",
+        license: "MIT",
+        url: "https://github.com/benchmark-release/YOMI-Bench",
+        note: "Kanji-in-word multiple reading prediction (377 items, text-side)."
+      },
+      {
         id: "jvs_nonpara_kana",
         license: "CC BY-SA 4.0 (eval cache only; not bundled)",
         url: "https://github.com/CyberAgentAILab/jvs_nonpara_kana",
@@ -651,6 +787,14 @@ async function main() {
         license: "MIT",
         url: "https://huggingface.co/datasets/sbintuitions/joyo-kanji-yomi-benchmark",
         note: "Kanji-level reading match on Joyo polyphony sentences (text-side)."
+      },
+      {
+        id: "joyo-kanji-yomi-benchmark-parakeet",
+        license: "MIT",
+        url: "https://huggingface.co/datasets/Parakeet-Inc/joyo-kanji-yomi-benchmark-parakeet",
+        article:
+          "https://zenn.dev/parakeet_tech/articles/936532be817118",
+        note: "Corrected Joyo bench + appendix jukujikun. Target natural readings (text-side)."
       },
       {
         id: "o24s/japanese-g2p-benchmark",
@@ -693,8 +837,20 @@ async function main() {
       ...r,
       wilson95: wilsonInterval(r.passed, r.total)
     })),
+    jaTtsBlindspot: blindspotResults.map((r) => ({
+      ...r,
+      wilson95: wilsonInterval(r.passed, r.total)
+    })),
+    yomiBench: yomiResults.map((r) => ({
+      ...r,
+      wilson95: wilsonInterval(r.passed, r.total)
+    })),
     jvsCer: jvsResults,
     joyoKanjiYomi: joyoResults.map((r) => ({
+      ...r,
+      wilson95: wilsonInterval(r.passed, r.total)
+    })),
+    joyoParakeet: joyoParakeetResults.map((r) => ({
       ...r,
       wilson95: wilsonInterval(r.passed, r.total)
     })),
@@ -704,12 +860,38 @@ async function main() {
       passed: bestG2p.passed,
       total: bestG2p.total,
       wilson95: [lo, hi],
-      joyoBest: {
-        label: bestJoyo.label,
-        accuracy: bestJoyo.rate,
-        passed: bestJoyo.passed,
-        total: bestJoyo.total
-      }
+      joyoBest: bestJoyo
+        ? {
+            label: bestJoyo.label,
+            accuracy: bestJoyo.rate,
+            passed: bestJoyo.passed,
+            total: bestJoyo.total
+          }
+        : null,
+      joyoParakeetBest: bestJoyoParakeet
+        ? {
+            label: bestJoyoParakeet.label,
+            accuracy: bestJoyoParakeet.rate,
+            passed: bestJoyoParakeet.passed,
+            total: bestJoyoParakeet.total
+          }
+        : null,
+      blindspotBest: bestBlindspot
+        ? {
+            label: bestBlindspot.label,
+            accuracy: bestBlindspot.rate,
+            passed: bestBlindspot.passed,
+            total: bestBlindspot.total
+          }
+        : null,
+      yomiBest: bestYomi
+        ? {
+            label: bestYomi.label,
+            accuracy: bestYomi.rate,
+            passed: bestYomi.passed,
+            total: bestYomi.total
+          }
+        : null
     }
   };
 
@@ -718,32 +900,57 @@ async function main() {
   console.log(`\nWrote ${outJson}`);
 
   // Pages 用スリム JSON（failed 配列を落とす）
-  const siteJson = path.join(root, "site", "data", "public-g2p-bench.json");
-  mkdirSync(path.dirname(siteJson), { recursive: true });
-  const slim = {
-    generatedAt: report.generatedAt,
-    headline: report.headline,
-    jaTtsG2p: report.jaTtsG2p.map(
-      ({ failed: _f, ...rest }) => rest
-    ),
-    joyoKanjiYomi: report.joyoKanjiYomi.map(
-      ({ failed: _f, ...rest }) => rest
-    ),
-    jvsCer: report.jvsCer.map(({ worst: _w, ...rest }) => rest),
-    publishedTtsLeaderboardRef: report.publishedTtsLeaderboardRef,
-    caveat: report.datasets?.[0]?.note
-  };
-  writeFileSync(siteJson, `${JSON.stringify(slim, null, 2)}\n`);
-  console.log(`Wrote ${siteJson}`);
+  if (!NO_SITE) {
+    const siteJson = path.join(root, "site", "data", "public-g2p-bench.json");
+    mkdirSync(path.dirname(siteJson), { recursive: true });
+    const slim = {
+      generatedAt: report.generatedAt,
+      headline: report.headline,
+      jaTtsG2p: report.jaTtsG2p.map(({ failed: _f, ...rest }) => rest),
+      jaTtsBlindspot: report.jaTtsBlindspot.map(({ failed: _f, ...rest }) => rest),
+      yomiBench: report.yomiBench.map(({ failed: _f, ...rest }) => rest),
+      joyoKanjiYomi: report.joyoKanjiYomi.map(
+        ({ failed: _f, ...rest }) => rest
+      ),
+      joyoParakeet: report.joyoParakeet.map(({ failed: _f, ...rest }) => rest),
+      jvsCer: report.jvsCer.map(({ worst: _w, ...rest }) => rest),
+      publishedTtsLeaderboardRef: report.publishedTtsLeaderboardRef,
+      caveat: report.datasets?.[0]?.note
+    };
+    writeFileSync(siteJson, `${JSON.stringify(slim, null, 2)}\n`);
+    console.log(`Wrote ${siteJson}`);
+  } else {
+    console.log("[site] skipped (--no-site)");
+  }
 
   console.log(
     `HEADLINE ${bestG2p.label}: ${(100 * bestG2p.rate).toFixed(1)}% ` +
       `(${bestG2p.passed}/${bestG2p.total}, 95% CI ${(100 * lo).toFixed(0)}–${(100 * hi).toFixed(0)}%)`
   );
-  console.log(
-    `JOYO ${bestJoyo.label}: ${(100 * bestJoyo.rate).toFixed(1)}% ` +
-      `(${bestJoyo.passed}/${bestJoyo.total})`
-  );
+  if (bestJoyo) {
+    console.log(
+      `JOYO ${bestJoyo.label}: ${(100 * bestJoyo.rate).toFixed(1)}% ` +
+        `(${bestJoyo.passed}/${bestJoyo.total})`
+    );
+  }
+  if (bestJoyoParakeet) {
+    console.log(
+      `JOYO-PARAKEET ${bestJoyoParakeet.label}: ${(100 * bestJoyoParakeet.rate).toFixed(1)}% ` +
+        `(${bestJoyoParakeet.passed}/${bestJoyoParakeet.total})`
+    );
+  }
+  if (bestBlindspot) {
+    console.log(
+      `BLINDSPOT ${bestBlindspot.label}: ${(100 * bestBlindspot.rate).toFixed(1)}% ` +
+        `(${bestBlindspot.passed}/${bestBlindspot.total})`
+    );
+  }
+  if (bestYomi) {
+    console.log(
+      `YOMI ${bestYomi.label}: ${(100 * bestYomi.rate).toFixed(1)}% ` +
+        `(${bestYomi.passed}/${bestYomi.total})`
+    );
+  }
 }
 
 main().catch((e) => {
