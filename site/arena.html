@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TTS Furigana Arena — 読み予測を一度に</title>
+    <meta
+      name="description"
+      content="2026-08-14 時点の無料トップクラスの日本語読み予測を、同じ文で一度に生成して並べるアリーナ。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      (function () {
+        try {
+          var key = "ytf-theme";
+          var pref = localStorage.getItem(key) || "system";
+          if (pref !== "light" && pref !== "dark" && pref !== "system") pref = "system";
+          var dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var theme = pref === "dark" || (pref === "system" && dark) ? "dark" : "light";
+          document.documentElement.setAttribute("data-theme", theme);
+          document.documentElement.setAttribute("data-theme-pref", pref);
+          document.documentElement.style.colorScheme = theme;
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./arena.css?v=20260814a" />
+    <script src="./config.js"></script>
+  </head>
+  <body class="arena-page">
+    <div class="wrap">
+      <header class="site-header">
+        <a class="brand" href="./">YT Furigana</a>
+        <nav class="nav" aria-label="主要ナビ">
+          <a href="./">ホーム</a>
+          <a href="./#demo">試す</a>
+          <a href="./compare.html">読み分けの差</a>
+          <a href="./arena.html" aria-current="page">TTS読みアリーナ</a>
+          <a href="./install.html">拡張</a>
+          <a href="https://github.com/Blackphi6/yt-furigana-extension">GitHub</a>
+        </nav>
+      </header>
+
+      <section class="arena-hero">
+        <div>
+          <p class="eyebrow">text-side · 2026-08-14</p>
+          <h1>同じ文を、<em>複数の読み</em>で同時に振る</h1>
+          <p class="lead">
+            TTS の漢字多音は、音声の上手さとは別問題です。ここでは無料で使える
+            トップクラスの読み予測を、同じ入力で一度に走らせてルビで並べます。
+            Sarashina2.2-TTS は漢字読みの公開 LLM-TTS で先頭ですが、公開推論がないため
+            自前 URL 枠に置いています。
+          </p>
+        </div>
+        <p class="as-of">調査日<strong id="research-asof">2026-08-14</strong>音声採点と text-side は別表</p>
+      </section>
+
+      <hr class="dohyo" />
+
+      <section class="composer" aria-label="入力">
+        <label class="visually-hidden" for="source">日本語の文</label>
+        <textarea
+          id="source"
+          maxlength="400"
+          placeholder="例: この先生きのこるには、文脈が要る。"
+        >この先生きのこるには、文脈が要る。</textarea>
+        <div class="samples" id="samples"></div>
+        <div class="engine-picks" role="group" aria-label="エンジン">
+          <label><input type="checkbox" id="eng-yt" checked /> YT Furigana</label>
+          <label><input type="checkbox" id="eng-naive" checked /> 辞書第一候補</label>
+          <label><input type="checkbox" id="eng-gemini" /> Gemini</label>
+          <label><input type="checkbox" id="eng-groq" /> Groq</label>
+          <label><input type="checkbox" id="eng-openrouter" /> OpenRouter</label>
+          <label><input type="checkbox" id="eng-custom" /> 自前 G2P</label>
+        </div>
+        <div class="composer-row">
+          <button type="button" class="btn" id="go">一度に生成</button>
+          <p class="hint">⌘/Ctrl + Enter</p>
+          <p id="arena-status" role="status">文を入れて生成すると、選んだ系統が同時に走ります。</p>
+        </div>
+        <details class="keys">
+          <summary>API キー（端末の localStorage のみ。このサイトのサーバーへは送りません）</summary>
+          <div class="grid">
+            <label>
+              Gemini キー
+              <input id="key-gemini" type="password" autocomplete="off" spellcheck="false" />
+            </label>
+            <label>
+              Gemini モデル
+              <select id="gemini-model">
+                <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+                <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite</option>
+                <option value="gemini-2.5-pro">gemini-2.5-pro</option>
+                <option value="gemini-3-flash-preview">gemini-3-flash-preview</option>
+              </select>
+            </label>
+            <label>
+              Groq キー
+              <input id="key-groq" type="password" autocomplete="off" spellcheck="false" />
+            </label>
+            <label>
+              Groq モデル
+              <select id="groq-model">
+                <option value="llama-3.3-70b-versatile">llama-3.3-70b-versatile</option>
+                <option value="llama-3.1-8b-instant">llama-3.1-8b-instant</option>
+                <option value="openai/gpt-oss-20b">openai/gpt-oss-20b</option>
+              </select>
+            </label>
+            <label>
+              OpenRouter キー
+              <input id="key-openrouter" type="password" autocomplete="off" spellcheck="false" />
+            </label>
+            <label>
+              OpenRouter モデル
+              <select id="or-model">
+                <option value="google/gemma-3-27b-it:free">gemma-3-27b-it:free</option>
+                <option value="meta-llama/llama-3.3-70b-instruct:free">llama-3.3-70b:free</option>
+                <option value="google/gemini-2.5-flash">gemini-2.5-flash</option>
+              </select>
+            </label>
+            <label>
+              自前 G2P の origin（POST /v1/readings）
+              <input
+                id="key-custom"
+                type="url"
+                placeholder="https://example.com"
+                autocomplete="off"
+                spellcheck="false"
+              />
+            </label>
+          </div>
+          <p class="hint">
+            キーは
+            <a href="https://aistudio.google.com/apikey" rel="noopener noreferrer">Google AI Studio</a>、
+            <a href="https://console.groq.com/keys" rel="noopener noreferrer">Groq</a>、
+            <a href="https://openrouter.ai/keys" rel="noopener noreferrer">OpenRouter</a>
+            で無料発行できます。Gemini をブラウザから叩けないときは OpenRouter 経由にしてください。
+            Sarashina2.2-TTS 自体は GPU 必須・非商用ライセンスです。
+          </p>
+        </details>
+      </section>
+
+      <div id="stage" aria-live="polite"></div>
+
+      <section class="research">
+        <h2>調査メモ（無料で強い読み）</h2>
+        <p class="sub">
+          2026-08-14 時点。TTS 音声の漢字読みと、テキスト側 G2P / ルビは別モダリティです。
+          数字を横並びにするときは出典を開いてください。
+        </p>
+        <div id="research-rows"></div>
+      </section>
+
+      <footer class="site-footer">
+        <a href="./">ホーム</a>
+        <a href="./compare.html">読み分けの差</a>
+        <a href="./privacy.html">プライバシー</a>
+        <a href="https://github.com/Blackphi6/yt-furigana-extension">GitHub</a>
+        <p class="trademark-note">
+          YouTube、TVer、Google Chrome、GitHub、Stripe、Ollama、Hugging Face、Google、Groq 等の名称・ロゴは各社の商標です。
+          「YT Furigana」の「YT」は製品名の略称であり、YouTube の商標ではありません。
+        </p>
+      </footer>
+    </div>
+    <script type="module" src="./arena.js?v=20260814a"></script>
+    <script src="./theme.js" type="module"></script>
+  </body>
+</html>

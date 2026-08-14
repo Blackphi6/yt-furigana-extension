@@ -13,6 +13,7 @@
 | 読み API | https://yt-furigana-readings.onrender.com |
 | OpenAPI | https://yt-furigana-readings.onrender.com/docs |
 | 学習レポート | ./learning-report.html |
+| TTS読みアリーナ | ./arena.html |
 
 `config.js` の `readingApiUrl` がデモの接続先です。
 
