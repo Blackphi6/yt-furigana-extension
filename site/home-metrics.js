@@ -125,7 +125,8 @@ async function loadPublicG2p() {
     const report = await res.json();
     const head = report.headline || {};
     fill("stat-g2p", pct(head.accuracy));
-    fill("stat-joyo", pct(head.joyoBest?.accuracy));
+    const joyoHead = head.joyoParakeetBest || head.joyoBest;
+    fill("stat-joyo", pct(joyoHead?.accuracy));
 
     const g2pTotal = report.jaTtsG2p?.[0]?.total || head.total || 151;
     fill(
@@ -136,12 +137,48 @@ async function loadPublicG2p() {
       max: 1
     });
 
-    const joyo = report.joyoKanjiYomi || [];
-    const joyoBest = head.joyoBest || joyo.at(-1);
+    const blindspot = report.jaTtsBlindspot || [];
+    const blindspotBest = head.blindspotBest || blindspot.at(-1);
+    fill(
+      "blindspot-meta",
+      blindspotBest
+        ? `${blindspotBest.passed}/${blindspotBest.total} · text-side`
+        : "—"
+    );
+    renderBars(
+      document.getElementById("blindspot-bars"),
+      blindspot.map((r) => ({
+        label: r.label,
+        value: r.rate,
+        kind: String(r.label).includes("yt-furigana") ? "ours" : "base"
+      })),
+      { max: 1 }
+    );
+
+    const yomi = report.yomiBench || [];
+    const yomiBest = head.yomiBest || yomi.at(-1);
+    fill(
+      "yomi-meta",
+      yomiBest ? `${yomiBest.passed}/${yomiBest.total} · text-side` : "—"
+    );
+    renderBars(
+      document.getElementById("yomi-bars"),
+      yomi.map((r) => ({
+        label: r.label,
+        value: r.rate,
+        kind: String(r.label).includes("yt-furigana") ? "ours" : "base"
+      })),
+      { max: 1 }
+    );
+
+    const joyo = report.joyoKanjiYomi?.length
+      ? report.joyoKanjiYomi
+      : report.joyoParakeet || [];
+    const joyoBest = joyoHead || joyo.at(-1);
     fill(
       "joyo-meta",
       joyoBest
-        ? `${joyoBest.passed}/${joyoBest.total} · text-side`
+        ? `${joyoBest.passed}/${joyoBest.total} · text-side${report.joyoParakeet?.length ? " · Parakeet" : ""}`
         : "—"
     );
     renderBars(

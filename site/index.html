@@ -306,6 +306,31 @@
           </article>
         </div>
 
+        <div class="bench-side-grid fade-up">
+          <article class="bench-panel" aria-labelledby="blindspot-chart-title">
+            <div class="bench-panel-head">
+              <h3 id="blindspot-chart-title">ja-tts blindspot · 盲点 151 問</h3>
+              <p class="bench-meta" id="blindspot-meta">—</p>
+            </div>
+            <div class="bar-chart bar-chart--compact" id="blindspot-bars" role="img" aria-label="blindspot ベンチの棒グラフ"></div>
+            <p class="hint bench-caveat">
+              LLM 生成の追加セット。
+              <a href="https://github.com/filmapp/ja-tts-g2p-bench" rel="noopener">GitHub</a>
+            </p>
+          </article>
+          <article class="bench-panel" aria-labelledby="yomi-chart-title">
+            <div class="bench-panel-head">
+              <h3 id="yomi-chart-title">YOMI-Bench · 語内漢字</h3>
+              <p class="bench-meta" id="yomi-meta">—</p>
+            </div>
+            <div class="bar-chart bar-chart--compact" id="yomi-bars" role="img" aria-label="YOMI-Bench の棒グラフ"></div>
+            <p class="hint bench-caveat">
+              複数読み予測（377 問）。
+              <a href="https://github.com/benchmark-release/YOMI-Bench" rel="noopener">GitHub</a>
+            </p>
+          </article>
+        </div>
+
         <h3 class="bench-subhead" id="internal-bench-title">固定ベンチ（自前）</h3>
         <p class="sub bench-subcopy">
           リポジトリ内の seed / hard / easy。日次の増減は学習ログで追えます。

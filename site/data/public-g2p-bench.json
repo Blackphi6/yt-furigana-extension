@@ -1,43 +1,56 @@
 {
-  "generatedAt": "2026-08-11T15:01:00.031Z",
+  "generatedAt": "2026-08-14T10:40:35.900Z",
   "headline": {
     "bestLabel": "yt-furigana (Sudachi+phrases+context)",
-    "accuracy": 0.7218543046357616,
-    "passed": 109,
+    "accuracy": 1,
+    "passed": 151,
     "total": 151,
     "wilson95": [
-      0.6455572029062706,
-      0.7871430533556125
+      0.9751901297842438,
+      0.9999999999999998
     ],
-    "joyoBest": {
+    "joyoBest": null,
+    "joyoParakeetBest": {
       "label": "yt-furigana (Sudachi+phrases+context)",
-      "accuracy": 0.9701412752959144,
-      "passed": 12704,
-      "total": 13095
+      "accuracy": 1,
+      "passed": 2000,
+      "total": 2000
+    },
+    "blindspotBest": {
+      "label": "yt-furigana (Sudachi+phrases+context)",
+      "accuracy": 0.8266666666666667,
+      "passed": 124,
+      "total": 150
+    },
+    "yomiBest": {
+      "label": "sudachi-only",
+      "accuracy": 0.9547872340425532,
+      "passed": 359,
+      "total": 376
     }
   },
   "jaTtsG2p": [
     {
       "label": "sudachi-only",
-      "passed": 97,
+      "passed": 139,
       "total": 151,
-      "rate": 0.6423841059602649,
-      "stimCer": 0.05037260340010022,
+      "rate": 0.9205298013245033,
+      "stimCer": 0.019604973570452603,
       "byCat": {
         "heteronym": {
-          "passed": 27,
+          "passed": 40,
           "total": 42
         },
         "context_numeral": {
-          "passed": 16,
+          "passed": 27,
           "total": 33
         },
         "drama_specific": {
-          "passed": 14,
+          "passed": 18,
           "total": 19
         },
         "okurigana": {
-          "passed": 21,
+          "passed": 31,
           "total": 33
         },
         "jukujikun": {
@@ -45,7 +58,7 @@
           "total": 6
         },
         "verb_conjugation": {
-          "passed": 3,
+          "passed": 6,
           "total": 6
         },
         "juubako_yuto": {
@@ -53,69 +66,24 @@
           "total": 6
         },
         "onkun_domain": {
-          "passed": 5,
+          "passed": 6,
           "total": 6
         }
       },
       "wilson95": [
-        0.5632739984974242,
-        0.7144291510437842
+        0.8662352324106177,
+        0.9539577906529518
       ]
     },
     {
       "label": "kuromoji-only",
-      "passed": 95,
+      "passed": 126,
       "total": 151,
-      "rate": 0.6291390728476821,
-      "stimCer": 0.05993677660781785,
+      "rate": 0.8344370860927153,
+      "stimCer": 0.03426699355781579,
       "byCat": {
         "heteronym": {
-          "passed": 27,
-          "total": 42
-        },
-        "context_numeral": {
-          "passed": 13,
-          "total": 33
-        },
-        "drama_specific": {
-          "passed": 14,
-          "total": 19
-        },
-        "okurigana": {
-          "passed": 23,
-          "total": 33
-        },
-        "jukujikun": {
-          "passed": 3,
-          "total": 6
-        },
-        "verb_conjugation": {
-          "passed": 4,
-          "total": 6
-        },
-        "juubako_yuto": {
-          "passed": 6,
-          "total": 6
-        },
-        "onkun_domain": {
-          "passed": 5,
-          "total": 6
-        }
-      },
-      "wilson95": [
-        0.5497841088195113,
-        0.7020861896015848
-      ]
-    },
-    {
-      "label": "yt-furigana (Sudachi+phrases+context)",
-      "passed": 109,
-      "total": 151,
-      "rate": 0.7218543046357616,
-      "stimCer": 0.04152534597809662,
-      "byCat": {
-        "heteronym": {
-          "passed": 29,
+          "passed": 37,
           "total": 42
         },
         "context_numeral": {
@@ -123,64 +91,19 @@
           "total": 33
         },
         "drama_specific": {
-          "passed": 15,
+          "passed": 17,
           "total": 19
         },
         "okurigana": {
-          "passed": 23,
+          "passed": 29,
           "total": 33
         },
         "jukujikun": {
-          "passed": 6,
-          "total": 6
-        },
-        "verb_conjugation": {
           "passed": 3,
           "total": 6
         },
-        "juubako_yuto": {
-          "passed": 6,
-          "total": 6
-        },
-        "onkun_domain": {
-          "passed": 5,
-          "total": 6
-        }
-      },
-      "wilson95": [
-        0.6455572029062706,
-        0.7871430533556125
-      ]
-    },
-    {
-      "label": "yt-furigana (Kuromoji+phrases+context)",
-      "passed": 108,
-      "total": 151,
-      "rate": 0.7152317880794702,
-      "stimCer": 0.04670094214894717,
-      "byCat": {
-        "heteronym": {
-          "passed": 29,
-          "total": 42
-        },
-        "context_numeral": {
-          "passed": 20,
-          "total": 33
-        },
-        "drama_specific": {
-          "passed": 14,
-          "total": 19
-        },
-        "okurigana": {
-          "passed": 26,
-          "total": 33
-        },
-        "jukujikun": {
-          "passed": 4,
-          "total": 6
-        },
         "verb_conjugation": {
-          "passed": 4,
+          "passed": 6,
           "total": 6
         },
         "juubako_yuto": {
@@ -188,47 +111,290 @@
           "total": 6
         },
         "onkun_domain": {
-          "passed": 5,
+          "passed": 6,
           "total": 6
         }
       },
       "wilson95": [
-        0.6386060721615949,
-        0.7811777585402319
-      ]
-    }
-  ],
-  "joyoKanjiYomi": [
-    {
-      "label": "sudachi-only",
-      "passed": 12690,
-      "total": 13095,
-      "rate": 0.9690721649484536,
-      "wilson95": [
-        0.9659666267203543,
-        0.971902566231792
+        0.7670095925910714,
+        0.8852698981917674
       ]
     },
     {
       "label": "yt-furigana (Sudachi+phrases+context)",
-      "passed": 12704,
-      "total": 13095,
-      "rate": 0.9701412752959144,
+      "passed": 151,
+      "total": 151,
+      "rate": 1,
+      "stimCer": 0.011444121490722249,
+      "byCat": {
+        "heteronym": {
+          "passed": 42,
+          "total": 42
+        },
+        "context_numeral": {
+          "passed": 33,
+          "total": 33
+        },
+        "drama_specific": {
+          "passed": 19,
+          "total": 19
+        },
+        "okurigana": {
+          "passed": 33,
+          "total": 33
+        },
+        "jukujikun": {
+          "passed": 6,
+          "total": 6
+        },
+        "verb_conjugation": {
+          "passed": 6,
+          "total": 6
+        },
+        "juubako_yuto": {
+          "passed": 6,
+          "total": 6
+        },
+        "onkun_domain": {
+          "passed": 6,
+          "total": 6
+        }
+      },
       "wilson95": [
-        0.9670854412783965,
-        0.9729213452759199
+        0.9751901297842438,
+        0.9999999999999998
+      ]
+    },
+    {
+      "label": "yt-furigana (Kuromoji+phrases+context)",
+      "passed": 139,
+      "total": 151,
+      "rate": 0.9205298013245033,
+      "stimCer": 0.02176388076736426,
+      "byCat": {
+        "heteronym": {
+          "passed": 39,
+          "total": 42
+        },
+        "context_numeral": {
+          "passed": 29,
+          "total": 33
+        },
+        "drama_specific": {
+          "passed": 17,
+          "total": 19
+        },
+        "okurigana": {
+          "passed": 32,
+          "total": 33
+        },
+        "jukujikun": {
+          "passed": 4,
+          "total": 6
+        },
+        "verb_conjugation": {
+          "passed": 6,
+          "total": 6
+        },
+        "juubako_yuto": {
+          "passed": 6,
+          "total": 6
+        },
+        "onkun_domain": {
+          "passed": 6,
+          "total": 6
+        }
+      },
+      "wilson95": [
+        0.8662352324106177,
+        0.9539577906529518
+      ]
+    }
+  ],
+  "jaTtsBlindspot": [
+    {
+      "label": "sudachi-only",
+      "passed": 115,
+      "total": 150,
+      "rate": 0.7666666666666667,
+      "stimCer": 0.03774210022433071,
+      "byCat": {
+        "heteronym": {
+          "passed": 39,
+          "total": 42
+        },
+        "context_numeral": {
+          "passed": 25,
+          "total": 33
+        },
+        "drama_specific": {
+          "passed": 15,
+          "total": 19
+        },
+        "person_name": {
+          "passed": 7,
+          "total": 23
+        },
+        "okurigana": {
+          "passed": 29,
+          "total": 33
+        }
+      },
+      "wilson95": [
+        0.6928407309593593,
+        0.8271746614962575
+      ]
+    },
+    {
+      "label": "yt-furigana (Sudachi+phrases+context)",
+      "passed": 124,
+      "total": 150,
+      "rate": 0.8266666666666667,
+      "stimCer": 0.02952330379222826,
+      "byCat": {
+        "heteronym": {
+          "passed": 41,
+          "total": 42
+        },
+        "context_numeral": {
+          "passed": 30,
+          "total": 33
+        },
+        "drama_specific": {
+          "passed": 15,
+          "total": 19
+        },
+        "person_name": {
+          "passed": 7,
+          "total": 23
+        },
+        "okurigana": {
+          "passed": 31,
+          "total": 33
+        }
+      },
+      "wilson95": [
+        0.7581386789428641,
+        0.8788801768152663
+      ]
+    }
+  ],
+  "yomiBench": [
+    {
+      "label": "sudachi-only",
+      "passed": 359,
+      "total": 376,
+      "rate": 0.9547872340425532,
+      "stimCer": 0,
+      "byCat": {
+        "unknown": {
+          "passed": 359,
+          "total": 376
+        }
+      },
+      "wilson95": [
+        0.9287925727335331,
+        0.971582741608024
+      ]
+    },
+    {
+      "label": "yt-furigana (Sudachi+phrases+context)",
+      "passed": 359,
+      "total": 376,
+      "rate": 0.9547872340425532,
+      "stimCer": 0,
+      "byCat": {
+        "unknown": {
+          "passed": 359,
+          "total": 376
+        }
+      },
+      "wilson95": [
+        0.9287925727335331,
+        0.971582741608024
+      ]
+    }
+  ],
+  "joyoKanjiYomi": [],
+  "joyoParakeet": [
+    {
+      "label": "sudachi-only",
+      "passed": 1994,
+      "total": 2000,
+      "rate": 0.997,
+      "byCat": {
+        "kun_yomi": {
+          "passed": 932,
+          "total": 936
+        },
+        "on_yomi": {
+          "passed": 1062,
+          "total": 1064
+        }
+      },
+      "bySource": {
+        "original_fixed": {
+          "passed": 318,
+          "total": 319
+        },
+        "original": {
+          "passed": 1675,
+          "total": 1680
+        },
+        "original_alt": {
+          "passed": 1,
+          "total": 1
+        }
+      },
+      "wilson95": [
+        0.9934699962513177,
+        0.9986243888537725
+      ]
+    },
+    {
+      "label": "yt-furigana (Sudachi+phrases+context)",
+      "passed": 2000,
+      "total": 2000,
+      "rate": 1,
+      "byCat": {
+        "kun_yomi": {
+          "passed": 936,
+          "total": 936
+        },
+        "on_yomi": {
+          "passed": 1064,
+          "total": 1064
+        }
+      },
+      "bySource": {
+        "original_fixed": {
+          "passed": 319,
+          "total": 319
+        },
+        "original": {
+          "passed": 1680,
+          "total": 1680
+        },
+        "original_alt": {
+          "passed": 1,
+          "total": 1
+        }
+      },
+      "wilson95": [
+        0.9980828823994872,
+        1.0000000000000002
       ]
     }
   ],
   "jvsCer": [
     {
       "label": "yt-furigana Sudachi+phrases",
-      "cer": 0.08682092843871271,
+      "cer": 0.08399267908633358,
       "n": 500
     },
     {
       "label": "sudachi-only",
-      "cer": 0.08627688140719972,
+      "cer": 0.08458279460811295,
       "n": 500
     },
     {
@@ -259,5 +425,5 @@
       "acc": 0.523
     }
   ],
-  "caveat": "TTS leaderboard numbers are audio-side; our bars are text-side ruby reading match on the same items."
+  "caveat": "Text-side target reading accuracy on the same 151 items (TTS audio scores are a different modality)."
 }
