@@ -118,8 +118,11 @@ def evaluate(model, tokenizer, rows: list[dict], device: torch.device) -> dict:
         )
         encoded = {k: v.to(device) for k, v in encoded.items()}
         logits = model(**encoded).logits
-        probs = torch.softmax(logits, dim=-1)[:, 1]
-        pred = cands[int(probs.argmax().item())]
+        pos = logits[:, 1]
+        if pos.numel() == 1:
+            pred = cands[0]
+        else:
+            pred = cands[int(pos.argmax().item())]
         correct += int(pred == gold)
         total += 1
     return {

@@ -33,14 +33,19 @@ Local-first reading API for the Chrome extension. No cloud fee.
 
 1. **ラティスを固める** — `heteronym-candidates.json` + UniDic base。合成ラベルはトークン境界一致のみ採用（預金の「金」問題）。
 2. **慣用句は trust 表** — `trust_patterns.py`（下手に出る 等）。LLM 審判に任せない。
-3. **NDL 本学習** — `npm run learn:ndl`（青空+書誌 → lattice softmax → seed/holdout ゲート → `artifacts/reranker-prod`）
+3. **NDL 本学習** — `npm run learn:ndl`（fetch → build → train → **ONNX export** → `artifacts/reranker-prod` + `data/reranker-deploy`）
 4. **閾値フォールバック** — `YT_FURIGANA_RERANKER_THRESHOLD=0.55`（既定）
-5. **評価ゲート** — `npm run reading-engine:test` / seed smoke（悪化で昇格拒否）
+5. **推論** — ONNX 優先（`YT_FURIGANA_RERANKER_BACKEND=onnx`）。未設定時は `reranker-deploy` / `reranker-prod` を自動探索
+6. **評価ゲート** — holdout + seed-bench。悪化時は promote しない
 6. **商用 LLM API 出力は学習禁止** — オープンウェイトの生成×別ファミリー盲検×仲裁のみ
 
 ```bash
-export YT_FURIGANA_RERANKER_PATH=reading-engine/train/artifacts/reranker-prod
+npm run learn:ndl
+# または段階実行:
+# npm run learn:ndl-fetch && npm run learn:ndl-build && npm run learn:ndl-train && npm run learn:ndl-export-onnx
+
 npm run reading-engine
+# reranker-prod / reranker-deploy があれば自動ロード（ONNX 優先）
 ```
 
 ## Freemium endpoints

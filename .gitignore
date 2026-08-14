@@ -7,10 +7,16 @@ _metadata/
 .venv-reading/
 data/learning/learning-log.jsonl
 data/learning/proposals.jsonl
+data/learning/proposals-g2p.jsonl
+data/learning/proposals-joyo-per-reading.jsonl
+data/learning/proposals-ja-tts-g2p.jsonl
 data/learning/inbox.jsonl
 data/learning/inbox-from-chrome.jsonl
 data/learning/user-dict-from-chrome.json
 reading-engine/train/artifacts/
+# deploy バンドルは INT8 + tokenizer のみ追跡（FP32 は artifacts 側）
+reading-engine/data/reranker-deploy/onnx/model.onnx
+reading-engine/data/reranker-deploy/onnx/model.onnx.data
 data/generated/learned-overrides.bak.json
 data/generated/english-katakana.json
 # フル地名フレーズ（非圧縮 ~39MB）。gz と site サブセットのみ追跡する
@@ -51,6 +57,9 @@ reading-engine/data/premium/proposals.jsonl
 reading-engine/data/premium/shared-readings.json
 reading-engine/data/premium/shared-readings-curated.json
 dist-store/
+dist-macos/
+macos/**/.build/
+macos/**/.swiftpm/
 store/cws-upload/yt-furigana-extension.zip
 reading-engine/.env
 store/.env.webstore

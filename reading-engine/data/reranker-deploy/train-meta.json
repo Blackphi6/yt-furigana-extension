@@ -1,0 +1,16 @@
+{
+  "model": "sbintuitions/modernbert-ja-30m",
+  "train": "/Volumes/SSD4/20260709_yt-furigana-extension/data/learning/reranker-ndl.jsonl",
+  "train_rows_used": 30000,
+  "steps": 15000,
+  "epochs": 2,
+  "loss": "lattice_softmax",
+  "holdout_accuracy": 0.8483333333333334,
+  "holdout_correct": 1018,
+  "holdout_total": 1200,
+  "seed_accuracy": 1.0,
+  "seed_correct": 14,
+  "seed_total": 14,
+  "gate_ok": true,
+  "previous_seed_accuracy": 1.0
+}

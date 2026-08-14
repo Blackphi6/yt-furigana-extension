@@ -4,3 +4,7 @@ fastapi>=0.115.0
 uvicorn>=0.30.0
 pydantic>=2.0.0
 stripe>=11.0.0
+# reranker（ONNX 推論 + tokenizer）
+transformers>=4.48.0
+onnxruntime>=1.19.0
+sentencepiece>=0.2.0

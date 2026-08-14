@@ -50,10 +50,23 @@ license auto-create. Also set in Dashboard:
 
 OpenAPI `/docs` is disabled when hosted as production.
 
+## ModernBERT reranker（文脈読み分け）
+
+`reading-engine/data/reranker-deploy/`（INT8 約 35MB）をイメージに同梱します。
+
+```bash
+npm run learn:ndl              # 学習 → ONNX export → deploy バンドル更新
+# または既存 prod から:
+npm run learn:ndl-export-onnx
+```
+
+`GET /health` の `reranker.loaded` / `reranker.backend` で確認できます。
+
 ## Local Docker
 
 ```bash
-# from repo root
+# from repo root（reranker-deploy があること）
 docker build -f reading-engine/deploy/Dockerfile -t yt-furigana-readings .
 docker run --rm -p 7860:7860 yt-furigana-readings
+curl -s http://127.0.0.1:7860/health | jq .reranker
 ```

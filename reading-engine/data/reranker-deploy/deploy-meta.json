@@ -1,0 +1,9 @@
+{
+  "source_model": "reading-engine/train/artifacts/reranker-prod",
+  "onnx_int8": "reading-engine/data/reranker-deploy/onnx/model.int8.onnx",
+  "onnx_fp32": null,
+  "bundle_note": "INT8-only for Docker/Render (≈35MB)",
+  "holdout_accuracy": 0.848,
+  "seed_accuracy": 1.0,
+  "base": "sbintuitions/modernbert-ja-30m"
+}

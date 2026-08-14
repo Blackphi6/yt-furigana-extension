@@ -75,6 +75,12 @@ TRUST_PATTERNS: list[TrustPattern] = [
         confidence=0.97,
     ),
     TrustPattern(
+        name="hakushi-gou",
+        pattern=re.compile(r"博士号|博士の学位"),
+        surface="博士",
+        reading="はくし",
+    ),
+    TrustPattern(
         name="kuu-wo-kiru",
         pattern=re.compile(r"空を切"),
         surface="空",

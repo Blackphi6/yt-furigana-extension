@@ -13,7 +13,7 @@
 | 商用 API を教師にするな | オープンウェイトのみ（Ollama 3 ファミリー盲検） |
 | ドメイン合成を回せ | `learn:synth` → `merge` → `corpus/synth-open.jsonl` |
 | 評価ゲートなしで昇格するな | 3 ベンチ + `gate-baseline.json`（低下拒否） |
-| 無人で強化 | Actions: **日次 CF 合成** + 週次 retrain-lite（Mac不要・¥0） |
+| 無人で強化 | Actions: **2h 合成(12/day)** + **6h promote(4/day)** + 週次 eval:g2p + 月次全文（Mac不要・¥0） |
 
 ## やること / やらないこと
 
@@ -32,7 +32,7 @@
    拡張側では **NEologd／学習フレーズの文中ヒット** もここに載せて送る（辞書＋読み API 併用）。
 2. **trust_patterns** — `下手に出る`→`したて`、`市場規模`→`しじょう`、`ただ永遠に`→`とわ` …
 3. **ラティス** — UniDic base + `heteronym-candidates.json` + cue/creative（候補外禁止）
-4. **rerank** — `YT_FURIGANA_RERANKER_PATH` があれば ModernBERT pair、なければ cue
+4. **rerank** — `reranker-deploy`（ONNX INT8 約35MB）があれば自動ロード。高確信キュー（≥0.85）→ reranker → 低確信キュー
 5. **閾値** — `YT_FURIGANA_RERANKER_THRESHOLD`（既定 0.55）未満は base
 6. **クライアント後処理** — span 応答にローカル句を再合成（`phrase-hits.js`）
 
@@ -122,10 +122,22 @@ Groq 無料枠の **verify / arbitrate モデル（約 1000 RPD）** がボト�
 | トリガ | Runner | 内容 |
 |--------|--------|------|
 | `mode=smoke` | ubuntu-latest | dry + 3ベンチ |
-| cron **1日4回**（UTC 0/6/12/18） / `mode=synth` | ubuntu-latest | Groq 合成（`per_target=2`）+ ゲート計測 + [学習レポート](../site/learning-report.html) / [ラティス](../site/lattice.html) 更新 |
-| cron 月曜 03:30 UTC / `mode=retrain` | ubuntu-latest | merge + ルール学習 + `learn:promote-cues` + 3ベンチ（baseline 更新） |
+| cron **2h**（`5 */2 * * *`）/ `mode=synth` | ubuntu-latest | Groq 合成 12回/日（verify **~936 RPD**）+ レポート更新 |
+| cron **6h**（`35 */6 * * *`）/ `mode=promote` | ubuntu-latest | overrides 昇格 4回/日（rescore 2000 + per-reading、eval:g2p 省略） |
+| cron 月曜 03:30 UTC / `mode=retrain` | ubuntu-latest | **eval:g2p** + 昇格 + 3ベンチ（baseline 更新） |
+| cron 毎月1日 04:00 UTC | ubuntu-latest | per-reading **13536 全文** |
 
-想定: 1ランあたり gen+verify+(arb) で verify/arb 系 **約 150–250 回** × 4 ≒ **600–1000 RPD**（無料上限付近）。429 時は `Retry-After` で自動待機。
+想定: synth 1回 ≒ verify **78** × 12回/日 ≒ **936 RPD**（Groq verify 上限 1000 の 94%）。429 時は `Retry-After` で自動待機。
+
+### 競合との差分（JRM 等）
+
+| 項目 | JRM（[記事](https://zenn.dev/nixo/articles/3139042d4034f2)） | 本拡張 |
+|------|------|--------|
+| 合成 | 6h | **2h**（Groq 上限まで） |
+| 昇格 | 週次 reranker 再学習 | **6h** overrides + 週次 eval:g2p |
+| 幻覚防止 | 候補ラティス内選択 | 同型 + phrase trie guard |
+| 同形異音 | ModernBERT reranker | Sarashina 式 **per-reading** + ja-tts/JVS ゲート |
+| 配布 | API サーバー | **Chrome 拡張**に overrides 同梱 |
 
 人手で同形異音を詰めたいとき:
 
@@ -164,7 +176,7 @@ ModernBERT 本番再学習だけローカル `.venv-reading` が要る（通常�
 | Cloudflare Workers AI | ¥0 | 一部アカウントで REST が 401（今回） |
 | Ollama ローカル | 電気代のみ | 任意・高精度 |
 
-Groq 等の太い無料枠は **1日4回の自動 synth** で verify/arb の RPD 上限付近まで使います。
+Groq 等の太い無料枠は **2時間ごと synth（12回/日）** で verify RPD 上限の 94% まで使います。
 429 が出たら間隔を開けてリトライ（Paid は不要な想定）。
 
 ## 一度回すコマンド（推論 Smoke）
@@ -172,9 +184,11 @@ Groq 等の太い無料枠は **1日4回の自動 synth** で verify/arb の RPD
 ```bash
 npm run learn && npm run build
 npm run reading-engine:test
-npm run learn:reranker-dry
-export YT_FURIGANA_RERANKER_PATH=reading-engine/train/artifacts/reranker-prod
-npm run reading-engine
+```bash
+npm run learn:ndl              # fetch → build → train → ONNX export
+npm run reading-engine         # reranker-deploy があれば ONNX 自動ロード
+npm run learn:promote-reranker-distill  # 高確信 reranker 正解 → cue 候補
+```
 ```
 
 本番規模（NDL）: `npm run learn:ndl`（評価ゲートなしのモデル差し替えはしない）。

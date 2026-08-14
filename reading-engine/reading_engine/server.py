@@ -227,13 +227,19 @@ def root() -> dict[str, Any]:
 
 @app.get("/health")
 def health() -> dict[str, Any]:
+    from reading_engine.reranker import get_reranker, reranker_backend
+
+    loaded = get_reranker() is not None
     return {
         "status": "ok",
         "readingsAuth": require_auth_for_readings(),
         "stripeConfigured": stripe_configured(),
-        # Lets us verify Render redeployed (Blueprint sync alone may skip rebuilds).
         "buildId": os.environ.get("YT_FURIGANA_BUILD_ID") or "local",
-        "engineVersion": "0.3.1-clause-cues",
+        "engineVersion": "0.3.2-modernbert-reranker",
+        "reranker": {
+            "loaded": loaded,
+            "backend": reranker_backend() if loaded else "none",
+        },
     }
 
 

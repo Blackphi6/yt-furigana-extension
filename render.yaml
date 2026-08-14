@@ -25,8 +25,11 @@ services:
         value: "60"
       - key: YT_FURIGANA_PUBLIC_READINGS
         value: "1"
+      # 空でも data/reranker-deploy を自動探索。明示パスで Docker 同梱を固定
       - key: YT_FURIGANA_RERANKER_PATH
-        value: ""
+        value: /app/reading-engine/data/reranker-deploy
+      - key: YT_FURIGANA_RERANKER_BACKEND
+        value: onnx
       - key: YT_FURIGANA_CONTRIB_MIN_VOTES
         value: "3"
       - key: YT_FURIGANA_CONTRIB_COOLDOWN_SEC
@@ -54,4 +57,4 @@ services:
         sync: false
       # Bump this when you need Blueprint Manual sync to force a Docker rebuild
       - key: YT_FURIGANA_BUILD_ID
-        value: "dev-ingest-quiz-parse-20260807d"
+        value: "modernbert-reranker-onnx-20260815a"

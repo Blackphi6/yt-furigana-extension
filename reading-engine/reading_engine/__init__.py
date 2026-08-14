@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -401,6 +402,17 @@ class ReadingEngine:
         if trust and trust.reading in cands:
             return trust.reading, trust.confidence, "trust_pattern", cands[:6]
 
+        # 3) 高確信キュー（手作りルール）— reranker より優先
+        cue_scored = []
+        for cand in cands:
+            conf, source = self._score_cue(surface, cand, full_text, base, span)
+            cue_scored.append((conf, cand, source))
+        cue_reading, cue_conf, cue_src = _pick_constrained(
+            cands, cue_scored, base, 0.85
+        )
+        if cue_src in ("cue", "creative_ruby") and cue_conf >= 0.85:
+            return cue_reading, cue_conf, cue_src, cands[:6]
+
         # 4) ModernBERT among lattice only
         reranker = get_reranker()
         if reranker is not None and len(cands) >= 2:
@@ -410,17 +422,14 @@ class ReadingEngine:
                 reading, conf, source = _pick_constrained(
                     cands, scored, base, self._threshold
                 )
-                return reading, conf, source, cands[:6]
+                if source == "reranker":
+                    return reading, conf, source, cands[:6]
             except Exception as exc:  # noqa: BLE001
-                print(f"[reading_engine] reranker score failed: {exc}")
+                print(f"[reading_engine] reranker score failed: {exc}", file=sys.stderr)
 
-        # Cue rules fallback (still lattice-only), scoped to clause
-        scored = []
-        for cand in cands:
-            conf, source = self._score_cue(surface, cand, full_text, base, span)
-            scored.append((conf, cand, source))
+        # 5) 低確信キュー / base フォールバック
         reading, conf, source = _pick_constrained(
-            cands, scored, base, self._threshold
+            cands, cue_scored, base, self._threshold
         )
         return reading, conf, source, cands[:6]
 
@@ -451,6 +460,12 @@ class ReadingEngine:
 
         tokens: list[dict[str, Any]] = []
         for start, end, surface, reading in phrase_spans:
+            if surface not in user_map:
+                if match_trust_reading(surface, text, (start, end)):
+                    continue
+                # 同形異音は lattice（cue / reranker）へ回す
+                if len(self.heteronyms.get(surface, [])) >= 2:
+                    continue
             tokens.append(
                 {
                     "surface": surface,

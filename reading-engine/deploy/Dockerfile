@@ -8,7 +8,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     PORT=7860 \
     YT_FURIGANA_CORS_ORIGINS=https://blackphi6.github.io,http://127.0.0.1:4173,http://localhost:4173 \
-    YT_FURIGANA_RERANKER_PATH= \
     YT_FURIGANA_RATE_LIMIT_PER_MIN=30 \
     PYTHONPATH=/app/reading-engine
 
@@ -30,7 +29,8 @@ COPY data/creative-ruby /app/data/creative-ruby
 COPY reading-engine/deploy/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
-ENV YT_FURIGANA_SHARED_READINGS_SEED=/app/data/generated/shared-readings-seed.json
+ENV YT_FURIGANA_SHARED_READINGS_SEED=/app/data/generated/shared-readings-seed.json \
+    YT_FURIGANA_RERANKER_BACKEND=onnx
 
 EXPOSE 7860
 
