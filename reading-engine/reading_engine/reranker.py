@@ -154,12 +154,13 @@ class CandidateRerankerTorch:
 _reranker: CandidateRerankerOnnx | CandidateRerankerTorch | None = None
 _load_attempted = False
 _reranker_backend = "none"
+_load_failures = 0
 
 
 def get_reranker() -> CandidateRerankerOnnx | CandidateRerankerTorch | None:
-    """遅延ロード。ONNX を優先（軽量）。"""
-    global _reranker, _load_attempted, _reranker_backend
-    if _load_attempted:
+    """遅延ロード。ONNX を優先（軽量）。起動直後の失敗は数回だけ再試行。"""
+    global _reranker, _load_attempted, _reranker_backend, _load_failures
+    if _load_attempted and (_reranker is not None or _load_failures >= 3):
         return _reranker
     _load_attempted = True
 
@@ -173,18 +174,24 @@ def get_reranker() -> CandidateRerankerOnnx | CandidateRerankerTorch | None:
         try:
             _reranker = CandidateRerankerOnnx(onnx_path, tok_dir)
             _reranker_backend = "onnx"
+            _load_failures = 0
             print(f"[reading_engine] reranker onnx ← {onnx_path}", file=sys.stderr)
             return _reranker
         except Exception as exc:  # noqa: BLE001
+            _load_failures += 1
+            _load_attempted = False
             print(f"[reading_engine] reranker onnx skipped: {exc}", file=sys.stderr)
 
     if model_dir and (model_dir / "config.json").exists() and prefer_onnx != "onnx":
         try:
             _reranker = CandidateRerankerTorch(model_dir)
             _reranker_backend = "torch"
+            _load_failures = 0
             print(f"[reading_engine] reranker torch ← {model_dir}", file=sys.stderr)
             return _reranker
         except Exception as exc:  # noqa: BLE001
+            _load_failures += 1
+            _load_attempted = False
             print(f"[reading_engine] reranker torch skipped: {exc}", file=sys.stderr)
 
     _reranker = None

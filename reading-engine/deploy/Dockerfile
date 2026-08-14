@@ -30,7 +30,9 @@ COPY reading-engine/deploy/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
 ENV YT_FURIGANA_SHARED_READINGS_SEED=/app/data/generated/shared-readings-seed.json \
-    YT_FURIGANA_RERANKER_BACKEND=onnx
+    YT_FURIGANA_RERANKER_BACKEND=onnx \
+    YT_FURIGANA_RERANKER_PATH=/app/reading-engine/data/reranker-deploy \
+    YT_FURIGANA_BUILD_ID=modernbert-reranker-onnx-20260815a
 
 EXPOSE 7860
 
