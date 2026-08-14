@@ -1,15 +1,15 @@
 {
-  "ts": "2026-08-13T19:20:33.035Z",
+  "ts": "2026-08-14T02:32:45.958Z",
   "mode": "synth",
-  "note": "素材 +47 / 本体ルール変化なし（日次は主に素材集め）",
+  "note": "素材 +51 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 747,
-    "delta": 47,
-    "acceptedThisRun": 50,
-    "rejectedThisRun": 28
+    "total": 798,
+    "delta": 51,
+    "acceptedThisRun": 52,
+    "rejectedThisRun": 26
   },
   "benches": {
     "seed-bench": {
@@ -64,70 +64,70 @@
   },
   "newSamples": [
     {
-      "text": "[名古屋市の]角の道はなかなか美しいです。",
+      "text": "角を曲がると、きれいな景色が見えました",
       "surface": "角",
       "gold": "かど",
       "source": "llm-synth:groq:arbitrate_agree",
       "note": "街角／角を曲がる（かど）"
     },
     {
-      "text": "牛の角は大きくて怖い。",
+      "text": "牛の角は長く強いものだ。",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:arbitrate_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "角が生える頃には牛はとても強くなる。",
-      "surface": "角",
-      "gold": "つの",
-      "source": "llm-synth:groq:arbitrate_agree",
-      "note": "牛の角／角が生える（つの）"
-    },
-    {
-      "text": "株式市場の変動は経済の金融に大きな影響を与える",
+      "text": "株式市場の流れは大きな規模を持つ",
       "surface": "市場",
       "gold": "しじょう",
       "source": "llm-synth:groq:arbitrate_agree",
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "text": "ラーメンは辛いですが、カレーはより辛いです",
+      "text": "経済の安定は金融市場のしじょうに大きく影響する",
+      "surface": "市場",
+      "gold": "しじょう",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "株式・規模・経済・金融の文脈"
+    },
+    {
+      "text": "ラーメンは辛いが美味しいです。",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "唐辛子を入れて作ったカレーはとても辛いです",
+      "text": "カレーは唐辛子が入っているから辛いです。",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "永遠に終わらない愛は、心の中に残ります。",
+      "text": "永遠に終わらない愛は、心の中に残る。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "自然界の永遠の美しさは、感動を呼び起こします。",
+      "text": "人は一生懸命努力し、そして永遠に成長する。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "朝から忙しい予定がたくさんあるので、早く起きます。",
+      "text": "今日は予定が多くて忙しいので、早く準備しないといけない。",
       "surface": "忙しい",
       "gold": "いそがしい",
       "source": "llm-synth:groq:verify_agree",
       "note": "仕事・予定・日常の忙しさ"
     },
     {
-      "text": "今月は仕事が忙しいので、休みを取ったら旅行に行く予定です。",
+      "text": "明日は大きなプレゼンテーションがあるので、夜遅くまで勉強しているが、忙しい。",
       "surface": "忙しい",
       "gold": "いそがしい",
       "source": "llm-synth:groq:verify_agree",
