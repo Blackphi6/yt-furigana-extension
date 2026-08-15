@@ -20,6 +20,14 @@ assert.equal(
   readingMatchesExpect(gotMap, { surface: "忙しい", reading: "せわしい" }),
   true
 );
+// 複合語内・連濁（旗頭の「がしら」≈「かしら」）
+assert.equal(
+  readingMatchesExpect(new Map([["旗頭", "はたがしら"]]), {
+    surface: "頭",
+    reading: "かしら"
+  }),
+  true
+);
 
 const evalOk = evaluateRubyAgainstExpect(html, [
   { surface: "忙しい", reading: "せわしい" }
@@ -49,6 +57,36 @@ const candidates = aggregatePromotionCandidates(
 );
 assert.ok(candidates.some((c) => c.surface === "見惚れていた" && c.type === "phrase"));
 assert.ok(candidates.some((c) => c.surface === "忙しい"));
+
+const g2pOnly = aggregatePromotionCandidates(
+  [
+    {
+      surface: "公",
+      reading: "おおやけ",
+      source: "g2p",
+      text: "公の場",
+      cues: ["公の場"]
+    }
+  ],
+  { minVotes: 2 }
+);
+assert.ok(g2pOnly.some((c) => c.surface === "公" && c.sources.includes("g2p")));
+
+const phraseForced = aggregatePromotionCandidates(
+  [
+    {
+      surface: "紅色",
+      reading: "べにいろ",
+      source: "g2p",
+      asPhrase: true,
+      cues: ["紅色の"]
+    }
+  ],
+  { minVotes: 2 }
+);
+assert.ok(
+  phraseForced.some((c) => c.type === "phrase" && c.surface === "紅色")
+);
 
 const next = applyPromotionCandidates(emptyLearnedOverrides(), candidates);
 assert.equal(next.phrases["見惚れていた"], "みとれていた");

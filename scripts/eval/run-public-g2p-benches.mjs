@@ -285,7 +285,8 @@ function clearPhraseDicts() {
   installSudachiFullPhrasesForTests({});
   installCorporateNamePhrasesForTests({});
   installPersonalNamePhrasesForTests({});
-  rebuildCombinedPhraseTrie();
+  // sudachi-only 比較用: 製品向け定読みは載せない
+  rebuildCombinedPhraseTrie({ includeProductReadings: false });
 }
 
 const WITH_CORPORATE = process.argv.includes("--with-corporate");

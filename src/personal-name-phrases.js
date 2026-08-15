@@ -9,6 +9,13 @@ import { getJaFuriganaPhrasesObject } from "./ja-furigana-phrases.js";
 import { getWikidataKanaPhrasesObject } from "./wikidata-kana-phrases.js";
 import { getSudachiFullPhrasesObject } from "./sudachi-full-phrases.js";
 import { getCorporateNamePhrasesObject } from "./corporate-name-phrases.js";
+import {
+  filterPhraseMap,
+  PERSONAL_NAME_SURFACE_BLOCKLIST,
+  PHRASE_TRIE_OVERRIDES,
+  PRODUCT_READING_OVERRIDES
+} from "./phrase-trie-guards.js";
+import { fetchGzipJsonDict } from "./dict-gzip-fetch.js";
 
 /** @type {Record<string, string>} */
 let personalNamePhrases = {};
@@ -44,11 +51,12 @@ export function getCombinedPhraseTrie() {
 }
 
 /** 各フレーズ辞書の再読込後など、キャッシュを捨てて作り直す */
-export function rebuildCombinedPhraseTrie() {
-  return rebuildCombined();
+export function rebuildCombinedPhraseTrie(options = {}) {
+  return rebuildCombined(options);
 }
 
-function rebuildCombined() {
+function rebuildCombined(options = {}) {
+  const includeProduct = options.includeProductReadings !== false;
   combinedTrie = buildPhraseTrie({
     ...getNeologdPhrasesObject(),
     ...getUnidicPhrasesObject(),
@@ -56,10 +64,12 @@ function rebuildCombined() {
     ...getJaFuriganaPhrasesObject(),
     ...getWikidataKanaPhrasesObject(),
     ...getSudachiFullPhrasesObject(),
-    ...getPlaceNamePhrasesObject(),
+    ...filterPhraseMap(getPlaceNamePhrasesObject(), { skipPlaceParticle: true }),
     ...getStationPhrasesObject(),
     ...getCorporateNamePhrasesObject(),
-    ...personalNamePhrases
+    ...filterPhraseMap(personalNamePhrases, { skipPersonalBlocklist: true }),
+    ...PHRASE_TRIE_OVERRIDES,
+    ...(includeProduct ? PRODUCT_READING_OVERRIDES : {})
   });
   return combinedTrie;
 }
@@ -69,10 +79,12 @@ function installParsedPhrases(parsed) {
   for (const [surface, reading] of Object.entries(parsed || {})) {
     const normalized = normalizeReading(reading);
     if (!surface || surface.length < 2 || !normalized) continue;
+    if (PERSONAL_NAME_SURFACE_BLOCKLIST.has(surface)) continue;
     personalNamePhrases[surface] = normalized;
   }
   personalTrie = buildPhraseTrie(personalNamePhrases);
-  rebuildCombined();
+  // 結合 Trie は phrase-dict-boot 側で一括 rebuild（辞書ごとだと YouTube が止まる）
+  combinedTrie = null;
   return personalNamePhrases;
 }
 
@@ -82,31 +94,11 @@ function installParsedPhrases(parsed) {
 export async function loadPersonalNamePhrases(url) {
   if (loadPromise) return loadPromise;
   loadPromise = (async () => {
-    const dictUrl =
-      url ||
-      (typeof chrome !== "undefined" && chrome?.runtime?.getURL
-        ? chrome.runtime.getURL("dict/personal-name-phrases.json.gz")
-        : "");
-    if (!dictUrl) {
-      throw new Error("personal-name phrases URL missing");
-    }
-
-    const response = await fetch(dictUrl);
-    if (!response.ok) {
-      throw new Error(`personal-name phrases fetch failed: ${response.status}`);
-    }
-
-    let jsonText = "";
-    if (dictUrl.endsWith(".gz")) {
-      if (typeof DecompressionStream !== "function") {
-        throw new Error("DecompressionStream is not available");
-      }
-      const stream = response.body.pipeThrough(new DecompressionStream("gzip"));
-      jsonText = await new Response(stream).text();
-    } else {
-      jsonText = await response.text();
-    }
-    return installParsedPhrases(JSON.parse(jsonText));
+    const parsed = await fetchGzipJsonDict("personal-name-phrases.json.gz", {
+      url,
+      label: "personal-name phrases"
+    });
+    return installParsedPhrases(parsed);
   })();
 
   try {

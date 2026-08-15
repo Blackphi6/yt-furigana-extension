@@ -5,9 +5,22 @@ import {
 } from "./dictionary-match.js";
 import { getNeologdReading } from "./neologd-phrases.js";
 import { getPersonalNameReading } from "./personal-name-phrases.js";
+import { getPlaceNameReading } from "./place-name-phrases.js";
+import { getUnidicReading } from "./unidic-phrases.js";
 import { findLongestPhraseAt } from "./phrase-trie.js";
 import { applyNumberUnitReadings } from "./number-unit-reading.js";
 import { normalizeKanjiForLookup } from "./kanji-normalize.js";
+import {
+  PHRASE_TRIE_OVERRIDES,
+  PRODUCT_READING_OVERRIDES
+} from "./phrase-trie-guards.js";
+
+function isForcedPhraseReading(surface) {
+  return (
+    Object.prototype.hasOwnProperty.call(PRODUCT_READING_OVERRIDES, surface) ||
+    Object.prototype.hasOwnProperty.call(PHRASE_TRIE_OVERRIDES, surface)
+  );
+}
 
 function toHiragana(text) {
   return normalizeReading(text);
@@ -62,6 +75,10 @@ function dictionaryReadingFor(surface) {
     fallback[lookup] ||
     getPersonalNameReading(surface) ||
     getPersonalNameReading(lookup) ||
+    getPlaceNameReading(surface) ||
+    getPlaceNameReading(lookup) ||
+    getUnidicReading(surface) ||
+    getUnidicReading(lookup) ||
     getNeologdReading(surface) ||
     getNeologdReading(lookup) ||
     ""
@@ -177,8 +194,45 @@ function isNaruVerb(token) {
   return pos === "動詞" || pos.startsWith("動詞");
 }
 
+function isLongVowelMark(token) {
+  const s = String(token?.surface_form || token?.surface || "");
+  return s === "ー" || s === "ｰ" || s === "〜" || s === "～";
+}
+
+function isKanaLikeToken(token) {
+  const s = String(token?.surface_form || token?.surface || "");
+  return /^[\u3040-\u309f\u30a0-\u30ffーｰ〜～]+$/.test(s);
+}
+
 function isKatakanaOnlySurface(surface) {
   return /^[\u30a0-\u30ffー]+$/.test(String(surface || ""));
+}
+
+/**
+ * 連続するかな（長音含む）を一塊にする。
+ * 「母さ」「ー」「ん」→ 結合前に分ければ「さーん」を範囲選択の端点にできる。
+ */
+export function coalesceKanaTokens(tokens) {
+  if (!Array.isArray(tokens) || tokens.length === 0) return [];
+  const result = [];
+  let index = 0;
+  while (index < tokens.length) {
+    const current = tokens[index];
+    if (!isKanaLikeToken(current)) {
+      result.push(current);
+      index += 1;
+      continue;
+    }
+    let end = index + 1;
+    while (end < tokens.length && isKanaLikeToken(tokens[end])) end += 1;
+    if (end === index + 1) {
+      result.push(current);
+    } else {
+      result.push(mergeTokenRange(tokens, index, end, ""));
+    }
+    index = end;
+  }
+  return result;
 }
 
 function mergeTokenPair(left, right, { useDictionaryReading = false } = {}) {
@@ -290,7 +344,24 @@ function mergeByDictionaryLongestMatch(tokens, surfaces, phraseTrie = null) {
     candidates.sort((a, b) => b.surface.length - a.surface.length);
 
     for (const match of candidates) {
-      if (match.surface.length <= currentSurface.length) continue;
+      // すでに1トークンでも、Trie の定読みがあれば読みだけ差し替える
+      if (match.surface.length < currentSurface.length) continue;
+      if (match.surface.length === currentSurface.length) {
+        if (match.surface !== currentSurface) continue;
+        // 巨大辞書の同長ヒットで Sudachi 正解を潰さない。定読み表だけ上書き。
+        if (!isForcedPhraseReading(match.surface)) continue;
+        const override = match.reading || dictionaryReadingFor(match.surface);
+        if (override) {
+          result.push(
+            mergeTokenRange(tokens, tokenIndex, tokenIndex + 1, override)
+          );
+          tokenIndex += 1;
+          charIndex += currentSurface.length;
+          merged = true;
+          break;
+        }
+        continue;
+      }
       let covered = "";
       let end = tokenIndex;
       while (end < tokens.length && covered.length < match.surface.length) {
@@ -378,6 +449,13 @@ export function mergeTokensForRuby(tokens, options = {}) {
       isNoun(current) &&
       (isNounSuffix(next) || isNounSuffixDay(next))
     ) {
+      const after = dictionaryMerged[index + 2];
+      // 「母」「さ」「ー」「ん」→ 長音が続く接尾は結合しない（さーんを選択可能に残す）
+      if (after && (isLongVowelMark(after) || isLongVowelMark(next))) {
+        result.push(current);
+        index += 1;
+        continue;
+      }
       result.push(
         mergeTokenPair(current, next, { useDictionaryReading: true })
       );
@@ -426,5 +504,6 @@ export function mergeTokensForRuby(tokens, options = {}) {
     index += 1;
   }
 
-  return result;
+  // 4) かな連続を一塊に（さーん / なんだよ）→ 範囲選択の端点に使える
+  return coalesceKanaTokens(result);
 }

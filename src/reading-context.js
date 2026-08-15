@@ -7,6 +7,29 @@ import { mergeLearnedOverrides } from "./reading-learning.js";
 export { normalizeReading };
 
 /**
+ * 文脈だけでは決まらない読み（Parakeet 記事の例外）は、
+ * 現代日本語で優勢な多数派を既定にする。
+ * 少数派は明示キューがあるときだけ採用。
+ * @see https://zenn.dev/parakeet_tech/articles/936532be817118
+ */
+export const MAJORITY_DEFAULT_READINGS = {
+  私: "わたし",
+  尊い: "とうとい",
+  貴い: "とうとい",
+  尊ぶ: "とうとぶ",
+  貴ぶ: "とうとぶ"
+};
+
+/** 上記の少数派（改まった読み・文語寄り） */
+export const MINORITY_READINGS = {
+  私: ["わたくし"],
+  尊い: ["たっとい"],
+  貴い: ["たっとい"],
+  尊ぶ: ["たっとぶ"],
+  貴ぶ: ["たっとぶ"]
+};
+
+/**
  * Sudachi / Kuromoji の読みを、文脈キューで上書きする。
  * 形態素分割はそのまま、読みだけ差し替える合わせ技用。
  */
@@ -290,6 +313,43 @@ export const CONTEXT_READING_RULES = [
     reading: "はくし",
     weight: 3,
     cues: ["博士号", "学位", "論文"]
+  },
+  // 文脈非決定の異読み: 多数派を広く、少数派は改まった合図だけ
+  {
+    surface: "私",
+    reading: "わたし",
+    weight: 5,
+    cues: ["私は", "私が", "私の", "私を", "私たち", "私に", "私と"]
+  },
+  {
+    surface: "私",
+    reading: "わたくし",
+    weight: 4,
+    cues: ["私ども", "わたくし", "わたくしは", "わたくしが"]
+  },
+  {
+    surface: "尊い",
+    reading: "とうとい",
+    weight: 5,
+    cues: ["尊い命", "尊いもの", "尊い精神", "尊い行い", "とても尊い"]
+  },
+  {
+    surface: "尊い",
+    reading: "たっとい",
+    weight: 3,
+    cues: ["たっとい", "たっとく"]
+  },
+  {
+    surface: "貴い",
+    reading: "とうとい",
+    weight: 5,
+    cues: ["貴い命", "貴いもの", "貴い犠牲", "貴い行い", "とても貴い"]
+  },
+  {
+    surface: "貴い",
+    reading: "たっとい",
+    weight: 3,
+    cues: ["たっとい", "たっとく"]
   }
 ];
 
@@ -386,26 +446,48 @@ function scoreReading(reading, context, rulesForSurface) {
  */
 export function resolveContextualReading(surface, preferredReading, contextText) {
   const rulesForSurface = CONTEXT_READING_RULES.filter((rule) => rule.surface === surface);
-  if (rulesForSurface.length === 0) return null;
-
-  const candidates = [...new Set(rulesForSurface.map((rule) => rule.reading))];
   const preferred = normalizeReading(preferredReading || "");
   const context = contextText ?? "";
+  const majority = normalizeReading(MAJORITY_DEFAULT_READINGS[surface] || "");
+  const minorities = new Set(
+    (MINORITY_READINGS[surface] || []).map((r) => normalizeReading(r))
+  );
 
-  let best = null;
-  for (const candidate of candidates) {
-    const { score, matched } = scoreReading(candidate, context, rulesForSurface);
-    let total = score;
-    if (preferred && candidate === preferred) total += 0.5;
+  if (rulesForSurface.length > 0) {
+    const candidates = [...new Set(rulesForSurface.map((rule) => rule.reading))];
 
-    if (!best || total > best.score) {
-      best = { reading: candidate, score: total, matched };
+    let best = null;
+    for (const candidate of candidates) {
+      const { score, matched } = scoreReading(candidate, context, rulesForSurface);
+      let total = score;
+      if (preferred && candidate === preferred) total += 0.5;
+      // 同点なら多数派を優先（文脈非決定の例外）
+      if (majority && candidate === majority) total += 0.25;
+
+      if (
+        !best ||
+        total > best.score ||
+        (total === best.score && majority && candidate === majority)
+      ) {
+        best = { reading: candidate, score: total, matched };
+      }
+    }
+
+    if (best && best.matched.length > 0) {
+      return best;
     }
   }
 
-  if (!best || best.matched.length === 0) return null;
-  if (preferred && best.reading === preferred) return best;
-  return best;
+  // キューなし: 形態素が少数派を返してきたら多数派へ寄せる
+  if (majority && minorities.has(preferred) && preferred !== majority) {
+    return {
+      reading: majority,
+      matched: ["*majority-default*"],
+      score: 0
+    };
+  }
+
+  return null;
 }
 
 /**

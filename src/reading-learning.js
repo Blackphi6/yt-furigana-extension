@@ -88,27 +88,76 @@ export function extractReadingsFromRubyHtml(html) {
 /**
  * expect が得られた読みに含まれるか。
  * phrase 全体一致、または surface がキー、または reading が surface の読みに含まれる。
+ * 複合語内の連濁（旗頭の「がしら」↔「かしら」）も濁点を無視して照合する。
  * @param {Map<string, string>} gotMap
  * @param {ExpectItem} expect
  */
 export function readingMatchesExpect(gotMap, expect) {
   const want = normalizeReading(expect.reading);
   const surface = expect.surface;
+  if (!want || !surface) return false;
 
   if (gotMap.has(surface) && normalizeReading(gotMap.get(surface)) === want) {
     return true;
   }
 
+  const wantFold = stripVoicing(want);
   for (const [gotSurface, gotReading] of gotMap) {
-    if (surface.includes(gotSurface) || gotSurface.includes(surface)) {
-      const got = normalizeReading(gotReading);
-      if (got === want || want.includes(got) || got.includes(want)) {
-        return true;
-      }
+    if (!(surface.includes(gotSurface) || gotSurface.includes(surface))) {
+      continue;
+    }
+    const got = normalizeReading(gotReading);
+    if (!got) continue;
+    if (got === want || want.includes(got) || got.includes(want)) {
+      return true;
+    }
+    // 語内漢字採点: 連濁・清濁の差だけなら一致とみなす
+    const gotFold = stripVoicing(got);
+    if (
+      gotFold === wantFold ||
+      wantFold.includes(gotFold) ||
+      gotFold.includes(wantFold)
+    ) {
+      return true;
     }
   }
 
   return false;
+}
+
+/** 濁点・半濁点を落として連濁照合用にする */
+function stripVoicing(reading) {
+  const map = {
+    が: "か",
+    ぎ: "き",
+    ぐ: "く",
+    げ: "け",
+    ご: "こ",
+    ざ: "さ",
+    じ: "し",
+    ず: "す",
+    ぜ: "せ",
+    ぞ: "そ",
+    だ: "た",
+    ぢ: "ち",
+    づ: "つ",
+    で: "て",
+    ど: "と",
+    ば: "は",
+    び: "ひ",
+    ぶ: "ふ",
+    べ: "へ",
+    ぼ: "ほ",
+    ぱ: "は",
+    ぴ: "ひ",
+    ぷ: "ふ",
+    ぺ: "へ",
+    ぽ: "ほ"
+  };
+  return String(reading || "").replace(
+    /[がぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽ]/g,
+    (ch) => map[ch] || ch
+  );
 }
 
 /**
@@ -131,7 +180,8 @@ export function evaluateRubyAgainstExpect(html, expectList) {
 
 /**
  * 同一 (surface, reading) の提案を集計し、昇格候補を返す。
- * @param {Array<{ surface: string, reading: string, source?: string, text?: string, cues?: string[] }>} proposals
+ * source: seed / user / g2p は 1 票でも候補化。
+ * @param {Array<{ surface: string, reading: string, source?: string, text?: string, cues?: string[], asPhrase?: boolean }>} proposals
  * @param {{ minVotes?: number, preferPhraseLength?: number }} [options]
  */
 export function aggregatePromotionCandidates(proposals, options = {}) {
@@ -149,11 +199,13 @@ export function aggregatePromotionCandidates(proposals, options = {}) {
       votes: 0,
       sources: new Set(),
       texts: [],
-      cues: new Set()
+      cues: new Set(),
+      asPhrase: false
     };
     current.votes += 1;
     if (proposal.source) current.sources.add(proposal.source);
     if (proposal.text) current.texts.push(proposal.text);
+    if (proposal.asPhrase) current.asPhrase = true;
     for (const cue of proposal.cues || []) current.cues.add(cue);
     groups.set(key, current);
   }
@@ -162,18 +214,15 @@ export function aggregatePromotionCandidates(proposals, options = {}) {
   /** @type {Map<string, Set<string>>} */
   const readingsBySurface = new Map();
   for (const item of groups.values()) {
-    const fromSeed = item.sources.has("seed");
-    const fromUser = item.sources.has("user");
-    if (!fromSeed && !fromUser && item.votes < minVotes) continue;
+    if (!isPrivilegedPromotion(item) && item.votes < minVotes) continue;
     const set = readingsBySurface.get(item.surface) || new Set();
     set.add(item.reading);
     readingsBySurface.set(item.surface, set);
   }
 
   for (const item of groups.values()) {
-    const fromSeed = item.sources.has("seed");
-    const fromUser = item.sources.has("user");
-    if (!fromSeed && !fromUser && item.votes < minVotes) continue;
+    const privileged = isPrivilegedPromotion(item);
+    if (!privileged && item.votes < minVotes) continue;
 
     const ambiguous =
       (readingsBySurface.get(item.surface)?.size || 0) > 1;
@@ -186,10 +235,12 @@ export function aggregatePromotionCandidates(proposals, options = {}) {
     }
 
     // 同形異音や文脈付き学習はフレーズ上書き禁止（最後の1読みが全文を汚染する）
+    // g2p の複合語提案 (asPhrase) はキューがあっても phrase 優先
     const usePhrase =
       !ambiguous &&
-      cues.length === 0 &&
-      item.surface.length >= (options.preferPhraseLength ?? 4);
+      (item.asPhrase ||
+        (cues.length === 0 &&
+          item.surface.length >= (options.preferPhraseLength ?? 4)));
 
     if (usePhrase) {
       promoted.push({
@@ -201,12 +252,14 @@ export function aggregatePromotionCandidates(proposals, options = {}) {
       });
     } else {
       const finalCues = cues.length > 0 ? cues : [item.surface];
+      // 長いキューを優先（「小さな社」が「社は」で押し出されないように）
+      finalCues.sort((a, b) => b.length - a.length || a.localeCompare(b));
       promoted.push({
         type: "context",
         surface: item.surface,
         reading: item.reading,
-        weight: fromSeed || fromUser ? 5 : 3,
-        cues: finalCues.slice(0, 8),
+        weight: privileged ? 5 : 3,
+        cues: finalCues.slice(0, 12),
         votes: item.votes,
         sources: [...item.sources]
       });
@@ -214,6 +267,14 @@ export function aggregatePromotionCandidates(proposals, options = {}) {
   }
 
   return promoted;
+}
+
+function isPrivilegedPromotion(item) {
+  return (
+    item.sources.has("seed") ||
+    item.sources.has("user") ||
+    item.sources.has("g2p")
+  );
 }
 
 /**
@@ -230,16 +291,54 @@ export function applyPromotionCandidates(base, candidates) {
 
   for (const candidate of candidates) {
     if (candidate.type === "phrase") {
+      const prev = next.phrases[candidate.surface];
+      const prevNorm = prev ? normalizeReading(prev) : "";
+      const nextNorm = normalizeReading(candidate.reading);
+      // 既存フレーズと読みが衝突する場合は phrase 上書きせず context へ
+      if (prevNorm && prevNorm !== nextNorm) {
+        const exists = next.contextRules.find(
+          (rule) =>
+            rule.surface === candidate.surface &&
+            normalizeReading(rule.reading) === nextNorm
+        );
+        const cues = (candidate.cues || []).length
+          ? candidate.cues
+          : [candidate.surface];
+        if (exists) {
+          const merged = new Set([...(exists.cues || []), ...cues]);
+          exists.cues = [...merged]
+            .sort((a, b) => b.length - a.length || a.localeCompare(b))
+            .slice(0, 16);
+        } else {
+          next.contextRules.push({
+            surface: candidate.surface,
+            reading: candidate.reading,
+            weight: candidate.weight || 5,
+            cues
+          });
+        }
+        continue;
+      }
       next.phrases[candidate.surface] = candidate.reading;
       continue;
     }
 
-    const exists = next.contextRules.some(
+    const exists = next.contextRules.find(
       (rule) =>
         rule.surface === candidate.surface &&
         normalizeReading(rule.reading) === candidate.reading
     );
-    if (exists) continue;
+    if (exists) {
+      // 同表層・同読みは cues を統合（短い旧キューだけの取り残しを防ぐ）
+      const merged = new Set([...(exists.cues || []), ...(candidate.cues || [])]);
+      exists.cues = [...merged]
+        .sort((a, b) => b.length - a.length || a.localeCompare(b))
+        .slice(0, 16);
+      if ((candidate.weight || 0) > (exists.weight || 0)) {
+        exists.weight = candidate.weight;
+      }
+      continue;
+    }
     next.contextRules.push({
       surface: candidate.surface,
       reading: candidate.reading,

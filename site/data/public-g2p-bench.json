@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-14T10:40:35.900Z",
+  "generatedAt": "2026-08-15T03:07:00.810Z",
   "headline": {
     "bestLabel": "yt-furigana (Sudachi+phrases+context)",
     "accuracy": 1,
@@ -18,23 +18,23 @@
     },
     "blindspotBest": {
       "label": "yt-furigana (Sudachi+phrases+context)",
-      "accuracy": 0.8266666666666667,
-      "passed": 124,
+      "accuracy": 0.8333333333333334,
+      "passed": 125,
       "total": 150
     },
     "yomiBest": {
-      "label": "sudachi-only",
-      "accuracy": 0.9547872340425532,
-      "passed": 359,
+      "label": "yt-furigana (Sudachi+phrases+context)",
+      "accuracy": 0.9813829787234043,
+      "passed": 369,
       "total": 376
     }
   },
   "jaTtsG2p": [
     {
       "label": "sudachi-only",
-      "passed": 139,
+      "passed": 142,
       "total": 151,
-      "rate": 0.9205298013245033,
+      "rate": 0.9403973509933775,
       "stimCer": 0.019604973570452603,
       "byCat": {
         "heteronym": {
@@ -42,7 +42,7 @@
           "total": 42
         },
         "context_numeral": {
-          "passed": 27,
+          "passed": 30,
           "total": 33
         },
         "drama_specific": {
@@ -71,15 +71,15 @@
         }
       },
       "wilson95": [
-        0.8662352324106177,
-        0.9539577906529518
+        0.8906126965501855,
+        0.9683296031935527
       ]
     },
     {
       "label": "kuromoji-only",
-      "passed": 126,
+      "passed": 127,
       "total": 151,
-      "rate": 0.8344370860927153,
+      "rate": 0.8410596026490066,
       "stimCer": 0.03426699355781579,
       "byCat": {
         "heteronym": {
@@ -87,7 +87,7 @@
           "total": 42
         },
         "context_numeral": {
-          "passed": 22,
+          "passed": 23,
           "total": 33
         },
         "drama_specific": {
@@ -116,8 +116,8 @@
         }
       },
       "wilson95": [
-        0.7670095925910714,
-        0.8852698981917674
+        0.7743902105949425,
+        0.8908057057479524
       ]
     },
     {
@@ -214,9 +214,9 @@
   "jaTtsBlindspot": [
     {
       "label": "sudachi-only",
-      "passed": 115,
+      "passed": 119,
       "total": 150,
-      "rate": 0.7666666666666667,
+      "rate": 0.7933333333333333,
       "stimCer": 0.03774210022433071,
       "byCat": {
         "heteronym": {
@@ -224,7 +224,7 @@
           "total": 42
         },
         "context_numeral": {
-          "passed": 25,
+          "passed": 28,
           "total": 33
         },
         "drama_specific": {
@@ -236,20 +236,20 @@
           "total": 23
         },
         "okurigana": {
-          "passed": 29,
+          "passed": 30,
           "total": 33
         }
       },
       "wilson95": [
-        0.6928407309593593,
-        0.8271746614962575
+        0.7216049669151186,
+        0.8504119647860597
       ]
     },
     {
       "label": "yt-furigana (Sudachi+phrases+context)",
-      "passed": 124,
+      "passed": 125,
       "total": 150,
-      "rate": 0.8266666666666667,
+      "rate": 0.8333333333333334,
       "stimCer": 0.02952330379222826,
       "byCat": {
         "heteronym": {
@@ -269,49 +269,49 @@
           "total": 23
         },
         "okurigana": {
-          "passed": 31,
+          "passed": 32,
           "total": 33
         }
       },
       "wilson95": [
-        0.7581386789428641,
-        0.8788801768152663
+        0.7655327510904788,
+        0.8844864894790422
       ]
     }
   ],
   "yomiBench": [
     {
       "label": "sudachi-only",
-      "passed": 359,
+      "passed": 362,
       "total": 376,
-      "rate": 0.9547872340425532,
+      "rate": 0.9627659574468085,
       "stimCer": 0,
       "byCat": {
         "unknown": {
-          "passed": 359,
+          "passed": 362,
           "total": 376
         }
       },
       "wilson95": [
-        0.9287925727335331,
-        0.971582741608024
+        0.9384781079082963,
+        0.9776932645796038
       ]
     },
     {
       "label": "yt-furigana (Sudachi+phrases+context)",
-      "passed": 359,
+      "passed": 369,
       "total": 376,
-      "rate": 0.9547872340425532,
+      "rate": 0.9813829787234043,
       "stimCer": 0,
       "byCat": {
         "unknown": {
-          "passed": 359,
+          "passed": 369,
           "total": 376
         }
       },
       "wilson95": [
-        0.9287925727335331,
-        0.971582741608024
+        0.9620754356577061,
+        0.9909534058383281
       ]
     }
   ],
