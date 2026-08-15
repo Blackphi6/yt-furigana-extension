@@ -8,7 +8,7 @@ import {
 import {
   overlayNumberTokens,
   rebuildFullReading,
-} from "./number-overlay.js?v=20260805c";
+} from "./number-overlay.js?v=20260815a";
 import {
   applyOccurrenceOverrides,
   expandOverrideSpan,

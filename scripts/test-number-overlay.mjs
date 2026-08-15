@@ -84,4 +84,42 @@ import { isQuizToken, collectQuizItems } from "../site/demo-quiz.js";
   assert.equal(readKaiStyleCounter(20, "かい"), "にじゅっかい");
 }
 
+{
+  const text = "君はいつも1人で飯を食ってるな";
+  const apiTokens = [
+    {
+      surface: "1",
+      span: [5, 6],
+      reading: "いち",
+      confidence: 0.9,
+      source: "number_rule",
+      candidates: ["いち"],
+    },
+    {
+      surface: "人",
+      span: [6, 7],
+      reading: "にん",
+      confidence: 0.7,
+      source: "base_engine",
+      candidates: ["にん", "ひと"],
+    },
+  ];
+  const nums = collectNumberTokens(text);
+  assert.equal(nums.length, 1);
+  assert.equal(nums[0].surface, "1人");
+  assert.equal(nums[0].reading, "ひとり");
+  const merged = overlayNumberTokens(text, apiTokens);
+  const person = merged.find((t) => t.surface === "1人");
+  assert.equal(person?.reading, "ひとり");
+  assert.equal(merged.some((t) => t.surface === "人"), false);
+  assert.ok(rebuildFullReading(text, merged).includes("ひとり"));
+}
+
+{
+  const nums = collectNumberTokens("十一人");
+  assert.equal(nums[0]?.reading, "じゅういちにん");
+  const mae = collectNumberTokens("一人前の役者");
+  assert.equal(mae.some((t) => t.surface === "一人"), false);
+}
+
 console.log("test-number-overlay: ok");

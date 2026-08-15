@@ -194,14 +194,92 @@ export function readKaiStyleCounter(number, suffix = "かい") {
   return cardinal ? `${cardinal}${unit}` : "";
 }
 
-/** 直後にくっつけると促音化する助数詞 */
-const KAI_STYLE_UNITS = {
-  階: "かい",
-  回: "かい"
+/**
+ * 数字の直後の助数詞。1・2人は和語、11人はじゅういちにん（じゅうひとりにしない）。
+ * 人前・一人称など、人の後ろに続く漢字は結合しない。
+ */
+const COUNTER_UNITS = {
+  人: {
+    suffix: "にん",
+    special: { 0: "ぜろにん", 1: "ひとり", 2: "ふたり", 4: "よにん" }
+  },
+  階: { kaiStyle: true, suffix: "かい" },
+  回: { kaiStyle: true, suffix: "かい" }
 };
 
+const PERSON_COMPOUND_TAIL = /^[前称組月]/;
+const KANJI_DIGIT = {
+  〇: 0,
+  零: 0,
+  一: 1,
+  二: 2,
+  三: 3,
+  四: 4,
+  五: 5,
+  六: 6,
+  七: 7,
+  八: 8,
+  九: 9
+};
+const KANJI_NUMERAL_RE = /[〇零一二三四五六七八九十百千万]+人/g;
+
 /**
- * テキスト中の数字ラン（＋階/回）をトークン化する。
+ * @param {string} text
+ * @returns {number | null}
+ */
+export function parseKanjiInteger(text) {
+  const raw = String(text || "").normalize("NFKC").trim();
+  if (!raw || !/^[〇零一二三四五六七八九十百千万]+$/.test(raw)) return null;
+  if (raw === "〇" || raw === "零") return 0;
+  let total = 0;
+  let cur = 0;
+  for (const ch of raw) {
+    if (Object.hasOwn(KANJI_DIGIT, ch)) {
+      cur += KANJI_DIGIT[ch];
+      continue;
+    }
+    if (ch === "十") {
+      total += (cur || 1) * 10;
+      cur = 0;
+      continue;
+    }
+    if (ch === "百") {
+      total += (cur || 1) * 100;
+      cur = 0;
+      continue;
+    }
+    if (ch === "千") {
+      total += (cur || 1) * 1000;
+      cur = 0;
+      continue;
+    }
+    if (ch === "万") {
+      total = (total + cur) * 10000;
+      cur = 0;
+      continue;
+    }
+    return null;
+  }
+  return total + cur;
+}
+
+/**
+ * @param {number} number
+ * @param {{ suffix: string, special?: Record<number, string>, kaiStyle?: boolean }} spec
+ */
+export function readCounter(number, spec) {
+  if (!spec || !Number.isInteger(number) || number < 0) return "";
+  if (spec.special && Object.hasOwn(spec.special, number)) {
+    return spec.special[number];
+  }
+  if (spec.kaiStyle) return readKaiStyleCounter(number, spec.suffix);
+  if (number === 0) return `ぜろ${spec.suffix}`;
+  const cardinal = readCardinal(number);
+  return cardinal ? `${cardinal}${spec.suffix}` : "";
+}
+
+/**
+ * テキスト中の数字ラン（＋人/階/回）をトークン化する。
  * @param {string} text
  * @returns {{ surface: string, span: [number, number], reading: string, confidence: number, source: string, candidates: string[] }[]}
  */
@@ -219,14 +297,14 @@ export function collectNumberTokens(text) {
     if (!parsed) continue;
 
     const nextChar = src.slice(end, end + 1);
-    const unitReading = KAI_STYLE_UNITS[nextChar];
-    if (unitReading) {
+    const counter = COUNTER_UNITS[nextChar];
+    const afterUnit = src.slice(end + 1, end + 2);
+    if (counter && !(nextChar === "人" && PERSON_COMPOUND_TAIL.test(afterUnit))) {
       end += 1;
       const surface = src.slice(start, end);
-      const reading = readKaiStyleCounter(parsed.integer, unitReading);
+      const reading = readCounter(parsed.integer, counter);
       if (!reading) continue;
-      // 誤結合しやすい「いちかい」も候補に残し、クリックで直せるようにする
-      const loose = `${parsed.reading}${unitReading}`;
+      const loose = `${parsed.reading}${counter.suffix}`;
       const candidates = numberReadingCandidates(reading, parsed.digits);
       if (loose !== reading) candidates.push(loose);
       out.push({
@@ -237,7 +315,6 @@ export function collectNumberTokens(text) {
         source: "number_rule",
         candidates
       });
-      // 数字ランの次が単位なので、次の exec 位置を進める
       NUMBER_RUN_RE.lastIndex = end;
       continue;
     }
@@ -252,6 +329,28 @@ export function collectNumberTokens(text) {
       candidates
     });
   }
+  KANJI_NUMERAL_RE.lastIndex = 0;
+  while ((m = KANJI_NUMERAL_RE.exec(src))) {
+    const surface = m[0];
+    const start = m.index;
+    const end = start + surface.length;
+    const after = src.slice(end, end + 1);
+    if (PERSON_COMPOUND_TAIL.test(after)) continue;
+    if (out.some((n) => start < n.span[1] && end > n.span[0])) continue;
+    const number = parseKanjiInteger(surface.slice(0, -1));
+    if (number == null) continue;
+    const reading = readCounter(number, COUNTER_UNITS["人"]);
+    if (!reading) continue;
+    out.push({
+      surface,
+      span: [start, end],
+      reading,
+      confidence: 0.92,
+      source: "number_rule",
+      candidates: [reading]
+    });
+  }
+  out.sort((a, b) => a.span[0] - b.span[0]);
   return out;
 }
 
