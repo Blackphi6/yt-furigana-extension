@@ -88,7 +88,43 @@ export const DEMO_CONTEXT_RULES = [
     reading: "こん",
     weight: 5,
     cues: ["平方根", "立方根", "累乗根"]
-  }
+  },
+    {
+      surface: "背負っ",
+      reading: "せおっ",
+      weight: 4,
+      cues: ["リュック", "ランドセル", "子供を背負", "赤ん坊", "袋を背負", "荷物を背負"]
+    },
+    {
+      surface: "背負っ",
+      reading: "しょっ",
+      weight: 4,
+      cues: ["将来を", "運命を", "期待を背負", "組織を背負"]
+    },
+    {
+      surface: "背負う",
+      reading: "せおう",
+      weight: 4,
+      cues: ["リュック", "ランドセル", "子供を背負", "赤ん坊", "袋を背負", "荷物を背負"]
+    },
+    {
+      surface: "背負う",
+      reading: "しょう",
+      weight: 4,
+      cues: ["将来を", "運命を", "期待を背負", "組織を背負"]
+    },
+    {
+      surface: "背負い",
+      reading: "せおい",
+      weight: 3,
+      cues: ["リュック", "ランドセル", "子供を背負", "袋を背負"]
+    },
+    {
+      surface: "背負い",
+      reading: "しょい",
+      weight: 4,
+      cues: ["苦労を", "しょい込む", "背負い込む"]
+    }
 ];
 
 /** @type {Record<string, string>} */
@@ -160,6 +196,12 @@ export function applyDemoContextReadings(
     const local = clauseAround(src, span[0], span[1]);
     const matched = rules.filter((r) => r.surface === surface);
     if (!matched.length) return token;
+    // キューが当たっていなくても、同じ表層の読みは候補袋に残す（直す用）
+    const cands = Array.isArray(token.candidates) ? [...token.candidates] : [];
+    for (const rule of matched) {
+      const extra = String(rule.reading || "");
+      if (extra && !cands.includes(extra)) cands.push(extra);
+    }
     let best = null;
     for (const rule of matched) {
       const hits = (rule.cues || []).filter((c) => local.includes(c));
@@ -171,9 +213,10 @@ export function applyDemoContextReadings(
         best = { reading: rule.reading, score };
       }
     }
-    if (!best) return token;
+    if (!best) {
+      return { ...token, candidates: cands };
+    }
     const reading = best.reading;
-    const cands = Array.isArray(token.candidates) ? [...token.candidates] : [];
     if (!cands.includes(reading)) cands.unshift(reading);
     return {
       ...token,

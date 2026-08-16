@@ -29,4 +29,37 @@ assert.equal(tokens[0].source, "demo_context");
 assert.equal(DEMO_MANUAL_PHRASES["七五三"], "しちごさん");
 assert.equal(DEMO_MANUAL_PHRASES["揚子江"], "ようすこう");
 
+{
+  const pack = applyDemoContextReadings("リュックを背負って学校に行く", [
+    {
+      surface: "背負っ",
+      span: [5, 8],
+      reading: "せおっ",
+      confidence: 0.55,
+      candidates: ["せおっ"]
+    }
+  ]);
+  assert.ok(
+    pack[0].candidates.includes("しょっ"),
+    `expected しょっ in ${JSON.stringify(pack[0].candidates)}`
+  );
+  assert.equal(pack[0].reading, "せおっ");
+}
+
+{
+  const future = applyDemoContextReadings("会社の将来を背負って立つ", [
+    {
+      surface: "背負っ",
+      span: [6, 9],
+      reading: "せおっ",
+      confidence: 0.55,
+      candidates: ["せおっ"]
+    }
+  ]);
+  assert.equal(future[0].reading, "しょっ");
+  assert.equal(future[0].source, "demo_context");
+  assert.ok(future[0].candidates.includes("せおっ"));
+  assert.ok(future[0].candidates.includes("しょっ"));
+}
+
 console.log("test-site-context-overlay: ok");
