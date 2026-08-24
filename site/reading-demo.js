@@ -4,7 +4,7 @@ import {
   buildRuby,
   isNumberReadingTipSurface,
   isRegisterableSurface,
-} from "./build-ruby.js?v=20260805a";
+} from "./build-ruby.js?v=20260824a";
 import {
   overlayNumberTokens,
   rebuildFullReading,
@@ -25,7 +25,7 @@ import {
 import {
   DEMO_MANUAL_PHRASES,
   applyDemoContextReadings,
-} from "./context-reading-overlay.js?v=20260816a";
+} from "./context-reading-overlay.js?v=20260824a";
 
 const DEFAULT_API =
   (window.YT_FURIGANA_SITE && window.YT_FURIGANA_SITE.readingApiUrl) ||

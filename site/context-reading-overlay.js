@@ -124,6 +124,30 @@ export const DEMO_CONTEXT_RULES = [
       reading: "しょい",
       weight: 4,
       cues: ["苦労を", "しょい込む", "背負い込む"]
+    },
+    {
+      surface: "中",
+      reading: "なか",
+      weight: 5,
+      cues: ["の中", "の中で", "の中に", "の中を", "の中へ", "の中から", "の中まで"]
+    },
+    {
+      surface: "中",
+      reading: "うち",
+      weight: 3,
+      cues: ["している中", "ている中", "てる中", "ぬ中に", "ない中に", "暮れぬ中"]
+    },
+    {
+      surface: "中",
+      reading: "じゅう",
+      weight: 5,
+      cues: ["一日中", "年中", "世界中", "日本中", "家中", "体中"]
+    },
+    {
+      surface: "中",
+      reading: "ちゅう",
+      weight: 5,
+      cues: ["中学生", "中国", "中心", "途中", "中間", "中止"]
     }
 ];
 

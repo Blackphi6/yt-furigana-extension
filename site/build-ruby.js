@@ -14,6 +14,19 @@ function toKatakana(text) {
   );
 }
 
+/** src/reading-guards.js と同期（Pages は site/ のみ配信） */
+function repairForbiddenReadings(surface, reading) {
+  const s = String(surface || "");
+  const r = toHiragana(String(reading || "")).normalize("NFKC").trim();
+  if (!s || !r) return r;
+  if (s[0] !== "見") return r;
+  if (/^み|^けん/.test(r)) return r;
+  const okuri = s.slice(1);
+  if (s === "見") return "み";
+  if (!/^[\u3040-\u309fー]+$/.test(okuri)) return r;
+  return `み${toHiragana(okuri)}`;
+}
+
 function isKanji(char) {
   // 々 / 〻 は漢字の踊り字。『時々』を「時」+「々」に割ると誤読になる
   return /[\u3400-\u9fff\uF900-\uFAFF々〻]/.test(char);
@@ -246,9 +259,10 @@ function alignMiddleSegments(segments, reading) {
  */
 export function buildRuby(surface, reading, options = {}) {
   const preserveKatakana = options.preserveKatakana === true;
-  const hiraganaReading = toHiragana(reading || "");
+  const repaired = repairForbiddenReadings(surface, reading);
+  const hiraganaReading = toHiragana(repaired || "");
   const shown = preserveKatakana
-    ? displayReading(reading || "")
+    ? displayReading(repaired || "")
     : hiraganaReading;
   const safeSurface = escapeHtml(surface);
 
