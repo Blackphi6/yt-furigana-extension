@@ -77,4 +77,18 @@ assert.equal(DEMO_MANUAL_PHRASES["揚子江"], "ようすこう");
   assert.ok(naka[0].candidates.includes("なか"));
 }
 
+{
+  const machi = applyDemoContextReadings("移ろう街と", [
+    {
+      surface: "街",
+      span: [3, 4],
+      reading: "がい",
+      confidence: 0.6,
+      candidates: ["がい", "まち"]
+    }
+  ]);
+  assert.equal(machi[0].reading, "まち");
+  assert.equal(machi[0].source, "demo_context");
+}
+
 console.log("test-site-context-overlay: ok");
