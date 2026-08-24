@@ -25,7 +25,7 @@ import {
 import {
   DEMO_MANUAL_PHRASES,
   applyDemoContextReadings,
-} from "./context-reading-overlay.js?v=20260824c";
+} from "./context-reading-overlay.js?v=20260824d";
 
 const DEFAULT_API =
   (window.YT_FURIGANA_SITE && window.YT_FURIGANA_SITE.readingApiUrl) ||

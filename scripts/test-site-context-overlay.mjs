@@ -28,6 +28,7 @@ assert.equal(tokens[0].reading, "おおやけ");
 assert.equal(tokens[0].source, "demo_context");
 assert.equal(DEMO_MANUAL_PHRASES["七五三"], "しちごさん");
 assert.equal(DEMO_MANUAL_PHRASES["揚子江"], "ようすこう");
+assert.equal(DEMO_MANUAL_PHRASES["終い"], "しまい");
 
 {
   const pack = applyDemoContextReadings("リュックを背負って学校に行く", [
