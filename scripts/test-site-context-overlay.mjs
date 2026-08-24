@@ -91,4 +91,18 @@ assert.equal(DEMO_MANUAL_PHRASES["揚子江"], "ようすこう");
   assert.equal(machi[0].source, "demo_context");
 }
 
+{
+  const aoi = applyDemoContextReadings("青い街", [
+    {
+      surface: "街",
+      span: [2, 3],
+      reading: "がい",
+      confidence: 0.6,
+      candidates: ["がい", "まち"]
+    }
+  ]);
+  assert.equal(aoi[0].reading, "まち");
+  assert.equal(aoi[0].source, "demo_morph_base");
+}
+
 console.log("test-site-context-overlay: ok");

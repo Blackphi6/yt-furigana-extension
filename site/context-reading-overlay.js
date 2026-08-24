@@ -187,6 +187,22 @@ export const DEMO_CONTEXT_RULES = [
     }
 ];
 
+/** 単独漢字の多数派（前後が漢字でないとき）。住宅街の「がい」は前が漢字なので使わない */
+const DEMO_MAJORITY = {
+  街: "まち"
+};
+
+const KANJI_RE = /[\u3400-\u9fff]/;
+
+function isStandaloneKanji(surface, text, start, end) {
+  if (String(surface || "").length !== 1 || !KANJI_RE.test(surface)) return false;
+  const prev = start > 0 ? text[start - 1] : "";
+  const nxt = end < text.length ? text[end] : "";
+  if (prev && KANJI_RE.test(prev)) return false;
+  if (nxt && KANJI_RE.test(nxt)) return false;
+  return true;
+}
+
 /** @type {Record<string, string>} */
 export const DEMO_MANUAL_PHRASES = {
   故郷: "こきょう",
@@ -274,6 +290,21 @@ export function applyDemoContextReadings(
       }
     }
     if (!best) {
+      const majority = DEMO_MAJORITY[surface];
+      if (
+        majority &&
+        isStandaloneKanji(surface, src, span[0], span[1]) &&
+        token.reading !== majority
+      ) {
+        if (!cands.includes(majority)) cands.unshift(majority);
+        return {
+          ...token,
+          reading: majority,
+          confidence: Math.max(Number(token.confidence) || 0, 0.86),
+          source: "demo_morph_base",
+          candidates: cands
+        };
+      }
       return { ...token, candidates: cands };
     }
     const reading = best.reading;
