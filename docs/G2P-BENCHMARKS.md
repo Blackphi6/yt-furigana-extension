@@ -13,6 +13,28 @@
 
 [ja-tts-g2p-bench](https://github.com/filmapp/ja-tts-g2p-bench) の公開 TTS 正解率（Gemini 80% 等）は **合成音声を teacher-forcing で採点**したもの。本リポジトリは **テキスト側のルビ読み**。並べるときは必ず「text-side」と明記する。解説記事: [Zenn](https://zenn.dev/tellernovel_inc/articles/ja-tts-g2p-benchmark)。
 
+### Parayomi からパクった仕組み / パクっていないもの
+
+参照: [Zenn](https://zenn.dev/parakeet_tech/articles/936532be817118) / [HF Space](https://huggingface.co/spaces/Parakeet-Inc/Parayomi)
+
+**パクった（公開されている評価思想・デモ）**
+
+- 文脈依存の同形異音看板文（人気・上手×3・金・表・角・弾・何人・紅葉）
+- 多数派既定＋少数派は cue のみ（私／尊い／街／上手 など）
+- 常用漢字付表（熟字訓）フレーズ
+- JKYB-Parakeet 失敗ランキング → cue 収穫（`npm run learn:promote-parakeet-ranked`）
+- agent-debate の GapFinder で Parayomi 表層を優先
+
+**パクっていない**
+
+- Parayomi 本体のニューラル重み・学習コード（非公開）
+- HF Space への常時 API 依存
+
+```bash
+node scripts/test-parayomi-examples.mjs
+npm run learn:promote-parakeet-ranked -- --top=30 --apply
+```
+
 ## 調査で拾ったデータセット
 
 | データセット | 規模 | ライセンス | 本 eval | 備考 |
