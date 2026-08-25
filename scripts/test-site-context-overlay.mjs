@@ -106,4 +106,31 @@ assert.equal(DEMO_MANUAL_PHRASES["終い"], "しまい");
   assert.equal(aoi[0].source, "demo_morph_base");
 }
 
+{
+  const text =
+    "歌が上手な彼女は、交渉事でも常に一枚上手であり、舞台の上手で堂々と振る舞った。";
+  const spans = [];
+  let from = 0;
+  while (true) {
+    const i = text.indexOf("上手", from);
+    if (i < 0) break;
+    spans.push([i, i + 2]);
+    from = i + 2;
+  }
+  const pack = applyDemoContextReadings(
+    text,
+    spans.map((span) => ({
+      surface: "上手",
+      span,
+      reading: "じょうず",
+      confidence: 0.5,
+      candidates: ["じょうず", "うわて", "かみて"]
+    }))
+  );
+  assert.deepEqual(
+    pack.map((t) => t.reading),
+    ["じょうず", "うわて", "かみて"]
+  );
+}
+
 console.log("test-site-context-overlay: ok");
