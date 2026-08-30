@@ -30,6 +30,21 @@ import { isQuizToken, collectQuizItems } from "../site/demo-quiz.js";
 }
 
 {
+  // 9時 → くじ（きゅうどき に割らない）
+  for (const text of ["午前9時に家を出る", "午前 9時に家を出る"]) {
+    const nums = collectNumberTokens(text);
+    assert.equal(nums.length, 1, text);
+    assert.equal(nums[0].surface, "9時", text);
+    assert.equal(nums[0].reading, "くじ", text);
+  }
+  assert.equal(collectNumberTokens("4時")[0].reading, "よじ");
+  assert.equal(collectNumberTokens("7時")[0].reading, "しちじ");
+  assert.equal(collectNumberTokens("0時")[0].reading, "れいじ");
+  assert.equal(collectNumberTokens("7月")[0].reading, "しちがつ");
+  assert.equal(collectNumberTokens("1日")[0].reading, "ついたち");
+}
+
+{
   const text = "21階にバーテンダーがいるよ";
   const apiTokens = [
     {

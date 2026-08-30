@@ -1,6 +1,6 @@
-"""Digit spans (+ 階/回 counters) → cardinal readings with sokuon.
+"""Digit spans (+ 時/分/月/日/人/階/回) → readings with specials / sokuon.
 
-Example: 21階 → にじゅういっかい（にじゅういちかい ではない）.
+Example: 9時 → くじ / 21階 → にじゅういっかい
 """
 
 from __future__ import annotations
@@ -150,7 +150,114 @@ def number_candidates(primary: str, digits: str) -> list[str]:
     return out
 
 
-KAI_STYLE_UNITS = {"階": "かい", "回": "かい"}
+# 数字の直後に付く助数詞（拡張の number-unit-reading と揃える）
+# 9時→くじ（きゅうどき にしない）
+COUNTER_UNITS: dict[str, dict[str, Any]] = {
+    "人": {
+        "suffix": "にん",
+        "special": {0: "ぜろにん", 1: "ひとり", 2: "ふたり", 4: "よにん"},
+    },
+    "時": {
+        "suffix": "じ",
+        "special": {
+            0: "れいじ",
+            1: "いちじ",
+            2: "にじ",
+            3: "さんじ",
+            4: "よじ",
+            5: "ごじ",
+            6: "ろくじ",
+            7: "しちじ",
+            8: "はちじ",
+            9: "くじ",
+            10: "じゅうじ",
+            11: "じゅういちじ",
+            12: "じゅうにじ",
+            13: "じゅうさんじ",
+            14: "じゅうよじ",
+            15: "じゅうごじ",
+            16: "じゅうろくじ",
+            17: "じゅうしちじ",
+            18: "じゅうはちじ",
+            19: "じゅうくじ",
+            20: "にじゅうじ",
+            21: "にじゅういちじ",
+            22: "にじゅうにじ",
+            23: "にじゅうさんじ",
+            24: "にじゅうよじ",
+        },
+    },
+    "分": {
+        "suffix": "ふん",
+        "special": {
+            1: "いっぷん",
+            2: "にふん",
+            3: "さんぷん",
+            4: "よんぷん",
+            5: "ごふん",
+            6: "ろっぷん",
+            7: "ななふん",
+            8: "はっぷん",
+            9: "きゅうふん",
+            10: "じゅっぷん",
+        },
+    },
+    "月": {
+        "suffix": "がつ",
+        "special": {
+            1: "いちがつ",
+            2: "にがつ",
+            3: "さんがつ",
+            4: "しがつ",
+            5: "ごがつ",
+            6: "ろくがつ",
+            7: "しちがつ",
+            8: "はちがつ",
+            9: "くがつ",
+            10: "じゅうがつ",
+            11: "じゅういちがつ",
+            12: "じゅうにがつ",
+        },
+    },
+    "日": {
+        "suffix": "にち",
+        "special": {
+            1: "ついたち",
+            2: "ふつか",
+            3: "みっか",
+            4: "よっか",
+            5: "いつか",
+            6: "むいか",
+            7: "なのか",
+            8: "ようか",
+            9: "ここのか",
+            10: "とおか",
+            14: "じゅうよっか",
+            20: "はつか",
+            24: "にじゅうよっか",
+        },
+    },
+    "階": {"kai_style": True, "suffix": "かい"},
+    "回": {"kai_style": True, "suffix": "かい"},
+}
+
+# 「一人前」「一人称」など、人の直後に続くと結合しない
+_PERSON_COMPOUND_TAIL = frozenset("前称組月")
+
+
+def read_counter(number: int, spec: dict[str, Any]) -> str:
+    if not isinstance(number, int) or number < 0 or not spec:
+        return ""
+    special = spec.get("special") or {}
+    if number in special:
+        return str(special[number])
+    if spec.get("kai_style"):
+        return read_kai_style_counter(number, str(spec.get("suffix") or "かい"))
+    suffix = str(spec.get("suffix") or "")
+    if number == 0:
+        return f"ぜろ{suffix}"
+    cardinal = read_cardinal(number)
+    return f"{cardinal}{suffix}" if cardinal else ""
 
 
 def read_kai_style_counter(number: int, suffix: str = "かい") -> str:
@@ -197,15 +304,18 @@ def collect_number_tokens(text: str) -> list[dict[str, Any]]:
         integer = int(digits.split(".", 1)[0]) if digits else 0
 
         next_ch = src[end : end + 1]
-        unit_reading = KAI_STYLE_UNITS.get(next_ch)
-        if unit_reading:
+        counter = COUNTER_UNITS.get(next_ch)
+        after_unit = src[end + 1 : end + 2]
+        if counter and not (
+            next_ch == "人" and after_unit in _PERSON_COMPOUND_TAIL
+        ):
             end += 1
             surface = src[start:end]
-            combined = read_kai_style_counter(integer, unit_reading)
+            combined = read_counter(integer, counter)
             if not combined:
                 pos = end
                 continue
-            loose = f"{reading}{unit_reading}"
+            loose = f"{reading}{counter.get('suffix') or ''}"
             cands = number_candidates(combined, digits)
             if loose != combined:
                 cands = list(dict.fromkeys([*cands, loose]))
@@ -239,7 +349,7 @@ def collect_number_tokens(text: str) -> list[dict[str, Any]]:
 def merge_number_tokens(
     text: str, tokens: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
-    """数字（＋階/回）を優先。重なる漢字トークンは落とす。"""
+    """数字（＋時/分/人/階/回など）を優先。重なる漢字トークンは落とす。"""
     numbers = collect_number_tokens(text)
     if not numbers:
         return tokens
