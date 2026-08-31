@@ -354,6 +354,62 @@ async function ensureUnidicPhrases() {
 }
 
 /**
+ * 「中明かされた」空白無しで 中明=なかあ になった塊を割る（src/reading-guards.js と同期）。
+ * @param {any[]} tokens
+ */
+function splitFalseNakaAkaTokens(tokens) {
+  if (!Array.isArray(tokens) || tokens.length === 0) return tokens || [];
+  const out = [];
+  for (const token of tokens) {
+    const surface = String(token?.surface || "");
+    const reading = String(token?.reading || "")
+      .normalize("NFKC")
+      .replace(/[\u30a1-\u30f6]/g, (ch) =>
+        String.fromCharCode(ch.charCodeAt(0) - 0x60)
+      )
+      .trim();
+    if (
+      surface.length >= 2 &&
+      surface.startsWith("中明") &&
+      (reading === "なかあ" || reading.startsWith("なかあ"))
+    ) {
+      const span = Array.isArray(token.span) ? token.span : null;
+      const start =
+        span && Number.isFinite(span[0]) ? Number(span[0]) : null;
+      out.push({
+        ...token,
+        surface: "中",
+        reading: "なか",
+        span: start != null ? [start, start + 1] : token.span,
+        source: token.source || "naka_aka_split"
+      });
+      out.push({
+        ...token,
+        surface: "明",
+        reading: "あ",
+        span: start != null ? [start + 1, start + 2] : token.span,
+        source: token.source || "naka_aka_split"
+      });
+      const restSurf = surface.slice(2);
+      if (restSurf) {
+        out.push({
+          ...token,
+          surface: restSurf,
+          reading: reading.slice("なかあ".length),
+          span:
+            start != null && span && Number.isFinite(span[1])
+              ? [start + 2, Number(span[1])]
+              : token.span
+        });
+      }
+      continue;
+    }
+    out.push(token);
+  }
+  return out;
+}
+
+/**
  * フレーズ最長一致を API トークンに重ねる。
  * @param {string} text
  * @param {any[]} tokens
@@ -1018,6 +1074,8 @@ function renderResult(text, data) {
   let tokens = data.tokens || [];
   // API は注釈マーカー除去後の span を返す。元テキストに重ねるとルビが右へズレる。
   const displayText = stripAnnotationMarkers(text);
+  // 「中明かされた」空白無しの誤一塊（なかあ）をデモ側でも割る
+  tokens = splitFalseNakaAkaTokens(tokens);
   tokens = overlayUnidicTokens(displayText, tokens);
   tokens = overlayJoyoJukujiTokens(displayText, tokens);
   tokens = overlayJaFuriganaTokens(displayText, tokens);
