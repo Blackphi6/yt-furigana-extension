@@ -72,30 +72,30 @@
     "notes": [
       "Default ¥0 path: free tier, no Mac, OpenAI-format chat API",
       "Create key at https://console.groq.com/keys — no credit card",
-      "Preferred 3 families: Llama / Qwen / GPT-OSS",
-      "qwen/qwen3-32b was removed from Groq → use qwen/qwen3.6-27b",
-      "If Qwen preview is unavailable on the key, resolveGroqModels falls back to Llama 3.3 70B verifier"
+      "2026-08-16: llama-3.1-8b-instant / llama-3.3-70b-versatile shut down on free/dev",
+      "Preferred: gpt-oss-20b (gen) / Qwen 3.6 27B (verify) / gpt-oss-120b (arb)",
+      "If Qwen preview is unavailable, resolveGroqModels falls back to gpt-oss-120b verifier"
     ],
     "temperature": 0.7,
     "judge_temperature": 0.1,
     "models": {
       "generator": {
-        "id": "llama-3.1-8b-instant",
-        "family": "llama"
+        "id": "openai/gpt-oss-20b",
+        "family": "gpt-oss"
       },
       "verifier": {
         "id": "qwen/qwen3.6-27b",
         "family": "qwen"
       },
       "arbitrator": {
-        "id": "openai/gpt-oss-20b",
+        "id": "openai/gpt-oss-120b",
         "family": "gpt-oss"
       }
     },
     "fallback_models": {
-      "generator": { "id": "llama-3.1-8b-instant", "family": "llama" },
-      "verifier": { "id": "llama-3.3-70b-versatile", "family": "llama" },
-      "arbitrator": { "id": "openai/gpt-oss-120b", "family": "gpt-oss" }
+      "generator": { "id": "openai/gpt-oss-20b", "family": "gpt-oss" },
+      "verifier": { "id": "openai/gpt-oss-120b", "family": "gpt-oss" },
+      "arbitrator": { "id": "openai/gpt-oss-20b", "family": "gpt-oss" }
     }
   },
   "per_target": 2,
@@ -233,6 +233,18 @@
       "hint": "交渉で上手に回る／相撲の上手（うわて）"
     },
     {
+      "surface": "上手",
+      "gold": "かみて",
+      "candidates": ["うわて", "かみて", "じょうしゅ", "じょうず"],
+      "hint": "舞台の上手／劇場の上手側（かみて）。技能のじょうずではない"
+    },
+    {
+      "surface": "上手",
+      "gold": "かみて",
+      "candidates": ["うわて", "かみて", "じょうしゅ", "じょうず"],
+      "hint": "舞台の上手で堂々と／上手から登場（かみて）"
+    },
+    {
       "surface": "一日",
       "gold": "ついたち",
       "candidates": ["いちにち", "ついたち"],
@@ -291,6 +303,18 @@
       "gold": "いく",
       "candidates": ["いく", "ゆく"],
       "hint": "学校へ行く／明日行く（日常のいく）"
+    },
+    {
+      "surface": "背負っ",
+      "gold": "せおっ",
+      "candidates": ["せおっ", "しょっ"],
+      "hint": "リュック・荷物・子供を背中に載せる物理の背負って（せおう）"
+    },
+    {
+      "surface": "背負っ",
+      "gold": "しょっ",
+      "candidates": ["せおっ", "しょっ"],
+      "hint": "会社の将来を背負って立つ／運命を引き受ける慣用（しょう）。リュックは禁止"
     },
     {
       "surface": "入る",

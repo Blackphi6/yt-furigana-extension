@@ -12,28 +12,21 @@ const config = JSON.parse(
 const primary = resolveGroqModelSet(
   config.groq,
   new Set([
-    "llama-3.1-8b-instant",
-    "qwen/qwen3.6-27b",
     "openai/gpt-oss-20b",
-    "llama-3.3-70b-versatile",
+    "qwen/qwen3.6-27b",
     "openai/gpt-oss-120b",
   ])
 );
-assert.equal(primary.generator, "llama-3.1-8b-instant");
+assert.equal(primary.generator, "openai/gpt-oss-20b");
 assert.equal(primary.verifier, "qwen/qwen3.6-27b");
-assert.equal(primary.arbitrator, "openai/gpt-oss-20b");
+assert.equal(primary.arbitrator, "openai/gpt-oss-120b");
 assert.deepEqual(primary.swapped, []);
 
 const withoutQwen = resolveGroqModelSet(
   config.groq,
-  new Set([
-    "llama-3.1-8b-instant",
-    "llama-3.3-70b-versatile",
-    "openai/gpt-oss-20b",
-    "openai/gpt-oss-120b",
-  ])
+  new Set(["openai/gpt-oss-20b", "openai/gpt-oss-120b"])
 );
-assert.equal(withoutQwen.verifier, "llama-3.3-70b-versatile");
+assert.equal(withoutQwen.verifier, "openai/gpt-oss-120b");
 assert.ok(withoutQwen.swapped.some((s) => s.includes("verifier")));
 
 assert.throws(
@@ -41,10 +34,10 @@ assert.throws(
   /generator/
 );
 
+assert.equal(config.groq.models.generator.id, "openai/gpt-oss-20b");
 assert.equal(config.groq.models.verifier.id, "qwen/qwen3.6-27b");
-assert.notEqual(config.groq.models.verifier.id, "qwen/qwen3-32b");
+assert.notEqual(config.groq.models.generator.id, "llama-3.1-8b-instant");
 
-// sanity: main guard path shape
 assert.ok(pathToFileURL(path.join(__dirname, "learning/llm-synth.mjs")).href);
 
 console.log("Groq model resolve tests passed.");

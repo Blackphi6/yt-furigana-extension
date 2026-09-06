@@ -6,9 +6,9 @@ const TOKEN_KEY = "ytf_admin_token";
 const GROQ_KEY = "ytf_groq_key";
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const GROQ_MODELS = [
-  "llama-3.1-8b-instant",
-  "llama-3.3-70b-versatile",
   "openai/gpt-oss-20b",
+  "openai/gpt-oss-120b",
+  "qwen/qwen3.6-27b",
 ];
 
 const $ = (sel) => document.querySelector(sel);

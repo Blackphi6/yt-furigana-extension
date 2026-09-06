@@ -22,11 +22,12 @@ MacBook Pro **M3 Pro / 36GB** unified memory.
 
 | Role | Model ID |
 |------|----------|
-| generate | `llama-3.1-8b-instant` |
-| verify | `qwen/qwen3.6-27b` (fallback: `llama-3.3-70b-versatile`) |
-| arbitrate | `openai/gpt-oss-20b` |
+| generate | `openai/gpt-oss-20b` |
+| verify | `qwen/qwen3.6-27b`（無ければ `openai/gpt-oss-120b`） |
+| arbitrate | `openai/gpt-oss-120b` |
 
 `scripts/learning/groq-models.mjs` probes `/v1/models` and swaps missing IDs automatically.
+（2026-08-16: free/dev 向け `llama-3.1-8b-instant` / `llama-3.3-70b-versatile` 廃止）
 
 ```bash
 export GROQ_API_KEY=…   # or Actions secret
