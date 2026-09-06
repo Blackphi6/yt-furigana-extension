@@ -1,15 +1,15 @@
 {
-  "ts": "2026-08-15T01:43:43.749Z",
+  "ts": "2026-09-06T10:44:53.865Z",
   "mode": "synth",
-  "note": "素材 +45 / 本体ルール変化なし（日次は主に素材集め）",
+  "note": "素材 +4 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 977,
-    "delta": 45,
-    "acceptedThisRun": 47,
-    "rejectedThisRun": 31
+    "total": 981,
+    "delta": 4,
+    "acceptedThisRun": 4,
+    "rejectedThisRun": 0
   },
   "benches": {
     "seed-bench": {
@@ -64,74 +64,32 @@
   },
   "newSamples": [
     {
-      "text": "車が駅の角を曲がるとき、注意が必要です。",
-      "surface": "角",
-      "gold": "かど",
-      "source": "llm-synth:groq:arbitrate_agree",
-      "note": "街角／角を曲がる（かど）"
+      "text": "朝市で市場の魚を買った。",
+      "surface": "市場",
+      "gold": "いちば",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "朝市・魚・野菜など物理的な市場"
     },
     {
-      "text": "角が生える前に、牛は草をうまく食べられません。",
+      "text": "転職してすぐ、仕事の重圧が辛い。",
+      "surface": "辛い",
+      "gold": "つらい",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "経験・出来事・境遇（味ではない）"
+    },
+    {
+      "text": "彼は絵が上手で、クラスのアートプロジェクトをリードした。",
+      "surface": "上手",
+      "gold": "じょうず",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "絵が上手／歌が上手だ（技能）"
+    },
+    {
+      "text": "[\"牛の角が生",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:arbitrate_agree",
       "note": "牛の角／角が生える（つの）"
-    },
-    {
-      "text": "株式市場の規模は急激に増加した",
-      "surface": "市場",
-      "gold": "しじょう",
-      "source": "llm-synth:groq:arbitrate_agree",
-      "note": "株式・規模・経済・金融の文脈"
-    },
-    {
-      "text": "経済の安定は金融市場のしじょうに直接影響する",
-      "surface": "市場",
-      "gold": "しじょう",
-      "source": "llm-synth:groq:arbitrate_agree",
-      "note": "株式・規模・経済・金融の文脈"
-    },
-    {
-      "text": "ラーメンを食べると辛いが、カレーの方がやや辛い。",
-      "surface": "辛い",
-      "gold": "からい",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "ラーメン・カレー・味・唐辛子"
-    },
-    {
-      "text": "唐辛子が入ったカレーは、辛い味がとても好きだ。",
-      "surface": "辛い",
-      "gold": "からい",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "ラーメン・カレー・味・唐辛子"
-    },
-    {
-      "text": "時は永遠に終わらない",
-      "surface": "永遠",
-      "gold": "えいえん",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
-    },
-    {
-      "text": "日々は永遠に続くものだ",
-      "surface": "永遠",
-      "gold": "えいえん",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
-    },
-    {
-      "text": "会社の仕事が忙しいので、今日は早く帰りたいです。",
-      "surface": "忙しい",
-      "gold": "いそがしい",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "仕事・予定・日常の忙しさ"
-    },
-    {
-      "text": "大学の勉強が忙しいので、予定を調整したりしません。",
-      "surface": "忙しい",
-      "gold": "いそがしい",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "仕事・予定・日常の忙しさ"
     }
   ]
 }

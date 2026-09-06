@@ -975,3 +975,7 @@
 {"text":"日々は永遠に続くものだ","surface":"永遠","candidates":["えいえん","とわ"],"gold":"えいえん","source":"llm-synth:groq:verify_agree","note":"日常・論理・客観（永遠のテーマ、永遠に終わらない など）"}
 {"text":"会社の仕事が忙しいので、今日は早く帰りたいです。","surface":"忙しい","candidates":["いそがしい","せわしい"],"gold":"いそがしい","source":"llm-synth:groq:verify_agree","note":"仕事・予定・日常の忙しさ"}
 {"text":"大学の勉強が忙しいので、予定を調整したりしません。","surface":"忙しい","candidates":["いそがしい","せわしい"],"gold":"いそがしい","source":"llm-synth:groq:verify_agree","note":"仕事・予定・日常の忙しさ"}
+{"text":"朝市で市場の魚を買った。","surface":"市場","candidates":["いちば","しじょう"],"gold":"いちば","source":"llm-synth:groq:verify_agree","note":"朝市・魚・野菜など物理的な市場"}
+{"text":"転職してすぐ、仕事の重圧が辛い。","surface":"辛い","candidates":["からい","つらい"],"gold":"つらい","source":"llm-synth:groq:arbitrate_agree","note":"経験・出来事・境遇（味ではない）"}
+{"text":"彼は絵が上手で、クラスのアートプロジェクトをリードした。","surface":"上手","candidates":["うわて","かみて","じょうしゅ","じょうず"],"gold":"じょうず","source":"llm-synth:groq:arbitrate_agree","note":"絵が上手／歌が上手だ（技能）"}
+{"text":"[\"牛の角が生","surface":"角","candidates":["かく","かど","すみ","つの"],"gold":"つの","source":"llm-synth:groq:arbitrate_agree","note":"牛の角／角が生える（つの）"}
