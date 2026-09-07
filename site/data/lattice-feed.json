@@ -1,20 +1,19 @@
 {
-  "ts": "2026-09-07T04:09:58.526Z",
+  "ts": "2026-09-07T08:32:50.167Z",
   "generatedFrom": "synth-log.jsonl+corpus/synth-open.jsonl",
   "summary": {
     "total": 982,
     "shown": 800,
-    "logCount": 1,
+    "logCount": 0,
     "corpusCount": 982,
     "bySource": {
       "llm-synth:groq:verify_agree": 472,
-      "llm-synth:groq:arbitrate_agree": 327,
-      "arbitrate_agree": 1
+      "llm-synth:groq:arbitrate_agree": 328
     }
   },
   "entries": [
     {
-      "ts": "2026-09-07T04:07:03.604Z",
+      "ts": "",
       "text": "[\"大学入学経験が辛いと感じ",
       "surface": "辛い",
       "candidates": [
@@ -22,14 +21,14 @@
         "つらい"
       ],
       "gold": "つらい",
-      "verify_guess": "からい",
-      "arbitrate_guess": "つらい",
-      "source": "arbitrate_agree",
-      "verify_raw": "\n<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** \"大学入学経験が辛いと感じ\" (Note: The sentence seems cut off, but the key part is \"辛い\")\n   - **Target Word:** 辛い (表層)\n   - **Candidates:** からい / つらい\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is \"辛い\" in the context of \"大学入学経験が辛いと感…",
-      "arb_raw": "つらい",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
       "note": "経験・出来事・境遇（味ではない）"
     },
     {

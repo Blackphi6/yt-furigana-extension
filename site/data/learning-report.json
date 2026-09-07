@@ -1,14 +1,14 @@
 {
-  "ts": "2026-09-07T04:09:58.506Z",
-  "mode": "synth",
-  "note": "素材 +1 / 本体ルール変化なし（日次は主に素材集め）",
+  "ts": "2026-09-07T08:32:50.147Z",
+  "mode": "retrain",
+  "note": "素材増なし / 本体ルール変化あり",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
     "total": 982,
-    "delta": 1,
-    "acceptedThisRun": 1,
+    "delta": 0,
+    "acceptedThisRun": 0,
     "rejectedThisRun": 0
   },
   "benches": {
@@ -59,16 +59,8 @@
   },
   "overrides": {
     "phraseCount": 13,
-    "contextRuleCount": 71,
-    "changed": false
+    "contextRuleCount": 72,
+    "changed": true
   },
-  "newSamples": [
-    {
-      "text": "[\"大学入学経験が辛いと感じ",
-      "surface": "辛い",
-      "gold": "つらい",
-      "source": "llm-synth:groq:arbitrate_agree",
-      "note": "経験・出来事・境遇（味ではない）"
-    }
-  ]
+  "newSamples": []
 }
