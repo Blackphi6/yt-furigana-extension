@@ -1,64 +1,21 @@
 {
-  "ts": "2026-09-06T10:44:53.885Z",
+  "ts": "2026-09-07T04:09:58.526Z",
   "generatedFrom": "synth-log.jsonl+corpus/synth-open.jsonl",
   "summary": {
-    "total": 981,
+    "total": 982,
     "shown": 800,
-    "logCount": 4,
-    "corpusCount": 981,
+    "logCount": 1,
+    "corpusCount": 982,
     "bySource": {
       "llm-synth:groq:verify_agree": 472,
-      "llm-synth:groq:arbitrate_agree": 324,
-      "verify_agree": 1,
-      "arbitrate_agree": 3
+      "llm-synth:groq:arbitrate_agree": 327,
+      "arbitrate_agree": 1
     }
   },
   "entries": [
     {
-      "ts": "2026-09-06T10:44:34.604Z",
-      "text": "[\"牛の角が生",
-      "surface": "角",
-      "candidates": [
-        "かく",
-        "かど",
-        "すみ",
-        "つの"
-      ],
-      "gold": "つの",
-      "verify_guess": "かく",
-      "arbitrate_guess": "つの",
-      "source": "arbitrate_agree",
-      "verify_raw": "\n<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** \"牛の角が生\" (Incomplete sentence, but clearly means \"The cow's horn is growing\" or similar)\n   - **Target Word:** 角 (surface form)\n   - **Candidates:** かく / かど / すみ / つの\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The word is \"角\" i…",
-      "arb_raw": "つの",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
-      "note": "牛の角／角が生える（つの）"
-    },
-    {
-      "ts": "2026-09-06T10:42:44.101Z",
-      "text": "彼は絵が上手で、クラスのアートプロジェクトをリードした。",
-      "surface": "上手",
-      "candidates": [
-        "うわて",
-        "かみて",
-        "じょうしゅ",
-        "じょうず"
-      ],
-      "gold": "じょうず",
-      "verify_guess": "うわて",
-      "arbitrate_guess": "じょうず",
-      "source": "arbitrate_agree",
-      "verify_raw": "\n<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 彼は絵が上手で、クラスのアートプロジェクトをリードした。\n   - **Target Word:** 上手 (表層「上手」)\n   - **Candidates:** うわて / かみて / じょうしゅ / じょうず\n   - **Task:** Select the correct reading (in hiragana) for 「上手」 in this context.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:*…",
-      "arb_raw": "じょうず",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
-      "note": "絵が上手／歌が上手だ（技能）"
-    },
-    {
-      "ts": "2026-09-06T10:42:02.523Z",
-      "text": "転職してすぐ、仕事の重圧が辛い。",
+      "ts": "2026-09-07T04:07:03.604Z",
+      "text": "[\"大学入学経験が辛いと感じ",
       "surface": "辛い",
       "candidates": [
         "からい",
@@ -68,7 +25,7 @@
       "verify_guess": "からい",
       "arbitrate_guess": "つらい",
       "source": "arbitrate_agree",
-      "verify_raw": "\n<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 転職してすぐ、仕事の重圧が辛い。\n   - **Target Word:** 辛い (表層)\n   - **Candidates:** からい / つらい\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence is: 転職してすぐ、仕事の重圧が辛い。\n   - The word in question is 「辛い」.\n   - In Japanese, 「辛い」 can be read a…",
+      "verify_raw": "\n<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** \"大学入学経験が辛いと感じ\" (Note: The sentence seems cut off, but the key part is \"辛い\")\n   - **Target Word:** 辛い (表層)\n   - **Candidates:** からい / つらい\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is \"辛い\" in the context of \"大学入学経験が辛いと感…",
       "arb_raw": "つらい",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -76,7 +33,68 @@
       "note": "経験・出来事・境遇（味ではない）"
     },
     {
-      "ts": "2026-09-06T10:41:54.698Z",
+      "ts": "",
+      "text": "[\"牛の角が生",
+      "surface": "角",
+      "candidates": [
+        "かく",
+        "かど",
+        "すみ",
+        "つの"
+      ],
+      "gold": "つの",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "牛の角／角が生える（つの）"
+    },
+    {
+      "ts": "",
+      "text": "彼は絵が上手で、クラスのアートプロジェクトをリードした。",
+      "surface": "上手",
+      "candidates": [
+        "うわて",
+        "かみて",
+        "じょうしゅ",
+        "じょうず"
+      ],
+      "gold": "じょうず",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "絵が上手／歌が上手だ（技能）"
+    },
+    {
+      "ts": "",
+      "text": "転職してすぐ、仕事の重圧が辛い。",
+      "surface": "辛い",
+      "candidates": [
+        "からい",
+        "つらい"
+      ],
+      "gold": "つらい",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "経験・出来事・境遇（味ではない）"
+    },
+    {
+      "ts": "",
       "text": "朝市で市場の魚を買った。",
       "surface": "市場",
       "candidates": [
@@ -84,14 +102,14 @@
         "しじょう"
       ],
       "gold": "いちば",
-      "verify_guess": "いちば",
+      "verify_guess": null,
       "arbitrate_guess": null,
-      "source": "verify_agree",
-      "verify_raw": "\n<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 朝市で市場の魚を買った。 (Asaichi de shijou no sakana o katta.)\n   - **Target Word:** 市場 (surface form in the sentence)\n   - **Candidates:** いちば / しじょう\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Sentence Context:**\n   - The sentence is: 朝市で市場の魚を買った。\n   - \"朝市\" (asaichi) …",
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
       "arb_raw": "",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
       "note": "朝市・魚・野菜など物理的な市場"
     },
     {
@@ -15575,25 +15593,6 @@
       "verifier": "",
       "arbitrator": "",
       "note": "朝の市場で魚を買う、鮮魚・野菜売り場"
-    },
-    {
-      "ts": "",
-      "text": "市場では新鮮な野菜が並んでいた",
-      "surface": "市場",
-      "candidates": [
-        "いちば",
-        "しじょう"
-      ],
-      "gold": "いちば",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "朝市・魚・野菜など物理的な市場"
     }
   ]
 }

@@ -1,14 +1,14 @@
 {
-  "ts": "2026-09-06T10:44:53.865Z",
+  "ts": "2026-09-07T04:09:58.506Z",
   "mode": "synth",
-  "note": "素材 +4 / 本体ルール変化なし（日次は主に素材集め）",
+  "note": "素材 +1 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 981,
-    "delta": 4,
-    "acceptedThisRun": 4,
+    "total": 982,
+    "delta": 1,
+    "acceptedThisRun": 1,
     "rejectedThisRun": 0
   },
   "benches": {
@@ -64,32 +64,11 @@
   },
   "newSamples": [
     {
-      "text": "朝市で市場の魚を買った。",
-      "surface": "市場",
-      "gold": "いちば",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "朝市・魚・野菜など物理的な市場"
-    },
-    {
-      "text": "転職してすぐ、仕事の重圧が辛い。",
+      "text": "[\"大学入学経験が辛いと感じ",
       "surface": "辛い",
       "gold": "つらい",
       "source": "llm-synth:groq:arbitrate_agree",
       "note": "経験・出来事・境遇（味ではない）"
-    },
-    {
-      "text": "彼は絵が上手で、クラスのアートプロジェクトをリードした。",
-      "surface": "上手",
-      "gold": "じょうず",
-      "source": "llm-synth:groq:arbitrate_agree",
-      "note": "絵が上手／歌が上手だ（技能）"
-    },
-    {
-      "text": "[\"牛の角が生",
-      "surface": "角",
-      "gold": "つの",
-      "source": "llm-synth:groq:arbitrate_agree",
-      "note": "牛の角／角が生える（つの）"
     }
   ]
 }
