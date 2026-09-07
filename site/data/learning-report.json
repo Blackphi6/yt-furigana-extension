@@ -1,14 +1,14 @@
 {
-  "ts": "2026-09-07T08:32:50.147Z",
-  "mode": "retrain",
-  "note": "素材増なし / 本体ルール変化あり",
+  "ts": "2026-09-07T21:26:55.748Z",
+  "mode": "synth",
+  "note": "素材 +1 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 982,
-    "delta": 0,
-    "acceptedThisRun": 0,
+    "total": 983,
+    "delta": 1,
+    "acceptedThisRun": 1,
     "rejectedThisRun": 0
   },
   "benches": {
@@ -60,7 +60,15 @@
   "overrides": {
     "phraseCount": 13,
     "contextRuleCount": 72,
-    "changed": true
+    "changed": false
   },
-  "newSamples": []
+  "newSamples": [
+    {
+      "text": "[\"彼女の新曲は人気が高いと評判だ。\",\"彼は人気者で、ファンが多い。",
+      "surface": "人気",
+      "gold": "にんき",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "人気が高い／人気者（にんき）"
+    }
+  ]
 }

@@ -1,17 +1,39 @@
 {
-  "ts": "2026-09-07T08:32:50.167Z",
+  "ts": "2026-09-07T21:26:55.765Z",
   "generatedFrom": "synth-log.jsonl+corpus/synth-open.jsonl",
   "summary": {
-    "total": 982,
+    "total": 983,
     "shown": 800,
-    "logCount": 0,
-    "corpusCount": 982,
+    "logCount": 1,
+    "corpusCount": 983,
     "bySource": {
-      "llm-synth:groq:verify_agree": 472,
-      "llm-synth:groq:arbitrate_agree": 328
+      "llm-synth:groq:verify_agree": 471,
+      "llm-synth:groq:arbitrate_agree": 328,
+      "arbitrate_agree": 1
     }
   },
   "entries": [
+    {
+      "ts": "2026-09-07T21:25:25.542Z",
+      "text": "[\"彼女の新曲は人気が高いと評判だ。\",\"彼は人気者で、ファンが多い。",
+      "surface": "人気",
+      "candidates": [
+        "じんき",
+        "にんき",
+        "ひとけ",
+        "ひとげ"
+      ],
+      "gold": "にんき",
+      "verify_guess": "じんき",
+      "arbitrate_guess": "にんき",
+      "source": "arbitrate_agree",
+      "verify_raw": "\n<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Input Sentence:** \"彼女の新曲は人気が高いと評判だ。\" (Her new song is said to be very popular.)\n   - **Target Word:** 人気 (表層「人気」)\n   - **Candidates:** じんき / にんき / ひとけ / ひとげ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 「人気」 in the sentence \"彼女の新曲…",
+      "arb_raw": "にんき",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "qwen/qwen3.6-27b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": "人気が高い／人気者（にんき）"
+    },
     {
       "ts": "",
       "text": "[\"大学入学経験が辛いと感じ",
@@ -15558,25 +15580,6 @@
     {
       "ts": "",
       "text": "魚を買うために朝の市場に行った",
-      "surface": "市場",
-      "candidates": [
-        "いちば",
-        "しじょう"
-      ],
-      "gold": "いちば",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "朝の市場で魚を買う、鮮魚・野菜売り場"
-    },
-    {
-      "ts": "",
-      "text": "朝の市場で鮮魚を買った",
       "surface": "市場",
       "candidates": [
         "いちば",
