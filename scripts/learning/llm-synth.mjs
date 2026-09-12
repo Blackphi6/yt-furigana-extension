@@ -18,6 +18,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createBenchTokenizer } from "./bench-utils.mjs";
+import { groqChat, sleep } from "./groq-chat.mjs";
 import { resolveGroqModelSet } from "./groq-models.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -174,61 +175,6 @@ async function cloudflareChat(accountId, token, model, messages, { temperature }
   return JSON.stringify(result ?? "");
 }
 
-/** Groq 呼び出しのグローバル間隔（RPM 対策） */
-let lastGroqCallAt = 0;
-
-async function groqChat(apiKey, model, messages, { temperature }) {
-  // Free 枠は多くのモデルで 30 RPM。連打すると即 429 になるので間隔を空ける。
-  const minInterval = Number(process.env.GROQ_MIN_INTERVAL_MS || 2100);
-  const maxAttempts = 6;
-  let lastErr = "";
-
-  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-    const wait = minInterval - (Date.now() - lastGroqCallAt);
-    if (wait > 0) await sleep(wait);
-    lastGroqCallAt = Date.now();
-
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        temperature,
-        max_tokens: 512,
-      }),
-    });
-    const raw = await res.text();
-    if (res.status === 429) {
-      const retryAfterSec = Number(res.headers.get("retry-after") || 0);
-      const backoff = Math.max(
-        retryAfterSec * 1000,
-        minInterval * (attempt + 1),
-        3000
-      );
-      lastErr = `429 rate limit (retry in ${Math.round(backoff / 1000)}s)`;
-      console.warn(`groq ${model}: ${lastErr}`);
-      await sleep(backoff);
-      continue;
-    }
-    let data;
-    try {
-      data = JSON.parse(raw);
-    } catch {
-      throw new Error(`groq ${model}: ${res.status} ${raw.slice(0, 200)}`);
-    }
-    if (!res.ok) {
-      const err = data?.error?.message || raw.slice(0, 300) || res.statusText;
-      throw new Error(`groq ${model}: ${res.status} ${err}`);
-    }
-    return data?.choices?.[0]?.message?.content || "";
-  }
-  throw new Error(`groq ${model}: ${lastErr || "rate limit exhausted"}`);
-}
-
 /**
  * @param {string} apiKey
  * @returns {Promise<Set<string>>}
@@ -249,10 +195,6 @@ async function listGroqModelIds(apiKey) {
     throw new Error(`groq models list: ${res.status} ${err}`);
   }
   return new Set((data?.data || []).map((m) => m.id).filter(Boolean));
-}
-
-function sleep(ms) {
-  return new Promise((r) => setTimeout(r, ms));
 }
 
 function tokenSurface(t) {
@@ -488,6 +430,9 @@ async function main() {
       .slice(0, perTarget + 2);
 
     console.log(`  generated=${sentences.length}`);
+    if (!sentences.length && genRaw) {
+      console.warn(`  raw_unparsed=${genRaw.slice(0, 180).replace(/\s+/g, " ")}`);
+    }
 
     for (const text of sentences) {
       const tokens = tokenize(text) || [];
@@ -616,9 +561,18 @@ async function main() {
   console.log(`次: npm run learn:merge → corpus/synth-open.jsonl`);
   if (provider === "cloudflare" || provider === "groq") {
     if (generateCalls > 0 && accepted === 0 && rejected === 0) {
-      throw new Error(
-        "synth produced no accepted/rejected rows — likely provider auth or model failure"
-      );
+      // free 枠の一時 429 / reasoning 食い潰しは次の schedule で回復しうる。
+      // 赤バッジ連発を避け、警告だけ残して 0 終了する。
+      const soft =
+        process.env.LEARN_SOFT_EMPTY !== "0" &&
+        (provider === "groq" || process.env.LEARN_SOFT_EMPTY === "1");
+      const msg =
+        "synth produced no accepted/rejected rows — likely rate limit, empty gpt-oss content, or model failure";
+      if (soft) {
+        console.warn(`::warning::${msg}`);
+        return;
+      }
+      throw new Error(msg);
     }
   }
 }
