@@ -1,24 +1,24 @@
 {
-  "ts": "2026-09-12T16:02:37.907Z",
+  "ts": "2026-09-12T21:04:41.362Z",
   "generatedFrom": "synth-log.jsonl+corpus/synth-open.jsonl",
   "summary": {
-    "total": 1093,
+    "total": 1148,
     "shown": 800,
-    "logCount": 78,
-    "corpusCount": 1073,
+    "logCount": 75,
+    "corpusCount": 1130,
     "bySource": {
       "llm-synth:groq:verify_agree": 421,
-      "llm-synth:groq:arbitrate_agree": 301,
-      "judges_disagree_with_gold": 18,
-      "verify_agree": 33,
+      "llm-synth:groq:arbitrate_agree": 304,
+      "judges_disagree_with_gold": 17,
+      "verify_agree": 32,
       "arbitrate_agree": 25,
-      "no_consensus": 2
+      "no_consensus": 1
     }
   },
   "entries": [
     {
-      "ts": "2026-09-12T16:02:37.290Z",
-      "text": "予定が詰まっているので、忙しい。",
+      "ts": "2026-09-12T21:04:40.764Z",
+      "text": "予定が重なり、家事と仕事を両立するのが忙しい。",
       "surface": "忙しい",
       "candidates": [
         "いそがしい",
@@ -28,7 +28,7 @@
       "verify_guess": "いそがしい",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 予定が詰まっているので、忙しい。 (Because my schedule is packed, I'm busy.)\n   - **Target Word:** 忙しい (busys)\n   - **Candidates:** いそがしい / せわしい\n   - **Task:** Select the correct reading (hiragana) for the surface form 「忙しい」 from the candidates.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  *…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 予定が重なり、家事と仕事を両立するのが忙しい。\n   - **Target Word:** 忙しい (hyōjō/surface form)\n   - **Candidates:** いそがしい / せわしい\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence ends with 「忙しい。」\n   - The word is 「忙しい」.\n   - In Japanese, 「忙しい」 i…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -36,8 +36,8 @@
       "note": "仕事・予定・日常の忙しさ"
     },
     {
-      "ts": "2026-09-12T16:01:57.269Z",
-      "text": "仕事が山積みで、今日も忙しい。",
+      "ts": "2026-09-12T21:04:07.247Z",
+      "text": "仕事の締め切りが迫っているので、いつもより忙しい。",
       "surface": "忙しい",
       "candidates": [
         "いそがしい",
@@ -47,7 +47,7 @@
       "verify_guess": "いそがしい",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 仕事が山積みで、今日も忙しい。\n   - **Target Word:** 忙しい (表層)\n   - **Candidates:** いそがしい / せわしい\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word in the sentence is 「忙しい」.\n   - In Japanese, 「忙しい」 is typically read as 「いそがしい」 (isogashii).\n   …",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 仕事の締め切りが迫っているので、いつもより忙しい。\n   - **Target Word:** 忙しい (hyōjō/surface form)\n   - **Candidates:** いそがしい / せわしい\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word in the sentence is 「忙しい」.\n   - In Japanese, 「忙しい」 is typically read a…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -55,8 +55,8 @@
       "note": "仕事・予定・日常の忙しさ"
     },
     {
-      "ts": "2026-09-12T16:00:44.494Z",
-      "text": "彼の考えは永遠に終わらない哲学的な問いを提起し、周囲を驚かせた。",
+      "ts": "2026-09-12T21:04:02.241Z",
+      "text": "永遠のテーマとして、時間の流れを測る時計を設置した。",
       "surface": "永遠",
       "candidates": [
         "えいえん",
@@ -66,7 +66,7 @@
       "verify_guess": "えいえん",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 彼の考えは永遠に終わらない哲学的な問いを提起し、周囲を驚かせた。\n   - **Target Word:** 永遠 (表層「永遠」)\n   - **Candidates:** えいえん / とわ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The word is 「永遠」 in the phrase 「永遠に終わらない」.\n   - In Japanese, 「永遠」 can be read as 「えいえん…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 永遠のテーマとして、時間の流れを測る時計を設置した。\n   - **Target Word:** 永遠 (表層「永遠」)\n   - **Candidates:** えいえん / とわ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 「永遠」.\n   - In Japanese, 「永遠」 can be read as either 「えいえん」 (eien) or 「とわ」 (towa).\n…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -74,8 +74,8 @@
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "ts": "2026-09-12T15:59:58.345Z",
-      "text": "永遠のテーマに沿って、私は日常の小さな喜びを記録することにした。",
+      "ts": "2026-09-12T21:03:45.261Z",
+      "text": "永遠に終わらない星空を見上げると、心が安らぐ。",
       "surface": "永遠",
       "candidates": [
         "えいえん",
@@ -85,7 +85,7 @@
       "verify_guess": "えいえん",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 永遠のテーマに沿って、私は日常の小さな喜びを記録することにした。\n   - **Target Word:** 永遠 (表層)\n   - **Candidates:** えいえん / とわ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 「永遠」.\n   - In Japanese, 「永遠」 can be read as 「えいえん」 (eien) or 「とわ」 (towa).\n   - …",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 永遠に終わらない星空を見上げると、心が安らぐ。\n   - **Target Word:** 永遠 (表層「永遠」)\n   - **Candidates:** えいえん / とわ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 「永遠」.\n   - In the sentence, it's used as 「永遠に」 (eternally/forever).\n   - Both 「えいえん」…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -93,8 +93,8 @@
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "ts": "2026-09-12T15:59:34.897Z",
-      "text": "カレーに唐辛子を入れすぎて辛い香りが鼻をつき、食べる前から熱がこもった。",
+      "ts": "2026-09-12T21:02:55.046Z",
+      "text": "辛いラーメン",
       "surface": "辛い",
       "candidates": [
         "からい",
@@ -104,7 +104,7 @@
       "verify_guess": "からい",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** カレーに唐辛子を入れすぎて辛い香りが鼻をつき、食べる前から熱がこもった。\n   - **Target Word:** 辛い (表層)\n   - **Candidates:** からい / つらい\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify Context & Meaning:**\n   - The sentence talks about curry (カレー) and chili peppers (唐辛子).\n   - It says \"辛い香りが鼻をつき\" (the spi…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 辛いラーメン (Spicy ramen)\n   - **Target Word:** 辛い (surface form)\n   - **Candidates:** からい / つらい\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Meaning/Context:**\n   - The sentence is \"辛いラーメン\" (Spicy ramen).\n   - In Japanese, \"辛い\" can be read as:\n     - からい (karai): …",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -112,8 +112,8 @@
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "ts": "2026-09-12T15:59:23.794Z",
-      "text": "今日のラーメンは辛い味が強くて、口の中がピリリと刺激した。",
+      "ts": "2026-09-12T21:02:52.678Z",
+      "text": "辛いカレー",
       "surface": "辛い",
       "candidates": [
         "からい",
@@ -123,7 +123,7 @@
       "verify_guess": "からい",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 今日のラーメンは辛い味が強くて、口の中がピリリと刺激した。 (Today's ramen has a strong spicy flavor, and it tingled/stimulated my mouth.)\n   - **Target Word:** 辛い (surface form)\n   - **Candidates:** からい / つらい\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The …",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 辛いカレー (Spicy curry)\n   - **Target Word:** 辛い (surface form)\n   - **Candidates:** からい / つらい\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word's Meaning in Context:**\n   - The sentence is \"辛いカレー\" (Spicy curry).\n   - In this context, \"辛い\" refers to the tas…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -131,8 +131,8 @@
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "ts": "2026-09-12T15:58:50.210Z",
-      "text": "金融市場の規模拡大は国の経済成長を促進する。",
+      "ts": "2026-09-12T21:02:28.875Z",
+      "text": "金融市場の動向が企業の資金調達に大きく影響しています。",
       "surface": "市場",
       "candidates": [
         "いちば",
@@ -142,7 +142,7 @@
       "verify_guess": "いちば",
       "arbitrate_guess": "しじょう",
       "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 金融市場の規模拡大は国の経済成長を促進する。\n   - **Target Word:** 市場 (surface form)\n   - **Candidates:** いちば / しじょう\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The word is \"市場\" in \"金融市場\" (financial market).\n   - In Japanese, \"市場\" has two common read…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 金融市場の動向が企業の資金調達に大きく影響しています。\n   - **Target Word:** 市場 (表層「市場」)\n   - **Candidates:** いちば / しじょう\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The word is 「市場」 in 「金融市場」 (financial market).\n   - In Japanese, 「市場」 has two common readi…",
       "arb_raw": "しじょう",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -150,8 +150,8 @@
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "ts": "2026-09-12T15:58:30.230Z",
-      "text": "株式市場は投資家の期待を反映する重要な指標だ。",
+      "ts": "2026-09-12T21:01:58.990Z",
+      "text": "株式市場の規模が拡大し、経済成長に寄与しています。",
       "surface": "市場",
       "candidates": [
         "いちば",
@@ -161,7 +161,7 @@
       "verify_guess": "いちば",
       "arbitrate_guess": "しじょう",
       "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 株式市場は投資家の期待を反映する重要な指標だ。\n   - **Target Word:** 市場 (表層「市場」)\n   - **Candidates:** いちば / しじょう\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The word is 「市場」 in 「株式市場」 (stock market).\n   - In Japanese, 「市場」 has two common readings:\n   …",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 株式市場の規模が拡大し、経済成長に寄与しています。\n   - **Target Word:** 市場 (表層「市場」)\n   - **Candidates:** いちば / しじょう\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence is: 株式市場の規模が拡大し、経済成長に寄与しています。\n   - The target word is 市場, which appears in 株式市場…",
       "arb_raw": "しじょう",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -169,8 +169,8 @@
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "ts": "2026-09-12T15:58:22.673Z",
-      "text": "角が生えるのは春だ。",
+      "ts": "2026-09-12T21:01:39.477Z",
+      "text": "角が生えると、形が変わる。",
       "surface": "角",
       "candidates": [
         "かく",
@@ -182,7 +182,7 @@
       "verify_guess": "かく",
       "arbitrate_guess": "つの",
       "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 角が生えるのは春だ。 (The sentence means \"Horns grow in spring.\")\n   - **Target Word:** 角 (surface form)\n   - **Candidates:** かく / かど / すみ / つの\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Meaning/Context:**\n   - The sentence talks about something growing in spring: \"角が…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 角が生えると、形が変わる。 (When horns/antlers grow, the shape changes.)\n   - **Target Word:** 角 (surface form)\n   - **Candidates:** かく / かど / すみ / つの\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Target Word in Context:**\n   - The sentence is: 角が生えると、形が変わる。\n   - \"角\" can hav…",
       "arb_raw": "つの",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -190,8 +190,8 @@
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "ts": "2026-09-12T15:57:31.683Z",
-      "text": "牛の角が大きい。",
+      "ts": "2026-09-12T21:00:44.346Z",
+      "text": "牛の角が生えるとき、音が聞こえる。",
       "surface": "角",
       "candidates": [
         "かく",
@@ -203,7 +203,7 @@
       "verify_guess": "かく",
       "arbitrate_guess": "つの",
       "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 牛の角が大きい。 (The cow's horn is big.)\n   - **Target Word:** 角 (surface form)\n   - **Candidates:** かく / かど / すみ / つの\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word's Meaning in Context:**\n   - The sentence is about a cow (牛).\n   - Cows have horns.\n   - Th…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 牛の角が生えるとき、音が聞こえる。 (When a cow's horn grows, you can hear a sound.)\n   - **Target Word:** 角 (surface form)\n   - **Candidates:** かく / かど / すみ / つの\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The word is 角 in the phrase 牛の角 (cow's …",
       "arb_raw": "つの",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -211,8 +211,8 @@
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "ts": "2026-09-12T15:57:07.982Z",
-      "text": "彼女は角を曲がると、雨に濡れた石畳に足を踏み入れた。",
+      "ts": "2026-09-12T21:00:36.700Z",
+      "text": "友だちと話しながら角を曲がると、桜が咲いていた。",
       "surface": "角",
       "candidates": [
         "かく",
@@ -224,7 +224,7 @@
       "verify_guess": "かく",
       "arbitrate_guess": "かど",
       "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 彼女は角を曲がると、雨に濡れた石畳に足を踏み入れた。\n   - **Target Word:** 角 (in the sentence)\n   - **Candidates:** かく / かど / すみ / つの\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence is: 彼女は角を曲がると、雨に濡れた石畳に足を踏み入れた。\n   - \"角を曲がる\" (corner/masaru) mea…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 友だちと話しながら角を曲がると、桜が咲いていた。\n   - **Target Word:** 角 (in the sentence)\n   - **Candidates:** かく / かど / すみ / つの\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence is: 友だちと話しながら角を曲がると、桜が咲いていた。\n   - The phrase is \"角を曲がる\" (sumi/kad…",
       "arb_raw": "かど",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -232,8 +232,8 @@
       "note": "街角／角を曲がる（かど）"
     },
     {
-      "ts": "2026-09-12T15:57:00.537Z",
-      "text": "夜、疲れた体を癒すために、風呂に入るとリラックスできる。",
+      "ts": "2026-09-12T20:59:50.967Z",
+      "text": "私は風呂に入る。",
       "surface": "入る",
       "candidates": [
         "いる",
@@ -243,7 +243,7 @@
       "verify_guess": "いる",
       "arbitrate_guess": "いる",
       "source": "judges_disagree_with_gold",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 夜、疲れた体を癒すために、風呂に入るとリラックスできる。\n   - **Target Word:** 入る (surface form)\n   - **Candidates:** いる / はいる\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence contains \"風呂に入る\" (furo ni hairu).\n   - \"入る\" here means \"to enter\" or \"to…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 私は風呂に入る。 (I take a bath / I enter the bath.)\n   - **Target Word:** 入る (surface form)\n   - **Candidates:** いる / はいる\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 入る in the sentence 私は風呂に入る。\n   - In Japanese, 入る has two m…",
       "arb_raw": "はいる",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -251,8 +251,8 @@
       "note": ""
     },
     {
-      "ts": "2026-09-12T15:56:55.519Z",
-      "text": "今日、友達の家に行くと、部屋に入るとすぐに笑顔が広がった。",
+      "ts": "2026-09-12T20:59:45.927Z",
+      "text": "私は部屋に入る。",
       "surface": "入る",
       "candidates": [
         "いる",
@@ -262,7 +262,7 @@
       "verify_guess": "いる",
       "arbitrate_guess": "いる",
       "source": "judges_disagree_with_gold",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 今日、友達の家に行くと、部屋に入るとすぐに笑顔が広がった。\n   - **Target Word:** 入る (表層 - surface form)\n   - **Candidates:** いる / はいる\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Sentence & Target Word:**\n   - Sentence: 今日、友達の家に行くと、部屋に入るとすぐに笑顔が広がった。\n   - Target: 部屋に入ると (heya ni hairu to)\n …",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 私は部屋に入る。 (I enter the room.)\n   - **Target Word:** 入る (surface form)\n   - **Candidates:** いる / はいる\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 入る in the sentence 私は部屋に入る。\n   - In this context, 入る means \"to enter\" (a p…",
       "arb_raw": "はいる",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -270,8 +270,8 @@
       "note": ""
     },
     {
-      "ts": "2026-09-12T15:56:20.924Z",
-      "text": "その古い本を図書館で手に入ると、ページが静かに入る。",
+      "ts": "2026-09-12T20:58:59.070Z",
+      "text": "新しいプロジェクトに仲間に入ることを決めた。",
       "surface": "入る",
       "candidates": [
         "いる",
@@ -281,7 +281,7 @@
       "verify_guess": "いる",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** その古い本を図書館で手に入ると、ページが静かに入る。\n   - **Target Word:** 入る (surface form)\n   - **Candidates:** いる / はいる\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Sentence & Target Word:**\n   - Sentence: その古い本を図書館で手に入ると、ページが静かに入る。\n   - Translation/Meaning: When you get that old boo…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 新しいプロジェクトに仲間に入ることを決めた。 (I decided to join the team for the new project.)\n   - **Target Word:** 入る (hiragana: いる / はいる)\n   - **Task:** Choose the correct reading (hiragana) from the candidates.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Target Word in Context:…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -289,8 +289,8 @@
       "note": "気に入る／手に入る／仲間に入る（いる）"
     },
     {
-      "ts": "2026-09-12T15:56:16.669Z",
-      "text": "私は新しいレストランに入ると、料理が気に入る。",
+      "ts": "2026-09-12T20:58:56.413Z",
+      "text": "今日のランチはみんなに気に入る味だった。",
       "surface": "入る",
       "candidates": [
         "いる",
@@ -300,7 +300,7 @@
       "verify_guess": "いる",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 私は新しいレストランに入ると、料理が気に入る。\n   - **Target Word:** 入る (in the sentence)\n   - **Candidates:** いる / はいる\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Sentence & Target Word:**\n   - Sentence: 私は新しいレストランに入ると、料理が気に入る。\n   - Translation/Meaning: When I enter the new restaur…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 今日のランチはみんなに気に入る味だった。 (Today's lunch was a flavor that everyone liked.)\n   - **Target Word:** 入る (surface form)\n   - **Candidates:** いる / はいる\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence contains \"気に入る\" (ki ni iru).\n …",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -308,8 +308,8 @@
       "note": "気に入る／手に入る／仲間に入る（いる）"
     },
     {
-      "ts": "2026-09-12T15:54:52.509Z",
-      "text": "背負っ、運命を引き受ける慣用（しょう）を胸に抱く。",
+      "ts": "2026-09-12T20:58:06.704Z",
+      "text": "運命を引き受ける慣用（しょう）を背負っ、未来へ進む。",
       "surface": "背負っ",
       "candidates": [
         "せおっ",
@@ -319,7 +319,7 @@
       "verify_guess": "せおっ",
       "arbitrate_guess": "せおっ",
       "source": "judges_disagree_with_gold",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 背負っ、運命を引き受ける慣用（しょう）を胸に抱く。\n   - **Target Surface Form:** 背負っ\n   - **Candidates:** せおっ / しょっ\n   - **Task:** Choose the correct reading (in hiragana) for the target surface form from the candidates.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify Key Linguistic Elements…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 運命を引き受ける慣用（しょう）を背負っ、未来へ進む。\n   - **Target:** 表層「背負っ」の読み（ひらがな）\n   - **Candidates:** せおっ / しょっ\n   - **Output Requirement:** ひらがな一語だけ。解説禁止。\n\n2.  **Identify Key Linguistic Elements:**\n   - The target word is 「背負っ」 (surface form).\n   - In Japanese, 「背負う」 (seou) is a verb meaning \"to carry on one's back\" or \"to bear/take r…",
       "arb_raw": "せおっ",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -327,8 +327,8 @@
       "note": ""
     },
     {
-      "ts": "2026-09-12T15:54:02.264Z",
-      "text": "背負っ、会社の将来を背負って立つ。",
+      "ts": "2026-09-12T20:57:16.178Z",
+      "text": "会社の将来を背負っ、明日への道を照らす。",
       "surface": "背負っ",
       "candidates": [
         "せおっ",
@@ -338,7 +338,7 @@
       "verify_guess": "せおっ",
       "arbitrate_guess": "せおっ",
       "source": "judges_disagree_with_gold",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 背負っ、会社の将来を背負って立つ。\n   - **Target Surface Form:** 背負っ\n   - **Candidates:** せおっ / しょっ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word:**\n   - The target is 「背負っ」, which is the truncated/contracted form of 「背負う」(せおう) in the sentence.\n   - In Japanese, 「背負…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 会社の将来を背負っ、明日への道を照らす。\n   - **Target Surface Form:** 背負っ\n   - **Candidates:** せおっ / しょっ\n   - **Task:** Choose the correct reading (in hiragana) for the target surface form from the candidates.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word:**\n   - The …",
       "arb_raw": "せおっ",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -346,8 +346,8 @@
       "note": ""
     },
     {
-      "ts": "2026-09-12T15:53:20.863Z",
-      "text": "背負っ せおっ、荷物を背中に載せた少年が走っていた。",
+      "ts": "2026-09-12T20:56:38.848Z",
+      "text": "背負っ荷物を軽くして歩く。",
       "surface": "背負っ",
       "candidates": [
         "せおっ",
@@ -357,7 +357,7 @@
       "verify_guess": "せおっ",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Input Sentence:** 背負っ せおっ、荷物を背中に載せた少年が走っていた。\n   - **Target Surface Form:** 背負っ\n   - **Candidates:** せおっ / しょっ\n   - **Task:** Select the correct reading (in hiragana) for the surface form \"背負っ\" from the candidates.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify Key Linguistic In…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Input Sentence:** 背負っ荷物を軽くして歩く。 (Note: This sentence seems slightly unnatural/incorrect in standard Japanese. It should probably be \"背負った荷物を軽くして歩く。\" or \"背負う荷物を軽くして歩く。\" But the prompt specifically asks for the reading of the surface form \"背負っ\".)\n   - **Target Surface Form:** 背負っ\n   - **Candidates:** せおっ / しょっ\n   - **Output Requi…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -365,8 +365,8 @@
       "note": "リュック・荷物・子供を背中に載せる物理の背負って（せおう）"
     },
     {
-      "ts": "2026-09-12T15:52:32.180Z",
-      "text": "背負っ せおっ、リュックを背中に載せる子供を見た。",
+      "ts": "2026-09-12T20:55:42.870Z",
+      "text": "背負っリュックで子供を背中に載せる。",
       "surface": "背負っ",
       "candidates": [
         "せおっ",
@@ -376,7 +376,7 @@
       "verify_guess": "せおっ",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Input Sentence:** 背負っ せおっ、リュックを背中に載せる子供を見た。\n   - **Target Surface Form:** 背負っ\n   - **Candidates:** せおっ / しょっ\n   - **Task:** Select the correct reading (in hiragana) for the surface form \"背負っ\" from the candidates.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify Key Linguistic Inf…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 背負っリュックで子供を背中に載せる。 (Note: This sentence seems slightly unnatural/incorrect in standard Japanese. It should probably be \"背負ったリュックで...\" or \"背負いリュックで...\", but I must work with what's given.)\n   - **Target Surface Form:** 背負っ\n   - **Candidates:** せおっ / しょっ\n   - **Output Requirement:** Only the hiragana reading, one word…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -384,8 +384,8 @@
       "note": "リュック・荷物・子供を背中に載せる物理の背負って（せおう）"
     },
     {
-      "ts": "2026-09-12T15:52:03.562Z",
-      "text": "明日、友達と公園へ行く。",
+      "ts": "2026-09-12T20:55:28.554Z",
+      "text": "明日行く予定の映画館は混んでいるそうです。",
       "surface": "行く",
       "candidates": [
         "いく",
@@ -395,7 +395,7 @@
       "verify_guess": "いく",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 明日、友達と公園へ行く。 (Ashita, tomodachi to kouen e iku.)\n   - **Target Word:** 行く (surface form)\n   - **Candidates:** いく / ゆく\n   - **Task:** Choose the correct reading (in hiragana) from the candidates.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Contex…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 明日行く予定の映画館は混んでいるそうです。 (Ashita iku yotei no eigakan wa konde iru sou desu.)\n   - **Target Word:** 行く (surface form)\n   - **Candidates:** いく / ゆく\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The word is 「行く」 in 「明日行く予定」.\n   - In mo…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -403,8 +403,8 @@
       "note": "学校へ行く／明日行く（日常のいく）"
     },
     {
-      "ts": "2026-09-12T15:52:01.120Z",
-      "text": "今日は学校へ行く。",
+      "ts": "2026-09-12T20:54:40.510Z",
+      "text": "学校へ行くと、友達に会う予定です。",
       "surface": "行く",
       "candidates": [
         "いく",
@@ -414,7 +414,7 @@
       "verify_guess": "いく",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 今日は学校へ行く。 (Today, I go to school.)\n   - **Target Word:** 行く (surface form)\n   - **Candidates:** いく / ゆく\n   - **Requirement:** Output only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 「行く」 in the sentence 「今日は学校へ行く。」\n   - In modern standard Japanese, 「行…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 学校へ行くと、友達に会う予定です。\n   - **Target Word:** 行く (surface form)\n   - **Candidates:** いく / ゆく\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence is: 学校へ行くと、友達に会う予定です。\n   - The target word is 「行く」 in 「学校へ行く」.\n   - In modern Japane…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -422,8 +422,8 @@
       "note": "学校へ行く／明日行く（日常のいく）"
     },
     {
-      "ts": "2026-09-12T15:51:08.266Z",
-      "text": "時が行く",
+      "ts": "2026-09-12T20:54:34.880Z",
+      "text": "時が行く、風も行く。",
       "surface": "行く",
       "candidates": [
         "いく",
@@ -433,7 +433,7 @@
       "verify_guess": "いく",
       "arbitrate_guess": "ゆく",
       "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 時が行く (Toki ga iku/yuku)\n   - **Target Word:** 行く (surface form)\n   - **Candidates:** いく / ゆく\n   - **Task:** Choose the correct reading (hiragana) for the surface form \"行く\" in this specific sentence.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify Key Linguistic Point…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 時が行く、風も行く。 (Time goes, wind also goes.)\n   - **Target Word:** 行く (surface form)\n   - **Candidates:** いく / ゆく\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Core Linguistic Issue:**\n   - The verb 行く has two main readings: いく (iku) and ゆく (yuku).\n   - In modern Ja…",
       "arb_raw": "ゆく",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -441,8 +441,8 @@
       "note": "時が行く／行く末／文語・歌詞寄りのゆく"
     },
     {
-      "ts": "2026-09-12T15:51:02.847Z",
-      "text": "蓋が開くと、熱々のスープの香りが立ち上る。",
+      "ts": "2026-09-12T20:53:29.842Z",
+      "text": "蓋が開く瞬間、香ばしいコーヒーの香りが広がった。",
       "surface": "開く",
       "candidates": [
         "あく",
@@ -452,7 +452,7 @@
       "verify_guess": "あく",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 蓋が開くと、熱々のスープの香りが立ち上る。 (When the lid opens, the aroma of the hot soup rises.)\n   - **Target Word:** 開く (surface form)\n   - **Candidates:** あく / ひらく\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The word is 「開く」 in 「蓋が開くと」.\n   - Sub…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 蓋が開く瞬間、香ばしいコーヒーの香りが広がった。 (The moment the lid opened, the fragrant smell of coffee spread.)\n   - **Target Word:** 開く (surface form)\n   - **Candidates:** あく / ひらく\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The word is 「開く」 in 「蓋が…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -460,8 +460,8 @@
       "note": "ドアが開く／蓋が開く（あく・自動）"
     },
     {
-      "ts": "2026-09-12T15:50:13.489Z",
-      "text": "ドアが開くと、春の風が室内へ流れ込む。",
+      "ts": "2026-09-12T20:52:53.684Z",
+      "text": "ドアが開くと、春の風が室内に入ってきた。",
       "surface": "開く",
       "candidates": [
         "あく",
@@ -471,7 +471,7 @@
       "verify_guess": "あく",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** ドアが開くと、春の風が室内へ流れ込む。 (When the door opens, the spring wind flows into the room.)\n   - **Target Word:** 開く (surface form)\n   - **Candidates:** あく / ひらく\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 開く in the sentence \"ドアが…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** ドアが開くと、春の風が室内に入ってきた。 (When the door opened, the spring wind came into the room.)\n   - **Target Word:** 開く (surface form)\n   - **Candidates:** あく / ひらく\n   - **Output Requirement:** Only the reading in hiragana, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 開く.\n   - In Japanes…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -479,8 +479,8 @@
       "note": "ドアが開く／蓋が開く（あく・自動）"
     },
     {
-      "ts": "2026-09-12T15:49:37.877Z",
-      "text": "店を開くと、笑顔が溢れる。",
+      "ts": "2026-09-12T20:52:03.933Z",
+      "text": "店を開くと、明かりがゆっくりひらく。",
       "surface": "開く",
       "candidates": [
         "あく",
@@ -490,7 +490,7 @@
       "verify_guess": "あく",
       "arbitrate_guess": "ひらく",
       "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 店を開くと、笑顔が溢れる。 (When the store opens, smiles overflow.)\n   - **Target Word:** 開く (surface form)\n   - **Candidates:** あく / ひらく\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence is \"店を開くと、笑顔が溢れる。\"\n   - The verb is \"開く\" (to o…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 店を開くと、明かりがゆっくりひらく。\n   - **Target Word:** 表層「開く」 (surface form \"開く\")\n   - **Candidates:** あく / ひらく\n   - **Task:** Choose the correct reading (in hiragana) for the target word in the given sentence.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Sentence:**\n   - 店を…",
       "arb_raw": "ひらく",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -498,8 +498,8 @@
       "note": "本を開く／店を開く／会議を開く（ひらく）"
     },
     {
-      "ts": "2026-09-12T15:48:53.983Z",
-      "text": "本を開くと、古い字が光る。",
+      "ts": "2026-09-12T20:51:21.766Z",
+      "text": "本を開くと、ページが静かにひらく。",
       "surface": "開く",
       "candidates": [
         "あく",
@@ -509,7 +509,7 @@
       "verify_guess": "あく",
       "arbitrate_guess": "ひらく",
       "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 本を開くと、古い字が光る。 (When I open the book, old characters shine.)\n   - **Target Word:** 開く (surface form)\n   - **Candidates:** あく / ひらく\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 開く.\n   - Context: 本を開く (open a book)\n   - I…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 本を開くと、ページが静かにひらく。\n   - **Target Word:** 開く (表層 - surface form)\n   - **Candidates:** あく / ひらく\n   - **Task:** Choose the correct reading (in hiragana) for the target word in the given sentence.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Sentence & Target Word:*…",
       "arb_raw": "ひらく",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -517,8 +517,8 @@
       "note": "本を開く／店を開く／会議を開く（ひらく）"
     },
     {
-      "ts": "2026-09-12T15:48:16.675Z",
-      "text": "テキストの一行（いちぎょう）を一行だけ書くと、入力が簡潔になる。",
+      "ts": "2026-09-12T20:51:14.493Z",
+      "text": "一行だけ書くと、メモ帳に完結したメッセージが残る。",
       "surface": "一行",
       "candidates": [
         "いちぎょう",
@@ -528,7 +528,7 @@
       "verify_guess": "いちぎょう",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** テキストの一行（いちぎょう）を一行だけ書くと、入力が簡潔になる。\n   - **Task:** Choose the correct reading (in hiragana) for the surface form 「一行」 from the given candidates.\n   - **Candidates:** いちぎょう / いっこう\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify Key Information:**\n   - The sentence alread…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 一行だけ書くと、メモ帳に完結したメッセージが残る。\n   - **Target Word:** 一行 (表層「一行」)\n   - **Candidates:** いちぎょう / いっこう\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence is: 一行だけ書くと、メモ帳に完結したメッセージが残る。\n   - \"一行\" here means \"one line\" (of text).\n   -…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -536,8 +536,8 @@
       "note": "一行だけ書く／テキストの一行（いちぎょう）"
     },
     {
-      "ts": "2026-09-12T15:48:13.911Z",
-      "text": "一行だけ書く／テキストの一行（いちぎょう）だけで済ませると、作業が楽になる。",
+      "ts": "2026-09-12T20:50:51.107Z",
+      "text": "テキストの一行だけ書くと、ページは整う。",
       "surface": "一行",
       "candidates": [
         "いちぎょう",
@@ -547,7 +547,7 @@
       "verify_guess": "いちぎょう",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 一行だけ書く／テキストの一行（いちぎょう）だけで済ませると、作業が楽になる。\n   - **Target Word:** 一行 (表層「一行」)\n   - **Candidates:** いちぎょう / いっこう\n   - **Instruction:** Choose only one reading in hiragana. Output only the hiragana reading. No explanation.\n\n2.  **Identify Key Information:**\n   - The sentence explicitly provides the reading in parentheses: …",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** テキストの一行だけ書くと、ページは整う。\n   - **Target Word:** 一行 (表層「一行」)\n   - **Candidates:** いちぎょう / いっこう\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 「一行」 in the sentence 「テキストの一行だけ書くと、ページは整う。」\n   - Context: \"If you write just one lin…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -555,8 +555,27 @@
       "note": "一行だけ書く／テキストの一行（いちぎょう）"
     },
     {
-      "ts": "2026-09-12T15:47:41.409Z",
-      "text": "一行が到着した瞬間、空気が変わった。",
+      "ts": "2026-09-12T20:50:18.400Z",
+      "text": "観光客の一行が到着した瞬間、ホテルの受付で歓迎の声が響いた。",
+      "surface": "一行",
+      "candidates": [
+        "いちぎょう",
+        "いっこう"
+      ],
+      "gold": "いっこう",
+      "verify_guess": "いちぎょう",
+      "arbitrate_guess": "いちぎょう",
+      "source": "judges_disagree_with_gold",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 観光客の一行が到着した瞬間、ホテルの受付で歓迎の声が響いた。\n   - **Target Word:** 一行 (表層「一行」)\n   - **Candidates:** いちぎょう / いっこう\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The word is 「一行」 in the phrase 「観光客の一行が」.\n   - In this context, it means \"a group of …",
+      "arb_raw": "いちぎょう",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "qwen/qwen3.6-27b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": ""
+    },
+    {
+      "ts": "2026-09-12T20:49:56.435Z",
+      "text": "観光客の一行が到着したとき、空港の係員は笑顔で迎えた。",
       "surface": "一行",
       "candidates": [
         "いちぎょう",
@@ -566,7 +585,7 @@
       "verify_guess": "いちぎょう",
       "arbitrate_guess": "いっこう",
       "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 一行が到着した瞬間、空気が変わった。 (When the party/group arrived, the atmosphere changed.)\n   - **Target Word:** 一行 (表層「一行」の読み)\n   - **Candidates:** いちぎょう / いっこう\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 「一行」.\n   - In the sentence,…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 観光客の一行が到着したとき、空港の係員は笑顔で迎えた。\n   - **Target Word:** 一行 (表層「一行」)\n   - **Candidates:** いちぎょう / いっこう\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence is: 観光客の一行が到着したとき、空港の係員は笑顔で迎えた。\n   - \"一行\" here refers to a group of people …",
       "arb_raw": "いっこう",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -574,27 +593,8 @@
       "note": "観光客の一行／一行が到着した（いっこう）"
     },
     {
-      "ts": "2026-09-12T15:46:56.526Z",
-      "text": "観光客の一行が山頂で写真を撮っていた。",
-      "surface": "一行",
-      "candidates": [
-        "いちぎょう",
-        "いっこう"
-      ],
-      "gold": "いっこう",
-      "verify_guess": "いちぎょう",
-      "arbitrate_guess": "いっこう",
-      "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 観光客の一行が山頂で写真を撮っていた。 (A group of tourists was taking photos at the mountain peak.)\n   - **Target Word:** 一行 (表層「一行」)\n   - **Candidates:** いちぎょう / いっこう\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 「一行」 in the context of …",
-      "arb_raw": "いっこう",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
-      "note": "観光客の一行／一行が到着した（いっこう）"
-    },
-    {
-      "ts": "2026-09-12T15:46:18.843Z",
-      "text": "そのアニメは海外でも人気者として注目されている。",
+      "ts": "2026-09-12T20:49:25.741Z",
+      "text": "彼は人気者だ。",
       "surface": "人気",
       "candidates": [
         "じんき",
@@ -606,7 +606,7 @@
       "verify_guess": "じんき",
       "arbitrate_guess": "にんき",
       "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** そのアニメは海外でも人気者として注目されている。 (That anime is also gaining attention overseas as a popular figure/character.)\n   - **Target Word:** 人気 (in the sentence, it's part of 人気者 - にんきもの)\n   - **Candidates:** じんき / にんき / ひとけ / ひとげ\n   - **Requirement:** Output only the correct reading in hiragana, no explanation.\n\n2.  **Identify th…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 彼は人気者だ。(He is a popular person.)\n   - **Target Word:** 人気 (in the sentence)\n   - **Candidates:** じんき / にんき / ひとけ / ひとげ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The word is 人気者 (にんきもの).\n   - The target part is 人気.\n   - In 人気者,…",
       "arb_raw": "にんき",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -614,8 +614,8 @@
       "note": "人気が高い／人気者（にんき）"
     },
     {
-      "ts": "2026-09-12T15:46:13.838Z",
-      "text": "彼の歌は若者の間で人気が高いと評判だ。",
+      "ts": "2026-09-12T20:48:50.522Z",
+      "text": "彼は人気が高い。",
       "surface": "人気",
       "candidates": [
         "じんき",
@@ -627,7 +627,7 @@
       "verify_guess": "じんき",
       "arbitrate_guess": "にんき",
       "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 彼の歌は若者の間で人気が高いと評判だ。\n   - **Target Word:** 人気 (表層「人気」)\n   - **Candidates:** じんき / にんき / ひとけ / ひとげ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 「人気」 in the sentence 「彼の歌は若者の間で人気が高いと評判だ。」\n   - Context: \"His song is said t…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 彼は人気が高い。 (He is popular.)\n   - **Target Word:** 人気 (表層「人気」)\n   - **Candidates:** じんき / にんき / ひとけ / ひとげ\n   - **Requirement:** Output only the correct reading in hiragana, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 「人気」 in the sentence 「彼は人気が高い。」\n   - In this context, 「人気」 …",
       "arb_raw": "にんき",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -635,8 +635,29 @@
       "note": "人気が高い／人気者（にんき）"
     },
     {
-      "ts": "2026-09-12T15:45:58.236Z",
-      "text": "夜道に人気がないとき、星空はより鮮明に輝く。",
+      "ts": "2026-09-12T20:48:19.052Z",
+      "text": "人気がない夜道（人の気配）に、月明かりだけが友だちになる。",
+      "surface": "人気",
+      "candidates": [
+        "じんき",
+        "にんき",
+        "ひとけ",
+        "ひとげ"
+      ],
+      "gold": "ひとけ",
+      "verify_guess": "じんき",
+      "arbitrate_guess": "ひとけ",
+      "source": "arbitrate_agree",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 人気がない夜道（人の気配）に、月明かりだけが友だちになる。\n   - **Target Word:** 人気 (表層「人気」)\n   - **Candidates:** じんき / にんき / ひとけ / ひとげ\n   - **Constraint:** Output only the hiragana reading, one word. No explanation.\n   - **Note in parentheses:** （人の気配）- This is a hint/clarification provided in the prompt itself, indicating the meaning is \"huma…",
+      "arb_raw": "ひとけ",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "qwen/qwen3.6-27b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": "人気のない道／人気がない夜道（人の気配）"
+    },
+    {
+      "ts": "2026-09-12T20:48:05.965Z",
+      "text": "人気のない道を歩くと、風だけが語りかける。",
       "surface": "人気",
       "candidates": [
         "じんき",
@@ -648,7 +669,7 @@
       "verify_guess": "じんき",
       "arbitrate_guess": "にんき",
       "source": "no_consensus",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 夜道に人気がないとき、星空はより鮮明に輝く。 (When there is no \"人気\" on the night path, the starry sky shines more brightly.)\n   - **Target Word:** 人気 (hyōjō/surface form)\n   - **Candidates:** じんき / にんき / ひとけ / ひとげ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Meaning/Context:**\n   -…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 人気のない道を歩くと、風だけが語りかける。\n   - **Target Word:** 人気 (表層)\n   - **Candidates:** じんき / にんき / ひとけ / ひとげ\n   - **Task:** Choose the correct reading (in hiragana) for the target word in the given sentence.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Sentence & Target Word…",
       "arb_raw": "にんき",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -656,29 +677,8 @@
       "note": ""
     },
     {
-      "ts": "2026-09-12T15:45:07.026Z",
-      "text": "人気のない道で、彼は静かに歩き続けた。",
-      "surface": "人気",
-      "candidates": [
-        "じんき",
-        "にんき",
-        "ひとけ",
-        "ひとげ"
-      ],
-      "gold": "ひとけ",
-      "verify_guess": "じんき",
-      "arbitrate_guess": "にんき",
-      "source": "no_consensus",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 人気のない道で、彼は静かに歩き続けた。 (In a deserted/unpopular road, he continued walking quietly.)\n   - **Target Word:** 人気 (表層 - surface form)\n   - **Candidates:** じんき / にんき / ひとけ / ひとげ\n   - **Task:** Choose the correct reading (in hiragana) for the target word in this specific context.\n   - **Output Requirement:** Only the hiragan…",
-      "arb_raw": "にんき",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
-      "note": ""
-    },
-    {
-      "ts": "2026-09-12T15:44:43.984Z",
-      "text": "プロジェクトは丸一日かかると予測された。",
+      "ts": "2026-09-12T20:47:28.821Z",
+      "text": "プロジェクトは丸一日かかると聞いて、早めに準備を始めた。",
       "surface": "一日",
       "candidates": [
         "いちにち",
@@ -688,7 +688,7 @@
       "verify_guess": "いちにち",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** プロジェクトは丸一日かかると予測された。 (The project was predicted to take a full day.)\n   - **Target Word:** 一日 (surface form)\n   - **Candidates:** いちにち / ついたち\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The word is 「一日」 in the phrase 「丸一日」 (まるいち…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** プロジェクトは丸一日かかると聞いて、早めに準備を始めた。\n   - **Target Word:** 一日 (表層)\n   - **Candidates:** いちにち / ついたち\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify Key Linguistic Context:**\n   - The phrase is \"丸一日\" (まるいちにち).\n   - \"丸一日\" means \"a full day\" or \"the whole day\".\n   - In Japanese…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -696,27 +696,8 @@
       "note": "一日中／丸一日かかる（いちにち）"
     },
     {
-      "ts": "2026-09-12T15:44:08.261Z",
-      "text": "毎月一日、私は朝食を作る。",
-      "surface": "一日",
-      "candidates": [
-        "いちにち",
-        "ついたち"
-      ],
-      "gold": "ついたち",
-      "verify_guess": "いちにち",
-      "arbitrate_guess": "ついたち",
-      "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 毎月一日、私は朝食を作る。 (Every month on the first, I make breakfast.)\n   - **Target Word:** 一日 (表層/surface form)\n   - **Candidates:** いちにち / ついたち\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify Key Linguistic Context:**\n   - The phrase is \"毎月一日\" (every month on the first).\n   …",
-      "arb_raw": "ついたち",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
-      "note": "毎月一日／月の初日（ついたち）"
-    },
-    {
-      "ts": "2026-09-12T15:43:19.765Z",
-      "text": "上手から登場（かみて）すると、会場は静まり返った。",
+      "ts": "2026-09-12T20:47:02.065Z",
+      "text": "上手から登場した彼は、ステージで光を浴びた。",
       "surface": "上手",
       "candidates": [
         "うわて",
@@ -728,7 +709,7 @@
       "verify_guess": "うわて",
       "arbitrate_guess": "うわて",
       "source": "judges_disagree_with_gold",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 上手から登場（かみて）すると、会場は静まり返った。\n   - **Target Word:** 上手 (surface form)\n   - **Candidates:** うわて / かみて / じょうしゅ / じょうず\n   - **Instruction:** Choose exactly one reading in hiragana. Output only the hiragana reading. No explanation.\n\n2.  **Analyze the Sentence & Context:**\n   - The sentence is: 上手から登場（かみて）すると、会場は静まり返った。\n   -…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 上手から登場した彼は、ステージで光を浴びた。\n   - **Target Word:** 上手 (表層)\n   - **Candidates:** うわて / かみて / じょうしゅ / じょうず\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Target Word in Context:**\n   - The sentence is: \"上手から登場した彼は、ステージで光を浴びた。\" (He appeared from the 上手, and was bathed in …",
       "arb_raw": "うわて",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -736,8 +717,8 @@
       "note": ""
     },
     {
-      "ts": "2026-09-12T15:42:17.557Z",
-      "text": "舞台の上手で堂々と、観客を魅了した。",
+      "ts": "2026-09-12T20:46:20.771Z",
+      "text": "舞台の上手で堂々と、彼は観客を魅了した。",
       "surface": "上手",
       "candidates": [
         "うわて",
@@ -749,7 +730,7 @@
       "verify_guess": "うわて",
       "arbitrate_guess": "うわて",
       "source": "judges_disagree_with_gold",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 舞台の上手で堂々と、観客を魅了した。 (On the stage's kamite/jouzu, majestically, captivated the audience.)\n   - **Target Word:** 上手 (surface form)\n   - **Candidates:** うわて / かみて / じょうしゅ / じょうず\n   - **Task:** Select the correct reading (in hiragana) for the target word in this specific context.\n   - **Output Requirement:** Only the hi…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 舞台の上手で堂々と、彼は観客を魅了した。 (On the stage's kamite/jouzu, he captivated the audience with dignity.)\n   - **Target Word:** 上手 (surface form)\n   - **Candidates:** うわて / かみて / じょうしゅ / じょうず\n   - **Task:** Select the correct reading (in hiragana) for the target word in this specific context.\n   - **Output Requirement:** Only th…",
       "arb_raw": "うわて",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -757,8 +738,8 @@
       "note": ""
     },
     {
-      "ts": "2026-09-12T15:41:51.887Z",
-      "text": "劇場の上手側で照明を調整した。",
+      "ts": "2026-09-12T20:46:13.278Z",
+      "text": "劇場の上手側で静かに準備を進めた。",
       "surface": "上手",
       "candidates": [
         "うわて",
@@ -770,7 +751,7 @@
       "verify_guess": "うわて",
       "arbitrate_guess": "うわて",
       "source": "judges_disagree_with_gold",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 劇場の上手側で照明を調整した。 (Adjusted the lighting on the kamite/ujite side of the theater.)\n   - **Target Word:** 上手 (表層「上手」)\n   - **Candidates:** うわて / かみて / じょうしゅ / じょうず\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Meaning/Context:**\n   - The sentence is about a theate…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 劇場の上手側で静かに準備を進めた。 (In the \"kamite/ujōte\" side of the theater, preparations were quietly made.)\n   - **Target Word:** 上手 (surface form in the sentence)\n   - **Candidates:** うわて / かみて / じょうしゅ / じょうず\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Meaning/Context:**…",
       "arb_raw": "うわて",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -778,7 +759,7 @@
       "note": ""
     },
     {
-      "ts": "2026-09-12T15:41:03.073Z",
+      "ts": "2026-09-12T20:45:50.331Z",
       "text": "舞台の上手が観客を魅了した。",
       "surface": "上手",
       "candidates": [
@@ -791,7 +772,7 @@
       "verify_guess": "うわて",
       "arbitrate_guess": "うわて",
       "source": "judges_disagree_with_gold",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 舞台の上手が観客を魅了した。 (The stage's \"kamite/ujōzu\" captivated the audience.)\n   - **Target Word:** 上手 (surface form)\n   - **Candidates:** うわて / かみて / じょうしゅ / じょうず\n   - **Task:** Select the correct reading (in hiragana) for the target word in this specific context.\n   - **Output Requirement:** Only the hiragana reading, one …",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 舞台の上手が観客を魅了した。 (The stage's *kamite/ujōzu* captivated the audience.)\n   - **Target Word:** 上手 (surface form)\n   - **Candidates:** うわて / かみて / じょうしゅ / じょうず\n   - **Task:** Select the correct reading (hiragana) for 上手 in this specific context.\n   - **Output Requirement:** Only the hiragana reading, one word. No explana…",
       "arb_raw": "うわて",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -799,8 +780,8 @@
       "note": ""
     },
     {
-      "ts": "2026-09-12T15:40:30.653Z",
-      "text": "相撲の上手な選手が試合を制した。",
+      "ts": "2026-09-12T20:45:07.016Z",
+      "text": "交渉で上手に回る瞬間、私は自信を抱いた。",
       "surface": "上手",
       "candidates": [
         "うわて",
@@ -812,7 +793,7 @@
       "verify_guess": "うわて",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 相撲の上手な選手が試合を制した。 (A skilled sumo wrestler won the match.)\n   - **Target Word:** 上手 (表層「上手」)\n   - **Candidates:** うわて / かみて / じょうしゅ / じょうず\n   - **Task:** Select the correct reading (in hiragana) for 「上手」 in this specific sentence.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  …",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 交渉で上手に回る瞬間、私は自信を抱いた。\n   - **Target Word:** 上手 (surface form)\n   - **Candidates:** うわて / かみて / じょうしゅ / じょうず\n   - **Task:** Select the correct reading (in hiragana) for \"上手\" in this specific sentence.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Target Word in Co…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -820,8 +801,8 @@
       "note": "交渉で上手に回る／相撲の上手（うわて）"
     },
     {
-      "ts": "2026-09-12T15:39:43.721Z",
-      "text": "交渉で上手に回る戦略が合意を導く。",
+      "ts": "2026-09-12T20:44:24.967Z",
+      "text": "相撲の上手が勢いを増した。",
       "surface": "上手",
       "candidates": [
         "うわて",
@@ -833,7 +814,7 @@
       "verify_guess": "うわて",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 交渉で上手に回る戦略が合意を導く。\n   - **Target Word:** 上手 (表層「上手」)\n   - **Candidates:** うわて / かみて / じょうしゅ / じょうず\n   - **Task:** Select the correct reading (in hiragana) for 「上手」 in this specific sentence.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Target Word in Context:**\n…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 相撲の上手が勢いを増した。 (Sumo no jōzu/jōshu/kamite/uwate ga ikioi o mashita.)\n   - **Target Word:** 上手 (surface form)\n   - **Candidates:** うわて / かみて / じょうしゅ / じょうず\n   - **Task:** Select the correct reading (in hiragana) for \"上手\" in this specific context.\n   - **Output Requirement:** Only the hiragana reading, one word. No exp…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -841,8 +822,8 @@
       "note": "交渉で上手に回る／相撲の上手（うわて）"
     },
     {
-      "ts": "2026-09-12T15:39:29.793Z",
-      "text": "歌が上手だと、ライブで観客が拍手を送る。",
+      "ts": "2026-09-12T20:43:47.961Z",
+      "text": "彼女は歌が上手で、聴衆を魅了する声をいつも披露する。",
       "surface": "上手",
       "candidates": [
         "うわて",
@@ -854,7 +835,7 @@
       "verify_guess": "うわて",
       "arbitrate_guess": "じょうず",
       "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 歌が上手だと、ライブで観客が拍手を送る。 (If you are good at singing, the audience will applaud at live performances.)\n   - **Target Word:** 上手 (表層「上手」)\n   - **Candidates:** うわて / かみて / じょうしゅ / じょうず\n   - **Task:** Select the correct reading (in hiragana) for 「上手」 in this context.\n   - **Output Requirement:** Only the hiragana reading, …",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 彼女は歌が上手で、聴衆を魅了する声をいつも披露する。\n   - **Target Word:** 上手 (表層「上手」)\n   - **Candidates:** うわて / かみて / じょうしゅ / じょうず\n   - **Task:** Select the correct reading (in hiragana) for 「上手」 in this context.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n…",
       "arb_raw": "じょうず",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -862,8 +843,8 @@
       "note": "絵が上手／歌が上手だ（技能）"
     },
     {
-      "ts": "2026-09-12T15:39:16.758Z",
-      "text": "絵が上手な彼は、友人に教えるのが好きだ。",
+      "ts": "2026-09-12T20:42:55.740Z",
+      "text": "絵が上手な彼は、キャンバスに瞬時に色を乗せる才能を持っている。",
       "surface": "上手",
       "candidates": [
         "うわて",
@@ -875,7 +856,7 @@
       "verify_guess": "うわて",
       "arbitrate_guess": "じょうず",
       "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 絵が上手な彼は、友人に教えるのが好きだ。 (He is good at drawing and likes teaching his friends.)\n   - **Target Word:** 上手 (表層「上手」)\n   - **Candidates:** うわて / かみて / じょうしゅ / じょうず\n   - **Task:** Select the correct reading (in hiragana) for 「上手」 in this context.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanati…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 絵が上手な彼は、キャンバスに瞬時に色を乗せる才能を持っている。\n   - **Target Word:** 上手 (表層「上手」)\n   - **Candidates:** うわて / かみて / じょうしゅ / じょうず\n   - **Task:** Select the correct reading (in hiragana) for the target word in the given sentence.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Targ…",
       "arb_raw": "じょうず",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -883,8 +864,8 @@
       "note": "絵が上手／歌が上手だ（技能）"
     },
     {
-      "ts": "2026-09-12T15:38:28.143Z",
-      "text": "今日は、明日の予定を確認した。",
+      "ts": "2026-09-12T20:42:25.155Z",
+      "text": "昨日と比べて今日の風は穏やかだ。",
       "surface": "今日",
       "candidates": [
         "きょう",
@@ -896,7 +877,7 @@
       "verify_guess": "きょう",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 今日は、明日の予定を確認した。 (Kyou wa, ashita no yotei o kakunin shita.)\n   - **Target Word:** 今日 (surface form)\n   - **Candidates:** きょう / こんじつ / こんち / こんにち\n   - **Task:** Select the correct reading (in hiragana) for 今日 in this specific sentence.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Input Sentence:** 昨日と比べて今日の風は穏やかだ。 (Compared to yesterday, today's wind is gentle.)\n   - **Target Word:** 今日 (表層「今日」)\n   - **Candidates:** きょう / こんじつ / こんち / こんにち\n   - **Task:** Select the correct reading (in hiragana) for 「今日」 in this specific sentence.\n   - **Output Requirement:** Only the hiragana reading, one word. No expla…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -904,8 +885,8 @@
       "note": "今日は／明日・昨日と対になる日常のきょう"
     },
     {
-      "ts": "2026-09-12T15:38:16.697Z",
-      "text": "今日は、朝の散歩が日課だ。",
+      "ts": "2026-09-12T20:42:00.238Z",
+      "text": "今日は朝から雨が降っているので、外出は控えた。",
       "surface": "今日",
       "candidates": [
         "きょう",
@@ -917,7 +898,7 @@
       "verify_guess": "きょう",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 今日は、朝の散歩が日課だ。 (Today, morning walks are a daily routine.)\n   - **Target Word:** 今日 (表層「今日」)\n   - **Candidates:** きょう / こんじつ / こんち / こんにち\n   - **Task:** Select exactly one reading in hiragana from the candidates.\n   - **Output Format:** Only the hiragana reading, no explanation.\n\n2.  **Identify the Target Word & Cont…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Input Sentence:** 今日は朝から雨が降っているので、外出は控えた。\n   - **Target Word:** 今日 (表層「今日」)\n   - **Task:** Choose the correct reading (in hiragana) from the given options.\n   - **Options:** きょう / こんじつ / こんち / こんにち\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   -…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -925,8 +906,8 @@
       "note": "今日は／明日・昨日と対になる日常のきょう"
     },
     {
-      "ts": "2026-09-12T15:37:49.592Z",
-      "text": "今日では、街の風景がまるで別世界のように変わっている。",
+      "ts": "2026-09-12T20:41:19.491Z",
+      "text": "今日では、会議の時間が午前10時に変更された。",
       "surface": "今日",
       "candidates": [
         "きょう",
@@ -938,7 +919,7 @@
       "verify_guess": "きょう",
       "arbitrate_guess": "きょう",
       "source": "judges_disagree_with_gold",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 今日では、街の風景がまるで別世界のように変わっている。\n   - **Target Word:** 今日 (表層)\n   - **Candidates:** きょう / こんじつ / こんち / こんにち\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The word is \"今日\" in the phrase \"今日では\".\n   - \"今日では\" (kyou de wa) means \"these days…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 今日では、会議の時間が午前10時に変更された。\n   - **Target Word:** 今日 (表層)\n   - **Candidates:** きょう / こんじつ / こんち / こんにち\n   - **Task:** Select the correct reading (in hiragana) for \"今日\" in this specific sentence.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Target Word in Context:**…",
       "arb_raw": "きょう",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -946,8 +927,8 @@
       "note": ""
     },
     {
-      "ts": "2026-09-12T15:36:48.376Z",
-      "text": "今日のこの頃、私は新しいプロジェクトに取り組み始めた。",
+      "ts": "2026-09-12T20:40:35.360Z",
+      "text": "今日のこの頃、私は新しいプロジェクトに取り組んでいる。",
       "surface": "今日",
       "candidates": [
         "きょう",
@@ -959,7 +940,7 @@
       "verify_guess": "きょう",
       "arbitrate_guess": "きょう",
       "source": "judges_disagree_with_gold",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 今日のこの頃、私は新しいプロジェクトに取り組み始めた。\n   - **Target Word:** 今日 (表層「今日」)\n   - **Candidates:** きょう / こんじつ / こんち / こんにち\n   - **Task:** Select the correct reading (in hiragana) for 「今日」 in this specific sentence.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Sentence & Contex…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 今日のこの頃、私は新しいプロジェクトに取り組んでいる。\n   - **Target Word:** 今日 (表層「今日」)\n   - **Candidates:** きょう / こんじつ / こんち / こんにち\n   - **Task:** Select the correct reading (in hiragana) for 「今日」 in this specific sentence.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Target Word in Co…",
       "arb_raw": "きょう",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -967,8 +948,8 @@
       "note": ""
     },
     {
-      "ts": "2026-09-12T15:36:40.849Z",
-      "text": "彼女は博士として学位を授与され、研究論文を発表した。",
+      "ts": "2026-09-12T20:39:46.961Z",
+      "text": "博士号を取得した彼は学位の授与式を受けた。",
       "surface": "博士",
       "candidates": [
         "はかせ",
@@ -978,7 +959,7 @@
       "verify_guess": "はかせ",
       "arbitrate_guess": "はくし",
       "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 彼女は博士として学位を授与され、研究論文を発表した。\n   - **Target Word:** 博士 (表層)\n   - **Candidates:** はかせ / はくし\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The word is 博士 (hakase/hakushi).\n   - Context: \"彼女は博士として学位を授与され、研究論文を発表した。\" (She was awarded a d…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 博士号を取得した彼は学位の授与式を受けた。\n   - **Target Word:** 博士 (表層「博士」)\n   - **Candidates:** はかせ / はくし\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence is: 博士号を取得した彼は学位の授与式を受けた。\n   - The target word is 「博士」 in 「博士号」 (hakushi-gō).\n   - I…",
       "arb_raw": "はくし",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -986,8 +967,8 @@
       "note": "博士号／学位／論文"
     },
     {
-      "ts": "2026-09-12T15:36:15.686Z",
-      "text": "博士号を取得した彼は、論文の執筆に没頭した。",
+      "ts": "2026-09-12T20:39:41.816Z",
+      "text": "博士は論文の執筆に没頭している。",
       "surface": "博士",
       "candidates": [
         "はかせ",
@@ -997,7 +978,7 @@
       "verify_guess": "はかせ",
       "arbitrate_guess": "はくし",
       "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 博士号を取得した彼は、論文の執筆に没頭した。\n   - **Target Word:** 博士 (表層「博士」)\n   - **Candidates:** はかせ / はくし\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence is: 博士号を取得した彼は、論文の執筆に没頭した。\n   - The target word is part of the compound noun 博士号 (は…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 博士は論文の執筆に没頭している。 (The doctorate/PhD student is immersed in writing a thesis.)\n   - **Target Word:** 博士 (表层/表层形式)\n   - **Candidates:** はかせ / はくし\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 博士.\n   - In Japanese, 博士 has …",
       "arb_raw": "はくし",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -1005,8 +986,8 @@
       "note": "博士号／学位／論文"
     },
     {
-      "ts": "2026-09-12T15:35:20.825Z",
-      "text": "私は友人に呼び方としての博士を頼んだ。",
+      "ts": "2026-09-12T20:39:17.293Z",
+      "text": "先生に呼び方としての博士と呼ばれる彼は、会議で発表した。",
       "surface": "博士",
       "candidates": [
         "はかせ",
@@ -1016,7 +997,7 @@
       "verify_guess": "はかせ",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 私は友人に呼び方としての博士を頼んだ。 (I asked my friend to call me \"博士\" as a form of address.)\n   - **Target Word:** 博士 (surface form)\n   - **Candidates:** はかせ / はくし\n   - **Task:** Choose the correct reading (in hiragana) from the candidates.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **An…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 先生に呼び方としての博士と呼ばれる彼は、会議で発表した。\n   - **Target Word:** 博士 (表層「博士」)\n   - **Candidates:** はかせ / はくし\n   - **Task:** Choose the correct reading (hiragana) for the target word in this specific context.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Context:**\n   - The sen…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -1024,8 +1005,8 @@
       "note": "物知り博士／呼び方としての博士"
     },
     {
-      "ts": "2026-09-12T15:34:47.188Z",
-      "text": "物知り博士が図書館で新しい本を紹介した。",
+      "ts": "2026-09-12T20:38:39.755Z",
+      "text": "彼は物知り博士として、図書館で一日中本を読んでいる。",
       "surface": "博士",
       "candidates": [
         "はかせ",
@@ -1035,7 +1016,7 @@
       "verify_guess": "はかせ",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 物知り博士が図書館で新しい本を紹介した。\n   - **Target Word:** 博士 (表層)\n   - **Candidates:** はかせ / はくし\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence is: 物知り博士が図書館で新しい本を紹介した。\n   - \"物知り博士\" (monoshiri hakase) is a common compound noun meanin…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 彼は物知り博士として、図書館で一日中本を読んでいる。\n   - **Target Word:** 博士 (表層)\n   - **Candidates:** はかせ / はくし\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence uses \"物知り博士\" (monoshiri hakase/hakushi).\n   - \"物知り博士\" is a common Japanese idiom/co…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -1043,8 +1024,8 @@
       "note": "物知り博士／呼び方としての博士"
     },
     {
-      "ts": "2026-09-12T15:34:29.405Z",
-      "text": "どういう風に表現すればいいか、考えてみよう。",
+      "ts": "2026-09-12T20:38:13.423Z",
+      "text": "どういう風に説明すれば、読者が理解しやすいかを考える。",
       "surface": "風",
       "candidates": [
         "かぜ",
@@ -1055,7 +1036,7 @@
       "verify_guess": "かぜ",
       "arbitrate_guess": "ふう",
       "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** どういう風に表現すればいいか、考えてみよう。\n   - **Target Word:** 風 (surface form in the sentence)\n   - **Candidates:** かぜ / ふう / ふり\n   - **Task:** Choose the correct reading (in hiragana) for the target word in this specific context.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Se…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** どういう風に説明すれば、読者が理解しやすいかを考える。\n   - **Target Word:** 風 (in the sentence, it's part of \"どういう風に\")\n   - **Candidates:** かぜ / ふう / ふり\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence is: どういう風に説明すれば、読者が理解しやすいかを考える。\n   - The wor…",
       "arb_raw": "ふう",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -1063,8 +1044,8 @@
       "note": "こんな風に／どういう風に書く（様子・やり方）"
     },
     {
-      "ts": "2026-09-12T15:33:29.393Z",
-      "text": "こんな風に書くと、読みやすさが増す。",
+      "ts": "2026-09-12T20:37:56.251Z",
+      "text": "こんな風に書くと、意味が明確になる。",
       "surface": "風",
       "candidates": [
         "かぜ",
@@ -1075,7 +1056,7 @@
       "verify_guess": "かぜ",
       "arbitrate_guess": "ふう",
       "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** こんな風に書くと、読みやすさが増す。\n   - **Target Word:** 風 (surface form in the sentence)\n   - **Candidates:** かぜ / ふう / ふり\n   - **Task:** Select the correct reading (in hiragana) for the target word in this specific context.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Senten…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** こんな風に書くと、意味が明確になる。 (If you write it like this, the meaning becomes clear.)\n   - **Target Word:** 風 (surface form in the sentence)\n   - **Candidates:** かぜ / ふう / ふり\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence is: こんな…",
       "arb_raw": "ふう",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -1083,8 +1064,8 @@
       "note": "こんな風に／どういう風に書く（様子・やり方）"
     },
     {
-      "ts": "2026-09-12T15:33:22.606Z",
-      "text": "強風で風で髪が乱れると、彼は笑った。",
+      "ts": "2026-09-12T20:37:23.440Z",
+      "text": "風が吹くと、夏の午後に涼しさが広がる。",
       "surface": "風",
       "candidates": [
         "かぜ",
@@ -1095,7 +1076,7 @@
       "verify_guess": "かぜ",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 強風で風で髪が乱れると、彼は笑った。 (Note: There's a typo in the sentence \"強風で風で\", but the target word is clearly 「風」)\n   - **Target Word:** 風 (surface form)\n   - **Candidates:** かぜ / ふう / ふり\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sente…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 風が吹くと、夏の午後に涼しさが広がる。 (When the wind blows, coolness spreads in the summer afternoon.)\n   - **Target Word:** 風 (surface form)\n   - **Candidates:** かぜ / ふう / ふり\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word's Reading in Context:**\n   - The word is 風 (w…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -1103,28 +1084,8 @@
       "note": "風が吹く／強風／風で髪が乱れる"
     },
     {
-      "ts": "2026-09-12T15:33:08.207Z",
-      "text": "風が吹くと、街の風景が変わる。",
-      "surface": "風",
-      "candidates": [
-        "かぜ",
-        "ふう",
-        "ふり"
-      ],
-      "gold": "かぜ",
-      "verify_guess": "かぜ",
-      "arbitrate_guess": null,
-      "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 風が吹くと、街の風景が変わる。 (When the wind blows, the city's scenery changes.)\n   - **Target Word:** 風 (surface form)\n   - **Candidates:** かぜ / ふう / ふり\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The word is 「風」 in 「風が吹くと」.\n   - In Japanese…",
-      "arb_raw": "",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
-      "note": "風が吹く／強風／風で髪が乱れる"
-    },
-    {
-      "ts": "2026-09-12T15:33:02.402Z",
-      "text": "顧客の属性を一覧で表にまとめると、マーケティング戦略の立案がスムーズになります。",
+      "ts": "2026-09-12T20:37:17.739Z",
+      "text": "顧客データを一覧表にした。",
       "surface": "表",
       "candidates": [
         "おもて",
@@ -1134,7 +1095,7 @@
       "verify_guess": "おもて",
       "arbitrate_guess": "ひょう",
       "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 顧客の属性を一覧で表にまとめると、マーケティング戦略の立案がスムーズになります。\n   - **Target Word:** 表 (in the sentence, it's part of \"表にまとめると\")\n   - **Candidates:** おもて / ひょう\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence says: \"顧客の属性を一覧で表にまとめると...\" (When…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 顧客データを一覧表にした。 (Customer data was made into a list/table.)\n   - **Target Word:** 表 (in 一覧表)\n   - **Candidates:** おもて / ひょう\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The word is 一覧表 (いちがんひょう), which means \"list\" or \"table\".\n   -…",
       "arb_raw": "ひょう",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -1142,8 +1103,27 @@
       "note": "グラフ・データ・一覧・表にまとめる"
     },
     {
-      "ts": "2026-09-12T15:32:06.655Z",
-      "text": "表に出るときは、玄関・顔の表を整えておくといい。",
+      "ts": "2026-09-12T20:36:30.951Z",
+      "text": "売上のグラフを表にまとめた。",
+      "surface": "表",
+      "candidates": [
+        "おもて",
+        "ひょう"
+      ],
+      "gold": "ひょう",
+      "verify_guess": "おもて",
+      "arbitrate_guess": "ひょう",
+      "source": "arbitrate_agree",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 売上のグラフを表にまとめた。 (The sales graph was summarized in a table.)\n   - **Target Word:** 表 (in the sentence)\n   - **Candidates:** おもて / ひょう\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence is: 売上のグラフを**表**にまとめた。\n   - Here, \"表\" …",
+      "arb_raw": "ひょう",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "qwen/qwen3.6-27b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": "グラフ・データ・一覧・表にまとめる"
+    },
+    {
+      "ts": "2026-09-12T20:35:59.554Z",
+      "text": "裏と表を比べると、表は明るい。",
       "surface": "表",
       "candidates": [
         "おもて",
@@ -1153,7 +1133,7 @@
       "verify_guess": "おもて",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 表に出るときは、玄関・顔の表を整えておくといい。\n   - **Target Word:** 表 (appears twice in the sentence, but the prompt says \"表層「表」の読み\", which likely means the surface reading of the word \"表\" in this context. Actually, it says \"表層「表」の読み\", which might be a typo for \"文中の「表」の読み\" or just \"「表」の読み\". I'll assume it's asking for the reading of \"表\"…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 裏と表を比べると、表は明るい。 (When comparing the back and the front, the front is brighter.)\n   - **Target Word:** 表 (in the sentence, it appears twice, but the context clearly refers to \"front/surface\" vs \"back\")\n   - **Candidates:** おもて / ひょう\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -1161,8 +1141,8 @@
       "note": "裏と表／表に出る／玄関・顔の表"
     },
     {
-      "ts": "2026-09-12T15:31:50.228Z",
-      "text": "裏と表を分けて考えると、表の方が明るいと感じる。",
+      "ts": "2026-09-12T20:35:29.112Z",
+      "text": "玄関の表で、彼女は笑顔を見せた。",
       "surface": "表",
       "candidates": [
         "おもて",
@@ -1172,7 +1152,7 @@
       "verify_guess": "おもて",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 裏と表を分けて考えると、表の方が明るいと感じる。\n   - **Task:** Choose the correct reading (in hiragana) for the surface form \"表\" from the given candidates.\n   - **Candidates:** おもて / ひょう\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Sentence & Context:**\n   - The sentence is: 裏と表を分けて考…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 玄関の表で、彼女は笑顔を見せた。 (Genkan no omote de, kanojo wa egao o miseta.)\n   - **Target Word:** 表 (omote/hyou)\n   - **Candidates:** おもて / ひょう\n   - **Task:** Choose the correct reading (in hiragana) for the target word in the given sentence.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2. …",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -1180,8 +1160,8 @@
       "note": "裏と表／表に出る／玄関・顔の表"
     },
     {
-      "ts": "2026-09-12T15:31:44.200Z",
-      "text": "毎朝大事にする習慣として、静かに本を読む時間を設けることにした。",
+      "ts": "2026-09-12T20:35:23.437Z",
+      "text": "毎朝、大事にする習慣を守ることで、心が安定する。",
       "surface": "大事",
       "candidates": [
         "おおごと",
@@ -1191,7 +1171,7 @@
       "verify_guess": "おおごと",
       "arbitrate_guess": "だいじ",
       "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 毎朝大事にする習慣として、静かに本を読む時間を設けることにした。\n   - **Target Word:** 大事 (表層)\n   - **Candidates:** おおごと / だいじ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Target Word in Context:**\n   - The sentence says: \"毎朝大事にする習慣として、静かに本を読む時間を設けることにした。\"\n   - Translation/Meaning: \"As a habi…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 毎朝、大事にする習慣を守ることで、心が安定する。\n   - **Target Word:** 大事 (表層)\n   - **Candidates:** おおごと / だいじ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Target Word in Context:**\n   - The sentence is: 毎朝、大事にする習慣を守ることで、心が安定する。\n   - \"大事にする\" (だいじにする) means \"to take care of\", \"to value…",
       "arb_raw": "だいじ",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -1199,8 +1179,8 @@
       "note": "大事な人／大事にする／大切"
     },
     {
-      "ts": "2026-09-12T15:31:10.326Z",
-      "text": "大事な人と過ごす時間が、人生で最も大切な瞬間だと実感した。",
+      "ts": "2026-09-12T20:34:49.310Z",
+      "text": "大事な人を見守ることが、私の生きがいだ。",
       "surface": "大事",
       "candidates": [
         "おおごと",
@@ -1210,7 +1190,7 @@
       "verify_guess": "おおごと",
       "arbitrate_guess": "だいじ",
       "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 大事な人と過ごす時間が、人生で最も大切な瞬間だと実感した。\n   - **Target Word:** 大事 (表層「大事」)\n   - **Candidates:** おおごと / だいじ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence contains \"大事な人\" (daiji na hito) and \"大切な瞬間\" (taisetsu na shunkan).\n   - The…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 大事な人を見守ることが、私の生きがいだ。\n   - **Target Word:** 大事 (表層「大事」)\n   - **Candidates:** おおごと / だいじ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence is: 大事な人を見守ることが、私の生きがいだ。\n   - The word in question is 「大事」 followed by 「な」 (adjectiv…",
       "arb_raw": "だいじ",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -1218,8 +1198,8 @@
       "note": "大事な人／大事にする／大切"
     },
     {
-      "ts": "2026-09-12T15:31:03.189Z",
-      "text": "大事になる前に、彼は静かに謝罪した。",
+      "ts": "2026-09-12T20:34:34.578Z",
+      "text": "騒ぎ・事件に発展する直前に、彼は大事になると悟った。",
       "surface": "大事",
       "candidates": [
         "おおごと",
@@ -1229,7 +1209,7 @@
       "verify_guess": "おおごと",
       "arbitrate_guess": null,
       "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 大事になる前に、彼は静かに謝罪した。 (Before it becomes a big deal/serious, he quietly apologized.)\n   - **Target Word:** 大事 (表層「大事」)\n   - **Candidates:** おおごと / だいじ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Target Word in Context:**\n   - The sentence is: 大事になる前に、彼は静かに謝罪した。\n …",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 騒ぎ・事件に発展する直前に、彼は大事になると悟った。\n   - **Target Word:** 大事 (表層)\n   - **Candidates:** おおごと / だいじ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Sentence Context:**\n   - The sentence translates roughly to: \"Just before it developed into a commotion/incident, he realized i…",
       "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -1237,8 +1217,27 @@
       "note": "大事になる／騒ぎ・事件に発展する直前"
     },
     {
-      "ts": "2026-09-12T15:30:07.709Z",
-      "text": "町中のカフェで友達と昼食を楽しむと、心が落ち着く。",
+      "ts": "2026-09-12T20:33:49.984Z",
+      "text": "大事になるとき、誰もがその瞬間を見逃さない。",
+      "surface": "大事",
+      "candidates": [
+        "おおごと",
+        "だいじ"
+      ],
+      "gold": "おおごと",
+      "verify_guess": "おおごと",
+      "arbitrate_guess": null,
+      "source": "verify_agree",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 大事になるとき、誰もがその瞬間を見逃さない。\n   - **Target Word:** 大事 (表層)\n   - **Candidates:** おおごと / だいじ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Sentence & Target Word:**\n   - Sentence: 大事になるとき、誰もがその瞬間を見逃さない。\n   - Translation/Meaning: When things become serious/critical, no o…",
+      "arb_raw": "",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "qwen/qwen3.6-27b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": "大事になる／騒ぎ・事件に発展する直前"
+    },
+    {
+      "ts": "2026-09-12T20:33:44.131Z",
+      "text": "市街地の中心で、町中の古い建物が新しい風を吹き込む。",
       "surface": "町中",
       "candidates": [
         "まちじゅう",
@@ -1248,7 +1247,7 @@
       "verify_guess": "まちじゅう",
       "arbitrate_guess": "まちなか",
       "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 町中のカフェで友達と昼食を楽しむと、心が落ち着く。\n   - **Target Word:** 町中 (表層)\n   - **Candidates:** まちじゅう / まちなか\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 町中 (まちなか / まちじゅう?).\n   - In the sentence: \"町中のカフェで...\" (At a cafe in the town/downt…",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 市街地の中心で、町中の古い建物が新しい風を吹き込む。\n   - **Target Word:** 町中 (表層)\n   - **Candidates:** まちじゅう / まちなか\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 「町中」.\n   - Context: \"市街地の中心で、町中の古い建物が新しい風を吹き込む。\" (In the center of the urban area,…",
       "arb_raw": "まちなか",
       "generator": "openai/gpt-oss-20b",
       "verifier": "qwen/qwen3.6-27b",
@@ -1256,7 +1255,1230 @@
       "note": "町中のカフェ／市街地の中心（まちなか）"
     },
     {
-      "ts": "2026-09-12T15:29:47.076Z",
+      "ts": "2026-09-12T20:33:09.235Z",
+      "text": "町中のカフェで朝食をとると、通りの喧騒が遠ざかる。",
+      "surface": "町中",
+      "candidates": [
+        "まちじゅう",
+        "まちなか"
+      ],
+      "gold": "まちなか",
+      "verify_guess": "まちじゅう",
+      "arbitrate_guess": "まちなか",
+      "source": "arbitrate_agree",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 町中のカフェで朝食をとると、通りの喧騒が遠ざかる。\n   - **Target Word:** 町中 (表層)\n   - **Candidates:** まちじゅう / まちなか\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 「町中」.\n   - In the sentence: 「町中のカフェで朝食をとると、通りの喧騒が遠ざかる。」\n   - Context: \"At a cafe in…",
+      "arb_raw": "まちなか",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "qwen/qwen3.6-27b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": "町中のカフェ／市街地の中心（まちなか）"
+    },
+    {
+      "ts": "2026-09-12T20:32:17.514Z",
+      "text": "町中に知れ渡った新しいレストラン、すぐに賑わいを呼んだ。",
+      "surface": "町中",
+      "candidates": [
+        "まちじゅう",
+        "まちなか"
+      ],
+      "gold": "まちじゅう",
+      "verify_guess": "まちじゅう",
+      "arbitrate_guess": null,
+      "source": "verify_agree",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 町中に知れ渡った新しいレストラン、すぐに賑わいを呼んだ。\n   - **Target Word:** 町中 (表層)\n   - **Candidates:** まちじゅう / まちなか\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 「町中」 in the sentence 「町中に知れ渡った新しいレストラン、すぐに賑わいを呼んだ。」\n   - Context: \"A new restaur…",
+      "arb_raw": "",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "qwen/qwen3.6-27b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
+    },
+    {
+      "ts": "2026-09-12T20:31:41.575Z",
+      "text": "噂が町中に広まると、皆が急いで確認に行った。",
+      "surface": "町中",
+      "candidates": [
+        "まちじゅう",
+        "まちなか"
+      ],
+      "gold": "まちじゅう",
+      "verify_guess": "まちじゅう",
+      "arbitrate_guess": null,
+      "source": "verify_agree",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 噂が町中に広まると、皆が急いで確認に行った。\n   - **Target Word:** 町中 (表層)\n   - **Candidates:** まちじゅう / まちなか\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 町中.\n   - In the sentence: 噂が町中に広まると... (When the rumor spread throughout the town...)\n…",
+      "arb_raw": "",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "qwen/qwen3.6-27b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
+    },
+    {
+      "ts": "2026-09-12T20:31:16.926Z",
+      "text": "卒業式で友達と離れ離れになった瞬間、心が痛み辛いとしか思えなかった。",
+      "surface": "辛い",
+      "candidates": [
+        "からい",
+        "つらい"
+      ],
+      "gold": "つらい",
+      "verify_guess": "からい",
+      "arbitrate_guess": "つらい",
+      "source": "arbitrate_agree",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 卒業式で友達と離れ離れになった瞬間、心が痛み辛いとしか思えなかった。\n   - **Target Word:** 辛い (表層)\n   - **Candidates:** からい / つらい\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence is: \"卒業式で友達と離れ離れになった瞬間、心が痛み辛いとしか思えなかった。\"\n   - The word in question is \"辛い\" …",
+      "arb_raw": "つらい",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "qwen/qwen3.6-27b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": "経験・出来事・境遇（味ではない）"
+    },
+    {
+      "ts": "2026-09-12T20:29:00.870Z",
+      "text": "市場の鮮魚・野菜売り場で朝に魚を買うと、心が和む。",
+      "surface": "市場",
+      "candidates": [
+        "いちば",
+        "しじょう"
+      ],
+      "gold": "いちば",
+      "verify_guess": "いちば",
+      "arbitrate_guess": null,
+      "source": "verify_agree",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 市場の鮮魚・野菜売り場で朝に魚を買うと、心が和む。\n   - **Target Word:** 市場 (surface form)\n   - **Candidates:** いちば / しじょう\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Context:**\n   - The sentence talks about buying fresh fish at a \"市場\" (market) in the morning, specifically at the fre…",
+      "arb_raw": "",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "qwen/qwen3.6-27b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": "朝の市場で魚を買う、鮮魚・野菜売り場"
+    },
+    {
+      "ts": "2026-09-12T20:28:58.635Z",
+      "text": "朝の市場で魚を買うとき、鮮魚・野菜売り場が並んでいる。",
+      "surface": "市場",
+      "candidates": [
+        "いちば",
+        "しじょう"
+      ],
+      "gold": "いちば",
+      "verify_guess": "いちば",
+      "arbitrate_guess": null,
+      "source": "verify_agree",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 朝の市場で魚を買うとき、鮮魚・野菜売り場が並んでいる。\n   - **Target Word:** 市場 (surface form)\n   - **Candidates:** いちば / しじょう\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence is: 朝の市場で魚を買うとき、鮮魚・野菜売り場が並んでいる。\n   - \"市場\" here refers to a place where …",
+      "arb_raw": "",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "qwen/qwen3.6-27b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": "朝の市場で魚を買う、鮮魚・野菜売り場"
+    },
+    {
+      "ts": "2026-09-12T20:28:47.644Z",
+      "text": "暇もない忙しい世界で、心は詩的に震え、歌詞が静かに揺れる。",
+      "surface": "忙しい",
+      "candidates": [
+        "いそがしい",
+        "せわしい"
+      ],
+      "gold": "せわしい",
+      "verify_guess": "いそがしい",
+      "arbitrate_guess": "いそがしい",
+      "source": "judges_disagree_with_gold",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 暇もない忙しい世界で、心は詩的に震え、歌詞が静かに揺れる。\n   - **Target Word:** 忙しい (表層)\n   - **Candidates:** いそがしい / せわしい\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word in question is 「忙しい」.\n   - In Japanese, 「忙しい」 is typically read as 「いそがしい」 (isoga…",
+      "arb_raw": "いそがしい",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "qwen/qwen3.6-27b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": ""
+    },
+    {
+      "ts": "2026-09-12T20:27:13.412Z",
+      "text": "忙しい夜に、歌詞が揺れ、詩的な風が落ち着かない様子を映す。",
+      "surface": "忙しい",
+      "candidates": [
+        "いそがしい",
+        "せわしい"
+      ],
+      "gold": "せわしい",
+      "verify_guess": "いそがしい",
+      "arbitrate_guess": "いそがしい",
+      "source": "judges_disagree_with_gold",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 忙しい夜に、歌詞が揺れ、詩的な風が落ち着かない様子を映す。\n   - **Target Word:** 忙しい (hyōjō/surface form)\n   - **Candidates:** いそがしい / せわしい\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word in the sentence is 「忙しい」.\n   - In Japanese, 「忙しい」 is typically re…",
+      "arb_raw": "いそがしい",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "qwen/qwen3.6-27b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": ""
+    },
+    {
+      "ts": "2026-09-12T20:27:05.862Z",
+      "text": "永遠の眠りに落ちるまで、星は静かに瞬いた。",
+      "surface": "永遠",
+      "candidates": [
+        "えいえん",
+        "とわ"
+      ],
+      "gold": "とわ",
+      "verify_guess": "えいえん",
+      "arbitrate_guess": "えいえん",
+      "source": "judges_disagree_with_gold",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 永遠の眠りに落ちるまで、星は静かに瞬いた。\n   - **Target Word:** 永遠 (表層)\n   - **Candidates:** えいえん / とわ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is \"永遠\" (eien / towa).\n   - In Japanese, \"永遠\" is typically read as \"えいえん\" (eien).\n   - \"とわ\" (…",
+      "arb_raw": "えいえん",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "qwen/qwen3.6-27b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": ""
+    },
+    {
+      "ts": "2026-09-12T20:26:20.720Z",
+      "text": "永遠の愛を胸に、彼は静かに微笑んだ。",
+      "surface": "永遠",
+      "candidates": [
+        "えいえん",
+        "とわ"
+      ],
+      "gold": "とわ",
+      "verify_guess": "えいえん",
+      "arbitrate_guess": "えいえん",
+      "source": "judges_disagree_with_gold",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 永遠の愛を胸に、彼は静かに微笑んだ。\n   - **Target Word:** 永遠 (表層「永遠」)\n   - **Candidates:** えいえん / とわ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 「永遠」.\n   - In Japanese, 「永遠」 can be read as either 「えいえん」 (eien) or 「とわ」 (towa).\n   - The…",
+      "arb_raw": "えいえん",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "qwen/qwen3.6-27b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": ""
+    },
+    {
+      "ts": "2026-09-12T20:25:55.033Z",
+      "text": "誓いの言葉は、永遠に消えない愛を映し出すとわ",
+      "surface": "永遠",
+      "candidates": [
+        "えいえん",
+        "とわ"
+      ],
+      "gold": "とわ",
+      "verify_guess": "えいえん",
+      "arbitrate_guess": "えいえん",
+      "source": "judges_disagree_with_gold",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 誓いの言葉は、永遠に消えない愛を映し出すとわ\n   - **Target Word:** 永遠 (表層「永遠」)\n   - **Candidates:** えいえん / とわ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence is: 誓いの言葉は、永遠に消えない愛を映し出すとわ\n   - The target word is 「永遠」.\n   - In Japanese, 「永遠」 is …",
+      "arb_raw": "えいえん",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "qwen/qwen3.6-27b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": ""
+    },
+    {
+      "ts": "2026-09-12T20:25:49.823Z",
+      "text": "永遠の歌詞は、心の奥で静かに響き続けるとわ",
+      "surface": "永遠",
+      "candidates": [
+        "えいえん",
+        "とわ"
+      ],
+      "gold": "とわ",
+      "verify_guess": "えいえん",
+      "arbitrate_guess": "えいえん",
+      "source": "judges_disagree_with_gold",
+      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Input Sentence:** 永遠の歌詞は、心の奥で静かに響き続けるとわ (Note: The sentence seems cut off at the end \"とわ\", but it's likely a typo or incomplete. The key part is \"永遠の歌詞は...\")\n   - **Target Word:** 永遠 (表層「永遠」)\n   - **Candidates:** えいえん / とわ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Targ…",
+      "arb_raw": "えいえん",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "qwen/qwen3.6-27b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": ""
+    },
+    {
+      "ts": "",
+      "text": "予定が詰まっているので、忙しい。",
+      "surface": "忙しい",
+      "candidates": [
+        "いそがしい",
+        "せわしい"
+      ],
+      "gold": "いそがしい",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "仕事・予定・日常の忙しさ"
+    },
+    {
+      "ts": "",
+      "text": "仕事が山積みで、今日も忙しい。",
+      "surface": "忙しい",
+      "candidates": [
+        "いそがしい",
+        "せわしい"
+      ],
+      "gold": "いそがしい",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "仕事・予定・日常の忙しさ"
+    },
+    {
+      "ts": "",
+      "text": "彼の考えは永遠に終わらない哲学的な問いを提起し、周囲を驚かせた。",
+      "surface": "永遠",
+      "candidates": [
+        "えいえん",
+        "とわ"
+      ],
+      "gold": "えいえん",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
+    },
+    {
+      "ts": "",
+      "text": "永遠のテーマに沿って、私は日常の小さな喜びを記録することにした。",
+      "surface": "永遠",
+      "candidates": [
+        "えいえん",
+        "とわ"
+      ],
+      "gold": "えいえん",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
+    },
+    {
+      "ts": "",
+      "text": "カレーに唐辛子を入れすぎて辛い香りが鼻をつき、食べる前から熱がこもった。",
+      "surface": "辛い",
+      "candidates": [
+        "からい",
+        "つらい"
+      ],
+      "gold": "からい",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "ラーメン・カレー・味・唐辛子"
+    },
+    {
+      "ts": "",
+      "text": "今日のラーメンは辛い味が強くて、口の中がピリリと刺激した。",
+      "surface": "辛い",
+      "candidates": [
+        "からい",
+        "つらい"
+      ],
+      "gold": "からい",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "ラーメン・カレー・味・唐辛子"
+    },
+    {
+      "ts": "",
+      "text": "金融市場の規模拡大は国の経済成長を促進する。",
+      "surface": "市場",
+      "candidates": [
+        "いちば",
+        "しじょう"
+      ],
+      "gold": "しじょう",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "株式・規模・経済・金融の文脈"
+    },
+    {
+      "ts": "",
+      "text": "株式市場は投資家の期待を反映する重要な指標だ。",
+      "surface": "市場",
+      "candidates": [
+        "いちば",
+        "しじょう"
+      ],
+      "gold": "しじょう",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "株式・規模・経済・金融の文脈"
+    },
+    {
+      "ts": "",
+      "text": "角が生えるのは春だ。",
+      "surface": "角",
+      "candidates": [
+        "かく",
+        "かど",
+        "すみ",
+        "つの"
+      ],
+      "gold": "つの",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "牛の角／角が生える（つの）"
+    },
+    {
+      "ts": "",
+      "text": "牛の角が大きい。",
+      "surface": "角",
+      "candidates": [
+        "かく",
+        "かど",
+        "すみ",
+        "つの"
+      ],
+      "gold": "つの",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "牛の角／角が生える（つの）"
+    },
+    {
+      "ts": "",
+      "text": "彼女は角を曲がると、雨に濡れた石畳に足を踏み入れた。",
+      "surface": "角",
+      "candidates": [
+        "かく",
+        "かど",
+        "すみ",
+        "つの"
+      ],
+      "gold": "かど",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "街角／角を曲がる（かど）"
+    },
+    {
+      "ts": "",
+      "text": "その古い本を図書館で手に入ると、ページが静かに入る。",
+      "surface": "入る",
+      "candidates": [
+        "いる",
+        "はいる"
+      ],
+      "gold": "いる",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "気に入る／手に入る／仲間に入る（いる）"
+    },
+    {
+      "ts": "",
+      "text": "私は新しいレストランに入ると、料理が気に入る。",
+      "surface": "入る",
+      "candidates": [
+        "いる",
+        "はいる"
+      ],
+      "gold": "いる",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "気に入る／手に入る／仲間に入る（いる）"
+    },
+    {
+      "ts": "",
+      "text": "背負っ せおっ、荷物を背中に載せた少年が走っていた。",
+      "surface": "背負っ",
+      "candidates": [
+        "せおっ",
+        "しょっ"
+      ],
+      "gold": "せおっ",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "リュック・荷物・子供を背中に載せる物理の背負って（せおう）"
+    },
+    {
+      "ts": "",
+      "text": "背負っ せおっ、リュックを背中に載せる子供を見た。",
+      "surface": "背負っ",
+      "candidates": [
+        "せおっ",
+        "しょっ"
+      ],
+      "gold": "せおっ",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "リュック・荷物・子供を背中に載せる物理の背負って（せおう）"
+    },
+    {
+      "ts": "",
+      "text": "明日、友達と公園へ行く。",
+      "surface": "行く",
+      "candidates": [
+        "いく",
+        "ゆく"
+      ],
+      "gold": "いく",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "学校へ行く／明日行く（日常のいく）"
+    },
+    {
+      "ts": "",
+      "text": "今日は学校へ行く。",
+      "surface": "行く",
+      "candidates": [
+        "いく",
+        "ゆく"
+      ],
+      "gold": "いく",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "学校へ行く／明日行く（日常のいく）"
+    },
+    {
+      "ts": "",
+      "text": "時が行く",
+      "surface": "行く",
+      "candidates": [
+        "いく",
+        "ゆく"
+      ],
+      "gold": "ゆく",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "時が行く／行く末／文語・歌詞寄りのゆく"
+    },
+    {
+      "ts": "",
+      "text": "蓋が開くと、熱々のスープの香りが立ち上る。",
+      "surface": "開く",
+      "candidates": [
+        "あく",
+        "ひらく"
+      ],
+      "gold": "あく",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "ドアが開く／蓋が開く（あく・自動）"
+    },
+    {
+      "ts": "",
+      "text": "ドアが開くと、春の風が室内へ流れ込む。",
+      "surface": "開く",
+      "candidates": [
+        "あく",
+        "ひらく"
+      ],
+      "gold": "あく",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "ドアが開く／蓋が開く（あく・自動）"
+    },
+    {
+      "ts": "",
+      "text": "店を開くと、笑顔が溢れる。",
+      "surface": "開く",
+      "candidates": [
+        "あく",
+        "ひらく"
+      ],
+      "gold": "ひらく",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "本を開く／店を開く／会議を開く（ひらく）"
+    },
+    {
+      "ts": "",
+      "text": "本を開くと、古い字が光る。",
+      "surface": "開く",
+      "candidates": [
+        "あく",
+        "ひらく"
+      ],
+      "gold": "ひらく",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "本を開く／店を開く／会議を開く（ひらく）"
+    },
+    {
+      "ts": "",
+      "text": "テキストの一行（いちぎょう）を一行だけ書くと、入力が簡潔になる。",
+      "surface": "一行",
+      "candidates": [
+        "いちぎょう",
+        "いっこう"
+      ],
+      "gold": "いちぎょう",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "一行だけ書く／テキストの一行（いちぎょう）"
+    },
+    {
+      "ts": "",
+      "text": "一行だけ書く／テキストの一行（いちぎょう）だけで済ませると、作業が楽になる。",
+      "surface": "一行",
+      "candidates": [
+        "いちぎょう",
+        "いっこう"
+      ],
+      "gold": "いちぎょう",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "一行だけ書く／テキストの一行（いちぎょう）"
+    },
+    {
+      "ts": "",
+      "text": "一行が到着した瞬間、空気が変わった。",
+      "surface": "一行",
+      "candidates": [
+        "いちぎょう",
+        "いっこう"
+      ],
+      "gold": "いっこう",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "観光客の一行／一行が到着した（いっこう）"
+    },
+    {
+      "ts": "",
+      "text": "観光客の一行が山頂で写真を撮っていた。",
+      "surface": "一行",
+      "candidates": [
+        "いちぎょう",
+        "いっこう"
+      ],
+      "gold": "いっこう",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "観光客の一行／一行が到着した（いっこう）"
+    },
+    {
+      "ts": "",
+      "text": "そのアニメは海外でも人気者として注目されている。",
+      "surface": "人気",
+      "candidates": [
+        "じんき",
+        "にんき",
+        "ひとけ",
+        "ひとげ"
+      ],
+      "gold": "にんき",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "人気が高い／人気者（にんき）"
+    },
+    {
+      "ts": "",
+      "text": "彼の歌は若者の間で人気が高いと評判だ。",
+      "surface": "人気",
+      "candidates": [
+        "じんき",
+        "にんき",
+        "ひとけ",
+        "ひとげ"
+      ],
+      "gold": "にんき",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "人気が高い／人気者（にんき）"
+    },
+    {
+      "ts": "",
+      "text": "プロジェクトは丸一日かかると予測された。",
+      "surface": "一日",
+      "candidates": [
+        "いちにち",
+        "ついたち"
+      ],
+      "gold": "いちにち",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "一日中／丸一日かかる（いちにち）"
+    },
+    {
+      "ts": "",
+      "text": "毎月一日、私は朝食を作る。",
+      "surface": "一日",
+      "candidates": [
+        "いちにち",
+        "ついたち"
+      ],
+      "gold": "ついたち",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "毎月一日／月の初日（ついたち）"
+    },
+    {
+      "ts": "",
+      "text": "相撲の上手な選手が試合を制した。",
+      "surface": "上手",
+      "candidates": [
+        "うわて",
+        "かみて",
+        "じょうしゅ",
+        "じょうず"
+      ],
+      "gold": "うわて",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "交渉で上手に回る／相撲の上手（うわて）"
+    },
+    {
+      "ts": "",
+      "text": "交渉で上手に回る戦略が合意を導く。",
+      "surface": "上手",
+      "candidates": [
+        "うわて",
+        "かみて",
+        "じょうしゅ",
+        "じょうず"
+      ],
+      "gold": "うわて",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "交渉で上手に回る／相撲の上手（うわて）"
+    },
+    {
+      "ts": "",
+      "text": "歌が上手だと、ライブで観客が拍手を送る。",
+      "surface": "上手",
+      "candidates": [
+        "うわて",
+        "かみて",
+        "じょうしゅ",
+        "じょうず"
+      ],
+      "gold": "じょうず",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "絵が上手／歌が上手だ（技能）"
+    },
+    {
+      "ts": "",
+      "text": "絵が上手な彼は、友人に教えるのが好きだ。",
+      "surface": "上手",
+      "candidates": [
+        "うわて",
+        "かみて",
+        "じょうしゅ",
+        "じょうず"
+      ],
+      "gold": "じょうず",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "絵が上手／歌が上手だ（技能）"
+    },
+    {
+      "ts": "",
+      "text": "今日は、明日の予定を確認した。",
+      "surface": "今日",
+      "candidates": [
+        "きょう",
+        "こんじつ",
+        "こんち",
+        "こんにち"
+      ],
+      "gold": "きょう",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "今日は／明日・昨日と対になる日常のきょう"
+    },
+    {
+      "ts": "",
+      "text": "今日は、朝の散歩が日課だ。",
+      "surface": "今日",
+      "candidates": [
+        "きょう",
+        "こんじつ",
+        "こんち",
+        "こんにち"
+      ],
+      "gold": "きょう",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "今日は／明日・昨日と対になる日常のきょう"
+    },
+    {
+      "ts": "",
+      "text": "彼女は博士として学位を授与され、研究論文を発表した。",
+      "surface": "博士",
+      "candidates": [
+        "はかせ",
+        "はくし"
+      ],
+      "gold": "はくし",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "博士号／学位／論文"
+    },
+    {
+      "ts": "",
+      "text": "博士号を取得した彼は、論文の執筆に没頭した。",
+      "surface": "博士",
+      "candidates": [
+        "はかせ",
+        "はくし"
+      ],
+      "gold": "はくし",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "博士号／学位／論文"
+    },
+    {
+      "ts": "",
+      "text": "私は友人に呼び方としての博士を頼んだ。",
+      "surface": "博士",
+      "candidates": [
+        "はかせ",
+        "はくし"
+      ],
+      "gold": "はかせ",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "物知り博士／呼び方としての博士"
+    },
+    {
+      "ts": "",
+      "text": "物知り博士が図書館で新しい本を紹介した。",
+      "surface": "博士",
+      "candidates": [
+        "はかせ",
+        "はくし"
+      ],
+      "gold": "はかせ",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "物知り博士／呼び方としての博士"
+    },
+    {
+      "ts": "",
+      "text": "どういう風に表現すればいいか、考えてみよう。",
+      "surface": "風",
+      "candidates": [
+        "かぜ",
+        "ふう",
+        "ふり"
+      ],
+      "gold": "ふう",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "こんな風に／どういう風に書く（様子・やり方）"
+    },
+    {
+      "ts": "",
+      "text": "こんな風に書くと、読みやすさが増す。",
+      "surface": "風",
+      "candidates": [
+        "かぜ",
+        "ふう",
+        "ふり"
+      ],
+      "gold": "ふう",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "こんな風に／どういう風に書く（様子・やり方）"
+    },
+    {
+      "ts": "",
+      "text": "強風で風で髪が乱れると、彼は笑った。",
+      "surface": "風",
+      "candidates": [
+        "かぜ",
+        "ふう",
+        "ふり"
+      ],
+      "gold": "かぜ",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "風が吹く／強風／風で髪が乱れる"
+    },
+    {
+      "ts": "",
+      "text": "風が吹くと、街の風景が変わる。",
+      "surface": "風",
+      "candidates": [
+        "かぜ",
+        "ふう",
+        "ふり"
+      ],
+      "gold": "かぜ",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "風が吹く／強風／風で髪が乱れる"
+    },
+    {
+      "ts": "",
+      "text": "顧客の属性を一覧で表にまとめると、マーケティング戦略の立案がスムーズになります。",
+      "surface": "表",
+      "candidates": [
+        "おもて",
+        "ひょう"
+      ],
+      "gold": "ひょう",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "グラフ・データ・一覧・表にまとめる"
+    },
+    {
+      "ts": "",
+      "text": "表に出るときは、玄関・顔の表を整えておくといい。",
+      "surface": "表",
+      "candidates": [
+        "おもて",
+        "ひょう"
+      ],
+      "gold": "おもて",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "裏と表／表に出る／玄関・顔の表"
+    },
+    {
+      "ts": "",
+      "text": "裏と表を分けて考えると、表の方が明るいと感じる。",
+      "surface": "表",
+      "candidates": [
+        "おもて",
+        "ひょう"
+      ],
+      "gold": "おもて",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "裏と表／表に出る／玄関・顔の表"
+    },
+    {
+      "ts": "",
+      "text": "毎朝大事にする習慣として、静かに本を読む時間を設けることにした。",
+      "surface": "大事",
+      "candidates": [
+        "おおごと",
+        "だいじ"
+      ],
+      "gold": "だいじ",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "大事な人／大事にする／大切"
+    },
+    {
+      "ts": "",
+      "text": "大事な人と過ごす時間が、人生で最も大切な瞬間だと実感した。",
+      "surface": "大事",
+      "candidates": [
+        "おおごと",
+        "だいじ"
+      ],
+      "gold": "だいじ",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "大事な人／大事にする／大切"
+    },
+    {
+      "ts": "",
+      "text": "大事になる前に、彼は静かに謝罪した。",
+      "surface": "大事",
+      "candidates": [
+        "おおごと",
+        "だいじ"
+      ],
+      "gold": "おおごと",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "大事になる／騒ぎ・事件に発展する直前"
+    },
+    {
+      "ts": "",
+      "text": "町中のカフェで友達と昼食を楽しむと、心が落ち着く。",
+      "surface": "町中",
+      "candidates": [
+        "まちじゅう",
+        "まちなか"
+      ],
+      "gold": "まちなか",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "町中のカフェ／市街地の中心（まちなか）"
+    },
+    {
+      "ts": "",
       "text": "町中に知れ渡るニュースは、瞬く間に広がった。",
       "surface": "町中",
       "candidates": [
@@ -1264,18 +2486,18 @@
         "まちなか"
       ],
       "gold": "まちじゅう",
-      "verify_guess": "まちじゅう",
+      "verify_guess": null,
       "arbitrate_guess": null,
-      "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 町中に知れ渡るニュースは、瞬く間に広がった。\n   - **Target Word:** 町中 (表層)\n   - **Candidates:** まちじゅう / まちなか\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 町中 (まちじゅう / まちなか).\n   - In the sentence: 町中に知れ渡るニュースは、瞬く間に広がった。\n   - Meaning: \"The new…",
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
       "arb_raw": "",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
       "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
     },
     {
-      "ts": "2026-09-12T15:29:36.436Z",
+      "ts": "",
       "text": "噂が町中に広まると、皆がざわついた。",
       "surface": "町中",
       "candidates": [
@@ -1283,18 +2505,18 @@
         "まちなか"
       ],
       "gold": "まちじゅう",
-      "verify_guess": "まちじゅう",
+      "verify_guess": null,
       "arbitrate_guess": null,
-      "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 噂が町中に広まると、皆がざわついた。 (Rumor spread throughout the town, and everyone buzzed with excitement.)\n   - **Target Word:** 町中 (表層)\n   - **Candidates:** まちじゅう / まちなか\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 町中.\n   - In the s…",
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
       "arb_raw": "",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
       "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
     },
     {
-      "ts": "2026-09-12T15:28:54.440Z",
+      "ts": "",
       "text": "辛い出来事が、彼の未来を不安に包み込んだ。",
       "surface": "辛い",
       "candidates": [
@@ -1302,18 +2524,18 @@
         "つらい"
       ],
       "gold": "つらい",
-      "verify_guess": "からい",
-      "arbitrate_guess": "つらい",
-      "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 辛い出来事が、彼の未来を不安に包み込んだ。\n   - **Target Word:** 辛い (表層)\n   - **Candidates:** からい / つらい\n   - **Task:** Choose the correct reading (in hiragana) for the target word in the given sentence.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Target Word in Context:**\n   - The…",
-      "arb_raw": "つらい",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
       "note": "経験・出来事・境遇（味ではない）"
     },
     {
-      "ts": "2026-09-12T15:28:49.317Z",
+      "ts": "",
       "text": "辛い経験が、心に深い傷を残した。",
       "surface": "辛い",
       "candidates": [
@@ -1321,18 +2543,18 @@
         "つらい"
       ],
       "gold": "つらい",
-      "verify_guess": "からい",
-      "arbitrate_guess": "つらい",
-      "source": "arbitrate_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 辛い経験が、心に深い傷を残した。 (Tsurai keiken ga, kokoro ni fukai kizu o nokoshita.)\n   - **Target Word:** 辛い (surface form)\n   - **Candidates:** からい / つらい\n   - **Task:** Choose the correct reading (in hiragana) for the target word in the given sentence.\n   - **Output Requirement:** Only the hiragana reading, one word. No explana…",
-      "arb_raw": "つらい",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
       "note": "経験・出来事・境遇（味ではない）"
     },
     {
-      "ts": "2026-09-12T15:28:03.922Z",
+      "ts": "",
       "text": "鮮魚・野菜売り場が立ち並ぶ市場。",
       "surface": "市場",
       "candidates": [
@@ -1340,18 +2562,18 @@
         "しじょう"
       ],
       "gold": "いちば",
-      "verify_guess": "いちば",
+      "verify_guess": null,
       "arbitrate_guess": null,
-      "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 鮮魚・野菜売り場が立ち並ぶ市場。\n   - **Target Word:** 市場 (表層「市場」)\n   - **Candidates:** いちば / しじょう\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 「市場」.\n   - Context: \"鮮魚・野菜売り場が立ち並ぶ市場。\" (A market where fresh fish and vegetable stalls lin…",
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
       "arb_raw": "",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
       "note": "朝の市場で魚を買う、鮮魚・野菜売り場"
     },
     {
-      "ts": "2026-09-12T15:28:01.490Z",
+      "ts": "",
       "text": "朝の市場で魚を買う。",
       "surface": "市場",
       "candidates": [
@@ -1359,18 +2581,18 @@
         "しじょう"
       ],
       "gold": "いちば",
-      "verify_guess": "いちば",
+      "verify_guess": null,
       "arbitrate_guess": null,
-      "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 朝の市場で魚を買う。 (Asa no shijō/ichiba de sakana o kau.)\n   - **Target Word:** 市場 (surface form)\n   - **Candidates:** いちば / しじょう\n   - **Task:** Choose the correct reading (hiragana) for the target word in this specific sentence.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyz…",
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
       "arb_raw": "",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
       "note": "朝の市場で魚を買う、鮮魚・野菜売り場"
     },
     {
-      "ts": "2026-09-12T15:27:19.191Z",
+      "ts": "",
       "text": "市場の朝市で、魚の匂いに誘われて野菜を選ぶ。",
       "surface": "市場",
       "candidates": [
@@ -1378,167 +2600,15 @@
         "しじょう"
       ],
       "gold": "いちば",
-      "verify_guess": "いちば",
+      "verify_guess": null,
       "arbitrate_guess": null,
-      "source": "verify_agree",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 市場の朝市で、魚の匂いに誘われて野菜を選ぶ。\n   - **Target Word:** 市場 (surface form)\n   - **Candidates:** いちば / しじょう\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Analyze the Target Word in Context:**\n   - The sentence is: 市場の朝市で、魚の匂いに誘われて野菜を選ぶ。\n   - \"市場\" can be read as \"いちば\" (ichiba) or \"しじょう\" …",
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
       "arb_raw": "",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
       "note": "朝市・魚・野菜など物理的な市場"
-    },
-    {
-      "ts": "2026-09-12T15:27:05.472Z",
-      "text": "落ち着かない日常のざわめきに包まれた市場で、店主は忙しい笑顔で客を迎えている。",
-      "surface": "忙しい",
-      "candidates": [
-        "いそがしい",
-        "せわしい"
-      ],
-      "gold": "せわしい",
-      "verify_guess": "いそがしい",
-      "arbitrate_guess": "いそがしい",
-      "source": "judges_disagree_with_gold",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 落ち着かない日常のざわめきに包まれた市場で、店主は忙しい笑顔で客を迎えている。\n   - **Target Word:** 忙しい (表層)\n   - **Candidates:** いそがしい / せわしい\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Core Linguistic Issue:**\n   - The word \"忙しい\" can be read as either \"いそがしい\" (isogashii) or \"せわしい\" (sewashii).\n …",
-      "arb_raw": "いそがしい",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
-      "note": ""
-    },
-    {
-      "ts": "2026-09-12T15:25:53.404Z",
-      "text": "せわしない朝の街角で、誰もが忙しい足取りを保ちながら、落ち着かない日常のざわめきを感じている。",
-      "surface": "忙しい",
-      "candidates": [
-        "いそがしい",
-        "せわしい"
-      ],
-      "gold": "せわしい",
-      "verify_guess": "いそがしい",
-      "arbitrate_guess": "いそがしい",
-      "source": "judges_disagree_with_gold",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** せわしない朝の街角で、誰もが忙しい足取りを保ちながら、落ち着かない日常のざわめきを感じている。\n   - **Target Word:** 忙しい (表層)\n   - **Candidates:** いそがしい / せわしい\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word in Context:**\n   - The sentence contains \"忙しい\" (kanji: 忙しい).\n   - I need to determine its …",
-      "arb_raw": "いそがしい",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
-      "note": ""
-    },
-    {
-      "ts": "2026-09-12T15:25:07.617Z",
-      "text": "忙しい日々に、落ち着かない様子が漂う。",
-      "surface": "忙しい",
-      "candidates": [
-        "いそがしい",
-        "せわしい"
-      ],
-      "gold": "せわしい",
-      "verify_guess": "いそがしい",
-      "arbitrate_guess": "いそがしい",
-      "source": "judges_disagree_with_gold",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 忙しい日々に、落ち着かない様子が漂う。\n   - **Target Word:** 忙しい (hyōjō/surface form)\n   - **Candidates:** いそがしい / せわしい\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word in the sentence is 「忙しい」.\n   - In Japanese, 「忙しい」 is typically read as 「いそが…",
-      "arb_raw": "いそがしい",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
-      "note": ""
-    },
-    {
-      "ts": "2026-09-12T15:24:34.612Z",
-      "text": "忙しい夜の街で、詩的な歌詞が心を揺らす。",
-      "surface": "忙しい",
-      "candidates": [
-        "いそがしい",
-        "せわしい"
-      ],
-      "gold": "せわしい",
-      "verify_guess": "いそがしい",
-      "arbitrate_guess": "いそがしい",
-      "source": "judges_disagree_with_gold",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 忙しい夜の街で、詩的な歌詞が心を揺らす。\n   - **Target Word:** 忙しい (hyōjō/surface form)\n   - **Candidates:** いそがしい / せわしい\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word in the sentence is 「忙しい」.\n   - In Japanese, 「忙しい」 is typically read as 「いそ…",
-      "arb_raw": "いそがしい",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
-      "note": ""
-    },
-    {
-      "ts": "2026-09-12T15:24:27.148Z",
-      "text": "星空の下、永遠の眠りを夢見て静かに息を潜める。",
-      "surface": "永遠",
-      "candidates": [
-        "えいえん",
-        "とわ"
-      ],
-      "gold": "とわ",
-      "verify_guess": "えいえん",
-      "arbitrate_guess": "えいえん",
-      "source": "judges_disagree_with_gold",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 星空の下、永遠の眠りを夢見て静かに息を潜める。\n   - **Target Word:** 永遠 (表層「永遠」)\n   - **Candidates:** えいえん / とわ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 「永遠」.\n   - In Japanese, 「永遠」 can be read as 「えいえん」 (eien) or 「とわ」 (towa).\n   - Conte…",
-      "arb_raw": "えいえん",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
-      "note": ""
-    },
-    {
-      "ts": "2026-09-12T15:23:50.977Z",
-      "text": "私は、永遠の愛を胸に抱き、未来へと歩む。",
-      "surface": "永遠",
-      "candidates": [
-        "えいえん",
-        "とわ"
-      ],
-      "gold": "とわ",
-      "verify_guess": "えいえん",
-      "arbitrate_guess": "えいえん",
-      "source": "judges_disagree_with_gold",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 私は、永遠の愛を胸に抱き、未来へと歩む。\n   - **Target Word:** 永遠 (表層「永遠」)\n   - **Candidates:** えいえん / とわ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is 「永遠」.\n   - In the sentence: 「永遠の愛」 (eternal love)\n   - Both 「えいえん」 and 「とわ」 are valid r…",
-      "arb_raw": "えいえん",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
-      "note": ""
-    },
-    {
-      "ts": "2026-09-12T15:23:20.739Z",
-      "text": "永遠の誓いを守る愛とわ",
-      "surface": "永遠",
-      "candidates": [
-        "えいえん",
-        "とわ"
-      ],
-      "gold": "とわ",
-      "verify_guess": "えいえん",
-      "arbitrate_guess": "えいえん",
-      "source": "judges_disagree_with_gold",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 永遠の誓いを守る愛とわ (Eien no chikai o mamoru ai to wa)\n   - **Target Word:** 永遠 (表層「永遠」)\n   - **Candidates:** えいえん / とわ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The target word is 「永遠」.\n   - In Japanese, 「永遠」 is typically read as 「えいえ…",
-      "arb_raw": "えいえん",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
-      "note": ""
-    },
-    {
-      "ts": "2026-09-12T15:23:07.724Z",
-      "text": "永遠の歌詞が胸を震わせるとわ",
-      "surface": "永遠",
-      "candidates": [
-        "えいえん",
-        "とわ"
-      ],
-      "gold": "とわ",
-      "verify_guess": "えいえん",
-      "arbitrate_guess": "えいえん",
-      "source": "judges_disagree_with_gold",
-      "verify_raw": "<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Input Sentence:** 永遠の歌詞が胸を震わせるとわ (Note: The sentence seems cut off at the end \"とわ\", but the key word is \"永遠\")\n   - **Target Word:** 永遠 (表層「永遠」)\n   - **Candidates:** えいえん / とわ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   - The word is \"永遠\" (eien…",
-      "arb_raw": "えいえん",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "qwen/qwen3.6-27b",
-      "arbitrator": "openai/gpt-oss-120b",
-      "note": ""
     },
     {
       "ts": "",
@@ -14552,1077 +15622,6 @@
       "verifier": "",
       "arbitrator": "",
       "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
-    },
-    {
-      "ts": "",
-      "text": "彼女は辛い経験から学んだ",
-      "surface": "辛い",
-      "candidates": [
-        "からい",
-        "つらい"
-      ],
-      "gold": "つらい",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "経験・出来事・境遇（味ではない）"
-    },
-    {
-      "ts": "",
-      "text": "この病気は辛い境遇だ",
-      "surface": "辛い",
-      "candidates": [
-        "からい",
-        "つらい"
-      ],
-      "gold": "つらい",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "経験・出来事・境遇（味ではない）"
-    },
-    {
-      "ts": "",
-      "text": "朝の日がいいと、市場に行くことができます。",
-      "surface": "市場",
-      "candidates": [
-        "いちば",
-        "しじょう"
-      ],
-      "gold": "いちば",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "朝の市場で魚を買う、鮮魚・野菜売り場"
-    },
-    {
-      "ts": "",
-      "text": "朝の市場で魚を買うと、鮮魚・野菜の値段が安い店を見つけています。",
-      "surface": "市場",
-      "candidates": [
-        "いちば",
-        "しじょう"
-      ],
-      "gold": "いちば",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "朝の市場で魚を買う、鮮魚・野菜売り場"
-    },
-    {
-      "ts": "",
-      "text": "市場で売られている野菜は、栄養価が高かった",
-      "surface": "市場",
-      "candidates": [
-        "いちば",
-        "しじょう"
-      ],
-      "gold": "いちば",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "朝市・魚・野菜など物理的な市場"
-    },
-    {
-      "ts": "",
-      "text": "朝市で魚を買う人たちは、市場の入口に並んでいた",
-      "surface": "市場",
-      "candidates": [
-        "いちば",
-        "しじょう"
-      ],
-      "gold": "いちば",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "朝市・魚・野菜など物理的な市場"
-    },
-    {
-      "ts": "",
-      "text": "会社のプロジェクトが多いため、仕事で忙しい日が続いています。",
-      "surface": "忙しい",
-      "candidates": [
-        "いそがしい",
-        "せわしい"
-      ],
-      "gold": "いそがしい",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "仕事・予定・日常の忙しさ"
-    },
-    {
-      "ts": "",
-      "text": "週末にたくさんの予定があるので、忙しい日になりそうです。",
-      "surface": "忙しい",
-      "candidates": [
-        "いそがしい",
-        "せわしい"
-      ],
-      "gold": "いそがしい",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "仕事・予定・日常の忙しさ"
-    },
-    {
-      "ts": "",
-      "text": "永遠に続く自然の美しさは、心を癒す",
-      "surface": "永遠",
-      "candidates": [
-        "えいえん",
-        "とわ"
-      ],
-      "gold": "えいえん",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
-    },
-    {
-      "ts": "",
-      "text": "この世界は、永遠に終わらない美しさを持っている",
-      "surface": "永遠",
-      "candidates": [
-        "えいえん",
-        "とわ"
-      ],
-      "gold": "えいえん",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
-    },
-    {
-      "ts": "",
-      "text": "唐辛子をたくさん入れたカレーはとても辛いです",
-      "surface": "辛い",
-      "candidates": [
-        "からい",
-        "つらい"
-      ],
-      "gold": "からい",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "ラーメン・カレー・味・唐辛子"
-    },
-    {
-      "ts": "",
-      "text": "ラーメンは食べた後に辛いものを飲むのがいいです",
-      "surface": "辛い",
-      "candidates": [
-        "からい",
-        "つらい"
-      ],
-      "gold": "からい",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "ラーメン・カレー・味・唐辛子"
-    },
-    {
-      "ts": "",
-      "text": "角が生える牛を見たことがあります。",
-      "surface": "角",
-      "candidates": [
-        "かく",
-        "かど",
-        "すみ",
-        "つの"
-      ],
-      "gold": "つの",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "牛の角／角が生える（つの）"
-    },
-    {
-      "ts": "",
-      "text": "牛の角はとても強いです。",
-      "surface": "角",
-      "candidates": [
-        "かく",
-        "かど",
-        "すみ",
-        "つの"
-      ],
-      "gold": "つの",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "牛の角／角が生える（つの）"
-    },
-    {
-      "ts": "",
-      "text": "角に立って市電を見ている",
-      "surface": "角",
-      "candidates": [
-        "かく",
-        "かど",
-        "すみ",
-        "つの"
-      ],
-      "gold": "かど",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "街角／角を曲がる（かど）"
-    },
-    {
-      "ts": "",
-      "text": "角を曲がる時は注意が必要だ",
-      "surface": "角",
-      "candidates": [
-        "かく",
-        "かど",
-        "すみ",
-        "つの"
-      ],
-      "gold": "かど",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "街角／角を曲がる（かど）"
-    },
-    {
-      "ts": "",
-      "text": "彼の話は気に入る言葉だった。",
-      "surface": "入る",
-      "candidates": [
-        "いる",
-        "はいる"
-      ],
-      "gold": "いる",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "気に入る／手に入る／仲間に入る（いる）"
-    },
-    {
-      "ts": "",
-      "text": "家族の中に入ることは大切だ。",
-      "surface": "入る",
-      "candidates": [
-        "いる",
-        "はいる"
-      ],
-      "gold": "いる",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "気に入る／手に入る／仲間に入る（いる）"
-    },
-    {
-      "ts": "",
-      "text": "明日早く起きて学校へ行く",
-      "surface": "行く",
-      "candidates": [
-        "いく",
-        "ゆく"
-      ],
-      "gold": "いく",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "学校へ行く／明日行く（日常のいく）"
-    },
-    {
-      "ts": "",
-      "text": "学校へ明日行く",
-      "surface": "行く",
-      "candidates": [
-        "いく",
-        "ゆく"
-      ],
-      "gold": "いく",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "学校へ行く／明日行く（日常のいく）"
-    },
-    {
-      "ts": "",
-      "text": "扉の蓋が閉まっていたが、自分で開くボタンを押して開いた。",
-      "surface": "開く",
-      "candidates": [
-        "あく",
-        "ひらく"
-      ],
-      "gold": "あく",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "ドアが開く／蓋が開く（あく・自動）"
-    },
-    {
-      "ts": "",
-      "text": "ドアが自動で開く機能は便利だ。",
-      "surface": "開く",
-      "candidates": [
-        "あく",
-        "ひらく"
-      ],
-      "gold": "あく",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "ドアが開く／蓋が開く（あく・自動）"
-    },
-    {
-      "ts": "",
-      "text": "テキストの一行は読みやすい",
-      "surface": "一行",
-      "candidates": [
-        "いちぎょう",
-        "いっこう"
-      ],
-      "gold": "いちぎょう",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "一行だけ書く／テキストの一行（いちぎょう）"
-    },
-    {
-      "ts": "",
-      "text": "一行だけ書くのは楽しい",
-      "surface": "一行",
-      "candidates": [
-        "いちぎょう",
-        "いっこう"
-      ],
-      "gold": "いちぎょう",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "一行だけ書く／テキストの一行（いちぎょう）"
-    },
-    {
-      "ts": "",
-      "text": "一行がホテルに到着した。",
-      "surface": "一行",
-      "candidates": [
-        "いちぎょう",
-        "いっこう"
-      ],
-      "gold": "いっこう",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "観光客の一行／一行が到着した（いっこう）"
-    },
-    {
-      "ts": "",
-      "text": "一行が観光客でした。",
-      "surface": "一行",
-      "candidates": [
-        "いちぎょう",
-        "いっこう"
-      ],
-      "gold": "いっこう",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "観光客の一行／一行が到着した（いっこう）"
-    },
-    {
-      "ts": "",
-      "text": "彼女は人気のアーティストとして、多くの人に人気を集めました。",
-      "surface": "人気",
-      "candidates": [
-        "じんき",
-        "にんき",
-        "ひとけ",
-        "ひとげ"
-      ],
-      "gold": "にんき",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "人気が高い／人気者（にんき）"
-    },
-    {
-      "ts": "",
-      "text": "人気者はいつも会場で人気を集めます。",
-      "surface": "人気",
-      "candidates": [
-        "じんき",
-        "にんき",
-        "ひとけ",
-        "ひとげ"
-      ],
-      "gold": "にんき",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "人気が高い／人気者（にんき）"
-    },
-    {
-      "ts": "",
-      "text": "丸一日かかりますので、早めに予約してください。",
-      "surface": "一日",
-      "candidates": [
-        "いちにち",
-        "ついたち"
-      ],
-      "gold": "いちにち",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "一日中／丸一日かかる（いちにち）"
-    },
-    {
-      "ts": "",
-      "text": "交渉で上手に回って、成功した契約を結んだ。",
-      "surface": "上手",
-      "candidates": [
-        "うわて",
-        "かみて",
-        "じょうしゅ",
-        "じょうず"
-      ],
-      "gold": "うわて",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "交渉で上手に回る／相撲の上手（うわて）"
-    },
-    {
-      "ts": "",
-      "text": "相撲の試合で上手な力士が優勝した。",
-      "surface": "上手",
-      "candidates": [
-        "うわて",
-        "かみて",
-        "じょうしゅ",
-        "じょうず"
-      ],
-      "gold": "うわて",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "交渉で上手に回る／相撲の上手（うわて）"
-    },
-    {
-      "ts": "",
-      "text": "彼女は歌が上手で、毎年コンクールで優勝しています。",
-      "surface": "上手",
-      "candidates": [
-        "うわて",
-        "かみて",
-        "じょうしゅ",
-        "じょうず"
-      ],
-      "gold": "じょうず",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "絵が上手／歌が上手だ（技能）"
-    },
-    {
-      "ts": "",
-      "text": "絵が上手な子はいくつもいます。",
-      "surface": "上手",
-      "candidates": [
-        "うわて",
-        "かみて",
-        "じょうしゅ",
-        "じょうず"
-      ],
-      "gold": "じょうず",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "絵が上手／歌が上手だ（技能）"
-    },
-    {
-      "ts": "",
-      "text": "今日は明日・昨日の対になる日なので、明日は休みにしましょう。",
-      "surface": "今日",
-      "candidates": [
-        "きょう",
-        "こんじつ",
-        "こんち",
-        "こんにち"
-      ],
-      "gold": "きょう",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "今日は／明日・昨日と対になる日常のきょう"
-    },
-    {
-      "ts": "",
-      "text": "今日は朝から夜までの長い日なので、明日は休みにしましょう。",
-      "surface": "今日",
-      "candidates": [
-        "きょう",
-        "こんじつ",
-        "こんち",
-        "こんにち"
-      ],
-      "gold": "きょう",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "今日は／明日・昨日と対になる日常のきょう"
-    },
-    {
-      "ts": "",
-      "text": "彼は博士号を取得し、大学を卒業しました。",
-      "surface": "博士",
-      "candidates": [
-        "はかせ",
-        "はくし"
-      ],
-      "gold": "はくし",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "博士号／学位／論文"
-    },
-    {
-      "ts": "",
-      "text": "博士は論文の最終版を完成させました。",
-      "surface": "博士",
-      "candidates": [
-        "はかせ",
-        "はくし"
-      ],
-      "gold": "はくし",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "博士号／学位／論文"
-    },
-    {
-      "ts": "",
-      "text": "学生は先生に呼びかけるときに博士と呼んでよかったと思った",
-      "surface": "博士",
-      "candidates": [
-        "はかせ",
-        "はくし"
-      ],
-      "gold": "はかせ",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "物知り博士／呼び方としての博士"
-    },
-    {
-      "ts": "",
-      "text": "物知りの博士が講演をしていた",
-      "surface": "博士",
-      "candidates": [
-        "はかせ",
-        "はくし"
-      ],
-      "gold": "はかせ",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "物知り博士／呼び方としての博士"
-    },
-    {
-      "ts": "",
-      "text": "強い風で髪が乱れました。",
-      "surface": "風",
-      "candidates": [
-        "かぜ",
-        "ふう",
-        "ふり"
-      ],
-      "gold": "かぜ",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "風が吹く／強風／風で髪が乱れる"
-    },
-    {
-      "ts": "",
-      "text": "風が強く吹き始めました。",
-      "surface": "風",
-      "candidates": [
-        "かぜ",
-        "ふう",
-        "ふり"
-      ],
-      "gold": "かぜ",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "風が吹く／強風／風で髪が乱れる"
-    },
-    {
-      "ts": "",
-      "text": "このリストを表にまとめると、見やすくなります。",
-      "surface": "表",
-      "candidates": [
-        "おもて",
-        "ひょう"
-      ],
-      "gold": "ひょう",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "グラフ・データ・一覧・表にまとめる"
-    },
-    {
-      "ts": "",
-      "text": "グラフを表で比較すると、データが明らかになる。",
-      "surface": "表",
-      "candidates": [
-        "おもて",
-        "ひょう"
-      ],
-      "gold": "ひょう",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "グラフ・データ・一覧・表にまとめる"
-    },
-    {
-      "ts": "",
-      "text": "玄関の表は、家の外側の部分です。",
-      "surface": "表",
-      "candidates": [
-        "おもて",
-        "ひょう"
-      ],
-      "gold": "おもて",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "裏と表／表に出る／玄関・顔の表"
-    },
-    {
-      "ts": "",
-      "text": "これは大事な機会なので、十分に準備をしましょう。",
-      "surface": "大事",
-      "candidates": [
-        "おおごと",
-        "だいじ"
-      ],
-      "gold": "だいじ",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "大事な人／大事にする／大切"
-    },
-    {
-      "ts": "",
-      "text": "私と大事な人に会って、心が軽いです。",
-      "surface": "大事",
-      "candidates": [
-        "おおごと",
-        "だいじ"
-      ],
-      "gold": "だいじ",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "大事な人／大事にする／大切"
-    },
-    {
-      "ts": "",
-      "text": "大事な仕事の前に、十分な準備をしなければなりません。",
-      "surface": "大事",
-      "candidates": [
-        "おおごと",
-        "だいじ"
-      ],
-      "gold": "おおごと",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "大事になる／騒ぎ・事件に発展する直前"
-    },
-    {
-      "ts": "",
-      "text": "大事になる前に、気をつけてください。",
-      "surface": "大事",
-      "candidates": [
-        "おおごと",
-        "だいじ"
-      ],
-      "gold": "おおごと",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "大事になる／騒ぎ・事件に発展する直前"
-    },
-    {
-      "ts": "",
-      "text": "町中のカフェでコーヒーを飲みながら散歩を楽しんでいます。",
-      "surface": "町中",
-      "candidates": [
-        "まちじゅう",
-        "まちなか"
-      ],
-      "gold": "まちなか",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "町中のカフェ／市街地の中心（まちなか）"
-    },
-    {
-      "ts": "",
-      "text": "市街地の中心は町中で賑やかです。",
-      "surface": "町中",
-      "candidates": [
-        "まちじゅう",
-        "まちなか"
-      ],
-      "gold": "まちなか",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "町中のカフェ／市街地の中心（まちなか）"
-    },
-    {
-      "ts": "",
-      "text": "新しい料理店が開店したので、町中にその人気を知れ渡らせたいと考えた店員は",
-      "surface": "町中",
-      "candidates": [
-        "まちじゅう",
-        "まちなか"
-      ],
-      "gold": "まちじゅう",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
-    },
-    {
-      "ts": "",
-      "text": "町中で大きな事故が起こったと言われて、町中に怖さが広がった。",
-      "surface": "町中",
-      "candidates": [
-        "まちじゅう",
-        "まちなか"
-      ],
-      "gold": "まちじゅう",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
-    },
-    {
-      "ts": "",
-      "text": "病気の家族の境遇は本当に辛いが、支え合いながら乗り越えるしかない。",
-      "surface": "辛い",
-      "candidates": [
-        "からい",
-        "つらい"
-      ],
-      "gold": "つらい",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "経験・出来事・境遇（味ではない）"
-    },
-    {
-      "ts": "",
-      "text": "仕事に失敗したことで、結果はとても辛い思いをした。",
-      "surface": "辛い",
-      "candidates": [
-        "からい",
-        "つらい"
-      ],
-      "gold": "つらい",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "経験・出来事・境遇（味ではない）"
-    },
-    {
-      "ts": "",
-      "text": "朝から市場に並び、鮮魚・野菜の美味しさを求める人々が続々と並ぶ。",
-      "surface": "市場",
-      "candidates": [
-        "いちば",
-        "しじょう"
-      ],
-      "gold": "いちば",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "朝の市場で魚を買う、鮮魚・野菜売り場"
     }
   ]
 }
