@@ -1,17 +1,60 @@
 {
-  "ts": "2026-09-10T16:16:29.684Z",
+  "ts": "2026-09-12T10:33:19.751Z",
   "generatedFrom": "synth-log.jsonl+corpus/synth-open.jsonl",
   "summary": {
-    "total": 983,
+    "total": 985,
     "shown": 800,
-    "logCount": 0,
-    "corpusCount": 983,
+    "logCount": 2,
+    "corpusCount": 985,
     "bySource": {
-      "llm-synth:groq:verify_agree": 471,
-      "llm-synth:groq:arbitrate_agree": 329
+      "llm-synth:groq:verify_agree": 470,
+      "llm-synth:groq:arbitrate_agree": 328,
+      "arbitrate_agree": 2
     }
   },
   "entries": [
+    {
+      "ts": "2026-09-12T10:31:54.336Z",
+      "text": "彼女はSNSで人気者として注目されている。",
+      "surface": "人気",
+      "candidates": [
+        "じんき",
+        "にんき",
+        "ひとけ",
+        "ひとげ"
+      ],
+      "gold": "にんき",
+      "verify_guess": "じんき",
+      "arbitrate_guess": "にんき",
+      "source": "arbitrate_agree",
+      "verify_raw": "\n<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 彼女はSNSで人気者として注目されている。 (She is being noticed as a popular person on SNS.)\n   - **Target Word:** 人気 (in the sentence, it's part of 人気者 - にんきもの)\n   - **Candidates:** じんき / にんき / ひとけ / ひとげ\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation.\n\n2.  **Identify the Target Word & Context:**\n   -…",
+      "arb_raw": "にんき",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "qwen/qwen3.6-27b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": "人気が高い／人気者（にんき）"
+    },
+    {
+      "ts": "2026-09-12T10:31:50.211Z",
+      "text": "彼は新曲で人気が高いと評判だ。",
+      "surface": "人気",
+      "candidates": [
+        "じんき",
+        "にんき",
+        "ひとけ",
+        "ひとげ"
+      ],
+      "gold": "にんき",
+      "verify_guess": "じんき",
+      "arbitrate_guess": "にんき",
+      "source": "arbitrate_agree",
+      "verify_raw": "\n<think>\nHere's a thinking process:\n\n1.  **Analyze User Input:**\n   - **Sentence:** 彼は新曲で人気が高いと評判だ。 (He is reputed to be very popular with his new song.)\n   - **Target Word:** 人気 (tableau/surface form)\n   - **Candidates:** じんき / にんき / ひとけ / ひとげ\n   - **Task:** Select exactly one reading in hiragana from the candidates.\n   - **Output Requirement:** Only the hiragana reading, one word. No explanation…",
+      "arb_raw": "にんき",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "qwen/qwen3.6-27b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": "人気が高い／人気者（にんき）"
+    },
     {
       "ts": "",
       "text": "[\"彼女の新曲は人気が高いと評判だ。\",\"彼は人気者で、ファンが多い。",
@@ -15556,44 +15599,6 @@
       "verifier": "",
       "arbitrator": "",
       "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
-    },
-    {
-      "ts": "",
-      "text": "病気や失恋が辛い経験を通じて、生活の実際を考えなければならない時が来ます",
-      "surface": "辛い",
-      "candidates": [
-        "からい",
-        "つらい"
-      ],
-      "gold": "つらい",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "経験・出来事・境遇（味ではない）"
-    },
-    {
-      "ts": "",
-      "text": "魚を買うために朝の市場に行った",
-      "surface": "市場",
-      "candidates": [
-        "いちば",
-        "しじょう"
-      ],
-      "gold": "いちば",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "朝の市場で魚を買う、鮮魚・野菜売り場"
     }
   ]
 }
