@@ -1,15 +1,15 @@
 {
-  "ts": "2026-09-12T13:07:15.924Z",
+  "ts": "2026-09-12T16:02:37.886Z",
   "mode": "synth",
-  "note": "素材 +30 / 本体ルール変化なし（日次は主に素材集め）",
+  "note": "素材 +58 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 1015,
-    "delta": 30,
-    "acceptedThisRun": 30,
-    "rejectedThisRun": 12
+    "total": 1073,
+    "delta": 58,
+    "acceptedThisRun": 58,
+    "rejectedThisRun": 28
   },
   "benches": {
     "seed-bench": {
@@ -64,70 +64,70 @@
   },
   "newSamples": [
     {
-      "text": "本を開くと、ページが静かに揺れた。",
-      "surface": "開く",
-      "gold": "ひらく",
-      "source": "llm-synth:groq:arbitrate_agree",
-      "note": "本を開く／店を開く／会議を開く（ひらく）"
-    },
-    {
-      "text": "朝日が差し込むと、古い木製のドアが開く。",
-      "surface": "開く",
-      "gold": "あく",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "ドアが開く／蓋が開く（あく・自動）"
-    },
-    {
-      "text": "時が行くと、心の灯火もゆく。",
-      "surface": "行く",
-      "gold": "ゆく",
-      "source": "llm-synth:groq:arbitrate_agree",
-      "note": "時が行く／行く末／文語・歌詞寄りのゆく"
-    },
-    {
-      "text": "明日、学校へ行く予定です。",
-      "surface": "行く",
-      "gold": "いく",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "学校へ行く／明日行く（日常のいく）"
-    },
-    {
-      "text": "新しい本が気に入ると、店に入るときは笑顔で迎えられる。",
-      "surface": "入る",
-      "gold": "いる",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "気に入る／手に入る／仲間に入る（いる）"
-    },
-    {
-      "text": "牛の角が生える",
+      "text": "牛の角が大きい。",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:arbitrate_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "株式市場の規模は、国内経済に大きく影響する。",
+      "text": "角が生えるのは春だ。",
+      "surface": "角",
+      "gold": "つの",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "牛の角／角が生える（つの）"
+    },
+    {
+      "text": "株式市場は投資家の期待を反映する重要な指標だ。",
       "surface": "市場",
       "gold": "しじょう",
       "source": "llm-synth:groq:arbitrate_agree",
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "text": "今日のラーメンは辛い香りが強く、食べるたびにからい。",
+      "text": "金融市場の規模拡大は国の経済成長を促進する。",
+      "surface": "市場",
+      "gold": "しじょう",
+      "source": "llm-synth:groq:arbitrate_agree",
+      "note": "株式・規模・経済・金融の文脈"
+    },
+    {
+      "text": "今日のラーメンは辛い味が強くて、口の中がピリリと刺激した。",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "永遠に終わらない星空を見上げると、心は静かに永遠のテーマへと旅立つ。",
+      "text": "カレーに唐辛子を入れすぎて辛い香りが鼻をつき、食べる前から熱がこもった。",
+      "surface": "辛い",
+      "gold": "からい",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "ラーメン・カレー・味・唐辛子"
+    },
+    {
+      "text": "永遠のテーマに沿って、私は日常の小さな喜びを記録することにした。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "仕事が山積みで、予定も詰まって忙しい。",
+      "text": "彼の考えは永遠に終わらない哲学的な問いを提起し、周囲を驚かせた。",
+      "surface": "永遠",
+      "gold": "えいえん",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
+    },
+    {
+      "text": "仕事が山積みで、今日も忙しい。",
+      "surface": "忙しい",
+      "gold": "いそがしい",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "仕事・予定・日常の忙しさ"
+    },
+    {
+      "text": "予定が詰まっているので、忙しい。",
       "surface": "忙しい",
       "gold": "いそがしい",
       "source": "llm-synth:groq:verify_agree",
