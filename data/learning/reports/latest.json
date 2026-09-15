@@ -1,13 +1,13 @@
 {
-  "ts": "2026-09-15T04:35:23.104Z",
+  "ts": "2026-09-15T11:37:03.707Z",
   "mode": "synth",
-  "note": "素材 +50 / 本体ルール変化なし（日次は主に素材集め）",
+  "note": "素材 +52 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 1574,
-    "delta": 50,
+    "total": 1626,
+    "delta": 52,
     "acceptedThisRun": 53,
     "rejectedThisRun": 33
   },
@@ -64,70 +64,70 @@
   },
   "newSamples": [
     {
-      "text": "牛の角が大きく、まるで星のように光っていた。",
+      "text": "牛の角が山のように光っている。",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:verify_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "角が生えると、子牛はすぐに遊びに出てくる。",
+      "text": "角が生えると、まるで星のように輝く。",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:verify_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "株式市場の規模は年々拡大し、経済全体への影響が大きくなっている。",
+      "text": "株式市場の規模は、経済成長を左右する重要な指標だ。",
       "surface": "市場",
       "gold": "しじょう",
       "source": "llm-synth:groq:verify_agree",
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "text": "金融市場の変動は企業の資金調達に直結し、経済の安定性を左右する。",
+      "text": "金融市場の動向が、国内経済の安定に大きく影響する。",
       "surface": "市場",
       "gold": "しじょう",
       "source": "llm-synth:groq:verify_agree",
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "text": "ラーメンを食べたら、辛い味が口に広がった。",
+      "text": "辛いラーメンの味に唐辛子を入れたら、思わず笑ってしまった。",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "カレーに唐辛子を入れたら、辛い香りが部屋を満たした。",
+      "text": "辛いカレーに甘い味を足すと、予想外にまろやかになる。",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "雨が降り続く午後、彼は永遠のテーマを紙に書いた。",
+      "text": "私は日々の散歩で、永遠に終わらない風景を見つめている。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "電車の走りは永遠に終わらないように感じた。",
+      "text": "彼の詩は永遠のテーマを追い、時間を越えて響く。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "仕事の合間に、家事もこなすと、忙しいと実感する。",
+      "text": "仕事が多くて忙しい。",
       "surface": "忙しい",
       "gold": "いそがしい",
       "source": "llm-synth:groq:verify_agree",
       "note": "仕事・予定・日常の忙しさ"
     },
     {
-      "text": "予定が詰まっていると、日常が忙しいと感じる。",
+      "text": "予定が詰まって忙しい。",
       "surface": "忙しい",
       "gold": "いそがしい",
       "source": "llm-synth:groq:verify_agree",
