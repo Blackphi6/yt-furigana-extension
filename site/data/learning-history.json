@@ -1,101 +1,6 @@
 {
-  "updatedAt": "2026-09-16T11:23:02.045Z",
+  "updatedAt": "2026-09-16T16:43:10.338Z",
   "entries": [
-    {
-      "ts": "2026-07-20T06:45:47.131Z",
-      "mode": "synth",
-      "note": "素材 +4 / 本体ルール変化なし（日次は主に素材集め）",
-      "gateOk": true,
-      "floorsOk": true,
-      "regress": false,
-      "corpus": {
-        "total": 58,
-        "delta": 4,
-        "acceptedThisRun": 4,
-        "rejectedThisRun": 9
-      },
-      "benches": {
-        "seed-bench": {
-          "passed": 22,
-          "total": 22,
-          "rate": 1,
-          "minPassRate": 1,
-          "failed": []
-        },
-        "hard-heteronym": {
-          "passed": 13,
-          "total": 13,
-          "rate": 1,
-          "minPassRate": 0.85,
-          "failed": []
-        },
-        "easy-regression": {
-          "passed": 8,
-          "total": 8,
-          "rate": 1,
-          "minPassRate": 0.9,
-          "failed": []
-        }
-      },
-      "vsBaseline": {
-        "seed-bench": {
-          "rate": 1,
-          "passed": 22,
-          "total": 22,
-          "baselineRate": 1,
-          "deltaRate": 0
-        },
-        "hard-heteronym": {
-          "rate": 1,
-          "passed": 13,
-          "total": 13,
-          "baselineRate": 1,
-          "deltaRate": 0
-        },
-        "easy-regression": {
-          "rate": 1,
-          "passed": 8,
-          "total": 8,
-          "baselineRate": 1,
-          "deltaRate": 0
-        }
-      },
-      "overrides": {
-        "phraseCount": 1,
-        "contextRuleCount": 7,
-        "changed": false
-      },
-      "newSamples": [
-        {
-          "text": "カレーはとても辛いから、飲むのはやめます。",
-          "surface": "辛い",
-          "gold": "からい",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "ラーメン・カレー・味・唐辛子"
-        },
-        {
-          "text": "私の生活は非常に辛い",
-          "surface": "辛い",
-          "gold": "つらい",
-          "source": "llm-synth:groq:arbitrate_agree",
-          "note": "経験・出来事・境遇（味ではない）"
-        },
-        {
-          "text": "天文学者は、恒星の消滅から永遠に終わらない銀河の発展を研究した。",
-          "surface": "永遠",
-          "gold": "えいえん",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
-        },
-        {
-          "text": "今日の予定が多くて、忙しい",
-          "surface": "忙しい",
-          "gold": "いそがしい",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "仕事・予定・日常の忙しさ"
-        }
-      ]
-    },
     {
       "ts": "2026-07-21T06:27:59.508Z",
       "mode": "synth",
@@ -7312,6 +7217,143 @@
         },
         {
           "text": "予定が詰まっていて、帰宅後も忙しい。",
+          "surface": "忙しい",
+          "gold": "いそがしい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "仕事・予定・日常の忙しさ"
+        }
+      ]
+    },
+    {
+      "ts": "2026-09-16T16:43:10.338Z",
+      "mode": "synth",
+      "note": "素材 +56 / 本体ルール変化なし（日次は主に素材集め）",
+      "gateOk": true,
+      "floorsOk": true,
+      "regress": false,
+      "corpus": {
+        "total": 1886,
+        "delta": 56,
+        "acceptedThisRun": 56,
+        "rejectedThisRun": 30
+      },
+      "benches": {
+        "seed-bench": {
+          "passed": 22,
+          "total": 22,
+          "rate": 1,
+          "minPassRate": 1,
+          "failed": []
+        },
+        "hard-heteronym": {
+          "passed": 41,
+          "total": 41,
+          "rate": 1,
+          "minPassRate": 0.85,
+          "failed": []
+        },
+        "easy-regression": {
+          "passed": 8,
+          "total": 8,
+          "rate": 1,
+          "minPassRate": 0.9,
+          "failed": []
+        }
+      },
+      "vsBaseline": {
+        "seed-bench": {
+          "rate": 1,
+          "passed": 22,
+          "total": 22,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "hard-heteronym": {
+          "rate": 1,
+          "passed": 41,
+          "total": 41,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "easy-regression": {
+          "rate": 1,
+          "passed": 8,
+          "total": 8,
+          "baselineRate": 1,
+          "deltaRate": 0
+        }
+      },
+      "overrides": {
+        "phraseCount": 13,
+        "contextRuleCount": 73,
+        "changed": false
+      },
+      "newSamples": [
+        {
+          "text": "牛の角が生えると、角の形が変わる。",
+          "surface": "角",
+          "gold": "つの",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "牛の角／角が生える（つの）"
+        },
+        {
+          "text": "角が生えると、牛の角が強くなる。",
+          "surface": "角",
+          "gold": "つの",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "牛の角／角が生える（つの）"
+        },
+        {
+          "text": "株式市場の変動は、経済全体の規模に大きく影響する。",
+          "surface": "市場",
+          "gold": "しじょう",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "株式・規模・経済・金融の文脈"
+        },
+        {
+          "text": "金融市場が拡大すれば、株式市場の流動性が向上する。",
+          "surface": "市場",
+          "gold": "しじょう",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "株式・規模・経済・金融の文脈"
+        },
+        {
+          "text": "ラーメンを食べたら、辛い香りが鼻をくすぐった。",
+          "surface": "辛い",
+          "gold": "からい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "ラーメン・カレー・味・唐辛子"
+        },
+        {
+          "text": "カレーに唐辛子を入れすぎて、辛い味が強すぎた。",
+          "surface": "辛い",
+          "gold": "からい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "ラーメン・カレー・味・唐辛子"
+        },
+        {
+          "text": "日常の中で、彼は永遠に続く笑顔を見つめていた。",
+          "surface": "永遠",
+          "gold": "えいえん",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
+        },
+        {
+          "text": "論理的に考えると、永遠は時間の概念を超える客観的な理想だ。",
+          "surface": "永遠",
+          "gold": "えいえん",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
+        },
+        {
+          "text": "今日は仕事が山積みで忙しい。",
+          "surface": "忙しい",
+          "gold": "いそがしい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "仕事・予定・日常の忙しさ"
+        },
+        {
+          "text": "予定が詰まっているので忙しい。",
           "surface": "忙しい",
           "gold": "いそがしい",
           "source": "llm-synth:groq:verify_agree",
