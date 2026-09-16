@@ -1,108 +1,6 @@
 {
-  "updatedAt": "2026-09-15T21:14:20.776Z",
+  "updatedAt": "2026-09-16T04:31:30.511Z",
   "entries": [
-    {
-      "ts": "2026-07-19T06:29:50.140Z",
-      "mode": "synth",
-      "note": "素材 +5 / 本体ルール変化なし（日次は主に素材集め）",
-      "gateOk": true,
-      "floorsOk": true,
-      "regress": false,
-      "corpus": {
-        "total": 54,
-        "delta": 5,
-        "acceptedThisRun": 5,
-        "rejectedThisRun": 5
-      },
-      "benches": {
-        "seed-bench": {
-          "passed": 22,
-          "total": 22,
-          "rate": 1,
-          "minPassRate": 1,
-          "failed": []
-        },
-        "hard-heteronym": {
-          "passed": 13,
-          "total": 13,
-          "rate": 1,
-          "minPassRate": 0.85,
-          "failed": []
-        },
-        "easy-regression": {
-          "passed": 8,
-          "total": 8,
-          "rate": 1,
-          "minPassRate": 0.9,
-          "failed": []
-        }
-      },
-      "vsBaseline": {
-        "seed-bench": {
-          "rate": 1,
-          "passed": 22,
-          "total": 22,
-          "baselineRate": 1,
-          "deltaRate": 0
-        },
-        "hard-heteronym": {
-          "rate": 1,
-          "passed": 13,
-          "total": 13,
-          "baselineRate": 1,
-          "deltaRate": 0
-        },
-        "easy-regression": {
-          "rate": 1,
-          "passed": 8,
-          "total": 8,
-          "baselineRate": 1,
-          "deltaRate": 0
-        }
-      },
-      "overrides": {
-        "phraseCount": 1,
-        "contextRuleCount": 7,
-        "changed": false
-      },
-      "newSamples": [
-        {
-          "text": "[\"株式市場の経済力は規模の大きさに比例する\"]",
-          "surface": "市場",
-          "gold": "しじょう",
-          "source": "llm-synth:groq:arbitrate_agree",
-          "note": "株式・規模・経済・金融の文脈"
-        },
-        {
-          "text": "ラーメンが辛いので、唐辛子を少なくしてください",
-          "surface": "辛い",
-          "gold": "からい",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "ラーメン・カレー・味・唐辛子"
-        },
-        {
-          "text": "彼の病気は、辛い思いを強いました。",
-          "surface": "辛い",
-          "gold": "つらい",
-          "source": "llm-synth:groq:arbitrate_agree",
-          "note": "経験・出来事・境遇（味ではない）"
-        },
-        {
-          "text": "時は永遠に終わらないから、常に進んでいくように心がけよう。",
-          "surface": "永遠",
-          "gold": "えいえん",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
-        },
-        {
-          "text": "今日は予定が多くて忙しいので、早めに寝ます。",
-          "surface": "忙しい",
-          "gold": "いそがしい",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "仕事・予定・日常の忙しさ"
-        }
-      ]
-    },
     {
       "ts": "2026-07-20T06:09:14.575Z",
       "mode": "retrain",
@@ -7206,6 +7104,143 @@
         },
         {
           "text": "予定が詰まっていて、忙しいと感じる時間が増えている。",
+          "surface": "忙しい",
+          "gold": "いそがしい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "仕事・予定・日常の忙しさ"
+        }
+      ]
+    },
+    {
+      "ts": "2026-09-16T04:31:30.511Z",
+      "mode": "synth",
+      "note": "素材 +51 / 本体ルール変化なし（日次は主に素材集め）",
+      "gateOk": true,
+      "floorsOk": true,
+      "regress": false,
+      "corpus": {
+        "total": 1778,
+        "delta": 51,
+        "acceptedThisRun": 53,
+        "rejectedThisRun": 33
+      },
+      "benches": {
+        "seed-bench": {
+          "passed": 22,
+          "total": 22,
+          "rate": 1,
+          "minPassRate": 1,
+          "failed": []
+        },
+        "hard-heteronym": {
+          "passed": 41,
+          "total": 41,
+          "rate": 1,
+          "minPassRate": 0.85,
+          "failed": []
+        },
+        "easy-regression": {
+          "passed": 8,
+          "total": 8,
+          "rate": 1,
+          "minPassRate": 0.9,
+          "failed": []
+        }
+      },
+      "vsBaseline": {
+        "seed-bench": {
+          "rate": 1,
+          "passed": 22,
+          "total": 22,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "hard-heteronym": {
+          "rate": 1,
+          "passed": 41,
+          "total": 41,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "easy-regression": {
+          "rate": 1,
+          "passed": 8,
+          "total": 8,
+          "baselineRate": 1,
+          "deltaRate": 0
+        }
+      },
+      "overrides": {
+        "phraseCount": 13,
+        "contextRuleCount": 73,
+        "changed": false
+      },
+      "newSamples": [
+        {
+          "text": "牛の角が生えると、角が生えるときに角が生えるときに牛の角が生えるときに牛の角が生えるときに",
+          "surface": "角",
+          "gold": "つの",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "牛の角／角が生える（つの）"
+        },
+        {
+          "text": "角が生えるとき、牛の角が生えるとき、角が生えるとき、牛の角が生えるとき",
+          "surface": "角",
+          "gold": "つの",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "牛の角／角が生える（つの）"
+        },
+        {
+          "text": "株式市場の規模は急速に拡大している。",
+          "surface": "市場",
+          "gold": "しじょう",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "株式・規模・経済・金融の文脈"
+        },
+        {
+          "text": "経済市場は金融政策の影響を強く受ける。",
+          "surface": "市場",
+          "gold": "しじょう",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "株式・規模・経済・金融の文脈"
+        },
+        {
+          "text": "カレーが辛い。",
+          "surface": "辛い",
+          "gold": "からい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "ラーメン・カレー・味・唐辛子"
+        },
+        {
+          "text": "ラーメンに唐辛子を入れて辛い。",
+          "surface": "辛い",
+          "gold": "からい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "ラーメン・カレー・味・唐辛子"
+        },
+        {
+          "text": "日常の朝食を食べながら、彼は永遠に終わらないという論理を考えた。",
+          "surface": "永遠",
+          "gold": "えいえん",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
+        },
+        {
+          "text": "客観的に見ると、雨が降り続く時間は永遠のテーマとして語られる。",
+          "surface": "永遠",
+          "gold": "えいえん",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
+        },
+        {
+          "text": "今日の仕事が山積みで、忙しいと感じる。",
+          "surface": "忙しい",
+          "gold": "いそがしい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "仕事・予定・日常の忙しさ"
+        },
+        {
+          "text": "予定が詰まると、日常が忙しいままになる。",
           "surface": "忙しい",
           "gold": "いそがしい",
           "source": "llm-synth:groq:verify_agree",
