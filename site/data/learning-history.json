@@ -1,143 +1,6 @@
 {
-  "updatedAt": "2026-09-19T10:48:45.028Z",
+  "updatedAt": "2026-09-19T15:50:15.910Z",
   "entries": [
-    {
-      "ts": "2026-07-29T06:30:56.845Z",
-      "mode": "synth",
-      "note": "素材 +13 / 本体ルール変化なし（日次は主に素材集め）",
-      "gateOk": true,
-      "floorsOk": true,
-      "regress": false,
-      "corpus": {
-        "total": 163,
-        "delta": 13,
-        "acceptedThisRun": 13,
-        "rejectedThisRun": 13
-      },
-      "benches": {
-        "seed-bench": {
-          "passed": 22,
-          "total": 22,
-          "rate": 1,
-          "minPassRate": 1,
-          "failed": []
-        },
-        "hard-heteronym": {
-          "passed": 32,
-          "total": 32,
-          "rate": 1,
-          "minPassRate": 0.85,
-          "failed": []
-        },
-        "easy-regression": {
-          "passed": 8,
-          "total": 8,
-          "rate": 1,
-          "minPassRate": 0.9,
-          "failed": []
-        }
-      },
-      "vsBaseline": {
-        "seed-bench": {
-          "rate": 1,
-          "passed": 22,
-          "total": 22,
-          "baselineRate": 1,
-          "deltaRate": 0
-        },
-        "hard-heteronym": {
-          "rate": 1,
-          "passed": 32,
-          "total": 32,
-          "baselineRate": 1,
-          "deltaRate": 0
-        },
-        "easy-regression": {
-          "rate": 1,
-          "passed": 8,
-          "total": 8,
-          "baselineRate": 1,
-          "deltaRate": 0
-        }
-      },
-      "overrides": {
-        "phraseCount": 1,
-        "contextRuleCount": 23,
-        "changed": false
-      },
-      "newSamples": [
-        {
-          "text": "町中で噂が広がり始めた",
-          "surface": "町中",
-          "gold": "まちじゅう",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
-        },
-        {
-          "text": "町中には誰もが知っていた",
-          "surface": "町中",
-          "gold": "まちじゅう",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
-        },
-        {
-          "text": "市街地の中心は町中で賑やかです",
-          "surface": "町中",
-          "gold": "まちなか",
-          "source": "llm-synth:groq:arbitrate_agree",
-          "note": "町中のカフェ／市街地の中心（まちなか）"
-        },
-        {
-          "text": "町中のカフェで休憩しました",
-          "surface": "町中",
-          "gold": "まちなか",
-          "source": "llm-synth:groq:arbitrate_agree",
-          "note": "町中のカフェ／市街地の中心（まちなか）"
-        },
-        {
-          "text": "町中でのイベントは毎年行われます",
-          "surface": "町中",
-          "gold": "まちなか",
-          "source": "llm-synth:groq:arbitrate_agree",
-          "note": "町中のカフェ／市街地の中心（まちなか）"
-        },
-        {
-          "text": "事故は大事になる直前、運転手は危険を感じた",
-          "surface": "大事",
-          "gold": "おおごと",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "大事になる／騒ぎ・事件に発展する直前"
-        },
-        {
-          "text": "私の大事な友達は今日来るそうです。",
-          "surface": "大事",
-          "gold": "だいじ",
-          "source": "llm-synth:groq:arbitrate_agree",
-          "note": "大事な人／大事にする／大切"
-        },
-        {
-          "text": "表が出る日は、明るくなるのを待つ",
-          "surface": "表",
-          "gold": "おもて",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "裏と表／表に出る／玄関・顔の表"
-        },
-        {
-          "text": "風が吹くと、髪が乱れる",
-          "surface": "風",
-          "gold": "かぜ",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "風が吹く／強風／風で髪が乱れる"
-        },
-        {
-          "text": "今日は明日と比べてもっと忙しい日です。",
-          "surface": "今日",
-          "gold": "きょう",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "今日は／明日・昨日と対になる日常のきょう"
-        }
-      ]
-    },
     {
       "ts": "2026-07-30T06:28:17.657Z",
       "mode": "synth",
@@ -7625,6 +7488,143 @@
           "gold": "いそがしい",
           "source": "llm-synth:groq:verify_agree",
           "note": "仕事・予定・日常の忙しさ"
+        }
+      ]
+    },
+    {
+      "ts": "2026-09-19T15:50:15.910Z",
+      "mode": "synth",
+      "note": "素材 +48 / 本体ルール変化なし（日次は主に素材集め）",
+      "gateOk": true,
+      "floorsOk": true,
+      "regress": false,
+      "corpus": {
+        "total": 2514,
+        "delta": 48,
+        "acceptedThisRun": 54,
+        "rejectedThisRun": 32
+      },
+      "benches": {
+        "seed-bench": {
+          "passed": 22,
+          "total": 22,
+          "rate": 1,
+          "minPassRate": 1,
+          "failed": []
+        },
+        "hard-heteronym": {
+          "passed": 41,
+          "total": 41,
+          "rate": 1,
+          "minPassRate": 0.85,
+          "failed": []
+        },
+        "easy-regression": {
+          "passed": 8,
+          "total": 8,
+          "rate": 1,
+          "minPassRate": 0.9,
+          "failed": []
+        }
+      },
+      "vsBaseline": {
+        "seed-bench": {
+          "rate": 1,
+          "passed": 22,
+          "total": 22,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "hard-heteronym": {
+          "rate": 1,
+          "passed": 41,
+          "total": 41,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "easy-regression": {
+          "rate": 1,
+          "passed": 8,
+          "total": 8,
+          "baselineRate": 1,
+          "deltaRate": 0
+        }
+      },
+      "overrides": {
+        "phraseCount": 13,
+        "contextRuleCount": 73,
+        "changed": false
+      },
+      "newSamples": [
+        {
+          "text": "手に入るチャンスを逃さず、仲間に入る準備をした。",
+          "surface": "入る",
+          "gold": "いる",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "気に入る／手に入る／仲間に入る（いる）"
+        },
+        {
+          "text": "雨が降った午後、彼は角を曲がるとカフェに入った。",
+          "surface": "角",
+          "gold": "かど",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "街角／角を曲がる（かど）"
+        },
+        {
+          "text": "牛の角が生えると、角の形が変わる。",
+          "surface": "角",
+          "gold": "つの",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "牛の角／角が生える（つの）"
+        },
+        {
+          "text": "角が生える場所を見つけると、牛の角が見える。",
+          "surface": "角",
+          "gold": "つの",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "牛の角／角が生える（つの）"
+        },
+        {
+          "text": "市場の規模は年々拡大している。",
+          "surface": "市場",
+          "gold": "しじょう",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "株式・規模・経済・金融の文脈"
+        },
+        {
+          "text": "市場は経済活動の中心だ。",
+          "surface": "市場",
+          "gold": "しじょう",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "株式・規模・経済・金融の文脈"
+        },
+        {
+          "text": "今日のカレーは辛い味がしっかりと入っている。",
+          "surface": "辛い",
+          "gold": "からい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "ラーメン・カレー・味・唐辛子"
+        },
+        {
+          "text": "ラーメンに唐辛子を入れて辛い風味を楽しむ。",
+          "surface": "辛い",
+          "gold": "からい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "ラーメン・カレー・味・唐辛子"
+        },
+        {
+          "text": "永遠のテーマを考えると、時間の流れが止まらないと感じる。",
+          "surface": "永遠",
+          "gold": "えいえん",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
+        },
+        {
+          "text": "永遠に終わらない星空を見上げると、心が安らぐ。",
+          "surface": "永遠",
+          "gold": "えいえん",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
         }
       ]
     }
