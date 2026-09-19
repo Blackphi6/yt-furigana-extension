@@ -1,143 +1,6 @@
 {
-  "updatedAt": "2026-09-18T20:53:34.208Z",
+  "updatedAt": "2026-09-19T04:18:20.388Z",
   "entries": [
-    {
-      "ts": "2026-07-27T07:31:52.654Z",
-      "mode": "synth",
-      "note": "素材 +18 / 本体ルール変化なし（日次は主に素材集め）",
-      "gateOk": true,
-      "floorsOk": true,
-      "regress": false,
-      "corpus": {
-        "total": 135,
-        "delta": 18,
-        "acceptedThisRun": 18,
-        "rejectedThisRun": 23
-      },
-      "benches": {
-        "seed-bench": {
-          "passed": 22,
-          "total": 22,
-          "rate": 1,
-          "minPassRate": 1,
-          "failed": []
-        },
-        "hard-heteronym": {
-          "passed": 32,
-          "total": 32,
-          "rate": 1,
-          "minPassRate": 0.85,
-          "failed": []
-        },
-        "easy-regression": {
-          "passed": 8,
-          "total": 8,
-          "rate": 1,
-          "minPassRate": 0.9,
-          "failed": []
-        }
-      },
-      "vsBaseline": {
-        "seed-bench": {
-          "rate": 1,
-          "passed": 22,
-          "total": 22,
-          "baselineRate": 1,
-          "deltaRate": 0
-        },
-        "hard-heteronym": {
-          "rate": 1,
-          "passed": 32,
-          "total": 32,
-          "baselineRate": 1,
-          "deltaRate": 0
-        },
-        "easy-regression": {
-          "rate": 1,
-          "passed": 8,
-          "total": 8,
-          "baselineRate": 1,
-          "deltaRate": 0
-        }
-      },
-      "overrides": {
-        "phraseCount": 1,
-        "contextRuleCount": 23,
-        "changed": false
-      },
-      "newSamples": [
-        {
-          "text": "会社の収支をまとめるために表を作成し、グラフも描きました。",
-          "surface": "表",
-          "gold": "ひょう",
-          "source": "llm-synth:groq:arbitrate_agree",
-          "note": "グラフ・データ・一覧・表にまとめる"
-        },
-        {
-          "text": "風が強く吹き、髪が乱れた",
-          "surface": "風",
-          "gold": "かぜ",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "風が吹く／強風／風で髪が乱れる"
-        },
-        {
-          "text": "風が髪を乱した",
-          "surface": "風",
-          "gold": "かぜ",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "風が吹く／強風／風で髪が乱れる"
-        },
-        {
-          "text": "物知り博士が私たちに助けてくれたことは大切に思っています。",
-          "surface": "博士",
-          "gold": "はかせ",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "物知り博士／呼び方としての博士"
-        },
-        {
-          "text": "博士は論文を提出する必要がある",
-          "surface": "博士",
-          "gold": "はくし",
-          "source": "llm-synth:groq:arbitrate_agree",
-          "note": "博士号／学位／論文"
-        },
-        {
-          "text": "学位を取るには博士号が必要",
-          "surface": "博士",
-          "gold": "はくし",
-          "source": "llm-synth:groq:arbitrate_agree",
-          "note": "博士号／学位／論文"
-        },
-        {
-          "text": "彼の絵が上手で、みんなに認められている",
-          "surface": "上手",
-          "gold": "じょうず",
-          "source": "llm-synth:groq:arbitrate_agree",
-          "note": "絵が上手／歌が上手だ（技能）"
-        },
-        {
-          "text": "人気の高い俳優は、映画で活躍している人気者です",
-          "surface": "人気",
-          "gold": "にんき",
-          "source": "llm-synth:groq:arbitrate_agree",
-          "note": "人気が高い／人気者（にんき）"
-        },
-        {
-          "text": "時は行くものだ。",
-          "surface": "行く",
-          "gold": "ゆく",
-          "source": "llm-synth:groq:arbitrate_agree",
-          "note": "時が行く／行く末／文語・歌詞寄りのゆく"
-        },
-        {
-          "text": "角を曲がりました",
-          "surface": "角",
-          "gold": "かど",
-          "source": "llm-synth:groq:arbitrate_agree",
-          "note": "街角／角を曲がる（かど）"
-        }
-      ]
-    },
     {
       "ts": "2026-07-28T06:27:13.348Z",
       "mode": "synth",
@@ -7621,6 +7484,143 @@
         },
         {
           "text": "予定が詰まっていて、忙しいとしか言いようがない。",
+          "surface": "忙しい",
+          "gold": "いそがしい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "仕事・予定・日常の忙しさ"
+        }
+      ]
+    },
+    {
+      "ts": "2026-09-19T04:18:20.388Z",
+      "mode": "synth",
+      "note": "素材 +48 / 本体ルール変化なし（日次は主に素材集め）",
+      "gateOk": true,
+      "floorsOk": true,
+      "regress": false,
+      "corpus": {
+        "total": 2411,
+        "delta": 48,
+        "acceptedThisRun": 54,
+        "rejectedThisRun": 32
+      },
+      "benches": {
+        "seed-bench": {
+          "passed": 22,
+          "total": 22,
+          "rate": 1,
+          "minPassRate": 1,
+          "failed": []
+        },
+        "hard-heteronym": {
+          "passed": 41,
+          "total": 41,
+          "rate": 1,
+          "minPassRate": 0.85,
+          "failed": []
+        },
+        "easy-regression": {
+          "passed": 8,
+          "total": 8,
+          "rate": 1,
+          "minPassRate": 0.9,
+          "failed": []
+        }
+      },
+      "vsBaseline": {
+        "seed-bench": {
+          "rate": 1,
+          "passed": 22,
+          "total": 22,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "hard-heteronym": {
+          "rate": 1,
+          "passed": 41,
+          "total": 41,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "easy-regression": {
+          "rate": 1,
+          "passed": 8,
+          "total": 8,
+          "baselineRate": 1,
+          "deltaRate": 0
+        }
+      },
+      "overrides": {
+        "phraseCount": 13,
+        "contextRuleCount": 73,
+        "changed": false
+      },
+      "newSamples": [
+        {
+          "text": "牛の角が山の麓に輝いている。",
+          "surface": "角",
+          "gold": "つの",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "牛の角／角が生える（つの）"
+        },
+        {
+          "text": "角が生える牧草地で子牛が遊んでいる。",
+          "surface": "角",
+          "gold": "つの",
+          "source": "llm-synth:groq:arbitrate_agree",
+          "note": "牛の角／角が生える（つの）"
+        },
+        {
+          "text": "株式市場の規模が拡大し、投資家の注目が高まっている。",
+          "surface": "市場",
+          "gold": "しじょう",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "株式・規模・経済・金融の文脈"
+        },
+        {
+          "text": "経済の動向が金融市場に影響を与え、為替レートが揺れた。",
+          "surface": "市場",
+          "gold": "しじょう",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "株式・規模・経済・金融の文脈"
+        },
+        {
+          "text": "辛いラーメンを食べた。",
+          "surface": "辛い",
+          "gold": "からい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "ラーメン・カレー・味・唐辛子"
+        },
+        {
+          "text": "辛いカレーを味わった。",
+          "surface": "辛い",
+          "gold": "からい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "ラーメン・カレー・味・唐辛子"
+        },
+        {
+          "text": "永遠のテーマを語ると、誰もが心に響く光が生まれる。",
+          "surface": "永遠",
+          "gold": "えいえん",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
+        },
+        {
+          "text": "永遠に終わらない日常の小さな幸せは、確かに奇跡の証だ。",
+          "surface": "永遠",
+          "gold": "えいえん",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
+        },
+        {
+          "text": "今日の仕事は忙しい。",
+          "surface": "忙しい",
+          "gold": "いそがしい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "仕事・予定・日常の忙しさ"
+        },
+        {
+          "text": "予定が多くて日常が忙しい。",
           "surface": "忙しい",
           "gold": "いそがしい",
           "source": "llm-synth:groq:verify_agree",
