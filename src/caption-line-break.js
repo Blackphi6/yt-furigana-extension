@@ -66,6 +66,44 @@ export function maxLineCharsFromElement(element) {
 }
 
 /**
+ * 日本語を BudouX 句に分ける。失敗時は原文1本。
+ * @param {string} text
+ * @returns {string[]}
+ */
+export function parseJapanesePhrases(text) {
+  const raw = String(text || "");
+  if (!raw) return [];
+  try {
+    const phrases = getParser().parse(raw);
+    if (Array.isArray(phrases) && phrases.join("") === raw) {
+      return phrases.filter((p) => p.length > 0);
+    }
+  } catch {
+    /* fall through */
+  }
+  return [raw];
+}
+
+/**
+ * すべての句境界オフセット（先頭以外）。
+ * @param {string[]} phrases
+ * @returns {number[]}
+ */
+export function phraseBoundaryOffsets(phrases) {
+  if (!Array.isArray(phrases) || phrases.length <= 1) return [];
+  /** @type {number[]} */
+  const offsets = [];
+  let offset = 0;
+  for (const phrase of phrases) {
+    const len = phrase.length;
+    if (!(len > 0)) continue;
+    if (offset > 0) offsets.push(offset);
+    offset += len;
+  }
+  return offsets;
+}
+
+/**
  * BudouX 句を「1行目安」に詰めて、行末付近の句境界だけ返す。
  * @param {string[]} phrases
  * @param {number} maxLineChars
@@ -128,7 +166,8 @@ export function extractVisibleTextMap(html) {
 }
 
 /**
- * htmlIdx が <ruby> や .yt-furigana-word 内なら、その開始タグ直前へ退避。
+ * htmlIdx が .yt-furigana-word / <ruby> 内なら、その開始タグ直前へ退避。
+ * （かなだけの word span も ruby 無しで囲むので、span を先に見る）
  * @param {string} html
  * @param {number} htmlIdx
  */
@@ -136,35 +175,77 @@ export function moveBreakBeforeAtomicUnit(html, htmlIdx) {
   if (!(htmlIdx > 0) || htmlIdx > html.length) return htmlIdx;
 
   const before = html.slice(0, htmlIdx);
-  const rubyOpen = before.lastIndexOf("<ruby");
-  const rubyClose = before.lastIndexOf("</ruby>");
-  const insideRuby = rubyOpen > rubyClose;
-
-  if (!insideRuby) return htmlIdx;
-
   const spanOpen = before.lastIndexOf("<span");
   const spanClose = before.lastIndexOf("</span>");
   if (spanOpen > spanClose && spanOpen >= 0) {
-    const head = html.slice(spanOpen, Math.min(html.length, spanOpen + 120));
-    if (head.includes("yt-furigana-word")) {
+    const head = html.slice(spanOpen, Math.min(html.length, spanOpen + 160));
+    if (/\byt-furigana-word\b/.test(head)) {
       return spanOpen;
     }
   }
 
-  return rubyOpen >= 0 ? rubyOpen : htmlIdx;
+  const rubyOpen = before.lastIndexOf("<ruby");
+  const rubyClose = before.lastIndexOf("</ruby>");
+  if (rubyOpen > rubyClose && rubyOpen >= 0) {
+    return rubyOpen;
+  }
+
+  return htmlIdx;
+}
+
+/**
+ * 可視文字位置を含む .yt-furigana-word / <ruby> の閉じタグ直後へ進める。
+ * slice の終端が「次の語の先頭文字」の map を指すとタグ途中切れになるので、
+ * 含める最後の文字基準で閉じる。
+ * @param {string} html
+ * @param {number} charHtmlIdx map[lastIncluded]（その文字の HTML オフセット）
+ */
+export function moveEndAfterAtomicUnit(html, charHtmlIdx) {
+  if (!(charHtmlIdx >= 0) || charHtmlIdx >= html.length) {
+    return Math.max(0, html.length);
+  }
+
+  const unitStart = moveBreakBeforeAtomicUnit(html, charHtmlIdx);
+  if (unitStart >= charHtmlIdx) {
+    // タグ外の生文字
+    return charHtmlIdx + 1;
+  }
+
+  const open = html.slice(unitStart).match(/^<(span|ruby)\b[^>]*>/i);
+  if (!open) return charHtmlIdx + 1;
+  const tagName = open[1].toLowerCase();
+  let depth = 0;
+  let i = unitStart;
+  while (i < html.length) {
+    if (html[i] !== "<") {
+      i += 1;
+      continue;
+    }
+    const gt = html.indexOf(">", i);
+    if (gt < 0) break;
+    const tag = html.slice(i, gt + 1);
+    if (new RegExp(`^<${tagName}\\b`, "i").test(tag)) depth += 1;
+    else if (new RegExp(`^</${tagName}\\s*>`, "i").test(tag)) {
+      depth -= 1;
+      if (depth === 0) return gt + 1;
+    }
+    i = gt + 1;
+  }
+  return html.length;
 }
 
 /**
  * ふりがな済み HTML に BudouX 句境界のソフトブレーク（ZWSP）を挿入する。
  * 失敗時は原文 HTML をそのまま返す（YouTube 側挙動にフォールバック）。
  * @param {string} html
- * @param {{ maxLineChars?: number }} [options]
+ * @param {{ maxLineChars?: number, allPhrases?: boolean }} [options]
  * @returns {string}
  */
 export function insertCaptionSoftBreaks(html, options = {}) {
   const source = String(html || "");
   if (!source || source.includes(ZWSP)) return source;
 
+  const allPhrases = options.allPhrases === true;
   const maxLineChars =
     Number(options.maxLineChars) > 0
       ? Number(options.maxLineChars)
@@ -173,16 +254,18 @@ export function insertCaptionSoftBreaks(html, options = {}) {
   try {
     const { visible, map } = extractVisibleTextMap(source);
     if (!visible || map.length === 0) return source;
-    // 1行に収まるなら改行候補を入れない
-    if (visible.length <= maxLineChars) return source;
+    // 字幕: 1行に収まるなら改行候補を入れない。SC プレビューは全句境界。
+    if (!allPhrases && visible.length <= maxLineChars) return source;
 
-    const phrases = getParser().parse(visible);
-    if (!Array.isArray(phrases) || phrases.length <= 1) return source;
+    const phrases = parseJapanesePhrases(visible);
+    if (phrases.length <= 1) return source;
     if (phrases.join("") !== visible) return source;
 
-    const breaks = selectSoftBreakOffsets(phrases, maxLineChars).filter(
-      (offset) => offset > 0 && offset < visible.length
-    );
+    const breaks = (
+      allPhrases
+        ? phraseBoundaryOffsets(phrases)
+        : selectSoftBreakOffsets(phrases, maxLineChars)
+    ).filter((offset) => offset > 0 && offset < visible.length);
     if (breaks.length === 0) return source;
 
     let out = source;
@@ -205,3 +288,30 @@ export function insertCaptionSoftBreaks(html, options = {}) {
 }
 
 export { ZWSP };
+
+/**
+ * 全文ふりがな HTML から、表層 slice に対応する部分だけ切り出す。
+ * TVer の色 span ごとに適用しつつ、行全体で API した HTML を分ける用。
+ *
+ * 終端は map[end]（次の文字）ではなく「含める最後の文字」の閉じタグまで。
+ * 末尾スペース付き slice（「袖で 」→ 次が「小」）で次語の <ruby> だけ巻き込む事故を防ぐ。
+ */
+export function sliceFuriganaHtmlByPlainText(html, fullText, sliceText) {
+  const source = String(html || "");
+  const full = String(fullText || "");
+  const slice = String(sliceText || "");
+  if (!source || !slice) return source;
+  if (slice === full) return source;
+  const start = full.indexOf(slice);
+  if (start < 0) return "";
+  const end = start + slice.length;
+  const last = end - 1;
+  const { map } = extractVisibleTextMap(source);
+  if (!map.length || start >= map.length || last < start || last >= map.length) {
+    return "";
+  }
+  let htmlStart = moveBreakBeforeAtomicUnit(source, map[start]);
+  const htmlEnd = moveEndAfterAtomicUnit(source, map[last]);
+  if (!(htmlStart >= 0) || !(htmlEnd > htmlStart)) return "";
+  return source.slice(htmlStart, htmlEnd);
+}

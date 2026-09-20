@@ -95,6 +95,12 @@ await Promise.all([
   }),
   esbuild.build({
     ...common,
+    format: "iife",
+    entryPoints: [path.join(extRoot, "src/sc-page-bridge.js")],
+    outfile: path.join(dist, "sc-page-bridge.js")
+  }),
+  esbuild.build({
+    ...common,
     format: "esm",
     entryPoints: [path.join(extRoot, "popup/popup.js")],
     outfile: path.join(dist, "popup.js")

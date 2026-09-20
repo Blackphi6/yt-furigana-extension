@@ -88,6 +88,31 @@ function hasDigit(text) {
   return /[0-9０-９]/.test(text);
 }
 
+/** 先頭数字の読みを除去 — readingForNumberSurface 用 */
+function stripLeadingDigitReading(digits, readingHira) {
+  const norm = String(digits || "").normalize("NFKC");
+  if (!/^[0-9]+(?:[.．][0-9]+)?$/.test(norm)) return readingHira;
+  const expected = readingForNumberSurface(norm);
+  if (!expected) return readingHira;
+  const prefix = toHiragana(expected);
+  if (prefix && readingHira.startsWith(prefix)) {
+    return readingHira.slice(prefix.length);
+  }
+  return readingHira;
+}
+
+/** 2026年 等: 数字読みを落とし、続く core（年）用の読みだけ返す */
+function coreReadingAfterLeadingDigits(tailText, readingHira) {
+  const tail = String(tailText || "");
+  if (tail.startsWith("年")) {
+    const suffix = "ねん" + toHiragana(tail.slice(1));
+    if (readingHira.endsWith(suffix)) {
+      return "ねん";
+    }
+  }
+  return readingHira;
+}
+
 function displayReading(reading) {
   const raw = String(reading || "").normalize("NFKC");
   if (/[\u30a1-\u30f6]/.test(raw)) {
@@ -177,9 +202,10 @@ function alignMiddleSegments(segments, reading) {
  */
 export function buildRuby(surface, reading, options = {}) {
   const preserveKatakana = options.preserveKatakana === true;
-  const hiraganaReading = toHiragana(reading || "");
+  const repaired = repairForbiddenReadings(surface, reading);
+  const hiraganaReading = toHiragana(repaired || "");
   const shown = preserveKatakana
-    ? displayReading(reading || "")
+    ? displayReading(repaired || "")
     : hiraganaReading;
   const safeSurface = escapeHtml(surface);
 
@@ -206,9 +232,12 @@ export function buildRuby(surface, reading, options = {}) {
   if (!hasKanji(surface)) return safeSurface;
   if (!hiraganaReading || hiraganaReading === toHiragana(surface)) return safeSurface;
 
-  // 1人→ひとり など、数字混じりは語全体にルビを振る
+  // 1人→ひとり など短い助数詞付きは語全体ルビ。2026年 等は下の segments へ
   if (hasDigit(surface)) {
-    return `<ruby>${safeSurface}<rt>${escapeHtml(shown)}</rt></ruby>`;
+    const norm = String(surface).normalize("NFKC");
+    if (!/^[0-9０-９]{2,}[\u3400-\u9fff]/.test(norm)) {
+      return `<ruby>${safeSurface}<rt>${escapeHtml(shown)}</rt></ruby>`;
+    }
   }
 
   const segments = parseSegments(surface);
@@ -270,8 +299,22 @@ export function buildRuby(surface, reading, options = {}) {
   let coreReadingShown = middleReadingShown || middleReadingHira;
   if (leadingOtherRaw.length) {
     const joined = leadingOtherRaw.join("");
-    const nextHira = stripLeadingAlphabetReading(joined, coreReadingHira);
-    if (nextHira !== coreReadingHira) {
+    const tailText = core.map((segment) => segment.text).join("");
+    let nextHira = stripLeadingAlphabetReading(joined, coreReadingHira);
+    if (nextHira === coreReadingHira) {
+      const resolved = coreReadingAfterLeadingDigits(tailText, coreReadingHira);
+      if (resolved !== coreReadingHira) {
+        coreReadingShown = resolved;
+        coreReadingHira = resolved;
+      } else {
+        nextHira = stripLeadingDigitReading(joined, coreReadingHira);
+        if (nextHira !== coreReadingHira) {
+          const consumed = coreReadingHira.length - nextHira.length;
+          coreReadingShown = coreReadingShown.slice(consumed);
+          coreReadingHira = nextHira;
+        }
+      }
+    } else if (nextHira !== coreReadingHira) {
       const consumed = coreReadingHira.length - nextHira.length;
       coreReadingShown = coreReadingShown.slice(consumed);
       coreReadingHira = nextHira;
@@ -312,7 +355,8 @@ import {
   parseNumberUnitSurface,
   parseNumberSurface,
   parseDotSeparatedDigits,
-  isKnownNumberUnit
+  isKnownNumberUnit,
+  readingForNumberSurface
 } from "./number-unit-reading.js";
 import {
   applyContextualReadings,
@@ -328,6 +372,11 @@ import {
   applyInlineParenReadings
 } from "./inline-paren-reading.js";
 import { stripAnnotationMarkers } from "./annotation-markers.js";
+import {
+  repairForbiddenReadings,
+  repairShimaiTokens,
+  splitFalseNakaAkaTokens
+} from "./reading-guards.js";
 import {
   normalizeKanjiForLookup,
   remapTokenSurfacesToOriginal,
@@ -355,10 +404,11 @@ export function wrapFuriganaWord(surface, reading, rubyHtml, options = {}) {
   if (!surface) return rubyHtml || "";
   const preserveKatakana = options.preserveKatakana === true;
   const kanaOnly = options.kanaOnly === true || isKanaOnlySurface(surface);
-  const normalized = reading
+  const guarded = reading ? repairForbiddenReadings(surface, reading) : "";
+  const normalized = guarded
     ? preserveKatakana
-      ? displayReading(reading)
-      : normalizeReading(reading)
+      ? displayReading(guarded)
+      : normalizeReading(guarded)
     : "";
   const unset = !normalized && !kanaOnly;
   const tip = !unset && !kanaOnly && isNumberReadingTipSurface(surface);
@@ -409,7 +459,7 @@ export function wrapFuriganaWord(surface, reading, rubyHtml, options = {}) {
  * 旧字・人名異体字（髙・𠮷 等）は照合キーだけ常用形へ寄せて解析し、
  * 表示表層は原文のまま戻す（NFKC では 髙→高 にならないため）。
  */
-export function buildFuriganaHtml(text, tokenize) {
+export function buildFuriganaHtml(text, tokenize, options = {}) {
   // 不可視セレクタを先に落とし、インライン読みの位置と照合長を一致させる
   const withoutNotes = stripVariationSelectors(stripAnnotationMarkers(text));
   const { text: prepared, spans: inlineSpans } = extractInlineParenReadings(
@@ -420,16 +470,21 @@ export function buildFuriganaHtml(text, tokenize) {
 
   const analyzed = applyKanjiReadings(
     applyEnglishKatakanaReadings(
-      mergeTokensForRuby(tokenize(useLookup ? lookupText : prepared), {
-        extraSurfaces: MANUAL_PHRASE_READINGS.keys(),
-        phraseTrie: getCombinedPhraseTrie()
-      })
+      splitFalseNakaAkaTokens(
+        repairShimaiTokens(
+          mergeTokensForRuby(tokenize(useLookup ? lookupText : prepared), {
+            extraSurfaces: MANUAL_PHRASE_READINGS.keys(),
+            phraseTrie: getCombinedPhraseTrie()
+          })
+        )
+      )
     )
   );
-  const contextual = applyContextualReadings(
-    analyzed,
-    useLookup ? lookupText : prepared
-  );
+  // TVer 色 span は表層が短くても、行全体を文脈に使う（何か→なん）
+  const readingContext =
+    String(options.contextText || "").trim() ||
+    (useLookup ? lookupText : prepared);
+  const contextual = applyContextualReadings(analyzed, readingContext);
   // 常用形キーでユーザー辞書（高橋）を当てたあと、表層を原文（髙橋）へ戻す
   const withManualOnLookup = applyManualPhraseReadings(contextual);
   const remapped = useLookup
@@ -482,7 +537,7 @@ export function buildFuriganaHtml(text, tokenize) {
         reading = stripMixedSurfaceAlphabetReading(surface, reading);
       }
       const ruby = buildRuby(surface, reading, { preserveKatakana });
-      if (!isSelectableSurface(surface)) return ruby;
+      if (!isSelectableSurface(surface) || options.wrapWords === false) return ruby;
       const [spanStart, spanEnd] = Array.isArray(token.span)
         ? token.span
         : [NaN, NaN];

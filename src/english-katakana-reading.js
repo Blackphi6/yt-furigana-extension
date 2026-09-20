@@ -1,7 +1,10 @@
 /**
- * 英単語トークンへ CMUdict 由来のカタカナ読みを載せる。
- * 辞書: dict/english-katakana.json.gz（CMUdict BSD → カタカナ事前計算）
+ * 英単語トークンへカタカナ読みを載せる。
+ * 辞書: dict/english-katakana.json.gz
+ * （CMUdict BSD + NEologd Apache + MIT 慣用上書きの事前マージ）
  */
+
+import { fetchGzipJsonDict } from "./dict-gzip-fetch.js";
 
 function isLatinWord(text) {
   return /^[A-Za-z][A-Za-z0-9'’.\-]*$/.test(String(text || ""));
@@ -34,27 +37,10 @@ export function installEnglishKatakanaDictForTests(dict) {
 export async function loadEnglishKatakanaDict(url) {
   if (loadPromise) return loadPromise;
   loadPromise = (async () => {
-    const dictUrl =
-      url ||
-      (typeof chrome !== "undefined" && chrome?.runtime?.getURL
-        ? chrome.runtime.getURL("dict/english-katakana.json.gz")
-        : "");
-    if (!dictUrl) {
-      throw new Error("english-katakana URL missing");
-    }
-
-    const response = await fetch(dictUrl);
-    if (!response.ok) {
-      throw new Error(`english-katakana fetch failed: ${response.status}`);
-    }
-    if (typeof DecompressionStream !== "function") {
-      throw new Error("DecompressionStream is not available");
-    }
-
-    const stream = response.body.pipeThrough(new DecompressionStream("gzip"));
-    const jsonText = await new Response(stream).text();
-    const parsed = JSON.parse(jsonText);
-    katakanaDict = parsed && typeof parsed === "object" ? parsed : {};
+    katakanaDict = await fetchGzipJsonDict("english-katakana.json.gz", {
+      url,
+      label: "english-katakana"
+    });
     return katakanaDict;
   })();
 

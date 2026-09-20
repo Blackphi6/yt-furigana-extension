@@ -1,4 +1,5 @@
 import { normalizeReading, normalizeUserReading } from "./reading-normalize.js";
+import { isStandaloneKanjiToken } from "./reading-guards.js";
 import learnedOverrides from "../data/generated/learned-overrides.json" with {
   type: "json"
 };
@@ -17,7 +18,18 @@ export const MAJORITY_DEFAULT_READINGS = {
   尊い: "とうとい",
   貴い: "とうとい",
   尊ぶ: "とうとぶ",
-  貴ぶ: "とうとぶ"
+  貴ぶ: "とうとぶ",
+  // 物理・改まった文の多数派。しょうは慣用キューがあるときだけ
+  背負っ: "せおっ",
+  背負う: "せおう",
+  背負い: "せおい",
+  // 単独の街はまち。がいは住宅街など複合キューがあるときだけ
+  街: "まち",
+  // 技能のじょうずが多数派。劇場のかみて・相撲のうわてはキュー必須
+  上手: "じょうず",
+  人気: "にんき",
+  金: "きん",
+  紅葉: "もみじ"
 };
 
 /** 上記の少数派（改まった読み・文語寄り） */
@@ -26,7 +38,15 @@ export const MINORITY_READINGS = {
   尊い: ["たっとい"],
   貴い: ["たっとい"],
   尊ぶ: ["たっとぶ"],
-  貴ぶ: ["たっとぶ"]
+  貴ぶ: ["たっとぶ"],
+  背負っ: ["しょっ"],
+  背負う: ["しょう"],
+  背負い: ["しょい"],
+  街: ["がい"],
+  上手: ["うわて", "かみて"],
+  人気: ["ひとけ"],
+  金: ["かね"],
+  紅葉: ["こうよう"]
 };
 
 /**
@@ -61,6 +81,43 @@ export const CONTEXT_READING_RULES = [
     reading: "いそがしい",
     weight: 3,
     cues: ["仕事", "予定", "会議", "残業", "スケジュール", "忙しい人", "お忙しい"]
+  },
+  {
+    surface: "背負っ",
+    reading: "せおっ",
+    weight: 4,
+    cues: ["リュック", "ランドセル", "子供を背負", "赤ん坊", "袋を背負", "荷物を背負"]
+  },
+  {
+    surface: "背負っ",
+    reading: "しょっ",
+    weight: 4,
+    // 「って立つ」単体は子供を背負って立つ を誤爆するので使わない
+    cues: ["将来を", "運命を", "期待を背負", "組織を背負"]
+  },
+  {
+    surface: "背負う",
+    reading: "せおう",
+    weight: 4,
+    cues: ["リュック", "ランドセル", "子供を背負", "赤ん坊", "袋を背負", "荷物を背負"]
+  },
+  {
+    surface: "背負う",
+    reading: "しょう",
+    weight: 4,
+    cues: ["将来を", "運命を", "期待を背負", "組織を背負"]
+  },
+  {
+    surface: "背負い",
+    reading: "せおい",
+    weight: 3,
+    cues: ["リュック", "ランドセル", "子供を背負", "袋を背負"]
+  },
+  {
+    surface: "背負い",
+    reading: "しょい",
+    weight: 4,
+    cues: ["苦労を", "しょい込む", "背負い込む"]
   },
   {
     surface: "表",
@@ -211,15 +268,197 @@ export const CONTEXT_READING_RULES = [
   },
   {
     surface: "中",
+    reading: "なか",
+    weight: 5,
+    // 空間の「の中」。カラオケ短文でも BERT の「うち」より先に決める
+    cues: ["の中", "の中で", "の中に", "の中を", "の中へ", "の中から", "の中まで"]
+  },
+  {
+    surface: "中",
+    reading: "うち",
+    weight: 3,
+    // 文語・継続の「うち」。の中より狭い
+    cues: ["している中", "ている中", "てる中", "ぬ中に", "ない中に", "暮れぬ中"]
+  },
+  {
+    surface: "中",
     reading: "じゅう",
-    weight: 2,
+    weight: 5,
     cues: ["一日中", "年中", "世界中", "日本中", "家中", "体中"]
   },
   {
     surface: "中",
     reading: "ちゅう",
-    weight: 2,
+    weight: 5,
     cues: ["中学生", "中国", "中心", "途中", "中間", "中止"]
+  },
+  {
+    surface: "街",
+    reading: "まち",
+    weight: 5,
+    // 単独名詞の街。歌詞「移ろう街と」など。がい複合より先に決める
+    cues: [
+      "この街",
+      "その街",
+      "あの街",
+      "街と",
+      "街を",
+      "街に",
+      "街へ",
+      "街は",
+      "街が",
+      "街も",
+      "移ろう街",
+      "変わる街",
+      "歩く街"
+    ]
+  },
+  {
+    surface: "街",
+    reading: "がい",
+    weight: 5,
+    cues: [
+      "住宅街",
+      "商店街",
+      "繁華街",
+      "地下街",
+      "オフィス街",
+      "歓楽街",
+      "工場街",
+      "問屋街",
+      "官庁街"
+    ]
+  },
+  {
+    surface: "上手",
+    reading: "じょうず",
+    weight: 5,
+    cues: ["が上手", "歌が上手", "絵が上手", "上手だ", "上手な"]
+  },
+  {
+    surface: "上手",
+    reading: "うわて",
+    weight: 5,
+    cues: ["一枚上手", "上手に回", "上手に出", "交渉では上手", "相撲の上手"]
+  },
+  {
+    surface: "上手",
+    reading: "かみて",
+    weight: 5,
+    // 劇場用語。ラティスにはあるが LLM synth がかみてを育てていなかった
+    cues: ["舞台の上手", "の上手で", "上手から出", "上手に立ち", "上手と下手"]
+  },
+  // Parayomi Space EXAMPLES（公開デモ）由来
+  {
+    surface: "人気",
+    reading: "ひとけ",
+    weight: 5,
+    cues: [
+      "人気が無",
+      "人気がなく",
+      "人気のない",
+      "人気がない",
+      "人気の無",
+      "路地は人気",
+      "人気のない夜",
+      "人気のない道"
+    ]
+  },
+  {
+    surface: "人気",
+    reading: "にんき",
+    weight: 5,
+    cues: ["人気の絶え", "人気が高", "人気者", "人気曲", "大人気", "人気店"]
+  },
+  {
+    surface: "金",
+    reading: "きん",
+    weight: 5,
+    cues: ["金の時計", "金色", "金メダル", "金銀", "金箔"]
+  },
+  {
+    surface: "金",
+    reading: "かね",
+    weight: 5,
+    cues: ["金を貯", "金を稼", "金が必要", "金を払", "金がかかる", "金を巻"]
+  },
+  {
+    surface: "角",
+    reading: "つの",
+    weight: 5,
+    cues: ["立派な角", "角に止ま", "牛の角", "角が生え", "カブトムシ"]
+  },
+  {
+    surface: "弾く",
+    reading: "はじく",
+    weight: 5,
+    cues: ["指で軽く弾", "軽く弾く", "弾き飛ば", "水を弾"]
+  },
+  {
+    surface: "弾く",
+    reading: "ひく",
+    weight: 5,
+    cues: ["ギターを弾", "ピアノを弾", "バイオリンを弾", "弾き語り"]
+  },
+  {
+    surface: "弾",
+    reading: "はじく",
+    weight: 4,
+    cues: ["指で軽く弾", "軽く弾く", "弾き飛ば"]
+  },
+  {
+    surface: "弾",
+    reading: "ひく",
+    weight: 4,
+    cues: ["ギターを弾", "ピアノを弾", "バイオリンを弾"]
+  },
+  {
+    surface: "何人",
+    reading: "なにじん",
+    weight: 5,
+    cues: ["何人だ", "何人ですか", "彼は何人", "何人だろう"]
+  },
+  {
+    surface: "何人",
+    reading: "なんにん",
+    weight: 4,
+    cues: ["何人来", "何人いる", "何人か", "何人まで"]
+  },
+  {
+    surface: "紅葉",
+    reading: "もみじ",
+    weight: 5,
+    cues: ["紅葉の", "美しい紅葉", "紅葉の木", "紅葉の絶景", "庭に植えた紅葉"]
+  },
+  {
+    surface: "皆",
+    reading: "みな",
+    weight: 4,
+    cues: ["皆で", "皆まで", "皆が", "皆の"]
+  },
+  {
+    surface: "汚",
+    reading: "けが",
+    weight: 5,
+    cues: ["深く汚れ", "汚れがなく", "魂は", "汚れてしま", "によって汚れ"]
+  },
+  {
+    surface: "開く",
+    reading: "あく",
+    weight: 5,
+    cues: ["穴が開", "鍵が開", "ドアが開", "窓が開", "目が開", "口が開", "蓋が開", "開いたまま"]
+  },
+  {
+    surface: "開く",
+    reading: "ひらく",
+    weight: 4,
+    cues: ["幕が開", "会が開", "店が開", "扉を開", "道が開", "可能性が開", "一気に開け"]
+  },
+  {
+    surface: "脅",
+    reading: "おどか",
+    weight: 5,
+    cues: ["脅かして", "脅かした", "脅かそう", "金を巻"]
   },
   {
     surface: "辛い",
@@ -257,7 +496,9 @@ export const CONTEXT_READING_RULES = [
       "何て",
       "何だよ",
       "何だか",
-      "何しろ"
+      "何しろ",
+      // 何か食べたい → なんか（デモ再ランクと揃える）
+      "何か"
     ]
   },
   {
@@ -362,9 +603,15 @@ export const MANUAL_PHRASE_READINGS = new Map([
   ["夏日", "なつび"],
   ["何度", "なんど"],
   ["何回", "なんかい"],
-  ["何人", "なんにん"],
+  ["何か", "なんか"],
+  ["何人たりとも", "なんぴとたりとも"],
+  ["御利益", "ごりやく"],
+  ["一枚上手", "いちまいうわて"],
   ["見惚れる", "みとれる"],
   ["見惚れていた", "みとれていた"],
+  ["終い", "しまい"],
+  ["仕舞い", "しまい"],
+  ["似合っていた", "にあっていた"],
   ["似合っていた", "にあっていた"],
   ["移ろう", "うつろう"],
   ["募る", "つのる"],
@@ -379,7 +626,8 @@ export const MANUAL_PHRASE_READINGS = new Map([
   ["選び方", "えらびかた"],
   ["直し方", "なおしかた"],
   ["戦い方", "たたかいかた"],
-  ["生き方", "いきかた"]
+  ["生き方", "いきかた"],
+  ["背負い込む", "しょいこむ"]
 ]);
 
 let sortedManualPhrases = [];
@@ -569,16 +817,36 @@ export function applyContextualReadings(tokens, contextText) {
       start >= 0 ? clauseContext(contextText, start, end) : contextText ?? "";
     const preferred = token.reading || token.pronunciation || "";
     const resolved = resolveContextualReading(surface, preferred, local);
-    if (!resolved) return token;
+    if (resolved) {
+      const reading = normalizeUserReading(resolved.reading);
+      const preserveKatakana = /[\u30a1-\u30f6]/.test(reading);
+      return {
+        ...token,
+        reading,
+        pronunciation: reading,
+        preserveKatakana
+      };
+    }
 
-    const reading = normalizeUserReading(resolved.reading);
-    const preserveKatakana = /[\u30a1-\u30f6]/.test(reading);
-    return {
-      ...token,
-      reading,
-      pronunciation: reading,
-      preserveKatakana
-    };
+    // キューなし単独漢字: 多数派既定（街→がい を BERT が返してもまちへ）
+    const majority = normalizeReading(MAJORITY_DEFAULT_READINGS[surface] || "");
+    if (
+      majority &&
+      start >= 0 &&
+      isStandaloneKanjiToken(surface, contextText, start, end) &&
+      normalizeReading(preferred) !== majority
+    ) {
+      const reading = normalizeUserReading(majority);
+      const preserveKatakana = /[\u30a1-\u30f6]/.test(reading);
+      return {
+        ...token,
+        reading,
+        pronunciation: reading,
+        preserveKatakana
+      };
+    }
+
+    return token;
   });
 }
 

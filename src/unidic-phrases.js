@@ -5,6 +5,7 @@
 
 import { normalizeReading } from "./reading-normalize.js";
 import { buildPhraseTrie } from "./phrase-trie.js";
+import { fetchGzipJsonDict } from "./dict-gzip-fetch.js";
 
 /** @type {Record<string, string>} */
 let unidicPhrases = {};
@@ -49,24 +50,11 @@ export function installUnidicPhrasesForTests(dict) {
 export async function loadUnidicPhrases(url) {
   if (loadPromise) return loadPromise;
   loadPromise = (async () => {
-    const dictUrl =
-      url ||
-      (typeof chrome !== "undefined" && chrome?.runtime?.getURL
-        ? chrome.runtime.getURL("dict/unidic-phrases.json.gz")
-        : "");
-    if (!dictUrl) throw new Error("unidic-phrases URL missing");
-
-    const response = await fetch(dictUrl);
-    if (!response.ok) {
-      throw new Error(`unidic-phrases fetch failed: ${response.status}`);
-    }
-    if (typeof DecompressionStream !== "function") {
-      throw new Error("DecompressionStream is not available");
-    }
-    const stream = response.body.pipeThrough(new DecompressionStream("gzip"));
-    const jsonText = await new Response(stream).text();
-    const parsed = JSON.parse(jsonText);
-    installUnidicPhrasesForTests(parsed && typeof parsed === "object" ? parsed : {});
+    const parsed = await fetchGzipJsonDict("unidic-phrases.json.gz", {
+      url,
+      label: "unidic-phrases"
+    });
+    installUnidicPhrasesForTests(parsed);
     return unidicPhrases;
   })();
 

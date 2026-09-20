@@ -1,5 +1,6 @@
 import { normalizeReading } from "./reading-normalize.js";
 import { buildPhraseTrie, findLongestPhraseAt } from "./phrase-trie.js";
+import { fetchGzipJsonDict } from "./dict-gzip-fetch.js";
 
 /** @type {Record<string, string>} */
 let neologdPhrases = {};
@@ -37,33 +38,16 @@ function installParsedPhrases(parsed) {
 
 /**
  * 生成済み gzip 辞書を読み、Trie を構築する。
- * Chrome では DecompressionStream を使う（node:zlib はバンドルしない）。
  * @param {string} [url]
  */
 export async function loadNeologdPhrases(url) {
   if (loadPromise) return loadPromise;
   loadPromise = (async () => {
-    const dictUrl =
-      url ||
-      (typeof chrome !== "undefined" && chrome?.runtime?.getURL
-        ? chrome.runtime.getURL("dict/neologd-phrases.json.gz")
-        : "");
-    if (!dictUrl) {
-      throw new Error("neologd phrases URL missing");
-    }
-
-    const response = await fetch(dictUrl);
-    if (!response.ok) {
-      throw new Error(`neologd phrases fetch failed: ${response.status}`);
-    }
-
-    if (typeof DecompressionStream !== "function") {
-      throw new Error("DecompressionStream is not available");
-    }
-
-    const stream = response.body.pipeThrough(new DecompressionStream("gzip"));
-    const jsonText = await new Response(stream).text();
-    return installParsedPhrases(JSON.parse(jsonText));
+    const parsed = await fetchGzipJsonDict("neologd-phrases.json.gz", {
+      url,
+      label: "neologd phrases"
+    });
+    return installParsedPhrases(parsed);
   })();
 
   try {

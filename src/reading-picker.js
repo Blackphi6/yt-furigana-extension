@@ -25,6 +25,20 @@ import {
 } from "./occurrence-overrides.js";
 
 const POPUP_ID = "yt-furigana-reading-picker";
+export const CONTRIB_CONSENT_ID = "yt-furigana-contrib-consent";
+const CONTRIB_TOAST_ID = "yt-furigana-contrib-toast";
+
+/**
+ * 候補ポップアップ／同意ダイアログ上の操作か。
+ * 字幕ヒット判定（座標掘り）に回すと「送る」がルビクリックになる。
+ * @param {EventTarget | null | undefined} target
+ */
+export function isFuriganaOverlayEventTarget(target) {
+  if (!target || typeof target.closest !== "function") return false;
+  return Boolean(
+    target.closest(`#${POPUP_ID}, #${CONTRIB_CONSENT_ID}, #${CONTRIB_TOAST_ID}`)
+  );
+}
 
 function escapeAttr(value) {
   return String(value)
@@ -109,7 +123,7 @@ export async function openReadingPicker(wordEl, options = {}) {
     // Super Chat 拡張は data-ytscf-original に原文を残す
     wordEl.closest("[data-ytscf-original]")?.getAttribute("data-ytscf-original") ||
     wordEl.closest(
-      ".ytp-caption-segment, .caption-visual-line, .segment-text, .vjs-text-track-cue-line, yt-live-chat-paid-message-renderer #message, yt-live-chat-ticker-paid-message-item-renderer #message"
+      ".ytp-caption-segment, .caption-visual-line, .segment-text, .vjs-text-track-cue-line, yt-live-chat-paid-message-renderer #message, yt-live-chat-ticker-paid-message-item-renderer #message, yt-live-chat-text-message-renderer #message, span[class*=BubblesComment__ContentSpan]"
     )?.textContent ||
     "";
 
@@ -482,11 +496,12 @@ async function submitContributionVote(surface, reading, contextText) {
  * @param {string} contextText
  */
 function askContributionConsent(surface, reading, contextText) {
-  const existing = document.getElementById("yt-furigana-contrib-consent");
+  closeReadingPicker();
+  const existing = document.getElementById(CONTRIB_CONSENT_ID);
   if (existing) existing.remove();
 
   const dialog = document.createElement("div");
-  dialog.id = "yt-furigana-contrib-consent";
+  dialog.id = CONTRIB_CONSENT_ID;
   dialog.className = "yt-furigana-contrib-consent";
   dialog.setAttribute("role", "dialog");
   dialog.setAttribute("aria-modal", "true");
@@ -534,22 +549,28 @@ function askContributionConsent(surface, reading, contextText) {
     }
   };
 
+  const swallow = (event) => {
+    event.stopPropagation();
+    event.stopImmediatePropagation?.();
+  };
+  dialog.addEventListener("pointerdown", swallow, true);
+  dialog.addEventListener("pointerup", swallow, true);
   dialog.addEventListener("click", (event) => {
+    swallow(event);
     const target = /** @type {HTMLElement} */ (event.target);
     const action = target.closest("[data-action]")?.getAttribute("data-action");
-    if (action === "yes") finish(true);
-    if (action === "no") finish(false);
-  });
+    if (action === "yes") void finish(true);
+    if (action === "no") void finish(false);
+  }, true);
 }
 
 /**
  * @param {string} message
  */
 function showContributionToast(message) {
-  const id = "yt-furigana-contrib-toast";
-  document.getElementById(id)?.remove();
+  document.getElementById(CONTRIB_TOAST_ID)?.remove();
   const toast = document.createElement("div");
-  toast.id = id;
+  toast.id = CONTRIB_TOAST_ID;
   toast.className = "yt-furigana-contrib-toast";
   toast.setAttribute("role", "status");
   toast.textContent = message;
@@ -613,7 +634,7 @@ export function getFuriganaWordHitRect(word) {
   /** @type {DOMRect[]} */
   const rects = [word.getBoundingClientRect()];
   if (typeof word.querySelectorAll === "function") {
-    for (const rt of word.querySelectorAll("rt")) {
+    for (const rt of word.querySelectorAll("rt, .ytf-tver-rt")) {
       if (typeof rt.getBoundingClientRect === "function") {
         rects.push(rt.getBoundingClientRect());
       }
@@ -632,6 +653,23 @@ export function getFuriganaWordHitRect(word) {
     bottom = Math.max(bottom, rect.bottom);
   }
   if (!Number.isFinite(left)) return null;
+
+  // かな接尾辞は字形が細いので、TVer 操作レイヤー越えの座標ヒット用に下限を取る
+  const isKanaWord =
+    typeof word.classList?.contains === "function" &&
+    word.classList.contains("yt-furigana-word--kana");
+  const minW = isKanaWord ? 14 : 0;
+  const minH = isKanaWord ? 22 : 0;
+  if (right - left < minW) {
+    const cx = (left + right) / 2;
+    left = cx - minW / 2;
+    right = cx + minW / 2;
+  }
+  if (bottom - top < minH) {
+    const cy = (top + bottom) / 2;
+    top = cy - minH / 2;
+    bottom = cy + minH / 2;
+  }
 
   return {
     left: left - pad,
@@ -700,24 +738,149 @@ function resolveActivatedWord(event, root) {
   const direct = event.target?.closest?.(".yt-furigana-word");
   if (direct instanceof HTMLElement && root.contains(direct)) return direct;
 
-  const fromRt = event.target?.closest?.("rt")?.closest?.(".yt-furigana-word");
+  const fromRt = event.target
+    ?.closest?.("rt, .ytf-tver-rt")
+    ?.closest?.(".yt-furigana-word");
   if (fromRt instanceof HTMLElement && root.contains(fromRt)) return fromRt;
 
-  const atPoint = findFuriganaWordAtPoint(event.clientX, event.clientY, root);
-  if (atPoint) return atPoint;
+  return resolveFuriganaWordUnderPoint(event.clientX, event.clientY, root);
+}
 
-  // 操作レイヤーが最前面でも、下の字幕語を掘り出す
-  if (typeof document !== "undefined" && typeof document.elementsFromPoint === "function") {
+/**
+ * 指定座標のふりがな語。TVer のように操作レイヤーが被る場合も掘る。
+ * @param {number} clientX
+ * @param {number} clientY
+ * @param {ParentNode | Element} scope
+ * @returns {HTMLElement | null}
+ */
+export function resolveFuriganaWordUnderPoint(clientX, clientY, scope) {
+  if (!scope || !Number.isFinite(clientX) || !Number.isFinite(clientY)) {
+    return null;
+  }
+  const contains = (el) => {
+    if (!(el instanceof HTMLElement)) return false;
+    if (
+      typeof document !== "undefined" &&
+      (scope === document || scope === document.documentElement)
+    ) {
+      return true;
+    }
+    return typeof scope.contains === "function" ? scope.contains(el) : true;
+  };
+
+  if (typeof document !== "undefined" && typeof document.elementFromPoint === "function") {
     try {
-      for (const el of document.elementsFromPoint(event.clientX, event.clientY)) {
+      const top = document.elementFromPoint(clientX, clientY);
+      const direct = top?.closest?.(".yt-furigana-word");
+      if (contains(direct)) return /** @type {HTMLElement} */ (direct);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const atPoint = findFuriganaWordAtPoint(clientX, clientY, scope);
+  if (contains(atPoint)) return atPoint;
+
+  if (
+    typeof document !== "undefined" &&
+    typeof document.elementsFromPoint === "function"
+  ) {
+    try {
+      for (const el of document.elementsFromPoint(clientX, clientY)) {
         const word = el?.closest?.(".yt-furigana-word");
-        if (word instanceof HTMLElement && root.contains(word)) return word;
+        if (contains(word)) return /** @type {HTMLElement} */ (word);
       }
     } catch {
       /* ignore */
     }
   }
   return null;
+}
+
+const CAPTION_DRAG_HOST_SELECTOR =
+  ".vjs-text-track-cue-line, .ytp-caption-segment, .caption-visual-line, .segment-text, yt-live-chat-paid-message-renderer #message, yt-live-chat-ticker-paid-message-item-renderer #message, yt-live-chat-text-message-renderer #message, span[class*=BubblesComment__ContentSpan]";
+
+/**
+ * ドラッグ範囲のホスト。TVer は行内が複数 span に割れるので、
+ * data-yt-furigana-original（各 span）より cue-line を優先する。
+ * @param {Element} wordEl
+ * @returns {Element | null}
+ */
+export function resolveCaptionDragHost(wordEl) {
+  if (!wordEl || typeof wordEl.closest !== "function") return null;
+  return (
+    wordEl.closest(CAPTION_DRAG_HOST_SELECTOR) ||
+    wordEl.closest("[data-yt-furigana-original], [data-ytscf-original]") ||
+    wordEl.parentElement
+  );
+}
+
+/**
+ * ホスト内の語を DOM 順で集め、複数 original span の文字位置を連結オフセットに揃える。
+ * TVer は行が色分け span に割れ、data-token-index が span ごとに 0 から振り直される。
+ * @param {Element} host
+ * @returns {{ words: HTMLElement[], tokens: { surface: string, span: number[] }[], contextText: string }}
+ */
+export function collectDragWordsInHost(host) {
+  if (!host || typeof host.querySelectorAll !== "function") {
+    return { words: [], tokens: [], contextText: "" };
+  }
+
+  const originalUnits = [
+    ...host.querySelectorAll("[data-yt-furigana-original], [data-ytscf-original]")
+  ];
+
+  /** @type {HTMLElement[]} */
+  const words = [];
+  /** @type {{ surface: string, span: number[] }[]} */
+  const tokens = [];
+  let contextText = "";
+  let offset = 0;
+
+  const pushWord = (word, baseOffset) => {
+    if (!word || typeof word.getAttribute !== "function") return;
+    const surface = word.getAttribute("data-surface") || "";
+    const s = Number.parseInt(word.getAttribute("data-span-start") || "", 10);
+    const e = Number.parseInt(word.getAttribute("data-span-end") || "", 10);
+    words.push(/** @type {HTMLElement} */ (word));
+    tokens.push({
+      surface,
+      span: [
+        Number.isFinite(s) ? s + baseOffset : NaN,
+        Number.isFinite(e) ? e + baseOffset : NaN
+      ]
+    });
+  };
+
+  if (originalUnits.length > 0) {
+    for (const unit of originalUnits) {
+      const orig =
+        unit.getAttribute("data-yt-furigana-original") ||
+        unit.getAttribute("data-ytscf-original") ||
+        "";
+      for (const word of unit.querySelectorAll(".yt-furigana-word")) {
+        const owner =
+          word.closest?.("[data-yt-furigana-original], [data-ytscf-original]") ||
+          unit;
+        if (owner !== unit) continue;
+        pushWord(word, offset);
+      }
+      contextText += orig;
+      offset += orig.length;
+    }
+  } else {
+    const orig =
+      (host instanceof HTMLElement &&
+        (host.getAttribute("data-yt-furigana-original") ||
+          host.getAttribute("data-ytscf-original"))) ||
+      "";
+    contextText = orig;
+    for (const word of host.querySelectorAll(".yt-furigana-word")) {
+      pushWord(word, 0);
+    }
+  }
+
+  return { words, tokens, contextText };
 }
 
 const SPAN_DRAG_THRESHOLD_PX = 6;
@@ -727,40 +890,37 @@ function clearSpanSelecting(root) {
     ?.querySelectorAll?.(".yt-furigana-word.is-span-selecting")
     ?.forEach((el) => el.classList.remove("is-span-selecting"));
   root
-    ?.querySelectorAll?.(".yt-furigana-word")
-    ?.forEach((el) => {
-      const host = el.closest?.(
-        ".ytp-caption-segment, .caption-visual-line, .segment-text, .vjs-text-track-cue-line, yt-live-chat-paid-message-renderer #message, yt-live-chat-ticker-paid-message-item-renderer #message, [data-yt-furigana-original], [data-ytscf-original]"
-      );
-      host?.classList.remove("yt-furigana-span-dragging");
-    });
+    ?.querySelectorAll?.(".yt-furigana-span-dragging")
+    ?.forEach((el) => el.classList.remove("yt-furigana-span-dragging"));
 }
 
 /**
  * @param {ParentNode} root
  * @param {number} i0
  * @param {number} i1
- * @param {Element} host
+ * @param {HTMLElement[]} words
+ * @param {Element | null} host
  */
-function highlightSpanRange(root, i0, i1, host) {
+function highlightSpanRange(root, i0, i1, words, host) {
   clearSpanSelecting(root);
-  host?.classList.add("yt-furigana-span-dragging");
+  host?.classList?.add("yt-furigana-span-dragging");
   const lo = Math.min(i0, i1);
   const hi = Math.max(i0, i1);
-  const scope = host || root;
-  scope.querySelectorAll?.(".yt-furigana-word")?.forEach((el) => {
-    const idx = Number.parseInt(el.getAttribute("data-token-index") || "", 10);
-    if (idx >= lo && idx <= hi) el.classList.add("is-span-selecting");
-  });
+  for (let i = lo; i <= hi; i += 1) {
+    words[i]?.classList?.add("is-span-selecting");
+  }
 }
 
 function resolveContextTextFromWord(wordEl) {
+  const host = resolveCaptionDragHost(wordEl);
+  if (host) {
+    const { contextText } = collectDragWordsInHost(host);
+    if (contextText) return contextText;
+  }
   return (
     wordEl.closest("[data-yt-furigana-original]")?.getAttribute("data-yt-furigana-original") ||
     wordEl.closest("[data-ytscf-original]")?.getAttribute("data-ytscf-original") ||
-    wordEl.closest(
-      ".ytp-caption-segment, .caption-visual-line, .segment-text, .vjs-text-track-cue-line, yt-live-chat-paid-message-renderer #message, yt-live-chat-ticker-paid-message-item-renderer #message"
-    )?.textContent ||
+    wordEl.closest(CAPTION_DRAG_HOST_SELECTOR)?.textContent ||
     ""
   );
 }
@@ -771,11 +931,14 @@ function resolveContextTextFromWord(wordEl) {
  */
 export function installReadingPicker(root = document) {
   let openedAt = 0;
-  /** @type {{ pointerId: number, startX: number, startY: number, startIndex: number, endIndex: number, moved: boolean, startEl: HTMLElement, host: Element | null } | null} */
+  /** @type {{ pointerId: number, startX: number, startY: number, startIndex: number, endIndex: number, moved: boolean, startEl: HTMLElement, host: Element | null, words: HTMLElement[], tokens: { surface: string, span: number[] }[], contextText: string } | null} */
   let dragState = null;
 
+  const eventRoot =
+    typeof window !== "undefined" ? window : root;
+
   const onPointerDown = (event) => {
-    if (event.target.closest?.(`#${POPUP_ID}`)) return;
+    if (isFuriganaOverlayEventTarget(event.target)) return;
     if (typeof event.button === "number" && event.button !== 0) return;
 
     const wordEl = resolveActivatedWord(event, root);
@@ -783,39 +946,66 @@ export function installReadingPicker(root = document) {
       if (Date.now() - openedAt > 400) closeReadingPicker();
       return;
     }
-    const idx = Number.parseInt(wordEl.getAttribute("data-token-index") || "", 10);
-    if (!Number.isFinite(idx)) {
-      // span 無し（旧HTML）は従来どおり即ピッカー
+
+    const host = resolveCaptionDragHost(wordEl);
+    const collected = host
+      ? collectDragWordsInHost(host)
+      : {
+          words: [wordEl],
+          tokens: [
+            {
+              surface: wordEl.getAttribute("data-surface") || "",
+              span: [
+                Number.parseInt(wordEl.getAttribute("data-span-start") || "", 10),
+                Number.parseInt(wordEl.getAttribute("data-span-end") || "", 10)
+              ]
+            }
+          ],
+          contextText: resolveContextTextFromWord(wordEl)
+        };
+    const startIndex = collected.words.indexOf(wordEl);
+    const startSurface = wordEl.getAttribute("data-surface") || "";
+
+    // 行内に複数語あるときは DOM 順でドラッグ（かな接尾辞も端点可）
+    if (startIndex < 0) {
+      if (Date.now() - openedAt > 400) closeReadingPicker();
+      return;
+    }
+    if (collected.words.length < 2) {
+      // かな単独クリックは登録対象外（「さん」だけ開かない）
+      if (!isRegisterableSurface(startSurface)) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation?.();
+        return;
+      }
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation?.();
       const now = Date.now();
       if (now - openedAt < 400) return;
       openedAt = now;
-      void openReadingPicker(wordEl);
+      void openReadingPicker(wordEl, {
+        contextText: collected.contextText || resolveContextTextFromWord(wordEl)
+      });
       return;
     }
-
-    const host =
-      wordEl.closest(
-        "[data-yt-furigana-original], [data-ytscf-original], .ytp-caption-segment, .caption-visual-line, .segment-text, .vjs-text-track-cue-line, yt-live-chat-paid-message-renderer #message, yt-live-chat-ticker-paid-message-item-renderer #message"
-      ) || wordEl.parentElement;
 
     dragState = {
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
-      startIndex: idx,
-      endIndex: idx,
+      startIndex,
+      endIndex: startIndex,
       moved: false,
       startEl: wordEl,
       host,
+      words: collected.words,
+      tokens: collected.tokens,
+      contextText: collected.contextText
     };
-    try {
-      wordEl.setPointerCapture(event.pointerId);
-    } catch {
-      /* ignore */
-    }
+    // 語ノードへの capture は TVer（親が pointer-events:none）で即失効しやすい。
+    // window キャプチャ購読だけで追う。
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation?.();
@@ -826,24 +1016,39 @@ export function installReadingPicker(root = document) {
     const dx = event.clientX - dragState.startX;
     const dy = event.clientY - dragState.startY;
     if (Math.hypot(dx, dy) >= SPAN_DRAG_THRESHOLD_PX) dragState.moved = true;
-    const under = document
-      .elementFromPoint(event.clientX, event.clientY)
-      ?.closest?.(".yt-furigana-word");
-    const scope = dragState.host || root;
-    if (under && scope.contains(under)) {
-      const idx = Number.parseInt(under.getAttribute("data-token-index") || "", 10);
-      if (Number.isFinite(idx) && idx !== dragState.endIndex) {
+
+    // ヒットは document 全体（操作レイヤー越え）。採用はホスト内の語だけ。
+    const under = resolveFuriganaWordUnderPoint(
+      event.clientX,
+      event.clientY,
+      root
+    );
+    if (under) {
+      const idx = dragState.words.indexOf(under);
+      if (idx >= 0 && idx !== dragState.endIndex) {
         dragState.endIndex = idx;
         dragState.moved = true;
       }
     }
     if (dragState.moved) {
-      highlightSpanRange(root, dragState.startIndex, dragState.endIndex, dragState.host);
+      event.preventDefault();
+      highlightSpanRange(
+        root,
+        dragState.startIndex,
+        dragState.endIndex,
+        dragState.words,
+        dragState.host
+      );
     }
   };
 
   const finishDrag = (event) => {
     if (!dragState || event.pointerId !== dragState.pointerId) return;
+    if (isFuriganaOverlayEventTarget(event.target)) {
+      dragState = null;
+      clearSpanSelecting(root);
+      return;
+    }
     const state = dragState;
     dragState = null;
     clearSpanSelecting(root);
@@ -852,16 +1057,9 @@ export function installReadingPicker(root = document) {
     if (now - openedAt < 400 && !state.moved) return;
     openedAt = now;
 
-    const contextText = resolveContextTextFromWord(state.startEl);
-    const scope = state.host || root;
-    const words = [...(scope.querySelectorAll?.(".yt-furigana-word") || [])];
-    const tokens = words.map((el) => ({
-      surface: el.getAttribute("data-surface") || "",
-      span: [
-        Number.parseInt(el.getAttribute("data-span-start") || "", 10),
-        Number.parseInt(el.getAttribute("data-span-end") || "", 10),
-      ],
-    }));
+    const contextText =
+      state.contextText || resolveContextTextFromWord(state.startEl);
+    const { words, tokens } = state;
 
     if (state.moved && state.startIndex !== state.endIndex) {
       const merged = spanFromTokenRange(
@@ -870,52 +1068,61 @@ export function installReadingPicker(root = document) {
         state.startIndex,
         state.endIndex
       );
-      if (merged && isRegisterableSurface(merged.surface)) {
-        const lo = Math.min(state.startIndex, state.endIndex);
-        const hi = Math.max(state.startIndex, state.endIndex);
-        const selectedEls = words.filter((el) => {
-          const i = Number.parseInt(el.getAttribute("data-token-index") || "", 10);
-          return i >= lo && i <= hi;
-        });
+      // span が欠けていても表層連結でまとめ登録できるようにする
+      const lo = Math.min(state.startIndex, state.endIndex);
+      const hi = Math.max(state.startIndex, state.endIndex);
+      const selectedEls = words.slice(lo, hi + 1);
+      const fallbackSurface = selectedEls
+        .map((el) => el.getAttribute("data-surface") || "")
+        .join("");
+      const surface = merged?.surface || fallbackSurface;
+      if (surface && isRegisterableSurface(surface)) {
         void openReadingPicker(state.startEl, {
-          surface: merged.surface,
+          surface,
           currentReading: "",
-          span: [merged.start, merged.end],
+          span: merged ? [merged.start, merged.end] : null,
           merged: true,
           selectedEls,
-          contextText,
+          contextText
         });
         return;
       }
     }
 
-    const word =
-      words.find(
-        (el) =>
-          Number.parseInt(el.getAttribute("data-token-index") || "", 10) ===
-          state.startIndex
-      ) || state.startEl;
+    const word = words[state.startIndex] || state.startEl;
     void openReadingPicker(word, { contextText });
   };
 
   const onClickBlock = (event) => {
     // pointer 経路で処理済み。合成 click で二重起動しない
+    // TVer は target が操作レイヤーなので座標でも語を見て止める
+    if (isFuriganaOverlayEventTarget(event.target)) return;
     if (event.target.closest?.(".yt-furigana-word")) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation?.();
+      return;
+    }
+    if (
+      resolveFuriganaWordUnderPoint(event.clientX, event.clientY, root)
+    ) {
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation?.();
     }
   };
 
-  root.addEventListener("pointerdown", onPointerDown, true);
-  root.addEventListener("pointermove", onPointerMove, true);
-  root.addEventListener("pointerup", finishDrag, true);
-  root.addEventListener("pointercancel", (event) => {
+  const onPointerCancel = (event) => {
     if (!dragState || event.pointerId !== dragState.pointerId) return;
     dragState = null;
     clearSpanSelecting(root);
-  }, true);
-  root.addEventListener("click", onClickBlock, true);
+  };
+
+  eventRoot.addEventListener("pointerdown", onPointerDown, true);
+  eventRoot.addEventListener("pointermove", onPointerMove, true);
+  eventRoot.addEventListener("pointerup", finishDrag, true);
+  eventRoot.addEventListener("pointercancel", onPointerCancel, true);
+  eventRoot.addEventListener("click", onClickBlock, true);
   root.addEventListener(
     "keydown",
     (event) => {
@@ -923,7 +1130,7 @@ export function installReadingPicker(root = document) {
         closeReadingPicker();
         return;
       }
-      if (event.target.closest?.(`#${POPUP_ID}`)) return;
+      if (isFuriganaOverlayEventTarget(event.target)) return;
       if (event.key !== "Enter" && event.key !== " ") return;
       const wordEl = event.target.closest?.(".yt-furigana-word");
       if (!wordEl) return;
@@ -942,12 +1149,81 @@ export function installReadingPicker(root = document) {
 const HOVER_CLASS = "yt-furigana-word--hover";
 const FLOATING_TIP_ID = "yt-furigana-floating-tip";
 
+/**
+ * 数字チップを既存ルビ帯の上に出すための top/left。
+ * 隣接 rt の上端が分かるときは、そのさらに上へ押し上げる。
+ * @param {{
+ *   wordTop: number,
+ *   wordLeft: number,
+ *   wordWidth: number,
+ *   tipHeight: number,
+ *   tipWidth: number,
+ *   baseFontPx?: number,
+ *   nearbyFuriganaTop?: number | null,
+ *   viewportWidth?: number,
+ *   viewportMin?: number
+ * }} input
+ */
+export function computeFloatingTipPlacement({
+  wordTop,
+  wordLeft,
+  wordWidth,
+  tipHeight,
+  tipWidth,
+  baseFontPx = 16,
+  nearbyFuriganaTop = null,
+  viewportWidth = 1024,
+  viewportMin = 8
+}) {
+  const tipH = Math.max(1, Number(tipHeight) || 1);
+  const tipW = Math.max(1, Number(tipWidth) || 1);
+  // 既存ふりがな帯（約 0.55em）＋すき間。チップをルビ行の上へ
+  const furiganaBand = Math.max(12, Number(baseFontPx) || 16) * 0.7 + 8;
+  let top = Number(wordTop) - tipH - furiganaBand;
+  if (nearbyFuriganaTop != null && Number.isFinite(nearbyFuriganaTop)) {
+    top = Math.min(top, nearbyFuriganaTop - tipH - 6);
+  }
+  top = Math.max(viewportMin, top);
+  const left = Math.min(
+    Math.max(viewportMin, Number(wordLeft) + Number(wordWidth) / 2 - tipW / 2),
+    Number(viewportWidth) - tipW - viewportMin
+  );
+  return { left, top };
+}
+
+/**
+ * 同じ字幕行付近の rt 上端（いちばん高いもの）。無ければ null。
+ * @param {HTMLElement} wordEl
+ * @returns {number | null}
+ */
+function findNearbyFuriganaTop(wordEl) {
+  const host =
+    wordEl.closest?.(
+      "[data-yt-furigana-styled], .ytp-caption-segment, .caption-visual-line, .vjs-text-track-cue-line, .yt-furigana-one-line"
+    ) || wordEl.parentElement;
+  if (!host?.querySelectorAll) return null;
+  const wordRect = wordEl.getBoundingClientRect();
+  let minTop = null;
+  for (const rt of host.querySelectorAll("rt, .ytf-tver-rt")) {
+    if (!(rt instanceof HTMLElement)) continue;
+    const r = rt.getBoundingClientRect();
+    if (!(r.width > 0) || !(r.height > 0)) continue;
+    // 横に近接（数字の左右の漢字ルビ）
+    if (r.right < wordRect.left - 48 || r.left > wordRect.right + 48) continue;
+    // 縦も同帯（大きく下は別行）
+    if (r.top > wordRect.bottom + 8) continue;
+    if (minTop == null || r.top < minTop) minTop = r.top;
+  }
+  return minTop;
+}
+
 function removeFloatingTip() {
   document.getElementById(FLOATING_TIP_ID)?.remove();
 }
 
 /**
  * 数字チップなど、親の overflow で ::after が切れうる環境向けに fixed で出す。
+ * 既存ふりがなの上に重ねないよう、ルビ帯よりさらに上へ置く。
  * @param {HTMLElement} wordEl
  */
 function showFloatingTip(wordEl) {
@@ -981,11 +1257,17 @@ function showFloatingTip(wordEl) {
   const tipRect = el.getBoundingClientRect();
   const width = tipRect.width || el.offsetWidth || 40;
   const height = tipRect.height || 24;
-  const left = Math.min(
-    Math.max(8, rect.left + rect.width / 2 - width / 2),
-    window.innerWidth - width - 8
-  );
-  const top = Math.max(8, rect.top - height - 8);
+  const { left, top } = computeFloatingTipPlacement({
+    wordTop: rect.top,
+    wordLeft: rect.left,
+    wordWidth: rect.width,
+    tipHeight: height,
+    tipWidth: width,
+    baseFontPx: basePx,
+    nearbyFuriganaTop: findNearbyFuriganaTop(wordEl),
+    viewportWidth: window.innerWidth,
+    viewportMin: 8
+  });
   el.style.left = `${left}px`;
   el.style.top = `${top}px`;
 }

@@ -4,6 +4,7 @@
  */
 
 import { normalizeReading } from "./reading-normalize.js";
+import { fetchGzipJsonDict } from "./dict-gzip-fetch.js";
 
 /** @type {Record<string, { default: string, readings: string[] }>} */
 let kanjiReadings = {};
@@ -44,24 +45,11 @@ export function installKanjiReadingsForTests(dict) {
 export async function loadKanjiReadings(url) {
   if (loadPromise) return loadPromise;
   loadPromise = (async () => {
-    const dictUrl =
-      url ||
-      (typeof chrome !== "undefined" && chrome?.runtime?.getURL
-        ? chrome.runtime.getURL("dict/kanji-readings.json.gz")
-        : "");
-    if (!dictUrl) throw new Error("kanji-readings URL missing");
-
-    const response = await fetch(dictUrl);
-    if (!response.ok) {
-      throw new Error(`kanji-readings fetch failed: ${response.status}`);
-    }
-    if (typeof DecompressionStream !== "function") {
-      throw new Error("DecompressionStream is not available");
-    }
-    const stream = response.body.pipeThrough(new DecompressionStream("gzip"));
-    const jsonText = await new Response(stream).text();
-    const parsed = JSON.parse(jsonText);
-    installKanjiReadingsForTests(parsed && typeof parsed === "object" ? parsed : {});
+    const parsed = await fetchGzipJsonDict("kanji-readings.json.gz", {
+      url,
+      label: "kanji-readings"
+    });
+    installKanjiReadingsForTests(parsed);
     return kanjiReadings;
   })();
 

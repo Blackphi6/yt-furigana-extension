@@ -1,5 +1,6 @@
 import { normalizeReading } from "./reading-normalize.js";
 import { buildPhraseTrie, findLongestPhraseAt } from "./phrase-trie.js";
+import { fetchGzipJsonDict } from "./dict-gzip-fetch.js";
 
 /** @type {Record<string, string>} */
 let placeNamePhrases = {};
@@ -40,31 +41,11 @@ function installParsedPhrases(parsed) {
 export async function loadPlaceNamePhrases(url) {
   if (loadPromise) return loadPromise;
   loadPromise = (async () => {
-    const dictUrl =
-      url ||
-      (typeof chrome !== "undefined" && chrome?.runtime?.getURL
-        ? chrome.runtime.getURL("dict/place-name-phrases.json.gz")
-        : "");
-    if (!dictUrl) {
-      throw new Error("place-name phrases URL missing");
-    }
-
-    const response = await fetch(dictUrl);
-    if (!response.ok) {
-      throw new Error(`place-name phrases fetch failed: ${response.status}`);
-    }
-
-    let jsonText = "";
-    if (dictUrl.endsWith(".gz")) {
-      if (typeof DecompressionStream !== "function") {
-        throw new Error("DecompressionStream is not available");
-      }
-      const stream = response.body.pipeThrough(new DecompressionStream("gzip"));
-      jsonText = await new Response(stream).text();
-    } else {
-      jsonText = await response.text();
-    }
-    return installParsedPhrases(JSON.parse(jsonText));
+    const parsed = await fetchGzipJsonDict("place-name-phrases.json.gz", {
+      url,
+      label: "place-name phrases"
+    });
+    return installParsedPhrases(parsed);
   })();
 
   try {

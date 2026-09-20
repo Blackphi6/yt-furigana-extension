@@ -5,6 +5,46 @@ html.ytscf-hide-text-messages yt-live-chat-text-message-renderer {
   display: none !important;
 }
 
+/*
+ * スパチャ本文・金額・投稿者名は黒で統一。
+ * YouTube 既定の白文字は明るい帯（黄・緑・水色）で潰れて読みにくい。
+ */
+yt-live-chat-paid-message-renderer #message,
+yt-live-chat-paid-message-renderer #author-name,
+yt-live-chat-paid-message-renderer #author-name *,
+yt-live-chat-paid-message-renderer #purchase-amount,
+yt-live-chat-paid-message-renderer #purchase-amount-column,
+yt-live-chat-paid-message-renderer #header-content,
+yt-live-chat-paid-message-renderer #header-content *,
+yt-live-chat-paid-message-renderer #content,
+yt-live-chat-paid-message-renderer #content #message,
+yt-live-chat-ticker-paid-message-item-renderer #message,
+yt-live-chat-ticker-paid-message-item-renderer #author-name,
+yt-live-chat-ticker-paid-message-item-renderer #purchase-amount {
+  color: #111 !important;
+}
+
+yt-live-chat-paid-message-renderer #message .yt-furigana-word,
+yt-live-chat-paid-message-renderer #message .yt-furigana-word rt,
+yt-live-chat-ticker-paid-message-item-renderer #message .yt-furigana-word,
+yt-live-chat-ticker-paid-message-item-renderer #message .yt-furigana-word rt {
+  color: #111 !important;
+}
+
+yt-live-chat-paid-message-renderer #message .yt-furigana-word--unset,
+yt-live-chat-ticker-paid-message-item-renderer #message .yt-furigana-word--unset {
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.45);
+}
+
+yt-live-chat-paid-message-renderer #message .yt-furigana-word:hover,
+yt-live-chat-paid-message-renderer #message .yt-furigana-word:focus-visible,
+yt-live-chat-paid-message-renderer #message .yt-furigana-word--hover,
+yt-live-chat-ticker-paid-message-item-renderer #message .yt-furigana-word:hover,
+yt-live-chat-ticker-paid-message-item-renderer #message .yt-furigana-word:focus-visible,
+yt-live-chat-ticker-paid-message-item-renderer #message .yt-furigana-word--hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
 yt-live-chat-paid-message-renderer #message.ytscf-done,
 yt-live-chat-ticker-paid-message-item-renderer #message.ytscf-done,
 yt-live-chat-paid-message-renderer #message[data-ytscf-done],
@@ -206,3 +246,563 @@ span[class*=BubblesComment__ContentSpan] rt {
   line-height: 1.4;
   opacity: 0.55;
 }
+
+/* ===== 累積スパチャパネル（視聴ページ） ===== */
+.ytscf-ledger-panel {
+  position: fixed;
+  right: 12px;
+  bottom: 72px;
+  z-index: 2147483645;
+  width: min(360px, calc(100vw - 24px));
+  max-height: min(70vh, 640px);
+  display: flex;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans",
+    "Noto Sans JP", sans-serif;
+  color: #f3f3f3;
+  background: rgba(18, 18, 18, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.ytscf-ledger-panel[hidden] {
+  display: none !important;
+}
+
+.ytscf-ledger-panel.is-moved {
+  right: auto;
+  bottom: auto;
+}
+
+.ytscf-ledger-panel.is-dragging {
+  user-select: none;
+}
+
+.ytscf-ledger-panel__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.ytscf-ledger-panel.is-dragging .ytscf-ledger-panel__bar {
+  cursor: grabbing;
+}
+
+.ytscf-ledger-panel__toggle {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  /* バー全体がドラッグハンドル。クリックは閾値未満のときだけ折りたたみ */
+  cursor: grab;
+  padding: 0;
+  flex: 1;
+  text-align: left;
+  touch-action: none;
+}
+
+.ytscf-ledger-panel.is-dragging .ytscf-ledger-panel__toggle {
+  cursor: grabbing;
+}
+
+.ytscf-ledger-panel__count {
+  font-size: 12px;
+  opacity: 0.75;
+  min-width: 1.5em;
+  text-align: right;
+}
+
+.ytscf-ledger-panel__close {
+  appearance: none;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  margin: -4px -2px -4px 0;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.75;
+  touch-action: manipulation;
+}
+
+.ytscf-ledger-panel__close:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.ytscf-ledger-panel__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 10px 10px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.ytscf-ledger-panel.is-collapsed .ytscf-ledger-panel__body {
+  display: none;
+}
+
+.ytscf-ledger-panel__hint {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  opacity: 0.7;
+}
+
+.ytscf-ledger-panel__search {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.ytscf-ledger-panel__search input[type="search"] {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 12px;
+}
+
+.ytscf-ledger-panel__search select {
+  flex: 0 0 auto;
+  max-width: 7.5em;
+  padding: 5px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(20, 24, 36, 0.95);
+  color: #fff;
+  font-size: 11px;
+}
+
+.ytscf-ledger-panel__amount-range input[type="number"] {
+  width: 5.2em;
+}
+
+.ytscf-ledger-panel__actions,
+.ytscf-ledger-panel__range,
+.ytscf-ledger-panel__select-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.ytscf-ledger-panel__check-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  opacity: 0.9;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ytscf-ledger-panel__check {
+  margin: 0;
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+
+.ytscf-ledger-panel__range label {
+  font-size: 11px;
+  opacity: 0.85;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ytscf-ledger-panel__range input {
+  width: 4.5em;
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 12px;
+}
+
+.ytscf-ledger-panel__btn {
+  appearance: none;
+  border: 0;
+  border-radius: 7px;
+  background: #3b82f6;
+  color: #0b1220;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 8px;
+  cursor: pointer;
+}
+
+.ytscf-ledger-panel__btn.ghost {
+  background: rgba(255, 255, 255, 0.12);
+  color: #f3f3f3;
+}
+
+.ytscf-ledger-panel__status {
+  margin: 0;
+  min-height: 1.2em;
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.ytscf-ledger-panel__progress {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.ytscf-ledger-panel__progress[hidden] {
+  display: none;
+}
+
+.ytscf-ledger-panel__progress progress {
+  width: 100%;
+  height: 8px;
+  border: 0;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ytscf-ledger-panel__progress progress::-webkit-progress-bar {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+
+.ytscf-ledger-panel__progress progress::-webkit-progress-value {
+  background: #3b82f6;
+  border-radius: 999px;
+}
+
+.ytscf-ledger-panel__progress span {
+  font-size: 10px;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
+.ytscf-ledger-panel__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  max-height: 42vh;
+  display: grid;
+  gap: 6px;
+}
+
+.ytscf-ledger-panel__empty {
+  font-size: 12px;
+  opacity: 0.65;
+  padding: 6px 2px;
+}
+
+.ytscf-ledger-panel__item {
+  margin: 0;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ytscf-ledger-panel__item.is-read {
+  opacity: 0.72;
+}
+
+.ytscf-ledger-panel__read {
+  appearance: none;
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.45);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.ytscf-ledger-panel__read:hover {
+  border-color: rgba(34, 197, 94, 0.65);
+  color: rgba(34, 197, 94, 0.9);
+}
+
+.ytscf-ledger-panel__read.is-read {
+  border-color: #22c55e;
+  background: #22c55e;
+  color: #fff;
+}
+
+.ytscf-ledger-panel__read.is-read:hover {
+  background: #16a34a;
+  border-color: #16a34a;
+}
+
+.ytscf-ledger-panel__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  font-size: 11px;
+  margin-bottom: 3px;
+}
+
+.ytscf-ledger-panel__tc {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #93c5fd;
+  font: inherit;
+  font-weight: 700;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.ytscf-ledger-panel__tc.muted {
+  color: inherit;
+  opacity: 0.55;
+  text-decoration: none;
+  cursor: default;
+}
+
+.ytscf-ledger-panel__amount {
+  color: #fbbf24;
+}
+
+.ytscf-ledger-panel__author {
+  opacity: 0.9;
+}
+
+.ytscf-ledger-panel__minis {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.ytscf-ledger-panel__mini {
+  margin-left: 0;
+  appearance: none;
+  border: 0;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  cursor: pointer;
+}
+
+.ytscf-ledger-panel__msg {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.ytscf-sc-preview {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.72);
+  box-sizing: border-box;
+}
+
+.ytscf-sc-preview__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 28px 32px;
+  border-radius: 14px;
+  background: #0b1220;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+  color: #f3f3f3;
+}
+
+.ytscf-sc-preview__spinner {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.18);
+  border-top-color: #7dd3fc;
+  animation: ytscf-sc-spin 0.75s linear infinite;
+}
+
+.ytscf-sc-preview__loading-text {
+  margin: 0;
+  font: 600 13px/1.35 system-ui, sans-serif;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+@keyframes ytscf-sc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ytscf-sc-preview__spinner {
+    animation: none;
+    border-top-color: rgba(255, 255, 255, 0.55);
+  }
+}
+
+.ytscf-sc-preview__card {
+  width: min(1280px, 96vw);
+  max-height: 92vh;
+  overflow: auto;
+  border-radius: 12px;
+  background: #0b1220;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+}
+
+.ytscf-sc-preview__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  color: #f3f3f3;
+  font: 700 13px/1.2 system-ui, sans-serif;
+}
+
+.ytscf-sc-preview__close {
+  appearance: none;
+  border: 0;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.ytscf-sc-preview__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  vertical-align: top;
+  background: #111;
+}
+
+.ytscf-sc-preview__ytcard {
+  width: 100%;
+  overflow: hidden;
+  color: #111;
+  font-family: system-ui, "Hiragino Sans", "Noto Sans JP", sans-serif;
+}
+
+.ytscf-sc-preview__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px 12px;
+  min-height: 72px;
+  box-sizing: border-box;
+}
+
+.ytscf-sc-preview__avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.ytscf-sc-preview__avatar--ph {
+  display: inline-block;
+}
+
+.ytscf-sc-preview__author {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  font-size: 22px;
+  line-height: 1.7;
+  overflow: hidden;
+}
+
+.ytscf-sc-preview__amount {
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 28px;
+  white-space: nowrap;
+}
+
+.ytscf-sc-preview__body {
+  padding: 20px 28px 28px;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 1.7;
+  word-break: keep-all;
+  line-break: strict;
+  overflow-wrap: anywhere;
+}
+
+.ytscf-sc-preview__tc {
+  padding: 6px 20px;
+  background: rgba(0, 0, 0, 0.55);
+  color: rgba(255, 255, 255, 0.88);
+  text-align: right;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.ytscf-sc-preview__ytcard ruby {
+  ruby-position: over;
+  ruby-align: center;
+}
+
+.ytscf-sc-preview__ytcard rt {
+  font-size: 0.45em;
+  font-weight: 500;
+  line-height: 1.1;
+  color: inherit;
+  opacity: 0.92;
+}
+
+.ytscf-sc-preview__ytcard .yt-furigana-word {
+  pointer-events: none;
+  cursor: default;
+}
+

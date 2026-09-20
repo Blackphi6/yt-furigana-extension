@@ -28,15 +28,63 @@
         <input type="checkbox" id="hideTextMessages" />
       </label>
 
+      <label class="toggle" for="ledgerEnabled">
+        <span>累積パネル（視聴ページ右下）</span>
+        <input type="checkbox" id="ledgerEnabled" />
+      </label>
+      <p class="api-note">
+        オンで右下に「スパチャ累積」を出します。オフや × で非表示（台帳の蓄積も止まります）。ポップアップ下部の一覧も同じ設定です。
+      </p>
+
+      <label class="toggle" for="readingApiEnabled">
+        <span>読み API（高精度・任意）</span>
+        <input type="checkbox" id="readingApiEnabled" />
+      </label>
+      <p class="api-note">
+        オンにするとチャット本文を公開読み API（Render）へ送ります。既定は端末内 kuromoji のみ。初回はスリープ起床で遅れることがあります。
+      </p>
+
       <p class="status" id="status" role="status"></p>
+
+      <section class="ledger" aria-labelledby="ledger-title">
+        <div class="ledger-head">
+          <h2 id="ledger-title">スパチャ台帳</h2>
+          <span class="ledger-count" id="ledgerCount">0 件</span>
+          <button type="button" class="ledger-close" id="closeLedger" title="累積パネルを閉じる" aria-label="累積パネルを閉じる">×</button>
+        </div>
+        <p class="ledger-hint" id="ledgerHint">
+          拡張 ON 中に流れた Super Chat のみ（開く前の分は含みません）。ブラウザ終了で消えます。
+        </p>
+        <div class="ledger-search">
+          <input type="search" id="ledgerSearch" placeholder="名前・本文・金額" autocomplete="off" />
+          <select id="ledgerSearchField" title="検索対象">
+            <option value="all">すべて</option>
+            <option value="author">ユーザー名</option>
+            <option value="message">本文</option>
+            <option value="amount">金額</option>
+          </select>
+        </div>
+        <div class="ledger-amount-range">
+          <label>金額 <input type="number" id="ledgerAmountMin" placeholder="最小" min="0" step="any" /></label>
+          <span>〜</span>
+          <label><input type="number" id="ledgerAmountMax" placeholder="最大" min="0" step="any" /></label>
+        </div>
+        <div class="ledger-actions">
+          <button type="button" class="btn" id="exportCsv">CSV</button>
+          <button type="button" class="btn ghost" id="clearLedger">クリア</button>
+        </div>
+        <ul class="ledger-list" id="ledgerList"></ul>
+      </section>
 
       <p class="note">
         Super Chat と通常チャットのふりがなは個別にオン／オフできます。
-        「スパチャのみ表示」は通常チャット行（text-message）を隠し、Stylus と同じ見え方です（ふりがな設定とは別）。
-        既定ショートカットは Ctrl+Shift+L（Mac も Control+Shift+L）。変更は chrome://extensions/shortcuts。
-        StreamYard のステージコメントは「通常チャット」オン時に対象。動画ページ下のコメント欄は対象外。
-        読みが付かない漢字はクリックして手動登録できます（端末内に保存）。
-        YouTube timedtext は使いません。辞書は端末内の kuromoji です。
+        「スパチャのみ表示」は通常チャット行を隠します（既定 Ctrl+Shift+L）。
+        台帳は DOM からセッション内だけ蓄積し、サーバーへ送りません。
+        視聴ページの累積パネルは ×、またはここの「累積パネル」オフ／台帳の × で閉じられます（既定オフ）。
+        配信中の「開始〜今まで取得」とアーカイブの「全件取得」はチャット再生 API を手動で低頻度に使います（字幕 API は不使用）。巻き戻しできない配信の過去分は取れません。
+        タイムコードがある行はクリックでシーク、画像ボタンで1枚PNG保存できます。
+        読み API は任意オプトインです（オフ＝端末内のみ）。
+        YouTube timedtext は使いません。
       </p>
     </main>
     <script src="../dist/popup.js" type="module"></script>

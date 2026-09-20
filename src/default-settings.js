@@ -1,7 +1,8 @@
 export const DEFAULT_SETTINGS = {
   enabled: true,
   /**
-   * 未選択中のフォールバックは端末内（kuromoji）。
+   * 未選択中のフォールバックは端末内（kuromoji = OSS 即表示）。
+   * 読み API はクラウド本命（オプトイン / Premium）。
    * 初回ポップアップで選ぶまで engineOnboardingDone=false。
    */
   engine: "kuromoji",

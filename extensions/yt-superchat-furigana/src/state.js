@@ -12,7 +12,9 @@ export const TOGGLE_HIDE_TEXT_COMMAND = "toggle-hide-text-messages";
  * @typedef {{
  *   superChatEnabled: boolean,
  *   chatEnabled: boolean,
- *   hideTextMessages: boolean
+ *   hideTextMessages: boolean,
+ *   ledgerEnabled: boolean,
+ *   readingApiEnabled: boolean
  * }} YtscfState
  */
 
@@ -31,13 +33,24 @@ export function normalizeYtscfState(raw) {
     /** @type {{ hideTextMessages?: unknown }} */ (saved).hideTextMessages ===
     true;
 
+  // 視聴ページ右下の累積パネル＋DOM 蓄積。未設定はオフ（常時表示を避ける）
+  const ledgerEnabled =
+    /** @type {{ ledgerEnabled?: unknown }} */ (saved).ledgerEnabled === true;
+
+  // 読み API。未設定はオフ（チャット本文をサーバーに送らない既定）
+  const readingApiEnabled =
+    /** @type {{ readingApiEnabled?: unknown }} */ (saved).readingApiEnabled ===
+    true;
+
   if (hasNewKeys) {
     return {
       superChatEnabled: /** @type {{ superChatEnabled?: unknown }} */ (saved)
         .superChatEnabled !== false,
       chatEnabled: /** @type {{ chatEnabled?: unknown }} */ (saved)
         .chatEnabled !== false,
-      hideTextMessages
+      hideTextMessages,
+      ledgerEnabled,
+      readingApiEnabled
     };
   }
 
@@ -46,7 +59,9 @@ export function normalizeYtscfState(raw) {
   return {
     superChatEnabled: legacyOn,
     chatEnabled: legacyOn,
-    hideTextMessages
+    hideTextMessages,
+    ledgerEnabled,
+    readingApiEnabled
   };
 }
 
@@ -55,6 +70,34 @@ export function normalizeYtscfState(raw) {
  */
 export function isAnyTargetEnabled(state) {
   return Boolean(state?.superChatEnabled || state?.chatEnabled);
+}
+
+/**
+ * このフレームで kuromoji・辞書・MutationObserver を起動するか。
+ * 視聴ページ本体はチャット iframe と二重起動すると本編が止まる。
+ * @param {{
+ *   href?: string,
+ *   ledgerEnabled?: boolean,
+ *   hasChatApp?: boolean,
+ *   isTopWatchFrame?: boolean
+ * }} [opts]
+ */
+export function shouldRunLiveChatEngine(opts = {}) {
+  const href = String(opts.href || "");
+  let hostname = "";
+  let pathname = "";
+  try {
+    const u = new URL(href, "https://www.youtube.com");
+    hostname = u.hostname;
+    pathname = u.pathname || "";
+  } catch {
+    return Boolean(opts.hasChatApp);
+  }
+  if (/(?:^|\.)streamyard\.com$/i.test(hostname)) return true;
+  if (pathname.includes("/live_chat")) return true;
+  if (opts.hasChatApp) return true;
+  if (opts.ledgerEnabled && opts.isTopWatchFrame) return true;
+  return false;
 }
 
 /**

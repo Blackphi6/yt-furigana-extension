@@ -20,6 +20,23 @@ const DIGIT = [
   "きゅう"
 ];
 
+const KANJI_DIGIT = {
+  〇: 0,
+  零: 0,
+  一: 1,
+  二: 2,
+  三: 3,
+  四: 4,
+  五: 5,
+  六: 6,
+  七: 7,
+  八: 8,
+  九: 9
+};
+
+const KANJI_NUMERAL_RE = /^[〇零一二三四五六七八九十百千万]+$/;
+const KANJI_PERSON_RE = /^([〇零一二三四五六七八九十百千万]+)人$/;
+
 /**
  * @typedef {{
  *   suffix: string,
@@ -310,6 +327,49 @@ function joinCardinalAndSuffix(number, spec) {
   }
   cardinal = applyIchiSokuon(cardinal, Boolean(spec.ichiSokuon));
   return `${cardinal}${spec.suffix}`;
+}
+
+/**
+ * 漢数字の非負整数。助数詞「人」用（一人→1、十一人→11）。
+ * 万まで。億・兆は字幕でほぼ出ないので対象外。
+ * @param {string} text
+ * @returns {number | null}
+ */
+export function parseKanjiInteger(text) {
+  const raw = String(text || "").normalize("NFKC").trim();
+  if (!raw || !KANJI_NUMERAL_RE.test(raw)) return null;
+  if (raw === "〇" || raw === "零") return 0;
+
+  let total = 0;
+  let cur = 0;
+  for (const ch of raw) {
+    if (Object.hasOwn(KANJI_DIGIT, ch)) {
+      cur += KANJI_DIGIT[ch];
+      continue;
+    }
+    if (ch === "十") {
+      total += (cur || 1) * 10;
+      cur = 0;
+      continue;
+    }
+    if (ch === "百") {
+      total += (cur || 1) * 100;
+      cur = 0;
+      continue;
+    }
+    if (ch === "千") {
+      total += (cur || 1) * 1000;
+      cur = 0;
+      continue;
+    }
+    if (ch === "万") {
+      total = (total + cur) * 10000;
+      cur = 0;
+      continue;
+    }
+    return null;
+  }
+  return total + cur;
 }
 
 function toAsciiDigits(text) {
@@ -628,10 +688,28 @@ export function readingForNumberSurface(surface) {
  * @param {string} surface
  * @returns {string}
  */
+/**
+ * 漢数字＋「人」だけ規則読みする。
+ * 1・2 は和語（ひとり／ふたり）、0 と 3 以上は にん。
+ * 11人はじゅういちにん（じゅうひとりにはしない）。
+ * 一人前・一人称など、人の後ろに漢字が続く語は対象外。
+ * @param {string} surface
+ */
+function readingForKanjiPersonSurface(surface) {
+  const raw = String(surface || "").normalize("NFKC").trim();
+  const matched = raw.match(KANJI_PERSON_RE);
+  if (!matched) return "";
+  const number = parseKanjiInteger(matched[1]);
+  if (number == null) return "";
+  return readNumberWithUnit(number, "人");
+}
+
 export function readingForNumberUnitSurface(surface) {
   const core = parseNumericCore(surface);
-  if (!core || !core.unit) return "";
-  return readNumberPartWithUnit(core.numberPart, core.unit);
+  if (core?.unit) {
+    return readNumberPartWithUnit(core.numberPart, core.unit);
+  }
+  return readingForKanjiPersonSurface(surface);
 }
 
 /** 単位単独の読み（Wh→ワットアワー）。欧文単位のみ。和語助数詞は数字必須。 */
@@ -647,6 +725,10 @@ export function isKnownNumberUnit(unit) {
 
 function isDigitToken(surface) {
   return /^[0-9０-９]+$/.test(surface || "");
+}
+
+function isKanjiNumeralToken(surface) {
+  return KANJI_NUMERAL_RE.test(String(surface || "").normalize("NFKC"));
 }
 
 function isCommaToken(surface) {
@@ -801,6 +883,40 @@ function matchDotSeparatedDigitSpan(tokens, index) {
   };
 }
 
+function matchKanjiPersonSpan(tokens, index) {
+  const first = tokens[index]?.surface_form || "";
+  const alone = readingForKanjiPersonSurface(first);
+  if (alone) {
+    return {
+      end: index + 1,
+      surface: first,
+      reading: alone,
+      preserveKatakana: false
+    };
+  }
+
+  if (!isKanjiNumeralToken(first)) return null;
+
+  let end = index;
+  let surface = "";
+  while (end < tokens.length && isKanjiNumeralToken(tokens[end].surface_form || "")) {
+    surface += tokens[end].surface_form || "";
+    end += 1;
+  }
+  if (end >= tokens.length || (tokens[end].surface_form || "") !== "人") {
+    return null;
+  }
+  surface += "人";
+  const reading = readingForKanjiPersonSurface(surface);
+  if (!reading) return null;
+  return {
+    end: end + 1,
+    surface,
+    reading,
+    preserveKatakana: false
+  };
+}
+
 /**
  * tokens[i] から数字断片（＋あれば単位）を最長で取る。
  * @param {Array<{ surface_form?: string }>} tokens
@@ -815,6 +931,10 @@ export function matchNumberUnitTokenSpan(tokens, index) {
   if (dotted) return dotted;
 
   const first = tokens[index]?.surface_form || "";
+
+  // 漢数字＋人（一人→ひとり）。一日など他単位は算用数字側のまま
+  const kanjiPerson = matchKanjiPersonSpan(tokens, index);
+  if (kanjiPerson) return kanjiPerson;
 
   // 単位単独（Wh / V など）— 直前が数字断片なら数字側で取る
   if (isKnownNumberUnit(first)) {

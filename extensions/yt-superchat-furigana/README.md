@@ -1,6 +1,6 @@
 # YT Live Chat Furigana
 
-YouTube ライブの **Super Chat**（＋上部ティッカー）と **通常チャット**、および **StreamYard** ステージ上のコメントバナー本文に、端末内 kuromoji でふりがなを付ける Chrome 拡張です。Super Chat / 通常チャットは個別オン／オフ（StreamYard バナーは通常チャット側）。ポップアップの「スパチャのみ表示」で通常チャット行を隠す（Stylus 相当）。
+YouTube ライブの **Super Chat**（＋上部ティッカー）と **通常チャット**、および **StreamYard** ステージ上のコメントバナー本文に、端末内 kuromoji でふりがなを付ける Chrome 拡張です。Super Chat / 通常チャットは個別オン／オフ。辞書は本体と同じく **小型を先に・Sudachi Full／地名などはアイドル後**。**スパチャ累積パネル**・CSV・**1枚PNG（タイムコード付き）**・**プレビューのふりがな**・アーカイブの手動全件取得・**名前／本文／金額検索**に対応。
 
 - 製品ページ: https://blackphi6.github.io/yt-furigana-extension/superchat.html
 - プライバシー: https://blackphi6.github.io/yt-furigana-extension/privacy-superchat.html
@@ -34,6 +34,10 @@ npm run pack:superchat
 | StreamYard ステージコメント（Bubbles） | 有料チャットオーバーレイ専用 UI |
 | 「スパチャのみ表示」（通常チャット行を隠す） | |
 | Ctrl+Shift+L でスパチャのみ表示を切替 | |
+| スパチャ累積パネル / CSV / 1枚PNG / プレビューふりがな | 開く前の自動全件（ライブ） |
+| 配信中の本文SC＋上部ティッカーの取り込み | 配信中のチャット巻き戻し（動画DVRとは別） |
+| アーカイブ「全件取得」（手動・低頻度） | timedtext / 字幕 API |
+| 全件取得後の検索（名前・本文・金額） | |
 | 読み未登録のクリック登録（端末内） | |
 
 ## 注意
