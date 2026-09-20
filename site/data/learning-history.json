@@ -1,129 +1,6 @@
 {
-  "updatedAt": "2026-09-20T04:37:43.214Z",
+  "updatedAt": "2026-09-20T11:11:17.149Z",
   "entries": [
-    {
-      "ts": "2026-08-01T06:29:16.451Z",
-      "mode": "synth",
-      "note": "素材 +8 / 本体ルール変化なし（日次は主に素材集め）",
-      "gateOk": true,
-      "floorsOk": true,
-      "regress": false,
-      "corpus": {
-        "total": 204,
-        "delta": 8,
-        "acceptedThisRun": 8,
-        "rejectedThisRun": 9
-      },
-      "benches": {
-        "seed-bench": {
-          "passed": 22,
-          "total": 22,
-          "rate": 1,
-          "minPassRate": 1,
-          "failed": []
-        },
-        "hard-heteronym": {
-          "passed": 32,
-          "total": 32,
-          "rate": 1,
-          "minPassRate": 0.85,
-          "failed": []
-        },
-        "easy-regression": {
-          "passed": 8,
-          "total": 8,
-          "rate": 1,
-          "minPassRate": 0.9,
-          "failed": []
-        }
-      },
-      "vsBaseline": {
-        "seed-bench": {
-          "rate": 1,
-          "passed": 22,
-          "total": 22,
-          "baselineRate": 1,
-          "deltaRate": 0
-        },
-        "hard-heteronym": {
-          "rate": 1,
-          "passed": 32,
-          "total": 32,
-          "baselineRate": 1,
-          "deltaRate": 0
-        },
-        "easy-regression": {
-          "rate": 1,
-          "passed": 8,
-          "total": 8,
-          "baselineRate": 1,
-          "deltaRate": 0
-        }
-      },
-      "overrides": {
-        "phraseCount": 1,
-        "contextRuleCount": 23,
-        "changed": false
-      },
-      "newSamples": [
-        {
-          "text": "[\"朝の市場で、鮮魚と野菜を買うことができる\"]",
-          "surface": "市場",
-          "gold": "いちば",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "朝の市場で魚を買う、鮮魚・野菜売り場"
-        },
-        {
-          "text": "[\"市場で朝から人でにぎわいを見せる\"]",
-          "surface": "市場",
-          "gold": "いちば",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "朝の市場で魚を買う、鮮魚・野菜売り場"
-        },
-        {
-          "text": "体調が悪くて辛い仕事を続けている",
-          "surface": "辛い",
-          "gold": "つらい",
-          "source": "llm-synth:groq:arbitrate_agree",
-          "note": "経験・出来事・境遇（味ではない）"
-        },
-        {
-          "text": "病気の夫を手にして辛い思いをしている",
-          "surface": "辛い",
-          "gold": "つらい",
-          "source": "llm-synth:groq:arbitrate_agree",
-          "note": "経験・出来事・境遇（味ではない）"
-        },
-        {
-          "text": "町中で噂が広がって、知れ渡るようになる。",
-          "surface": "町中",
-          "gold": "まちじゅう",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
-        },
-        {
-          "text": "市街地の中心は、静かで落ち着いた町中で、カフェや小さな店が並んでいます。",
-          "surface": "町中",
-          "gold": "まちなか",
-          "source": "llm-synth:groq:arbitrate_agree",
-          "note": "町中のカフェ／市街地の中心（まちなか）"
-        },
-        {
-          "text": "事件が大事になる直前、警察は混乱を防ぐための対策を講じ始めた",
-          "surface": "大事",
-          "gold": "おおごと",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "大事になる／騒ぎ・事件に発展する直前"
-        },
-        {
-          "text": "[\"風が強く吹いたので、髪が乱れました。\"]",
-          "surface": "風",
-          "gold": "かぜ",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "風が吹く／強風／風で髪が乱れる"
-        }
-      ]
-    },
     {
       "ts": "2026-08-02T06:33:25.876Z",
       "mode": "synth",
@@ -7621,6 +7498,143 @@
         },
         {
           "text": "忙しい予定が詰まっている",
+          "surface": "忙しい",
+          "gold": "いそがしい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "仕事・予定・日常の忙しさ"
+        }
+      ]
+    },
+    {
+      "ts": "2026-09-20T11:11:17.149Z",
+      "mode": "synth",
+      "note": "素材 +50 / 本体ルール変化なし（日次は主に素材集め）",
+      "gateOk": true,
+      "floorsOk": true,
+      "regress": false,
+      "corpus": {
+        "total": 2670,
+        "delta": 50,
+        "acceptedThisRun": 51,
+        "rejectedThisRun": 35
+      },
+      "benches": {
+        "seed-bench": {
+          "passed": 22,
+          "total": 22,
+          "rate": 1,
+          "minPassRate": 1,
+          "failed": []
+        },
+        "hard-heteronym": {
+          "passed": 41,
+          "total": 41,
+          "rate": 1,
+          "minPassRate": 0.85,
+          "failed": []
+        },
+        "easy-regression": {
+          "passed": 8,
+          "total": 8,
+          "rate": 1,
+          "minPassRate": 0.9,
+          "failed": []
+        }
+      },
+      "vsBaseline": {
+        "seed-bench": {
+          "rate": 1,
+          "passed": 22,
+          "total": 22,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "hard-heteronym": {
+          "rate": 1,
+          "passed": 41,
+          "total": 41,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "easy-regression": {
+          "rate": 1,
+          "passed": 8,
+          "total": 8,
+          "baselineRate": 1,
+          "deltaRate": 0
+        }
+      },
+      "overrides": {
+        "phraseCount": 13,
+        "contextRuleCount": 73,
+        "changed": false
+      },
+      "newSamples": [
+        {
+          "text": "彼は角を曲がるとき、笑顔を見せた。",
+          "surface": "角",
+          "gold": "かど",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "街角／角を曲がる（かど）"
+        },
+        {
+          "text": "牛の角を見て、彼は驚いた。",
+          "surface": "角",
+          "gold": "つの",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "牛の角／角が生える（つの）"
+        },
+        {
+          "text": "角が生えるとき、彼は注意した。",
+          "surface": "角",
+          "gold": "つの",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "牛の角／角が生える（つの）"
+        },
+        {
+          "text": "市場の株式は急激に変動し、投資家は慎重に取引を続けている。",
+          "surface": "市場",
+          "gold": "しじょう",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "株式・規模・経済・金融の文脈"
+        },
+        {
+          "text": "市場規模の拡大は経済成長の鍵となり、金融政策に影響を与える。",
+          "surface": "市場",
+          "gold": "しじょう",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "株式・規模・経済・金融の文脈"
+        },
+        {
+          "text": "辛い",
+          "surface": "辛い",
+          "gold": "からい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "ラーメン・カレー・味・唐辛子"
+        },
+        {
+          "text": "辛い",
+          "surface": "辛い",
+          "gold": "からい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "ラーメン・カレー・味・唐辛子"
+        },
+        {
+          "text": "日常の中で、永遠に終わらない思い出が私を支えている。",
+          "surface": "永遠",
+          "gold": "えいえん",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
+        },
+        {
+          "text": "論理的に考えると、永遠の概念は客観的に定義できない。",
+          "surface": "永遠",
+          "gold": "えいえん",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
+        },
+        {
+          "text": "仕事の合間に、私は忙しいと感じる。",
           "surface": "忙しい",
           "gold": "いそがしい",
           "source": "llm-synth:groq:verify_agree",

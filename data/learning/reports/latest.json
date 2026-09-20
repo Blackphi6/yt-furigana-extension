@@ -1,15 +1,15 @@
 {
-  "ts": "2026-09-20T04:37:43.214Z",
+  "ts": "2026-09-20T11:11:17.149Z",
   "mode": "synth",
-  "note": "素材 +53 / 本体ルール変化なし（日次は主に素材集め）",
+  "note": "素材 +50 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 2620,
-    "delta": 53,
-    "acceptedThisRun": 56,
-    "rejectedThisRun": 28
+    "total": 2670,
+    "delta": 50,
+    "acceptedThisRun": 51,
+    "rejectedThisRun": 35
   },
   "benches": {
     "seed-bench": {
@@ -64,70 +64,70 @@
   },
   "newSamples": [
     {
-      "text": "角が生えると、牛の角に似た形が見える。",
+      "text": "彼は角を曲がるとき、笑顔を見せた。",
+      "surface": "角",
+      "gold": "かど",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "街角／角を曲がる（かど）"
+    },
+    {
+      "text": "牛の角を見て、彼は驚いた。",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:verify_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "牛の角を見て、角が生える様子を思い出した。",
+      "text": "角が生えるとき、彼は注意した。",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:verify_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "株式市場の規模は年々拡大しており、投資家の注目度が高まっている。",
+      "text": "市場の株式は急激に変動し、投資家は慎重に取引を続けている。",
       "surface": "市場",
       "gold": "しじょう",
       "source": "llm-synth:groq:verify_agree",
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "text": "金融市場は経済の健康状態を示す重要な指標として、世界中で注視されている。",
+      "text": "市場規模の拡大は経済成長の鍵となり、金融政策に影響を与える。",
       "surface": "市場",
       "gold": "しじょう",
       "source": "llm-synth:groq:verify_agree",
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "text": "辛いと感じたラーメンは、唐辛子が入っていた。",
+      "text": "辛い",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "辛いカレーに味を足すと、唐辛子の香りが広がる。",
+      "text": "辛い",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "日常のコーヒーを飲みながら、永遠に終わらない思考に耽る。",
+      "text": "日常の中で、永遠に終わらない思い出が私を支えている。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "論理的に考えると、永遠のテーマは客観的に無限だと証明できる。",
+      "text": "論理的に考えると、永遠の概念は客観的に定義できない。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "忙しい仕事がある",
-      "surface": "忙しい",
-      "gold": "いそがしい",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "仕事・予定・日常の忙しさ"
-    },
-    {
-      "text": "忙しい予定が詰まっている",
+      "text": "仕事の合間に、私は忙しいと感じる。",
       "surface": "忙しい",
       "gold": "いそがしい",
       "source": "llm-synth:groq:verify_agree",
