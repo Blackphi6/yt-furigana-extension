@@ -12,6 +12,7 @@ import {
   collectSuperChatMessageElements,
   extractPlainMessage,
   isAlreadyProcessed,
+  listAccessibleChatDocuments,
   needsFurigana,
   PAID_MESSAGE_SELECTOR,
   restoreChatMessages,
@@ -461,6 +462,29 @@ const root = {
 };
 assert.equal(collectSuperChatMessageElements(root).length, 1);
 assert.equal(collectChatMessageElements(root).length, 1);
+
+// same-origin chatframe 文書を横断（Orion で iframe に script が刺さらないとき用）
+{
+  const chatDoc = {
+    querySelectorAll(sel) {
+      return String(sel).includes("iframe") ? [] : [];
+    }
+  };
+  const frame = {
+    contentDocument: chatDoc
+  };
+  const watchDoc = {
+    querySelectorAll(sel) {
+      const s = String(sel);
+      if (s.includes("chatframe") || s.includes("live_chat")) return [frame];
+      return [];
+    }
+  };
+  const docs = listAccessibleChatDocuments(/** @type {any} */ (watchDoc));
+  assert.equal(docs.length, 2);
+  assert.equal(docs[0], watchDoc);
+  assert.equal(docs[1], chatDoc);
+}
 
 const syMsg = el("五月一日に株式市場");
 const syRoot = {

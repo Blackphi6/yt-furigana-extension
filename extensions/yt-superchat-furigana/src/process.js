@@ -55,7 +55,75 @@ function isElementLike(el) {
  */
 function collectBySelector(root, selector) {
   if (!root?.querySelectorAll) return [];
-  return [...root.querySelectorAll(selector)].filter(isElementLike);
+  /** @type {HTMLElement[]} */
+  const out = [...root.querySelectorAll(selector)].filter(isElementLike);
+  if (out.length) return out;
+  // 一部端末で #message が open shadow 内だけにある
+  try {
+    const hosts = root.querySelectorAll(
+      "yt-live-chat-paid-message-renderer, yt-live-chat-ticker-paid-message-item-renderer, yt-live-chat-text-message-renderer"
+    );
+    for (const host of hosts) {
+      const sr = /** @type {Element & { shadowRoot?: ShadowRoot | null }} */ (host)
+        .shadowRoot;
+      if (!sr?.querySelectorAll) continue;
+      for (const el of sr.querySelectorAll(selector)) {
+        if (isElementLike(el)) out.push(el);
+      }
+      // 1 段だけ深く（yt-live-chat-author-chip 等）
+      for (const nested of sr.querySelectorAll("*")) {
+        const nsr = /** @type {Element & { shadowRoot?: ShadowRoot | null }} */ (
+          nested
+        ).shadowRoot;
+        if (!nsr?.querySelectorAll) continue;
+        for (const el of nsr.querySelectorAll(selector)) {
+          if (isElementLike(el)) out.push(el);
+        }
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+  return out;
+}
+
+/**
+ * 視聴ページ本体から same-origin の live_chat iframe 文書も返す。
+ * Orion/iOS では iframe に content script が刺さらないことがあるため、
+ * 台帳と同じく親フレームから横断する。
+ * @param {Document | null | undefined} rootDoc
+ * @returns {Document[]}
+ */
+export function listAccessibleChatDocuments(rootDoc) {
+  /** @type {Document[]} */
+  const docs = [];
+  /** @type {Set<Document>} */
+  const seen = new Set();
+  /**
+   * @param {Document | null | undefined} doc
+   */
+  function add(doc) {
+    if (!doc || seen.has(doc)) return;
+    seen.add(doc);
+    docs.push(doc);
+    try {
+      const frames = doc.querySelectorAll(
+        "#chatframe, iframe#chatframe, iframe[src*='live_chat'], ytd-live-chat-frame iframe"
+      );
+      for (const frame of frames) {
+        try {
+          const nested = /** @type {HTMLIFrameElement} */ (frame).contentDocument;
+          if (nested) add(nested);
+        } catch {
+          /* cross-origin */
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  add(rootDoc || (typeof document !== "undefined" ? document : null));
+  return docs;
 }
 
 /**

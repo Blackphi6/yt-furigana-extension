@@ -32,6 +32,7 @@ import {
   collectSuperChatMessageElements,
   extractPlainMessage,
   isAlreadyProcessed,
+  listAccessibleChatDocuments,
   needsFurigana,
   restoreChatMessages,
   restoreSuperChatMessages
@@ -66,12 +67,52 @@ let ledgerPanel = null;
 /** 読み API 変換中の要素（二重実行防止） */
 const pendingApiEls = new WeakSet();
 
+/** kuromoji が使えない端末（Orion/iOS 等）では読み API へ自動フォールバック */
+let tokenizerFailed = false;
+let readingApiFallback = false;
+
+/** iframe 出現監視（親フレーム専用） */
+/** @type {MutationObserver | null} */
+let frameMo = null;
+/** @type {WeakSet<HTMLIFrameElement>} */
+const hookedFrames = new WeakSet();
+
+/**
+ * ルビ／スパチャのみ表示用 CSS を iframe 文書へ載せる。
+ * content_scripts が刺さらないフレーム向け。
+ * @param {Document} doc
+ */
+function ensureChatDocumentStyles(doc) {
+  if (!doc?.documentElement) return;
+  if (doc.getElementById("ytscf-injected-css")) return;
+  try {
+    const link = doc.createElement("link");
+    link.id = "ytscf-injected-css";
+    link.rel = "stylesheet";
+    link.href = chrome.runtime.getURL("dist/content.css");
+    (doc.head || doc.documentElement).appendChild(link);
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
+ * @returns {Document[]}
+ */
+function chatDocuments() {
+  const docs = listAccessibleChatDocuments(document);
+  for (const doc of docs) ensureChatDocumentStyles(doc);
+  return docs;
+}
+
 /**
  * Stylus 相当: 通常チャット行を表示／非表示。
  * @param {boolean} on
  */
 function applyHideTextMessages(on) {
-  document.documentElement.classList.toggle(HIDE_TEXT_MESSAGES_CLASS, Boolean(on));
+  for (const doc of chatDocuments()) {
+    doc.documentElement?.classList?.toggle(HIDE_TEXT_MESSAGES_CLASS, Boolean(on));
+  }
 }
 
 /** @type {((text: string) => any[]) | null} */
@@ -92,6 +133,8 @@ let heavyPhraseDictsScheduled = false;
 let ledgerInflight = false;
 let statusTimer = 0;
 let pickerInstalled = false;
+/** @type {WeakSet<Document>} */
+const pickerDocs = new WeakSet();
 /** @type {MutationObserver | null} */
 let mo = null;
 /** @type {Record<string, unknown>} */
@@ -103,7 +146,7 @@ function currentVideoId() {
 }
 
 function hasChatAppInDocument() {
-  return Boolean(document.querySelector("yt-live-chat-app"));
+  return chatDocuments().some((doc) => Boolean(doc.querySelector("yt-live-chat-app")));
 }
 
 function shouldRunEngineNow() {
@@ -115,27 +158,61 @@ function shouldRunEngineNow() {
   });
 }
 
-function getObserveRoot() {
-  // ティッカー（上部の色付き帯）は #items の外なので app 全体を見る
+/**
+ * @param {Document} doc
+ */
+function observeRootForDoc(doc) {
   return (
-    document.querySelector("yt-live-chat-app") ||
-    document.querySelector("#items.yt-live-chat-item-list-renderer") ||
-    document.querySelector("#chat-messages") ||
-    document.documentElement
+    doc.querySelector("yt-live-chat-app") ||
+    doc.querySelector("#items.yt-live-chat-item-list-renderer") ||
+    doc.querySelector("#chat-messages") ||
+    doc.documentElement
   );
 }
 
 function ensurePicker() {
-  if (pickerInstalled) return;
+  for (const doc of chatDocuments()) {
+    if (pickerDocs.has(doc)) continue;
+    pickerDocs.add(doc);
+    installReadingPicker(doc);
+    installFuriganaHoverHighlight(doc);
+  }
   pickerInstalled = true;
-  installReadingPicker(document);
-  installFuriganaHoverHighlight(document);
 }
 
 function stopObserver() {
-  if (!mo) return;
-  mo.disconnect();
-  mo = null;
+  if (mo) {
+    mo.disconnect();
+    mo = null;
+  }
+}
+
+function hookChatFrame(frame) {
+  if (!frame || hookedFrames.has(frame)) return;
+  hookedFrames.add(frame);
+  frame.addEventListener("load", () => {
+    applyHideTextMessages(state.hideTextMessages);
+    stopObserver();
+    syncLiveChatEngine();
+  });
+}
+
+function ensureFrameWatcher() {
+  if (!isTopYoutubeWatchFrame()) return;
+  for (const frame of document.querySelectorAll(
+    "#chatframe, iframe#chatframe, iframe[src*='live_chat'], ytd-live-chat-frame iframe"
+  )) {
+    hookChatFrame(/** @type {HTMLIFrameElement} */ (frame));
+  }
+  if (frameMo) return;
+  frameMo = new MutationObserver(() => {
+    for (const frame of document.querySelectorAll(
+      "#chatframe, iframe#chatframe, iframe[src*='live_chat'], ytd-live-chat-frame iframe"
+    )) {
+      hookChatFrame(/** @type {HTMLIFrameElement} */ (frame));
+    }
+  });
+  frameMo.observe(document.documentElement, { childList: true, subtree: true });
 }
 
 function ensureObserver() {
@@ -149,10 +226,15 @@ function ensureObserver() {
       queueScan();
     }, debounceMs);
   });
-  mo.observe(getObserveRoot(), { childList: true, subtree: true });
+  for (const doc of chatDocuments()) {
+    const root = observeRootForDoc(doc);
+    if (root) mo.observe(root, { childList: true, subtree: true });
+  }
+  ensureFrameWatcher();
 }
 
 function syncLiveChatEngine() {
+  ensureFrameWatcher();
   if (!shouldRunEngineNow()) {
     stopObserver();
     return;
@@ -161,8 +243,14 @@ function syncLiveChatEngine() {
   ensureObserver();
   if (!isAnyTargetEnabled(state) && !state.ledgerEnabled) return;
   void (async () => {
-    await Promise.all([ensureTokenizer(), reapplyUserReadings()]);
-    await loadCorePhraseDicts();
+    await Promise.all([
+      ensureTokenizer().catch(() => {
+        readingApiFallback = true;
+        chrome.runtime.sendMessage({ type: "YTSCF_WARM_READING_API" }, () => {});
+      }),
+      reapplyUserReadings()
+    ]);
+    if (!tokenizerFailed) await loadCorePhraseDicts();
     queueScan();
   })().catch((error) => {
     console.warn("[YT Live Chat Furigana]", error?.message || error);
@@ -254,17 +342,20 @@ function clearDoneMarks(elements) {
  * 有効な対象だけ付け直す。
  */
 function reprocessEnabled() {
-  if (state.superChatEnabled) {
-    clearDoneMarks(collectSuperChatMessageElements(document));
-  }
-  if (state.chatEnabled) {
-    clearDoneMarks(collectChatMessageElements(document));
+  for (const doc of chatDocuments()) {
+    if (state.superChatEnabled) {
+      clearDoneMarks(collectSuperChatMessageElements(doc));
+    }
+    if (state.chatEnabled) {
+      clearDoneMarks(collectChatMessageElements(doc));
+    }
   }
   queueScan();
 }
 
 function ensureTokenizer() {
   if (tokenize) return Promise.resolve();
+  if (tokenizerFailed) return Promise.reject(new Error("tokenizer unavailable"));
   if (tokenizerPromise) return tokenizerPromise;
 
   tokenizerPromise = new Promise((resolve, reject) => {
@@ -273,11 +364,19 @@ function ensureTokenizer() {
       .build((error, built) => {
         if (error) {
           tokenizerPromise = null;
+          tokenizerFailed = true;
+          readingApiFallback = true;
+          setStatus({
+            ready: false,
+            tokenizerFailed: true,
+            readingApiFallback: true,
+            error: String(error?.message || error)
+          });
           reject(error);
           return;
         }
         tokenize = (text) => built.tokenize(text);
-        setStatus({ ready: true, error: "" });
+        setStatus({ ready: true, error: "", tokenizerFailed: false });
         resolve();
       });
   });
@@ -328,10 +427,10 @@ async function convertViaReadingApi(text) {
  * @param {{ wrapWords?: boolean }} [options]
  */
 async function convert(text, options = {}) {
-  if (state.readingApiEnabled) {
+  // 設定 ON、または端末内辞書失敗時は公開読み API（Orion/iOS 救済）
+  if (state.readingApiEnabled || readingApiFallback) {
     const apiHtml = await convertViaReadingApi(text);
     if (apiHtml) return apiHtml;
-    // API 失敗時は端末内へフォールバック
     if (tokenize) return convertLocal(text, options);
     return text;
   }
@@ -346,16 +445,24 @@ async function convertFuriganaForPreview(text) {
   const plain = String(text || "");
   if (!plain) return "";
   try {
-    if (state.readingApiEnabled) {
+    if (state.readingApiEnabled || readingApiFallback) {
       const apiHtml = await convertViaReadingApi(plain);
       if (apiHtml) return apiHtml;
     }
     await Promise.all([
-      ensureTokenizer(),
+      ensureTokenizer().catch(() => {
+        readingApiFallback = true;
+      }),
       learningReady ? Promise.resolve() : reapplyUserReadings()
     ]);
-    await loadCorePhraseDicts();
-    return convertLocal(plain, { wrapWords: false });
+    if (tokenize) {
+      if (!tokenizerFailed) await loadCorePhraseDicts();
+      return convertLocal(plain, { wrapWords: false });
+    }
+    if (readingApiFallback) {
+      return (await convertViaReadingApi(plain)) || "";
+    }
+    return "";
   } catch {
     return "";
   }
@@ -367,7 +474,9 @@ async function convertFuriganaForPreview(text) {
  */
 async function processOne(el, enabledForKind) {
   if (!enabledForKind) return;
-  if (!state.readingApiEnabled && !tokenize) return;
+  const canLocal = Boolean(tokenize);
+  const canApi = state.readingApiEnabled || readingApiFallback;
+  if (!canLocal && !canApi) return;
   if (pendingApiEls.has(el)) return;
 
   // 仮想リスト再利用で本文だけ差し替わった場合は付け直す
@@ -408,6 +517,8 @@ function scan() {
   scanQueued = false;
   if (!shouldRunEngineNow()) return;
 
+  const docs = chatDocuments();
+
   // ふりがな ON/OFF と独立して台帳を拾う（スパチャのみ表示中も蓄積）
   if (state.ledgerEnabled && !ledgerInflight) {
     ledgerInflight = true;
@@ -430,33 +541,42 @@ function scan() {
 
   if (!isAnyTargetEnabled(state)) return;
   // 読み API 時もフォールバック用に辞書を用意。API のみでも学習句は載せる
-  if (!tokenize || !learningReady) {
+  if ((!tokenize && !readingApiFallback) || !learningReady) {
     void (async () => {
-      await Promise.all([
-        ensureTokenizer(),
-        learningReady ? Promise.resolve() : reapplyUserReadings()
-      ]);
-      await loadCorePhraseDicts();
-      if (state.readingApiEnabled) {
-        chrome.runtime.sendMessage({ type: "YTSCF_WARM_READING_API" }, () => {});
-      }
-      queueScan();
-    })()
-      .catch((error) => {
+      try {
+        await Promise.all([
+          ensureTokenizer().catch(() => {
+            // 端末内失敗 → 読み API フォールバックを有効化して続行
+            readingApiFallback = true;
+            chrome.runtime.sendMessage({ type: "YTSCF_WARM_READING_API" }, () => {});
+          }),
+          learningReady ? Promise.resolve() : reapplyUserReadings()
+        ]);
+        if (!tokenizerFailed) await loadCorePhraseDicts();
+        if (state.readingApiEnabled || readingApiFallback) {
+          chrome.runtime.sendMessage({ type: "YTSCF_WARM_READING_API" }, () => {});
+        }
+        queueScan();
+      } catch (error) {
         console.warn("[YT Live Chat Furigana]", error?.message || error);
         setStatus({ ready: false, error: String(error?.message || error) });
-      });
+      }
+    })();
     return;
   }
 
   if (state.superChatEnabled) {
-    for (const el of collectSuperChatMessageElements(document)) {
-      void processOne(el, true);
+    for (const doc of docs) {
+      for (const el of collectSuperChatMessageElements(doc)) {
+        void processOne(el, true);
+      }
     }
   }
   if (state.chatEnabled) {
-    for (const el of collectChatMessageElements(document)) {
-      void processOne(el, true);
+    for (const doc of docs) {
+      for (const el of collectChatMessageElements(doc)) {
+        void processOne(el, true);
+      }
     }
   }
 }
@@ -474,10 +594,10 @@ function queueScan() {
  */
 function applyStateTransition(prev, next) {
   if (prev.superChatEnabled && !next.superChatEnabled) {
-    restoreSuperChatMessages(document);
+    for (const doc of chatDocuments()) restoreSuperChatMessages(doc);
   }
   if (prev.chatEnabled && !next.chatEnabled) {
-    restoreChatMessages(document);
+    for (const doc of chatDocuments()) restoreChatMessages(doc);
   }
   if (prev.hideTextMessages !== next.hideTextMessages) {
     applyHideTextMessages(next.hideTextMessages);

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "YT Live Chat Furigana",
-  "version": "1.2.9",
-  "version_name": "1.2.9",
+  "version": "1.2.10",
+  "version_name": "1.2.10",
   "description": "YouTube ライブの Super Chat 累積・ふりがな（任意で読みAPI）。端末内既定。字幕APIは使いません。",
   "homepage_url": "https://blackphi6.github.io/yt-furigana-extension/superchat.html",
   "permissions": ["storage"],
@@ -55,19 +55,21 @@
       "js": ["dist/content.js"],
       "css": ["dist/content.css"],
       "run_at": "document_idle",
-      "all_frames": true
+      "all_frames": true,
+      "match_origin_as_fallback": true
     },
     {
       "matches": ["*://www.youtube.com/*", "*://m.youtube.com/*"],
       "js": ["dist/sc-page-bridge.js"],
       "run_at": "document_idle",
       "all_frames": true,
+      "match_origin_as_fallback": true,
       "world": "MAIN"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["dict/*"],
+      "resources": ["dict/*", "dist/content.css"],
       "matches": [
         "*://www.youtube.com/*",
         "*://m.youtube.com/*",
