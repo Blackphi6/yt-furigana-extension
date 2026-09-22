@@ -64,7 +64,10 @@ function rebuildCombined(options = {}) {
     ...getJaFuriganaPhrasesObject(),
     ...getWikidataKanaPhrasesObject(),
     ...getSudachiFullPhrasesObject(),
-    ...filterPhraseMap(getPlaceNamePhrasesObject(), { skipPlaceParticle: true }),
+    ...filterPhraseMap(getPlaceNamePhrasesObject(), {
+      skipPlaceParticle: true,
+      skipPlaceBlocklist: true
+    }),
     ...getStationPhrasesObject(),
     ...getCorporateNamePhrasesObject(),
     ...filterPhraseMap(personalNamePhrases, { skipPersonalBlocklist: true }),

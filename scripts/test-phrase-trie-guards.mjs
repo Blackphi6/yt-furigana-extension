@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import {
   isUnsafePlaceParticlePhrase,
   PERSONAL_NAME_SURFACE_BLOCKLIST,
+  PLACE_NAME_SURFACE_BLOCKLIST,
   PHRASE_TRIE_OVERRIDES,
   PRODUCT_READING_OVERRIDES
 } from "../src/phrase-trie-guards.js";
@@ -36,9 +37,13 @@ assert.equal(isUnsafePlaceParticlePhrase("中の"), true);
 assert.equal(isUnsafePlaceParticlePhrase("魚の"), true);
 assert.equal(isUnsafePlaceParticlePhrase("靖国神社"), false);
 assert.ok(PERSONAL_NAME_SURFACE_BLOCKLIST.has("三時"));
+assert.ok(PERSONAL_NAME_SURFACE_BLOCKLIST.has("数人"));
+assert.ok(PLACE_NAME_SURFACE_BLOCKLIST.has("十分"));
 assert.equal(PHRASE_TRIE_OVERRIDES["靖国神社"], "やすくにじんじゃ");
 assert.equal(PRODUCT_READING_OVERRIDES["旗色"], "はたいろ");
 assert.equal(PRODUCT_READING_OVERRIDES["類人猿"], "るいじんえん");
+assert.equal(PRODUCT_READING_OVERRIDES["二十日"], "はつか");
+
 
 function loadGz(rel) {
   return JSON.parse(

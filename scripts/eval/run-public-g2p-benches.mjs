@@ -34,9 +34,16 @@ import kuromoji from "kuromoji";
 import { buildFuriganaHtml } from "../../src/furigana.js";
 import {
   evaluateRubyAgainstExpect,
-  extractReadingsFromRubyHtml
+  extractReadingsFromRubyHtml,
+  mergeLearnedOverrides
 } from "../../src/reading-learning.js";
 import { normalizeReading } from "../../src/reading-normalize.js";
+import {
+  CONTEXT_READING_RULES,
+  MANUAL_PHRASE_READINGS,
+  rebuildManualPhraseIndex,
+  reloadBundledReadingMaps
+} from "../../src/reading-context.js";
 import {
   createBenchTokenizer,
   loadJsonl,
@@ -316,6 +323,17 @@ function loadFullPhraseDicts() {
   rebuildCombinedPhraseTrie();
 }
 
+/** 公開スコアの +context 行に学習オーバーライドを載せる（製品と同じ優先順） */
+function applyLearnedForEval(learned) {
+  reloadBundledReadingMaps();
+  if (!learned) {
+    rebuildManualPhraseIndex();
+    return;
+  }
+  mergeLearnedOverrides(MANUAL_PHRASE_READINGS, CONTEXT_READING_RULES, learned);
+  rebuildManualPhraseIndex();
+}
+
 function createKuromojiTokenizer() {
   return new Promise((resolve, reject) => {
     kuromoji
@@ -369,14 +387,20 @@ function scoreG2pItems(items, tokenize, label, logTag = "ja-tts-g2p") {
   const failed = [];
   for (const item of items) {
     const html = buildFuriganaHtml(item.surface, tokenize);
-    const evaluation = evaluateRubyAgainstExpect(html, [
+    // 異読みベンチは reading_alt も正解（同一字・別文脈）
+    const evalExpected = evaluateRubyAgainstExpect(html, [
       { surface: item.target, reading: item.reading_expected }
     ]);
-    const ok = evaluation.ok;
+    const okAlt = item.reading_alt
+      ? evaluateRubyAgainstExpect(html, [
+          { surface: item.target, reading: item.reading_alt }
+        ]).ok
+      : false;
+    const ok = evalExpected.ok || okAlt;
     if (ok) passed += 1;
     else {
       const got =
-        evaluation.results[0]?.got ||
+        evalExpected.results[0]?.got ||
         extractReadingsFromRubyHtml(html).get(item.target) ||
         null;
       failed.push({
@@ -625,11 +649,13 @@ async function main() {
   g2pResults.push(scoreG2pItems(g2pAll, kuromojiTok, "kuromoji-only"));
 
   loadFullPhraseDicts();
+  applyLearnedForEval(learned);
   g2pResults.push(
     scoreG2pItems(g2pAll, sudachi, "yt-furigana (Sudachi+phrases+context)")
   );
 
   loadFullPhraseDicts();
+  applyLearnedForEval(learned);
   g2pResults.push(
     scoreG2pItems(g2pAll, kuromojiTok, "yt-furigana (Kuromoji+phrases+context)")
   );
@@ -642,6 +668,7 @@ async function main() {
       scoreG2pItems(blindspotAll, sudachi, "sudachi-only", "ja-tts-blindspot")
     );
     loadFullPhraseDicts();
+    applyLearnedForEval(learned);
     blindspotResults.push(
       scoreG2pItems(
         blindspotAll,
@@ -660,6 +687,7 @@ async function main() {
       scoreG2pItems(yomiAll, sudachi, "sudachi-only", "yomi-bench")
     );
     loadFullPhraseDicts();
+    applyLearnedForEval(learned);
     yomiResults.push(
       scoreG2pItems(
         yomiAll,
@@ -739,20 +767,21 @@ async function main() {
     console.log("[joyo-parakeet] skipped (limit=0)");
   }
 
-  const bestG2p = g2pResults.reduce((a, b) => (a.rate >= b.rate ? a : b));
+  const preferProduct = (rows) => {
+    const product = rows.filter((r) => /yt-furigana/i.test(r.label));
+    const pool = product.length ? product : rows;
+    return pool.reduce((a, b) => (a.rate >= b.rate ? a : b));
+  };
+  const bestG2p = preferProduct(g2pResults);
   const [lo, hi] = wilsonInterval(bestG2p.passed, bestG2p.total);
-  const bestJoyo = joyoResults.length
-    ? joyoResults.reduce((a, b) => (a.rate >= b.rate ? a : b))
-    : null;
+  const bestJoyo = joyoResults.length ? preferProduct(joyoResults) : null;
   const bestJoyoParakeet = joyoParakeetResults.length
-    ? joyoParakeetResults.reduce((a, b) => (a.rate >= b.rate ? a : b))
+    ? preferProduct(joyoParakeetResults)
     : null;
   const bestBlindspot = blindspotResults.length
-    ? blindspotResults.reduce((a, b) => (a.rate >= b.rate ? a : b))
+    ? preferProduct(blindspotResults)
     : null;
-  const bestYomi = yomiResults.length
-    ? yomiResults.reduce((a, b) => (a.rate >= b.rate ? a : b))
-    : null;
+  const bestYomi = yomiResults.length ? preferProduct(yomiResults) : null;
 
   const report = {
     generatedAt: new Date().toISOString(),
@@ -763,7 +792,7 @@ async function main() {
         url: "https://github.com/filmapp/ja-tts-g2p-bench",
         article:
           "https://zenn.dev/tellernovel_inc/articles/ja-tts-g2p-benchmark",
-        note: "Text-side target reading accuracy on the same 151 items (TTS audio scores are a different modality)."
+        note: "Text-side target reading accuracy on the same 151 items (TTS audio scores are a different modality). Heteronym items also accept reading_alt."
       },
       {
         id: "ja-tts-g2p-blindspot",
@@ -897,6 +926,17 @@ async function main() {
   };
 
   const outJson = path.join(outDir, "public-g2p-bench-latest.json");
+  // JVS をスキップしたときは前回の CER を残す（サイト表示が空にならないように）
+  if (!report.jvsCer?.length) {
+    try {
+      const prev = JSON.parse(readFileSync(outJson, "utf8"));
+      if (Array.isArray(prev.jvsCer) && prev.jvsCer.length) {
+        report.jvsCer = prev.jvsCer;
+      }
+    } catch {
+      /* 初回など */
+    }
+  }
   writeFileSync(outJson, `${JSON.stringify(report, null, 2)}\n`);
   console.log(`\nWrote ${outJson}`);
 

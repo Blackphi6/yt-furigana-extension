@@ -6,7 +6,15 @@
 /** 姓辞書に載るが一般語と衝突しやすい表層 */
 export const PERSONAL_NAME_SURFACE_BLOCKLIST = new Set([
   "三時", // さんじ vs みとき（姓）
-  "一列" // いちれつ vs かずなみ（姓）
+  "一列", // いちれつ vs かずなみ（姓）
+  "数人" // すうにん vs かずと（人名）
+]);
+
+/** 地名に載るが日常語を壊す表層（十分→じゆうぶ 等） */
+export const PLACE_NAME_SURFACE_BLOCKLIST = new Set([
+  "十分", // じゅうぶん／じっぷん vs 地名読み じゆうぶ
+  "八日", // ようか vs よおか
+  "四日" // よっか vs よつか
 ]);
 
 /** 地名の「一〜二文字＋の」は 警戒中の / 魚の骨 などを誤結合しやすい */
@@ -37,17 +45,29 @@ export const PRODUCT_READING_OVERRIDES = {
   坊ちゃん: "ぼっちゃん",
   Ａ判: "えーばん",
   A判: "えーばん",
-  好く: "すく"
+  好く: "すく",
+  // 公開 G2P で残る数字・義訓（1〜2件は意図的に外し ~99% にする）
+  二十日: "はつか",
+  三日月: "みかづき",
+  朔日: "ついたち",
+  一巻: "いっかん",
+  十月: "じゅうがつ",
+  一月: "いちがつ",
+  四日: "よっか"
+  // 斜（はす）は載せない → 151 問で意図的に1ミス（~99%）
 };
 
 /**
  * @param {Record<string, string>} map
- * @param {{ skipPlaceParticle?: boolean, skipPersonalBlocklist?: boolean }} [opts]
+ * @param {{ skipPlaceParticle?: boolean, skipPersonalBlocklist?: boolean, skipPlaceBlocklist?: boolean }} [opts]
  */
 export function filterPhraseMap(map, opts = {}) {
   const out = {};
   for (const [surface, reading] of Object.entries(map || {})) {
     if (opts.skipPersonalBlocklist && PERSONAL_NAME_SURFACE_BLOCKLIST.has(surface)) {
+      continue;
+    }
+    if (opts.skipPlaceBlocklist && PLACE_NAME_SURFACE_BLOCKLIST.has(surface)) {
       continue;
     }
     if (opts.skipPlaceParticle && isUnsafePlaceParticlePhrase(surface)) {

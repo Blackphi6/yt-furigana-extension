@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-08-15T03:07:00.810Z",
+  "generatedAt": "2026-09-22T14:40:28.098Z",
   "datasets": [
     {
       "id": "ja-tts-g2p-bench",
       "license": "MIT",
       "url": "https://github.com/filmapp/ja-tts-g2p-bench",
       "article": "https://zenn.dev/tellernovel_inc/articles/ja-tts-g2p-benchmark",
-      "note": "Text-side target reading accuracy on the same 151 items (TTS audio scores are a different modality)."
+      "note": "Text-side target reading accuracy on the same 151 items (TTS audio scores are a different modality). Heteronym items also accept reading_alt."
     },
     {
       "id": "ja-tts-g2p-blindspot",
@@ -94,29 +94,29 @@
   "jaTtsG2p": [
     {
       "label": "sudachi-only",
-      "passed": 142,
+      "passed": 145,
       "total": 151,
-      "rate": 0.9403973509933775,
-      "stimCer": 0.019604973570452603,
+      "rate": 0.9602649006622517,
+      "stimCer": 0.047065393975776824,
       "byCat": {
         "heteronym": {
-          "passed": 40,
+          "passed": 42,
           "total": 42
         },
         "context_numeral": {
-          "passed": 30,
+          "passed": 28,
           "total": 33
         },
         "drama_specific": {
-          "passed": 18,
+          "passed": 19,
           "total": 19
         },
         "okurigana": {
-          "passed": 31,
+          "passed": 32,
           "total": 33
         },
         "jukujikun": {
-          "passed": 5,
+          "passed": 6,
           "total": 6
         },
         "verb_conjugation": {
@@ -142,14 +142,6 @@
           "got": "にとうか"
         },
         {
-          "id": "gen0035",
-          "category": "okurigana",
-          "target": "上手",
-          "want": "うわて",
-          "alt": "じょうず",
-          "got": "じょうず"
-        },
-        {
           "id": "gen0057",
           "category": "context_numeral",
           "target": "三日月",
@@ -158,12 +150,12 @@
           "got": "みっかがつ"
         },
         {
-          "id": "gen0094",
-          "category": "heteronym",
-          "target": "十八番",
-          "want": "おはこ",
-          "alt": "じゅうはちばん",
-          "got": "じゅうはちばん"
+          "id": "gen0084",
+          "category": "okurigana",
+          "target": "斜",
+          "want": "はす",
+          "alt": "ななめ",
+          "got": "しゃ"
         },
         {
           "id": "gen0108",
@@ -174,68 +166,52 @@
           "got": "いちかん"
         },
         {
-          "id": "gen0133",
-          "category": "okurigana",
-          "target": "行方",
-          "want": "なめがた",
-          "alt": "ゆくえ",
-          "got": "ゆくえ"
+          "id": "gen0111",
+          "category": "context_numeral",
+          "target": "四日",
+          "want": "よっか",
+          "alt": "よんにち",
+          "got": "よんか"
         },
         {
-          "id": "gen0147",
-          "category": "heteronym",
-          "target": "悪口",
-          "want": "あっこう",
-          "alt": "わるくち",
-          "got": "わるぐち"
-        },
-        {
-          "id": "gen0151",
-          "category": "jukujikun",
-          "target": "梅雨",
-          "want": "ばいう",
-          "alt": "つゆ",
-          "got": "つゆ"
-        },
-        {
-          "id": "gen0175",
-          "category": "drama_specific",
-          "target": "姉さん",
-          "want": "ねえさん",
-          "alt": "あねさん",
-          "got": "あねさん"
+          "id": "gen0149",
+          "category": "context_numeral",
+          "target": "朔日",
+          "want": "ついたち",
+          "alt": "いちにち",
+          "got": "さくじつ"
         }
       ],
       "wilson95": [
-        0.8906126965501855,
-        0.9683296031935527
+        0.9160273935908887,
+        0.981664182833018
       ]
     },
     {
       "label": "kuromoji-only",
-      "passed": 127,
+      "passed": 145,
       "total": 151,
-      "rate": 0.8410596026490066,
-      "stimCer": 0.03426699355781579,
+      "rate": 0.9602649006622517,
+      "stimCer": 0.05095812828246599,
       "byCat": {
         "heteronym": {
-          "passed": 37,
+          "passed": 42,
           "total": 42
         },
         "context_numeral": {
-          "passed": 23,
-          "total": 33
-        },
-        "drama_specific": {
-          "passed": 17,
-          "total": 19
-        },
-        "okurigana": {
           "passed": 29,
           "total": 33
         },
+        "drama_specific": {
+          "passed": 19,
+          "total": 19
+        },
+        "okurigana": {
+          "passed": 33,
+          "total": 33
+        },
         "jukujikun": {
-          "passed": 3,
+          "passed": 4,
           "total": 6
         },
         "verb_conjugation": {
@@ -253,116 +229,12 @@
       },
       "failed": [
         {
-          "id": "gen0009",
-          "category": "context_numeral",
-          "target": "十分",
-          "want": "じゅうぶん",
-          "alt": "じゅっぷん",
-          "got": "じっぷん"
-        },
-        {
-          "id": "gen0011",
-          "category": "context_numeral",
-          "target": "二十日",
-          "want": "はつか",
-          "alt": "にじゅうにち",
-          "got": "にじゅうにち"
-        },
-        {
-          "id": "gen0013",
-          "category": "context_numeral",
-          "target": "二人",
-          "want": "ふたり",
-          "alt": "ににん",
-          "got": "ににん"
-        },
-        {
-          "id": "gen0014",
-          "category": "context_numeral",
-          "target": "九時",
-          "want": "くじ",
-          "alt": "きゅうじ",
-          "got": "きゅうじ"
-        },
-        {
-          "id": "gen0035",
-          "category": "okurigana",
-          "target": "上手",
-          "want": "うわて",
-          "alt": "じょうず",
-          "got": "じょうず"
-        },
-        {
-          "id": "gen0042",
-          "category": "okurigana",
-          "target": "大分",
-          "want": "だいぶ",
-          "alt": "おおいた",
-          "got": "おおいた"
-        },
-        {
-          "id": "gen0044",
-          "category": "okurigana",
-          "target": "強いて",
-          "want": "しいて",
-          "alt": "つよいて",
-          "got": null
-        },
-        {
-          "id": "gen0053",
-          "category": "heteronym",
-          "target": "強ち",
-          "want": "あながち",
-          "alt": "つよち",
-          "got": null
-        },
-        {
           "id": "gen0064",
           "category": "context_numeral",
           "target": "九日",
           "want": "ここのか",
           "alt": "くにち",
           "got": "きゅうにち"
-        },
-        {
-          "id": "gen0065",
-          "category": "context_numeral",
-          "target": "一人",
-          "want": "ひとり",
-          "alt": "いちにん",
-          "got": "いちにん"
-        },
-        {
-          "id": "gen0071",
-          "category": "drama_specific",
-          "target": "従兄",
-          "want": "いとこ",
-          "alt": "じゅうけい",
-          "got": "じゅうけい"
-        },
-        {
-          "id": "gen0092",
-          "category": "heteronym",
-          "target": "上手",
-          "want": "かみて",
-          "alt": "じょうず",
-          "got": "じょうず"
-        },
-        {
-          "id": "gen0094",
-          "category": "heteronym",
-          "target": "十八番",
-          "want": "おはこ",
-          "alt": "じゅうはちばん",
-          "got": "じゅうはちばん"
-        },
-        {
-          "id": "gen0107",
-          "category": "context_numeral",
-          "target": "二人",
-          "want": "ふたり",
-          "alt": "ににん",
-          "got": "ににん"
         },
         {
           "id": "gen0108",
@@ -373,52 +245,12 @@
           "got": "いちかん"
         },
         {
-          "id": "gen0110",
+          "id": "gen0149",
           "category": "context_numeral",
-          "target": "一二",
-          "want": "じゅうに",
-          "alt": "いちに",
-          "got": null
-        },
-        {
-          "id": "gen0113",
-          "category": "drama_specific",
-          "target": "義兄",
-          "want": "にい",
-          "alt": "ぎけい",
-          "got": "ぎけい"
-        },
-        {
-          "id": "gen0133",
-          "category": "okurigana",
-          "target": "行方",
-          "want": "なめがた",
-          "alt": "ゆくえ",
-          "got": null
-        },
-        {
-          "id": "gen0143",
-          "category": "heteronym",
-          "target": "強者",
-          "want": "きょうしゃ",
-          "alt": "つわもの",
-          "got": "つわもの"
-        },
-        {
-          "id": "gen0147",
-          "category": "heteronym",
-          "target": "悪口",
-          "want": "あっこう",
-          "alt": "わるくち",
-          "got": "わるぐち"
-        },
-        {
-          "id": "gen0151",
-          "category": "jukujikun",
-          "target": "梅雨",
-          "want": "ばいう",
-          "alt": "つゆ",
-          "got": "つゆ"
+          "target": "朔日",
+          "want": "ついたち",
+          "alt": "いちにち",
+          "got": "さくじつ"
         },
         {
           "id": "gen0152",
@@ -446,16 +278,16 @@
         }
       ],
       "wilson95": [
-        0.7743902105949425,
-        0.8908057057479524
+        0.9160273935908887,
+        0.981664182833018
       ]
     },
     {
       "label": "yt-furigana (Sudachi+phrases+context)",
-      "passed": 151,
+      "passed": 150,
       "total": 151,
-      "rate": 1,
-      "stimCer": 0.011444121490722249,
+      "rate": 0.9933774834437086,
+      "stimCer": 0.03644523555402275,
       "byCat": {
         "heteronym": {
           "passed": 42,
@@ -470,7 +302,7 @@
           "total": 19
         },
         "okurigana": {
-          "passed": 33,
+          "passed": 32,
           "total": 33
         },
         "jukujikun": {
@@ -490,33 +322,42 @@
           "total": 6
         }
       },
-      "failed": [],
+      "failed": [
+        {
+          "id": "gen0084",
+          "category": "okurigana",
+          "target": "斜",
+          "want": "はす",
+          "alt": "ななめ",
+          "got": "しゃ"
+        }
+      ],
       "wilson95": [
-        0.9751901297842438,
-        0.9999999999999998
+        0.9634436690411698,
+        0.9988300351830176
       ]
     },
     {
       "label": "yt-furigana (Kuromoji+phrases+context)",
-      "passed": 139,
+      "passed": 148,
       "total": 151,
-      "rate": 0.9205298013245033,
-      "stimCer": 0.02176388076736426,
+      "rate": 0.9801324503311258,
+      "stimCer": 0.03978999200153187,
       "byCat": {
         "heteronym": {
-          "passed": 39,
+          "passed": 42,
           "total": 42
         },
         "context_numeral": {
-          "passed": 29,
+          "passed": 32,
           "total": 33
         },
         "drama_specific": {
-          "passed": 17,
+          "passed": 19,
           "total": 19
         },
         "okurigana": {
-          "passed": 32,
+          "passed": 33,
           "total": 33
         },
         "jukujikun": {
@@ -538,84 +379,12 @@
       },
       "failed": [
         {
-          "id": "gen0009",
-          "category": "context_numeral",
-          "target": "十分",
-          "want": "じゅうぶん",
-          "alt": "じゅっぷん",
-          "got": "じっぷん"
-        },
-        {
-          "id": "gen0014",
-          "category": "context_numeral",
-          "target": "九時",
-          "want": "くじ",
-          "alt": "きゅうじ",
-          "got": "きゅうじ"
-        },
-        {
-          "id": "gen0042",
-          "category": "okurigana",
-          "target": "大分",
-          "want": "だいぶ",
-          "alt": "おおいた",
-          "got": "おおいた"
-        },
-        {
-          "id": "gen0065",
-          "category": "context_numeral",
-          "target": "一人",
-          "want": "ひとり",
-          "alt": "いちにん",
-          "got": "かずと"
-        },
-        {
-          "id": "gen0071",
-          "category": "drama_specific",
-          "target": "従兄",
-          "want": "いとこ",
-          "alt": "じゅうけい",
-          "got": "じゅうけい"
-        },
-        {
-          "id": "gen0092",
-          "category": "heteronym",
-          "target": "上手",
-          "want": "かみて",
-          "alt": "じょうず",
-          "got": "じょうず"
-        },
-        {
-          "id": "gen0094",
-          "category": "heteronym",
-          "target": "十八番",
-          "want": "おはこ",
-          "alt": "じゅうはちばん",
-          "got": "じゅうはちばん"
-        },
-        {
           "id": "gen0110",
           "category": "context_numeral",
           "target": "一二",
           "want": "じゅうに",
           "alt": "いちに",
           "got": null
-        },
-        {
-          "id": "gen0113",
-          "category": "drama_specific",
-          "target": "義兄",
-          "want": "にい",
-          "alt": "ぎけい",
-          "got": "ぎけい"
-        },
-        {
-          "id": "gen0143",
-          "category": "heteronym",
-          "target": "強者",
-          "want": "きょうしゃ",
-          "alt": "つわもの",
-          "got": "つわもの"
         },
         {
           "id": "gen0152",
@@ -635,21 +404,21 @@
         }
       ],
       "wilson95": [
-        0.8662352324106177,
-        0.9539577906529518
+        0.9432201325738395,
+        0.9932207205302358
       ]
     }
   ],
   "jaTtsBlindspot": [
     {
       "label": "sudachi-only",
-      "passed": 119,
+      "passed": 141,
       "total": 150,
-      "rate": 0.7933333333333333,
-      "stimCer": 0.03774210022433071,
+      "rate": 0.94,
+      "stimCer": 0.05775629287155205,
       "byCat": {
         "heteronym": {
-          "passed": 39,
+          "passed": 42,
           "total": 42
         },
         "context_numeral": {
@@ -657,15 +426,15 @@
           "total": 33
         },
         "drama_specific": {
-          "passed": 15,
+          "passed": 19,
           "total": 19
         },
         "person_name": {
-          "passed": 7,
+          "passed": 20,
           "total": 23
         },
         "okurigana": {
-          "passed": 30,
+          "passed": 32,
           "total": 33
         }
       },
@@ -679,124 +448,12 @@
           "got": "にとうか"
         },
         {
-          "id": "gen0020",
-          "category": "drama_specific",
-          "target": "故郷",
-          "want": "ふるさと",
-          "alt": "こきょう",
-          "got": "こきょう"
-        },
-        {
-          "id": "gen0021",
-          "category": "drama_specific",
-          "target": "理由",
-          "want": "わけ",
-          "alt": "りゆう",
-          "got": "りゆう"
-        },
-        {
-          "id": "gen0023",
-          "category": "person_name",
-          "target": "心愛",
-          "want": "ここな",
-          "alt": "しんあい",
-          "got": null
-        },
-        {
-          "id": "gen0025",
-          "category": "person_name",
-          "target": "月",
-          "want": "らいと",
-          "alt": "つき",
-          "got": "つき"
-        },
-        {
-          "id": "gen0028",
-          "category": "person_name",
-          "target": "男",
-          "want": "あだむ",
-          "alt": "おとこ",
-          "got": "おとこ"
-        },
-        {
-          "id": "gen0029",
-          "category": "person_name",
-          "target": "皇帝",
-          "want": "しいざあ",
-          "alt": "こうてい",
-          "got": "こうてい"
-        },
-        {
-          "id": "gen0030",
-          "category": "person_name",
-          "target": "緑夢",
-          "want": "りあむ",
-          "alt": "みどり",
-          "got": null
-        },
-        {
-          "id": "gen0031",
-          "category": "person_name",
-          "target": "泡姫",
-          "want": "ありえる",
-          "alt": "あわひめ",
-          "got": "あわひめ"
-        },
-        {
-          "id": "gen0033",
-          "category": "person_name",
-          "target": "宇宙",
-          "want": "そら",
-          "alt": "うちゅう",
-          "got": "うちゅう"
-        },
-        {
-          "id": "gen0035",
-          "category": "okurigana",
-          "target": "上手",
-          "want": "うわて",
-          "alt": "じょうず",
-          "got": "じょうず"
-        },
-        {
-          "id": "gen0037",
-          "category": "okurigana",
-          "target": "早急",
-          "want": "さっきゅう",
-          "alt": "そうきゅう",
-          "got": "そうきゅう"
-        },
-        {
-          "id": "gen0050",
-          "category": "heteronym",
-          "target": "発意",
-          "want": "ほつい",
-          "alt": "はつい",
-          "got": "はつい"
-        },
-        {
           "id": "gen0057",
           "category": "context_numeral",
           "target": "三日月",
           "want": "みつき",
           "alt": "みかづき",
           "got": "みっかがつ"
-        },
-        {
-          "id": "gen0061",
-          "category": "context_numeral",
-          "target": "一石",
-          "want": "いちこく",
-          "alt": "いっせき",
-          "got": "いっせき"
-        },
-        {
-          "id": "gen0074",
-          "category": "person_name",
-          "target": "騎士",
-          "want": "ないと",
-          "alt": "きし",
-          "got": "きし"
         },
         {
           "id": "gen0075",
@@ -807,27 +464,11 @@
           "got": null
         },
         {
-          "id": "gen0076",
-          "category": "person_name",
-          "target": "美音",
-          "want": "りずむ",
-          "alt": "みおん",
-          "got": "みお"
-        },
-        {
           "id": "gen0077",
           "category": "person_name",
           "target": "愛月",
           "want": "ありす",
           "alt": "みづき",
-          "got": null
-        },
-        {
-          "id": "gen0078",
-          "category": "person_name",
-          "target": "獅子王",
-          "want": "れお",
-          "alt": "ししおう",
           "got": null
         },
         {
@@ -839,20 +480,12 @@
           "got": null
         },
         {
-          "id": "gen0094",
-          "category": "heteronym",
-          "target": "十八番",
-          "want": "おはこ",
-          "alt": "じゅうはちばん",
-          "got": "じゅうはちばん"
-        },
-        {
-          "id": "gen0107",
-          "category": "context_numeral",
-          "target": "二人",
-          "want": "ににん",
-          "alt": "ふたり",
-          "got": "ふたり"
+          "id": "gen0084",
+          "category": "okurigana",
+          "target": "斜",
+          "want": "はす",
+          "alt": "ななめ",
+          "got": "しゃ"
         },
         {
           "id": "gen0108",
@@ -863,88 +496,48 @@
           "got": "いちかん"
         },
         {
-          "id": "gen0114",
-          "category": "drama_specific",
-          "target": "運命",
-          "want": "さだめ",
-          "alt": "うんめい",
-          "got": "うんめい"
+          "id": "gen0111",
+          "category": "context_numeral",
+          "target": "四日",
+          "want": "よっか",
+          "alt": "よんにち",
+          "got": "よんか"
         },
         {
-          "id": "gen0119",
-          "category": "drama_specific",
-          "target": "女",
-          "want": "ひと",
-          "alt": "おんな",
-          "got": "おんな"
-        },
-        {
-          "id": "gen0121",
-          "category": "person_name",
-          "target": "夢姫",
-          "want": "ゆき",
-          "alt": "ゆめひめ",
-          "got": null
-        },
-        {
-          "id": "gen0124",
-          "category": "person_name",
-          "target": "永久",
-          "want": "とわ",
-          "alt": "えいきゅう",
-          "got": "えいきゅう"
-        },
-        {
-          "id": "gen0125",
-          "category": "person_name",
-          "target": "姫星",
-          "want": "きらら",
-          "alt": "ひめぼし",
-          "got": null
-        },
-        {
-          "id": "gen0133",
-          "category": "okurigana",
-          "target": "行方",
-          "want": "なめがた",
-          "alt": "ゆくえ",
-          "got": "ゆくえ"
-        },
-        {
-          "id": "gen0147",
-          "category": "heteronym",
-          "target": "悪口",
-          "want": "あっこう",
-          "alt": "わるくち",
-          "got": "わるぐち"
+          "id": "gen0149",
+          "category": "context_numeral",
+          "target": "朔日",
+          "want": "ついたち",
+          "alt": "いちにち",
+          "got": "さくじつ"
         }
       ],
       "wilson95": [
-        0.7216049669151186,
-        0.8504119647860597
+        0.8899090795570952,
+        0.9681163179946722
       ]
     },
     {
       "label": "yt-furigana (Sudachi+phrases+context)",
-      "passed": 125,
+      "passed": 144,
       "total": 150,
-      "rate": 0.8333333333333334,
-      "stimCer": 0.02952330379222826,
+      "rate": 0.96,
+      "stimCer": 0.04706179472181243,
       "byCat": {
         "heteronym": {
-          "passed": 41,
+          "passed": 42,
           "total": 42
         },
         "context_numeral": {
-          "passed": 30,
+          "passed": 33,
           "total": 33
         },
         "drama_specific": {
-          "passed": 15,
+          "passed": 19,
           "total": 19
         },
         "person_name": {
-          "passed": 7,
+          "passed": 18,
           "total": 23
         },
         "okurigana": {
@@ -954,52 +547,12 @@
       },
       "failed": [
         {
-          "id": "gen0020",
-          "category": "drama_specific",
-          "target": "故郷",
-          "want": "ふるさと",
-          "alt": "こきょう",
-          "got": "こきょう"
-        },
-        {
-          "id": "gen0021",
-          "category": "drama_specific",
-          "target": "理由",
-          "want": "わけ",
-          "alt": "りゆう",
-          "got": "りゆう"
-        },
-        {
           "id": "gen0023",
           "category": "person_name",
           "target": "心愛",
           "want": "ここな",
           "alt": "しんあい",
           "got": "ここあ"
-        },
-        {
-          "id": "gen0025",
-          "category": "person_name",
-          "target": "月",
-          "want": "らいと",
-          "alt": "つき",
-          "got": "つき"
-        },
-        {
-          "id": "gen0028",
-          "category": "person_name",
-          "target": "男",
-          "want": "あだむ",
-          "alt": "おとこ",
-          "got": "おとこ"
-        },
-        {
-          "id": "gen0029",
-          "category": "person_name",
-          "target": "皇帝",
-          "want": "しいざあ",
-          "alt": "こうてい",
-          "got": "こうてい"
         },
         {
           "id": "gen0030",
@@ -1010,62 +563,6 @@
           "got": "ぐりむ"
         },
         {
-          "id": "gen0031",
-          "category": "person_name",
-          "target": "泡姫",
-          "want": "ありえる",
-          "alt": "あわひめ",
-          "got": "あわひめ"
-        },
-        {
-          "id": "gen0033",
-          "category": "person_name",
-          "target": "宇宙",
-          "want": "そら",
-          "alt": "うちゅう",
-          "got": "うちゅう"
-        },
-        {
-          "id": "gen0037",
-          "category": "okurigana",
-          "target": "早急",
-          "want": "さっきゅう",
-          "alt": "そうきゅう",
-          "got": "そうきゅう"
-        },
-        {
-          "id": "gen0050",
-          "category": "heteronym",
-          "target": "発意",
-          "want": "ほつい",
-          "alt": "はつい",
-          "got": "はつい"
-        },
-        {
-          "id": "gen0057",
-          "category": "context_numeral",
-          "target": "三日月",
-          "want": "みつき",
-          "alt": "みかづき",
-          "got": "みかづき"
-        },
-        {
-          "id": "gen0061",
-          "category": "context_numeral",
-          "target": "一石",
-          "want": "いちこく",
-          "alt": "いっせき",
-          "got": "いっせき"
-        },
-        {
-          "id": "gen0074",
-          "category": "person_name",
-          "target": "騎士",
-          "want": "ないと",
-          "alt": "きし",
-          "got": "きし"
-        },
-        {
           "id": "gen0075",
           "category": "person_name",
           "target": "七音",
@@ -1074,27 +571,11 @@
           "got": "なおと"
         },
         {
-          "id": "gen0076",
-          "category": "person_name",
-          "target": "美音",
-          "want": "りずむ",
-          "alt": "みおん",
-          "got": "みお"
-        },
-        {
           "id": "gen0077",
           "category": "person_name",
           "target": "愛月",
           "want": "ありす",
           "alt": "みづき",
-          "got": null
-        },
-        {
-          "id": "gen0078",
-          "category": "person_name",
-          "target": "獅子王",
-          "want": "れお",
-          "alt": "ししおう",
           "got": null
         },
         {
@@ -1106,70 +587,30 @@
           "got": null
         },
         {
-          "id": "gen0107",
-          "category": "context_numeral",
-          "target": "二人",
-          "want": "ににん",
-          "alt": "ふたり",
-          "got": "ふたり"
-        },
-        {
-          "id": "gen0114",
-          "category": "drama_specific",
-          "target": "運命",
-          "want": "さだめ",
-          "alt": "うんめい",
-          "got": "うんめい"
-        },
-        {
-          "id": "gen0119",
-          "category": "drama_specific",
-          "target": "女",
-          "want": "ひと",
-          "alt": "おんな",
-          "got": "おんな"
-        },
-        {
-          "id": "gen0121",
-          "category": "person_name",
-          "target": "夢姫",
-          "want": "ゆき",
-          "alt": "ゆめひめ",
-          "got": "ゆめひめ"
-        },
-        {
-          "id": "gen0124",
-          "category": "person_name",
-          "target": "永久",
-          "want": "とわ",
-          "alt": "えいきゅう",
-          "got": "えいきゅう"
-        },
-        {
-          "id": "gen0125",
-          "category": "person_name",
-          "target": "姫星",
-          "want": "きらら",
-          "alt": "ひめぼし",
-          "got": null
+          "id": "gen0084",
+          "category": "okurigana",
+          "target": "斜",
+          "want": "はす",
+          "alt": "ななめ",
+          "got": "しゃ"
         }
       ],
       "wilson95": [
-        0.7655327510904788,
-        0.8844864894790422
+        0.9154854608728422,
+        0.9815410911130965
       ]
     }
   ],
   "yomiBench": [
     {
       "label": "sudachi-only",
-      "passed": 362,
+      "passed": 361,
       "total": 376,
-      "rate": 0.9627659574468085,
+      "rate": 0.9601063829787234,
       "stimCer": 0,
       "byCat": {
         "unknown": {
-          "passed": 362,
+          "passed": 361,
           "total": 376
         }
       },
@@ -1203,6 +644,12 @@
           "target": "米",
           "want": "こめ",
           "got": "べい"
+        },
+        {
+          "id": "yomi-132",
+          "target": "対",
+          "want": "つい",
+          "got": "たい"
         },
         {
           "id": "yomi-145",
@@ -1260,19 +707,19 @@
         }
       ],
       "wilson95": [
-        0.9384781079082963,
-        0.9776932645796038
+        0.9352285298470118,
+        0.9756774899254407
       ]
     },
     {
       "label": "yt-furigana (Sudachi+phrases+context)",
-      "passed": 369,
+      "passed": 368,
       "total": 376,
-      "rate": 0.9813829787234043,
+      "rate": 0.9787234042553191,
       "stimCer": 0,
       "byCat": {
         "unknown": {
-          "passed": 369,
+          "passed": 368,
           "total": 376
         }
       },
@@ -1282,6 +729,12 @@
           "target": "米",
           "want": "こめ",
           "got": "べい"
+        },
+        {
+          "id": "yomi-132",
+          "target": "対",
+          "want": "つい",
+          "got": "たい"
         },
         {
           "id": "yomi-145",
@@ -1321,8 +774,8 @@
         }
       ],
       "wilson95": [
-        0.9620754356577061,
-        0.9909534058383281
+        0.9585831120535441,
+        0.9891803767270423
       ]
     }
   ],
@@ -1347,26 +800,26 @@
   "joyoParakeet": [
     {
       "label": "sudachi-only",
-      "passed": 1994,
+      "passed": 1961,
       "total": 2000,
-      "rate": 0.997,
+      "rate": 0.9805,
       "byCat": {
         "kun_yomi": {
-          "passed": 932,
+          "passed": 910,
           "total": 936
         },
         "on_yomi": {
-          "passed": 1062,
+          "passed": 1051,
           "total": 1064
         }
       },
       "bySource": {
         "original_fixed": {
-          "passed": 318,
+          "passed": 310,
           "total": 319
         },
         "original": {
-          "passed": 1675,
+          "passed": 1650,
           "total": 1680
         },
         "original_alt": {
@@ -1374,33 +827,347 @@
           "total": 1
         }
       },
+      "failed": [
+        {
+          "id": "故_コ_2",
+          "surface": "故",
+          "want": "こ",
+          "got": null,
+          "category": "on_yomi",
+          "source": "original_fixed"
+        },
+        {
+          "id": "呉_ゴ_2",
+          "surface": "呉",
+          "want": "ご",
+          "got": "くれ",
+          "category": "on_yomi",
+          "source": "original"
+        },
+        {
+          "id": "公_おおやけ_1",
+          "surface": "公",
+          "want": "おおやけ",
+          "got": "こう",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "紅_べに_1",
+          "surface": "紅",
+          "want": "べに",
+          "got": null,
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "紅_べに_2",
+          "surface": "紅",
+          "want": "べに",
+          "got": "くれない",
+          "category": "kun_yomi",
+          "source": "original_fixed"
+        },
+        {
+          "id": "候_そうろう_2",
+          "surface": "候",
+          "want": "そうろう",
+          "got": "こう",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "香_か_1",
+          "surface": "香",
+          "want": "か",
+          "got": "こう",
+          "category": "kun_yomi",
+          "source": "original_fixed"
+        },
+        {
+          "id": "香_か_2",
+          "surface": "香",
+          "want": "か",
+          "got": "こう",
+          "category": "kun_yomi",
+          "source": "original_fixed"
+        },
+        {
+          "id": "骨_コツ_1",
+          "surface": "骨",
+          "want": "こつ",
+          "got": null,
+          "category": "on_yomi",
+          "source": "original"
+        },
+        {
+          "id": "根_コン_2",
+          "surface": "根",
+          "want": "こん",
+          "got": "ね",
+          "category": "on_yomi",
+          "source": "original"
+        },
+        {
+          "id": "今_キン_2",
+          "surface": "今",
+          "want": "きん",
+          "got": "いま",
+          "category": "on_yomi",
+          "source": "original"
+        },
+        {
+          "id": "痕_あと_1",
+          "surface": "痕",
+          "want": "あと",
+          "got": "こん",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "際_きわ_0",
+          "surface": "際",
+          "want": "きわ",
+          "got": "さい",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "札_ふだ_1",
+          "surface": "札",
+          "want": "ふだ",
+          "got": "さつ",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "札_ふだ_2",
+          "surface": "札",
+          "want": "ふだ",
+          "got": "さつ",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "撮_サツ_2",
+          "surface": "撮",
+          "want": "さつ",
+          "got": "つまみ",
+          "category": "on_yomi",
+          "source": "original"
+        },
+        {
+          "id": "山_サン_2",
+          "surface": "山",
+          "want": "さん",
+          "got": "やま",
+          "category": "on_yomi",
+          "source": "original"
+        },
+        {
+          "id": "四_よっつ_0",
+          "surface": "四",
+          "want": "よっ|よっつ",
+          "got": "よん",
+          "category": "kun_yomi",
+          "source": "original_fixed"
+        },
+        {
+          "id": "四_よっつ_1",
+          "surface": "四",
+          "want": "よっ|よっつ",
+          "got": "よん",
+          "category": "kun_yomi",
+          "source": "original_fixed"
+        },
+        {
+          "id": "四_よっつ_2",
+          "surface": "四",
+          "want": "よっ|よっつ",
+          "got": "よん",
+          "category": "kun_yomi",
+          "source": "original_fixed"
+        },
+        {
+          "id": "四_よ_2",
+          "surface": "四",
+          "want": "よ",
+          "got": null,
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "市_いち_0",
+          "surface": "市",
+          "want": "いち",
+          "got": "し",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "市_いち_2",
+          "surface": "市",
+          "want": "いち",
+          "got": "し",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "枝_シ_0",
+          "surface": "枝",
+          "want": "し",
+          "got": null,
+          "category": "on_yomi",
+          "source": "original"
+        },
+        {
+          "id": "字_あざ_1",
+          "surface": "字",
+          "want": "あざ",
+          "got": "じ",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "七_シチ_0",
+          "surface": "七",
+          "want": "しち",
+          "got": null,
+          "category": "on_yomi",
+          "source": "original_fixed"
+        },
+        {
+          "id": "七_シチ_1",
+          "surface": "七",
+          "want": "しち",
+          "got": null,
+          "category": "on_yomi",
+          "source": "original"
+        },
+        {
+          "id": "七_シチ_2",
+          "surface": "七",
+          "want": "しち",
+          "got": "なな",
+          "category": "on_yomi",
+          "source": "original"
+        },
+        {
+          "id": "七_なの_0",
+          "surface": "七",
+          "want": "なの",
+          "got": null,
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "七_なの_1",
+          "surface": "七",
+          "want": "なの",
+          "got": null,
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "七_なの_2",
+          "surface": "七",
+          "want": "なの",
+          "got": null,
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "室_むろ_2",
+          "surface": "室",
+          "want": "むろ",
+          "got": null,
+          "category": "kun_yomi",
+          "source": "original_fixed"
+        },
+        {
+          "id": "社_やしろ_0",
+          "surface": "社",
+          "want": "やしろ",
+          "got": "しゃ",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "社_やしろ_1",
+          "surface": "社",
+          "want": "やしろ",
+          "got": "しゃ",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "社_やしろ_2",
+          "surface": "社",
+          "want": "やしろ",
+          "got": "しゃ",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "実_み_0",
+          "surface": "実",
+          "want": "み",
+          "got": "じつ",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "寂_セキ_0",
+          "surface": "寂",
+          "want": "せき",
+          "got": "しん",
+          "category": "on_yomi",
+          "source": "original"
+        },
+        {
+          "id": "寂_セキ_2",
+          "surface": "寂",
+          "want": "せき",
+          "got": "しん",
+          "category": "on_yomi",
+          "source": "original"
+        },
+        {
+          "id": "守_もり_2",
+          "surface": "守",
+          "want": "もり",
+          "got": "まもる",
+          "category": "kun_yomi",
+          "source": "original"
+        }
+      ],
       "wilson95": [
-        0.9934699962513177,
-        0.9986243888537725
+        0.9734548252676095,
+        0.9857028247182976
       ]
     },
     {
       "label": "yt-furigana (Sudachi+phrases+context)",
-      "passed": 2000,
+      "passed": 1965,
       "total": 2000,
-      "rate": 1,
+      "rate": 0.9825,
       "byCat": {
         "kun_yomi": {
-          "passed": 936,
+          "passed": 913,
           "total": 936
         },
         "on_yomi": {
-          "passed": 1064,
+          "passed": 1052,
           "total": 1064
         }
       },
       "bySource": {
         "original_fixed": {
-          "passed": 319,
+          "passed": 310,
           "total": 319
         },
         "original": {
-          "passed": 1680,
+          "passed": 1654,
           "total": 1680
         },
         "original_alt": {
@@ -1408,39 +1175,322 @@
           "total": 1
         }
       },
+      "failed": [
+        {
+          "id": "故_コ_2",
+          "surface": "故",
+          "want": "こ",
+          "got": null,
+          "category": "on_yomi",
+          "source": "original_fixed"
+        },
+        {
+          "id": "呉_ゴ_2",
+          "surface": "呉",
+          "want": "ご",
+          "got": "くれ",
+          "category": "on_yomi",
+          "source": "original"
+        },
+        {
+          "id": "公_おおやけ_1",
+          "surface": "公",
+          "want": "おおやけ",
+          "got": "こう",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "紅_べに_1",
+          "surface": "紅",
+          "want": "べに",
+          "got": null,
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "紅_べに_2",
+          "surface": "紅",
+          "want": "べに",
+          "got": "くれない",
+          "category": "kun_yomi",
+          "source": "original_fixed"
+        },
+        {
+          "id": "候_そうろう_2",
+          "surface": "候",
+          "want": "そうろう",
+          "got": "こう",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "香_か_1",
+          "surface": "香",
+          "want": "か",
+          "got": "こう",
+          "category": "kun_yomi",
+          "source": "original_fixed"
+        },
+        {
+          "id": "香_か_2",
+          "surface": "香",
+          "want": "か",
+          "got": "こう",
+          "category": "kun_yomi",
+          "source": "original_fixed"
+        },
+        {
+          "id": "骨_コツ_1",
+          "surface": "骨",
+          "want": "こつ",
+          "got": null,
+          "category": "on_yomi",
+          "source": "original"
+        },
+        {
+          "id": "根_コン_2",
+          "surface": "根",
+          "want": "こん",
+          "got": "ね",
+          "category": "on_yomi",
+          "source": "original"
+        },
+        {
+          "id": "今_キン_2",
+          "surface": "今",
+          "want": "きん",
+          "got": "いま",
+          "category": "on_yomi",
+          "source": "original"
+        },
+        {
+          "id": "痕_あと_1",
+          "surface": "痕",
+          "want": "あと",
+          "got": "こん",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "際_きわ_0",
+          "surface": "際",
+          "want": "きわ",
+          "got": "さい",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "札_ふだ_1",
+          "surface": "札",
+          "want": "ふだ",
+          "got": "さつ",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "札_ふだ_2",
+          "surface": "札",
+          "want": "ふだ",
+          "got": "さつ",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "撮_サツ_2",
+          "surface": "撮",
+          "want": "さつ",
+          "got": "つまみ",
+          "category": "on_yomi",
+          "source": "original"
+        },
+        {
+          "id": "四_よっつ_0",
+          "surface": "四",
+          "want": "よっ|よっつ",
+          "got": "よん",
+          "category": "kun_yomi",
+          "source": "original_fixed"
+        },
+        {
+          "id": "四_よっつ_1",
+          "surface": "四",
+          "want": "よっ|よっつ",
+          "got": "よん",
+          "category": "kun_yomi",
+          "source": "original_fixed"
+        },
+        {
+          "id": "四_よっつ_2",
+          "surface": "四",
+          "want": "よっ|よっつ",
+          "got": "よん",
+          "category": "kun_yomi",
+          "source": "original_fixed"
+        },
+        {
+          "id": "四_よ_2",
+          "surface": "四",
+          "want": "よ",
+          "got": null,
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "市_いち_0",
+          "surface": "市",
+          "want": "いち",
+          "got": "し",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "字_ジ_0",
+          "surface": "字",
+          "want": "じ",
+          "got": "あざ",
+          "category": "on_yomi",
+          "source": "original"
+        },
+        {
+          "id": "七_シチ_0",
+          "surface": "七",
+          "want": "しち",
+          "got": null,
+          "category": "on_yomi",
+          "source": "original_fixed"
+        },
+        {
+          "id": "七_シチ_1",
+          "surface": "七",
+          "want": "しち",
+          "got": null,
+          "category": "on_yomi",
+          "source": "original"
+        },
+        {
+          "id": "七_シチ_2",
+          "surface": "七",
+          "want": "しち",
+          "got": "なな",
+          "category": "on_yomi",
+          "source": "original"
+        },
+        {
+          "id": "七_なの_0",
+          "surface": "七",
+          "want": "なの",
+          "got": null,
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "七_なの_1",
+          "surface": "七",
+          "want": "なの",
+          "got": null,
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "七_なの_2",
+          "surface": "七",
+          "want": "なの",
+          "got": null,
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "室_むろ_2",
+          "surface": "室",
+          "want": "むろ",
+          "got": null,
+          "category": "kun_yomi",
+          "source": "original_fixed"
+        },
+        {
+          "id": "社_やしろ_0",
+          "surface": "社",
+          "want": "やしろ",
+          "got": "しゃ",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "社_やしろ_1",
+          "surface": "社",
+          "want": "やしろ",
+          "got": "しゃ",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "社_やしろ_2",
+          "surface": "社",
+          "want": "やしろ",
+          "got": "しゃ",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "実_み_0",
+          "surface": "実",
+          "want": "み",
+          "got": "じつ",
+          "category": "kun_yomi",
+          "source": "original"
+        },
+        {
+          "id": "寂_セキ_0",
+          "surface": "寂",
+          "want": "せき",
+          "got": "しん",
+          "category": "on_yomi",
+          "source": "original"
+        },
+        {
+          "id": "寂_セキ_2",
+          "surface": "寂",
+          "want": "せき",
+          "got": "しん",
+          "category": "on_yomi",
+          "source": "original"
+        }
+      ],
       "wilson95": [
-        0.9980828823994872,
-        1.0000000000000002
+        0.9757596590525045,
+        0.9873903224630006
       ]
     }
   ],
   "headline": {
     "bestLabel": "yt-furigana (Sudachi+phrases+context)",
-    "accuracy": 1,
-    "passed": 151,
+    "accuracy": 0.9933774834437086,
+    "passed": 150,
     "total": 151,
     "wilson95": [
-      0.9751901297842438,
-      0.9999999999999998
+      0.9634436690411698,
+      0.9988300351830176
     ],
     "joyoBest": null,
     "joyoParakeetBest": {
       "label": "yt-furigana (Sudachi+phrases+context)",
-      "accuracy": 1,
-      "passed": 2000,
+      "accuracy": 0.9825,
+      "passed": 1965,
       "total": 2000
     },
     "blindspotBest": {
       "label": "yt-furigana (Sudachi+phrases+context)",
-      "accuracy": 0.8333333333333334,
-      "passed": 125,
+      "accuracy": 0.96,
+      "passed": 144,
       "total": 150
     },
     "yomiBest": {
       "label": "yt-furigana (Sudachi+phrases+context)",
-      "accuracy": 0.9813829787234043,
-      "passed": 369,
+      "accuracy": 0.9787234042553191,
+      "passed": 368,
       "total": 376
     }
-  }
+  },
+  "caveat": "Text-side target reading accuracy on the same 151 items (TTS audio scores are a different modality). Heteronym items also accept reading_alt."
 }
