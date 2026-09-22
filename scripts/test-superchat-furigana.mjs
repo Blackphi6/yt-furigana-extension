@@ -83,6 +83,7 @@ import {
 } from "../extensions/yt-superchat-furigana/src/sc-card-export.js";
 import {
   clampPanelPosition,
+  flashActionSuccess,
   isTopYoutubeWatchFrame,
   parseStoredPanelPos,
   shouldCloseScPreview,
@@ -128,6 +129,36 @@ assert.ok(!TARGET_SELECTOR.includes("text-message-renderer"));
   assert.match(loadingHtml, /ytscf-sc-preview__spinner/);
   assert.match(loadingHtml, /data-act="previewClose"/);
   assert.match(loadingHtml, /プレビューを準備しています/);
+
+  const flashBtn = {
+    textContent: "コピー",
+    classList: {
+      _s: new Set(),
+      add(c) {
+        this._s.add(c);
+      },
+      remove(c) {
+        this._s.delete(c);
+      },
+      contains(c) {
+        return this._s.has(c);
+      }
+    },
+    attrs: /** @type {Record<string, string>} */ ({}),
+    getAttribute(k) {
+      return this.attrs[k] ?? null;
+    },
+    setAttribute(k, v) {
+      this.attrs[k] = String(v);
+    },
+    removeAttribute(k) {
+      delete this.attrs[k];
+    }
+  };
+  assert.equal(flashActionSuccess(/** @type {any} */ (flashBtn)), true);
+  assert.equal(flashBtn.textContent, "✓");
+  assert.equal(flashBtn.classList.contains("is-success"), true);
+  assert.equal(flashBtn.getAttribute("data-ytscf-label"), "コピー");
 }
 
 // 累積パネル対象ページ（Shorts はスパチャ無しなので除外）

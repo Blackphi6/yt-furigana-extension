@@ -167,6 +167,43 @@ export function buildScPreviewLoadingHtml() {
 }
 
 /**
+ * コピー／ダウンロード成功時にボタンへ緑チェックを一瞬出す。
+ * @param {HTMLElement | null | undefined} btn
+ * @param {{ doneLabel?: string, ms?: number }} [opts]
+ */
+export function flashActionSuccess(btn, opts = {}) {
+  if (!btn || typeof btn !== "object") return false;
+  const doneLabel = opts.doneLabel || "✓";
+  const ms = Number(opts.ms) > 0 ? Number(opts.ms) : 1400;
+  if (!btn.getAttribute("data-ytscf-label")) {
+    btn.setAttribute("data-ytscf-label", String(btn.textContent || ""));
+  }
+  const prevTimer = Number(btn.getAttribute("data-ytscf-flash-timer") || 0);
+  const clearTimer =
+    typeof globalThis.clearTimeout === "function"
+      ? globalThis.clearTimeout.bind(globalThis)
+      : () => {};
+  const setTimer =
+    typeof globalThis.setTimeout === "function"
+      ? globalThis.setTimeout.bind(globalThis)
+      : (fn) => {
+          fn();
+          return 0;
+        };
+  if (prevTimer) clearTimer(prevTimer);
+  btn.textContent = doneLabel;
+  btn.classList.add("is-success");
+  btn.setAttribute("aria-live", "polite");
+  const timer = setTimer(() => {
+    btn.textContent = btn.getAttribute("data-ytscf-label") || "";
+    btn.classList.remove("is-success");
+    btn.removeAttribute("data-ytscf-flash-timer");
+  }, ms);
+  btn.setAttribute("data-ytscf-flash-timer", String(timer));
+  return true;
+}
+
+/**
  * @param {{
  *   getLedgerEnabled: () => boolean,
  *   getVideoId?: () => string,
@@ -221,13 +258,13 @@ export function installScLedgerPanel(deps) {
         <label>範囲 <input type="text" data-el="rangeStart" placeholder="0:00" /></label>
         <span>〜</span>
         <label><input type="text" data-el="rangeEnd" placeholder="終了" /></label>
-        <button type="button" class="ytscf-ledger-panel__btn" data-act="pngRange">範囲画像</button>
+        <button type="button" class="ytscf-ledger-panel__btn" data-act="pngRange">範囲ダウンロード</button>
       </div>
       <div class="ytscf-ledger-panel__select-bar">
         <label class="ytscf-ledger-panel__check-all">
           <input type="checkbox" data-el="selectAll" /> 全選択
         </label>
-        <button type="button" class="ytscf-ledger-panel__btn" data-act="pngSelected">選択画像</button>
+        <button type="button" class="ytscf-ledger-panel__btn" data-act="pngSelected">選択ダウンロード</button>
       </div>
       <div class="ytscf-ledger-panel__progress" data-el="progressWrap" hidden>
         <progress data-el="progress" max="100" value="0"></progress>
@@ -545,7 +582,7 @@ export function installScLedgerPanel(deps) {
               )}">コピー</button>
               <button type="button" class="ytscf-ledger-panel__mini" data-act="pngOne" data-id="${escapeHtml(
                 item.id
-              )}">画像</button>
+              )}">ダウンロード</button>
             </span>
           </div>
           <p class="ytscf-ledger-panel__msg">${escapeHtml(
@@ -941,9 +978,13 @@ export function installScLedgerPanel(deps) {
       const id = actEl.getAttribute("data-id");
       const entry = items.find((x) => x.id === id);
       if (!entry) return;
+      const btn = /** @type {HTMLElement} */ (actEl);
       void cardFuriganaOpts(entry)
         .then((opts) => downloadScCardPng(entry, opts))
-        .then(() => setStatus("画像を保存しました"))
+        .then(() => {
+          flashActionSuccess(btn);
+          setStatus("ダウンロードしました");
+        })
         .catch((err) => setStatus(String(err?.message || err)));
       return;
     }
@@ -951,9 +992,13 @@ export function installScLedgerPanel(deps) {
       const id = actEl.getAttribute("data-id");
       const entry = items.find((x) => x.id === id);
       if (!entry) return;
+      const btn = /** @type {HTMLElement} */ (actEl);
       void cardFuriganaOpts(entry)
         .then((opts) => copyScCardPngToClipboard(entry, opts))
-        .then(() => setStatus("クリップボードにコピーしました"))
+        .then(() => {
+          flashActionSuccess(btn);
+          setStatus("クリップボードにコピーしました");
+        })
         .catch((err) => setStatus(String(err?.message || err)));
       return;
     }
@@ -972,12 +1017,16 @@ export function installScLedgerPanel(deps) {
         setStatus("チェックした SC がありません（全選択可）");
         return;
       }
-      setStatus(`画像書き出し 0/${selected.length}`);
+      const btn = /** @type {HTMLElement} */ (actEl);
+      setStatus(`ダウンロード 0/${selected.length}`);
       void downloadScCardPngBatch(selected, {
         resolveOpts: (e) => cardFuriganaOpts(e),
-        onProgress: (i, n) => setStatus(`画像書き出し ${i}/${n}`)
+        onProgress: (i, n) => setStatus(`ダウンロード ${i}/${n}`)
       })
-        .then(() => setStatus(`選択 ${selected.length} 枚完了`))
+        .then(() => {
+          flashActionSuccess(btn);
+          setStatus(`選択 ${selected.length} 件ダウンロード完了`);
+        })
         .catch((err) => setStatus(String(err?.message || err)));
       return;
     }
@@ -1033,11 +1082,16 @@ export function installScLedgerPanel(deps) {
         setStatus("範囲に該当する SC がありません");
         return;
       }
-      setStatus(`画像書き出し 0/${filtered.length}`);
+      setStatus(`ダウンロード 0/${filtered.length}`);
       void downloadScCardPngBatch(filtered, {
         resolveOpts: (e) => cardFuriganaOpts(e),
-        onProgress: (i, n) => setStatus(`画像書き出し ${i}/${n}`)
-      }).then(() => setStatus(`画像 ${filtered.length} 枚完了`));
+        onProgress: (i, n) => setStatus(`ダウンロード ${i}/${n}`)
+      })
+        .then(() => {
+          flashActionSuccess(/** @type {HTMLElement} */ (actEl));
+          setStatus(`${filtered.length} 件ダウンロード完了`);
+        })
+        .catch((err) => setStatus(String(err?.message || err)));
     }
   });
 
