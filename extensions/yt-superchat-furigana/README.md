@@ -1,6 +1,6 @@
 # YT Live Chat Furigana
 
-YouTube ライブの **Super Chat**（＋上部ティッカー）と **通常チャット**、および **StreamYard** ステージ上のコメントバナー本文に、端末内 kuromoji でふりがなを付ける Chrome 拡張です。Super Chat / 通常チャットは個別オン／オフ。辞書は本体と同じく **小型を先に・Sudachi Full／地名などはアイドル後**。**スパチャ累積パネル**・CSV・**1枚PNG（タイムコード付き）**・**プレビューのふりがな**・アーカイブの手動全件取得・**名前／本文／金額検索**に対応。Orion/iOS ではチャット iframe を親から横断し、kuromoji が失敗したときは公開読み API に自動フォールバックします。
+YouTube ライブの **Super Chat**（＋上部ティッカー）と **通常チャット**、および **StreamYard** ステージ上のコメントバナー本文に、端末内 kuromoji でふりがなを付ける Chrome 拡張です。Super Chat / 通常チャットは個別オン／オフ。辞書は本体と同じく **小型を先に・Sudachi Full／地名などはアイドル後**。**スパチャ累積パネル**・CSV・**1枚PNG（タイムコード付き）**・**プレビューのふりがな**・アーカイブの手動全件取得・**名前／本文／金額検索**に対応。Orion/iOS ではチャット iframe を親から横断し、`contentDocument` が取れないときは MAIN 世界の postMessage 橋でルビを付け、kuromoji が失敗／固まったときは公開読み API に自動フォールバックします。
 
 - 製品ページ: https://blackphi6.github.io/yt-furigana-extension/superchat.html
 - プライバシー: https://blackphi6.github.io/yt-furigana-extension/privacy-superchat.html

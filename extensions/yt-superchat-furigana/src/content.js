@@ -38,6 +38,11 @@ import {
   restoreSuperChatMessages
 } from "./process.js";
 import {
+  applyPageRubyItems,
+  listChatFrameWindows,
+  listPageRubyTargets
+} from "./page-ruby-bridge.js";
+import {
   HIDE_TEXT_MESSAGES_CLASS,
   isAnyTargetEnabled,
   normalizeYtscfState,
@@ -70,6 +75,9 @@ const pendingApiEls = new WeakSet();
 /** kuromoji が使えない端末（Orion/iOS 等）では読み API へ自動フォールバック */
 let tokenizerFailed = false;
 let readingApiFallback = false;
+
+/** kuromoji 起動が長い／固まる端末向け（iPad Orion で無限待ちを防ぐ） */
+const KUROMOJI_TIMEOUT_MS = 2500;
 
 /** iframe 出現監視（親フレーム専用） */
 /** @type {MutationObserver | null} */
@@ -149,12 +157,37 @@ function hasChatAppInDocument() {
   return chatDocuments().some((doc) => Boolean(doc.querySelector("yt-live-chat-app")));
 }
 
+/**
+ * contentDocument が取れなくても chatframe の contentWindow があるとき
+ * （Orion で台帳だけ動くパターン）。
+ */
+function preferParentChatEngine() {
+  if (!isTopYoutubeWatchFrame()) return false;
+  if (hasChatAppInDocument()) return false;
+  try {
+    const frames = document.querySelectorAll(
+      "#chatframe, iframe#chatframe, iframe[src*='live_chat'], ytd-live-chat-frame iframe"
+    );
+    for (const frame of frames) {
+      try {
+        if (/** @type {HTMLIFrameElement} */ (frame).contentWindow) return true;
+      } catch {
+        /* ignore */
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+  return false;
+}
+
 function shouldRunEngineNow() {
   return shouldRunLiveChatEngine({
     href: location.href,
     ledgerEnabled: state.ledgerEnabled,
     hasChatApp: hasChatAppInDocument(),
-    isTopWatchFrame: isTopYoutubeWatchFrame()
+    isTopWatchFrame: isTopYoutubeWatchFrame(),
+    preferParentChatEngine: preferParentChatEngine()
   });
 }
 
@@ -359,9 +392,28 @@ function ensureTokenizer() {
   if (tokenizerPromise) return tokenizerPromise;
 
   tokenizerPromise = new Promise((resolve, reject) => {
+    let settled = false;
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      tokenizerPromise = null;
+      tokenizerFailed = true;
+      readingApiFallback = true;
+      setStatus({
+        ready: false,
+        tokenizerFailed: true,
+        readingApiFallback: true,
+        error: `kuromoji timeout ${KUROMOJI_TIMEOUT_MS}ms`
+      });
+      reject(new Error(`kuromoji timeout ${KUROMOJI_TIMEOUT_MS}ms`));
+    }, KUROMOJI_TIMEOUT_MS);
+
     kuromoji
       .builder({ dicPath: chrome.runtime.getURL("dict/") })
       .build((error, built) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
         if (error) {
           tokenizerPromise = null;
           tokenizerFailed = true;
@@ -513,6 +565,50 @@ async function processOne(el, enabledForKind) {
   }
 }
 
+/**
+ * contentDocument 不可の iframe 向け: MAIN 世界ブリッジで本文を取り、ルビ HTML を返す。
+ * @returns {Promise<number>} 適用件数
+ */
+async function scanViaPageBridge() {
+  const canLocal = Boolean(tokenize);
+  const canApi = state.readingApiEnabled || readingApiFallback;
+  if (!canLocal && !canApi) return 0;
+  if (!state.superChatEnabled && !state.chatEnabled) return 0;
+
+  const wins = listChatFrameWindows(document);
+  if (!wins.length) return 0;
+
+  let cssHref = "";
+  try {
+    cssHref = chrome.runtime.getURL("dist/content.css");
+  } catch {
+    cssHref = "";
+  }
+
+  const targets = await listPageRubyTargets(wins, cssHref);
+  /** @type {Array<{ key: string, html: string, original: string }>} */
+  const batch = [];
+  for (const t of targets) {
+    if (t.done) continue;
+    if (t.kind === "chat" || t.kind === "ticker") {
+      if (t.kind === "chat" && !state.chatEnabled) continue;
+      if (t.kind === "ticker" && !state.superChatEnabled) continue;
+    }
+    if (t.kind === "superchat" && !state.superChatEnabled) continue;
+    if (!needsFurigana(t.plain)) continue;
+    const html = await convert(t.plain);
+    if (!html || html === t.plain) continue;
+    batch.push({ key: t.key, html, original: t.plain });
+  }
+  if (!batch.length) return 0;
+  const applied = await applyPageRubyItems(wins, batch);
+  if (applied > 0) {
+    processedCount += applied;
+    setStatus({ processedCount, pageBridgeApplied: applied });
+  }
+  return applied;
+}
+
 function scan() {
   scanQueued = false;
   if (!shouldRunEngineNow()) return;
@@ -565,9 +661,11 @@ function scan() {
     return;
   }
 
+  let domHits = 0;
   if (state.superChatEnabled) {
     for (const doc of docs) {
       for (const el of collectSuperChatMessageElements(doc)) {
+        domHits += 1;
         void processOne(el, true);
       }
     }
@@ -575,9 +673,17 @@ function scan() {
   if (state.chatEnabled) {
     for (const doc of docs) {
       for (const el of collectChatMessageElements(doc)) {
+        domHits += 1;
         void processOne(el, true);
       }
     }
+  }
+
+  // Orion: DOM 横断できなくても MAIN 橋で付ける
+  if (domHits === 0 || preferParentChatEngine()) {
+    void scanViaPageBridge().catch((err) => {
+      console.warn("[YT Live Chat Furigana] page bridge", err?.message || err);
+    });
   }
 }
 
@@ -684,13 +790,18 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       hideTextMessages: state.hideTextMessages,
       ledgerEnabled: state.ledgerEnabled,
       readingApiEnabled: state.readingApiEnabled,
+      readingApiFallback,
+      tokenizerFailed,
       enabled: isAnyTargetEnabled(state),
-      ready: Boolean(tokenize),
+      ready: Boolean(tokenize) || readingApiFallback || state.readingApiEnabled,
       processedCount,
       ledgerCount,
       href: location.href,
       videoId: currentVideoId(),
-      hasKanjiProbe: hasKanji("漢字")
+      hasKanjiProbe: hasKanji("漢字"),
+      chatDocs: chatDocuments().length,
+      preferParentChatEngine: preferParentChatEngine(),
+      chatWindows: listChatFrameWindows(document).length
     });
     return false;
   }

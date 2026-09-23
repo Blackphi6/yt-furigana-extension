@@ -9,10 +9,19 @@
 
   const REQ = "YTSCF_PAGE_PAID_REQUEST";
   const RES = "YTSCF_PAGE_PAID_RESULT";
+  const RUBY_LIST_REQ = "YTSCF_PAGE_RUBY_LIST_REQUEST";
+  const RUBY_LIST_RES = "YTSCF_PAGE_RUBY_LIST_RESULT";
+  const RUBY_APPLY_REQ = "YTSCF_PAGE_RUBY_APPLY_REQUEST";
+  const RUBY_APPLY_RES = "YTSCF_PAGE_RUBY_APPLY_RESULT";
+  const RUBY_ENSURE_CSS = "YTSCF_PAGE_RUBY_ENSURE_CSS";
+  const RUBY_KEY_ATTR = "data-ytscf-ruby-key";
+  const DONE_ATTR = "data-ytscf-done";
+  const ORIGINAL_ATTR = "data-ytscf-original";
   const TICKER_SEL =
     "yt-live-chat-ticker-paid-message-item-renderer, yt-live-chat-ticker-paid-sticker-item-renderer";
   const PAID_SEL =
     "yt-live-chat-paid-message-renderer, yt-live-chat-paid-sticker-renderer";
+  const TEXT_SEL = "yt-live-chat-text-message-renderer";
 
   function simpleText(value) {
     if (!value) return "";
@@ -322,16 +331,200 @@
     return out;
   }
 
+  /**
+   * @param {Element} host
+   * @param {string} kind
+   * @param {number} index
+   */
+  function ensureRubyKey(host, kind, index) {
+    let key = host.getAttribute(RUBY_KEY_ATTR);
+    if (key) return key;
+    const rec = hostData(host);
+    const id =
+      (rec && typeof rec.id === "string" && rec.id) ||
+      host.getAttribute("id") ||
+      "";
+    key = id
+      ? `${kind}:${id}`
+      : `${kind}:${index}:${String(host.textContent || "").slice(0, 24)}`;
+    try {
+      host.setAttribute(RUBY_KEY_ATTR, key);
+    } catch {
+      /* ignore */
+    }
+    return key;
+  }
+
+  /**
+   * @param {Element} host
+   * @returns {HTMLElement | null}
+   */
+  function messageElFromHost(host) {
+    const deep = queryDeep(host, "#message");
+    if (deep[0] && deep[0] instanceof HTMLElement) return deep[0];
+    try {
+      const el = host.querySelector("#message");
+      if (el instanceof HTMLElement) return el;
+    } catch {
+      /* ignore */
+    }
+    return null;
+  }
+
+  /**
+   * @param {HTMLElement} el
+   */
+  function plainFromMessage(el) {
+    const saved = el.getAttribute(ORIGINAL_ATTR);
+    if (saved != null && saved !== "") return saved;
+    try {
+      const clone = el.cloneNode(true);
+      if (clone instanceof HTMLElement) {
+        clone.querySelectorAll("rt").forEach((n) => n.remove());
+        return String(clone.textContent || "")
+          .replace(/\u200b/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+    } catch {
+      /* ignore */
+    }
+    return String(el.textContent || "")
+      .replace(/\u200b/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function listRubyTargets() {
+    const isChat =
+      /\/live_chat/i.test(location.pathname || "") ||
+      Boolean(document.querySelector("yt-live-chat-app"));
+    if (!isChat) return [];
+    /** @type {Array<{ key: string, plain: string, kind: string, done: boolean }>} */
+    const out = [];
+    const groups = [
+      { kind: "superchat", sel: PAID_SEL },
+      { kind: "ticker", sel: TICKER_SEL },
+      { kind: "chat", sel: TEXT_SEL }
+    ];
+    let index = 0;
+    for (const g of groups) {
+      const hosts = queryDeep(document, g.sel);
+      for (const host of hosts) {
+        const msg = messageElFromHost(host);
+        if (!msg) continue;
+        const plain = plainFromMessage(msg);
+        if (!plain) continue;
+        const key = ensureRubyKey(host, g.kind, index++);
+        out.push({
+          key,
+          plain,
+          kind: g.kind,
+          done: msg.hasAttribute(DONE_ATTR)
+        });
+      }
+    }
+    return out;
+  }
+
+  /**
+   * @param {Array<{ key?: string, html?: string, original?: string }>} items
+   */
+  function applyRubyItems(items) {
+    if (!Array.isArray(items) || !items.length) return 0;
+    /** @type {Map<string, HTMLElement>} */
+    const byKey = new Map();
+    for (const host of [
+      ...queryDeep(document, PAID_SEL),
+      ...queryDeep(document, TICKER_SEL),
+      ...queryDeep(document, TEXT_SEL)
+    ]) {
+      const key = host.getAttribute(RUBY_KEY_ATTR);
+      if (!key) continue;
+      const msg = messageElFromHost(host);
+      if (msg) byKey.set(key, msg);
+    }
+    let applied = 0;
+    for (const item of items) {
+      const key = String(item?.key || "").trim();
+      const html = String(item?.html || "");
+      const original = String(item?.original || "");
+      if (!key || !html) continue;
+      const el = byKey.get(key);
+      if (!el) continue;
+      try {
+        el.setAttribute(ORIGINAL_ATTR, original || plainFromMessage(el));
+        el.setAttribute(DONE_ATTR, "1");
+        el.classList.add("ytscf-done");
+        el.innerHTML = html;
+        applied += 1;
+      } catch {
+        /* ignore */
+      }
+    }
+    return applied;
+  }
+
+  /**
+   * @param {string} href
+   */
+  function ensureCss(href) {
+    const url = String(href || "").trim();
+    if (!url || !/^https?:|^chrome-extension:|^safari-web-extension:/i.test(url)) {
+      return;
+    }
+    if (document.getElementById("ytscf-injected-css")) return;
+    try {
+      const link = document.createElement("link");
+      link.id = "ytscf-injected-css";
+      link.rel = "stylesheet";
+      link.href = url;
+      (document.head || document.documentElement).appendChild(link);
+    } catch {
+      /* ignore */
+    }
+  }
+
   window.addEventListener("message", (ev) => {
     if (ev.source !== window) return;
     const d = ev.data;
-    if (!d || d.type !== REQ || typeof d.id !== "string") return;
-    let entries = [];
-    try {
-      entries = collect();
-    } catch {
-      entries = [];
+    if (!d || typeof d !== "object") return;
+
+    if (d.type === RUBY_ENSURE_CSS) {
+      ensureCss(String(d.href || ""));
+      return;
     }
-    window.postMessage({ type: RES, id: d.id, entries }, "*");
+
+    if (d.type === REQ && typeof d.id === "string") {
+      let entries = [];
+      try {
+        entries = collect();
+      } catch {
+        entries = [];
+      }
+      window.postMessage({ type: RES, id: d.id, entries }, "*");
+      return;
+    }
+
+    if (d.type === RUBY_LIST_REQ && typeof d.id === "string") {
+      let messages = [];
+      try {
+        messages = listRubyTargets();
+      } catch {
+        messages = [];
+      }
+      window.postMessage({ type: RUBY_LIST_RES, id: d.id, messages }, "*");
+      return;
+    }
+
+    if (d.type === RUBY_APPLY_REQ && typeof d.id === "string") {
+      let applied = 0;
+      try {
+        applied = applyRubyItems(Array.isArray(d.items) ? d.items : []);
+      } catch {
+        applied = 0;
+      }
+      window.postMessage({ type: RUBY_APPLY_RES, id: d.id, applied }, "*");
+    }
   });
 })();

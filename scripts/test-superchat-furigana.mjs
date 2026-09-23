@@ -31,6 +31,16 @@ import {
   withToggledHideTextMessages
 } from "../extensions/yt-superchat-furigana/src/state.js";
 import {
+  applyPageRubyItems,
+  listChatFrameWindows,
+  listPageRubyTargets,
+  PAGE_RUBY_APPLY_REQUEST,
+  PAGE_RUBY_APPLY_RESULT,
+  PAGE_RUBY_LIST_REQUEST,
+  PAGE_RUBY_LIST_RESULT,
+  requestPageRubyMessage
+} from "../extensions/yt-superchat-furigana/src/page-ruby-bridge.js";
+import {
   buildLedgerEntryId,
   TICKER_PAID_RENDERER_SELECTOR,
   collectPaidMessageRenderers,
@@ -207,6 +217,22 @@ assert.equal(
     isTopWatchFrame: true
   }),
   true
+);
+assert.equal(
+  shouldRunLiveChatEngine({
+    href: "https://www.youtube.com/watch?v=abc",
+    preferParentChatEngine: true,
+    isTopWatchFrame: true
+  }),
+  true
+);
+assert.equal(
+  shouldRunLiveChatEngine({
+    href: "https://www.youtube.com/watch?v=abc",
+    preferParentChatEngine: true,
+    isTopWatchFrame: false
+  }),
+  false
 );
 assert.equal(
   shouldRunLiveChatEngine({ href: "https://www.streamyard.com/studio" }),
@@ -515,6 +541,90 @@ assert.equal(collectChatMessageElements(root).length, 1);
   assert.equal(docs.length, 2);
   assert.equal(docs[0], watchDoc);
   assert.equal(docs[1], chatDoc);
+}
+
+// contentDocument 無しでも contentWindow 経由でルビ橋が動く（Orion）
+{
+  /** @type {Array<(ev: MessageEvent) => void>} */
+  const listeners = [];
+  const chatWin = {
+    postMessage(data) {
+      if (data?.type === PAGE_RUBY_LIST_REQUEST) {
+        queueMicrotask(() => {
+          for (const fn of listeners) {
+            fn(
+              /** @type {MessageEvent} */ ({
+                source: chatWin,
+                data: {
+                  type: PAGE_RUBY_LIST_RESULT,
+                  id: data.id,
+                  messages: [
+                    {
+                      key: "superchat:1",
+                      plain: "配信ありがとう",
+                      kind: "superchat",
+                      done: false
+                    }
+                  ]
+                }
+              })
+            );
+          }
+        });
+      }
+      if (data?.type === PAGE_RUBY_APPLY_REQUEST) {
+        queueMicrotask(() => {
+          for (const fn of listeners) {
+            fn(
+              /** @type {MessageEvent} */ ({
+                source: chatWin,
+                data: {
+                  type: PAGE_RUBY_APPLY_RESULT,
+                  id: data.id,
+                  applied: Array.isArray(data.items) ? data.items.length : 0
+                }
+              })
+            );
+          }
+        });
+      }
+    },
+    addEventListener(_type, fn) {
+      listeners.push(fn);
+    },
+    removeEventListener(_type, fn) {
+      const i = listeners.indexOf(fn);
+      if (i >= 0) listeners.splice(i, 1);
+    }
+  };
+  const frame = { contentWindow: chatWin, contentDocument: null };
+  const watchDoc = {
+    defaultView: null,
+    querySelectorAll(sel) {
+      return String(sel).includes("iframe") || String(sel).includes("chatframe")
+        ? [frame]
+        : [];
+    }
+  };
+  const wins = listChatFrameWindows(/** @type {any} */ (watchDoc));
+  assert.equal(wins.length, 1);
+  assert.equal(wins[0], chatWin);
+
+  const listed = await listPageRubyTargets(wins);
+  assert.equal(listed.length, 1);
+  assert.equal(listed[0].plain, "配信ありがとう");
+
+  const applied = await applyPageRubyItems(wins, [
+    {
+      key: "superchat:1",
+      html: "<ruby>配<rt>はい</rt></ruby>信",
+      original: "配信ありがとう"
+    }
+  ]);
+  assert.equal(applied, 1);
+
+  const direct = await requestPageRubyMessage(chatWin, PAGE_RUBY_LIST_REQUEST, {});
+  assert.equal(direct?.type, PAGE_RUBY_LIST_RESULT);
 }
 
 const syMsg = el("五月一日に株式市場");

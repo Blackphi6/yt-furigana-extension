@@ -75,11 +75,14 @@ export function isAnyTargetEnabled(state) {
 /**
  * このフレームで kuromoji・辞書・MutationObserver を起動するか。
  * 視聴ページ本体はチャット iframe と二重起動すると本編が止まる。
+ * ただし Orion/iOS では iframe に content script が刺さらないので、
+ * 親フレームから橋渡しする必要がある（preferParentChatEngine）。
  * @param {{
  *   href?: string,
  *   ledgerEnabled?: boolean,
  *   hasChatApp?: boolean,
- *   isTopWatchFrame?: boolean
+ *   isTopWatchFrame?: boolean,
+ *   preferParentChatEngine?: boolean
  * }} [opts]
  */
 export function shouldRunLiveChatEngine(opts = {}) {
@@ -96,7 +99,9 @@ export function shouldRunLiveChatEngine(opts = {}) {
   if (/(?:^|\.)streamyard\.com$/i.test(hostname)) return true;
   if (pathname.includes("/live_chat")) return true;
   if (opts.hasChatApp) return true;
-  if (opts.ledgerEnabled && opts.isTopWatchFrame) return true;
+  if (opts.isTopWatchFrame && (opts.ledgerEnabled || opts.preferParentChatEngine)) {
+    return true;
+  }
   return false;
 }
 
