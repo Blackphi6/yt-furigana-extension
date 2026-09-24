@@ -42,6 +42,7 @@ import {
   listChatFrameWindows,
   listPageRubyTargets
 } from "./page-ruby-bridge.js";
+import { formatTokenizerError, isIosLikeRuntime } from "./ios-runtime.js";
 import {
   HIDE_TEXT_MESSAGES_CLASS,
   isAnyTargetEnabled,
@@ -78,6 +79,24 @@ let readingApiFallback = false;
 
 /** kuromoji 起動が長い／固まる端末向け（iPad Orion で無限待ちを防ぐ） */
 const KUROMOJI_TIMEOUT_MS = 2500;
+
+function markReadingApiFallback(reason) {
+  tokenizerFailed = true;
+  readingApiFallback = true;
+  setStatus({
+    ready: true,
+    tokenizerFailed: true,
+    readingApiFallback: true,
+    engine: "reading-api",
+    error: "",
+    notice: reason ? `端末内辞書不可 → 読みAPI（${reason}）` : "端末内辞書不可 → 読みAPI"
+  });
+  try {
+    chrome.runtime.sendMessage({ type: "YTSCF_WARM_READING_API" }, () => {});
+  } catch {
+    /* ignore */
+  }
+}
 
 /** iframe 出現監視（親フレーム専用） */
 /** @type {MutationObserver | null} */
@@ -278,8 +297,7 @@ function syncLiveChatEngine() {
   void (async () => {
     await Promise.all([
       ensureTokenizer().catch(() => {
-        readingApiFallback = true;
-        chrome.runtime.sendMessage({ type: "YTSCF_WARM_READING_API" }, () => {});
+        if (!readingApiFallback) markReadingApiFallback("ensureTokenizer");
       }),
       reapplyUserReadings()
     ]);
@@ -287,7 +305,9 @@ function syncLiveChatEngine() {
     queueScan();
   })().catch((error) => {
     console.warn("[YT Live Chat Furigana]", error?.message || error);
-    setStatus({ ready: false, error: String(error?.message || error) });
+    if (!readingApiFallback) {
+      markReadingApiFallback(formatTokenizerError(error));
+    }
   });
   queueScan();
 }
@@ -300,20 +320,28 @@ function setStatus(partial) {
     statusTimer = 0;
     const patch = statusPending;
     statusPending = {};
+    const apiReady = readingApiFallback || state.readingApiEnabled;
     try {
       chrome.storage.local.set({
         ytscfRuntime: {
-          ready: Boolean(tokenize),
+          ready: Boolean(tokenize) || apiReady,
           processedCount,
           ledgerCount,
           ledgerEnabled: state.ledgerEnabled,
           readingApiEnabled: state.readingApiEnabled,
+          readingApiFallback,
+          tokenizerFailed,
+          engine: tokenize ? "kuromoji" : apiReady ? "reading-api" : "none",
           superChatEnabled: state.superChatEnabled,
           chatEnabled: state.chatEnabled,
           hideTextMessages: state.hideTextMessages,
           enabled: isAnyTargetEnabled(state),
           href: location.href,
           videoId: currentVideoId(),
+          chatDocs: chatDocuments().length,
+          chatWindows: listChatFrameWindows(document).length,
+          preferParentChatEngine: preferParentChatEngine(),
+          iosLike: isIosLikeRuntime(navigator),
           ...patch
         }
       });
@@ -391,20 +419,19 @@ function ensureTokenizer() {
   if (tokenizerFailed) return Promise.reject(new Error("tokenizer unavailable"));
   if (tokenizerPromise) return tokenizerPromise;
 
+  // iOS 系は最初から読み API（XHR ProgressEvent を踏まない）
+  if (isIosLikeRuntime(navigator)) {
+    markReadingApiFallback("iOS/Orion");
+    return Promise.reject(new Error("tokenizer skipped on iOS-like runtime"));
+  }
+
   tokenizerPromise = new Promise((resolve, reject) => {
     let settled = false;
     const timer = setTimeout(() => {
       if (settled) return;
       settled = true;
       tokenizerPromise = null;
-      tokenizerFailed = true;
-      readingApiFallback = true;
-      setStatus({
-        ready: false,
-        tokenizerFailed: true,
-        readingApiFallback: true,
-        error: `kuromoji timeout ${KUROMOJI_TIMEOUT_MS}ms`
-      });
+      markReadingApiFallback(`timeout ${KUROMOJI_TIMEOUT_MS}ms`);
       reject(new Error(`kuromoji timeout ${KUROMOJI_TIMEOUT_MS}ms`));
     }, KUROMOJI_TIMEOUT_MS);
 
@@ -416,19 +443,22 @@ function ensureTokenizer() {
         clearTimeout(timer);
         if (error) {
           tokenizerPromise = null;
-          tokenizerFailed = true;
-          readingApiFallback = true;
-          setStatus({
-            ready: false,
-            tokenizerFailed: true,
-            readingApiFallback: true,
-            error: String(error?.message || error)
-          });
-          reject(error);
+          markReadingApiFallback(formatTokenizerError(error));
+          reject(
+            error instanceof Error
+              ? error
+              : new Error(formatTokenizerError(error))
+          );
           return;
         }
         tokenize = (text) => built.tokenize(text);
-        setStatus({ ready: true, error: "", tokenizerFailed: false });
+        setStatus({
+          ready: true,
+          error: "",
+          notice: "",
+          tokenizerFailed: false,
+          engine: "kuromoji"
+        });
         resolve();
       });
   });
@@ -643,8 +673,7 @@ function scan() {
         await Promise.all([
           ensureTokenizer().catch(() => {
             // 端末内失敗 → 読み API フォールバックを有効化して続行
-            readingApiFallback = true;
-            chrome.runtime.sendMessage({ type: "YTSCF_WARM_READING_API" }, () => {});
+            if (!readingApiFallback) markReadingApiFallback("scan");
           }),
           learningReady ? Promise.resolve() : reapplyUserReadings()
         ]);

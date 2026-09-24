@@ -19,6 +19,7 @@ const els = {
   ledgerEnabled: document.querySelector("#ledgerEnabled"),
   readingApiEnabled: document.querySelector("#readingApiEnabled"),
   status: document.querySelector("#status"),
+  diag: document.querySelector("#diag"),
   ledgerCount: document.querySelector("#ledgerCount"),
   ledgerHint: document.querySelector("#ledgerHint"),
   ledgerList: document.querySelector("#ledgerList"),
@@ -41,6 +42,32 @@ function setStatus(message, kind = "") {
   els.status.textContent = message || "";
   if (kind) els.status.dataset.state = kind;
   else delete els.status.dataset.state;
+}
+
+/**
+ * 実機デバッグ用（storage の ytscfRuntime）。
+ * @param {Record<string, unknown> | null | undefined} runtime
+ */
+function setDiag(runtime) {
+  if (!els.diag) return;
+  if (!runtime || typeof runtime !== "object") {
+    els.diag.hidden = true;
+    els.diag.textContent = "";
+    return;
+  }
+  const parts = [
+    `engine=${runtime.engine || "?"}`,
+    `tokFail=${runtime.tokenizerFailed ? "yes" : "no"}`,
+    `apiFb=${runtime.readingApiFallback ? "yes" : "no"}`,
+    `chatWin=${runtime.chatWindows ?? "?"}`,
+    `chatDocs=${runtime.chatDocs ?? "?"}`,
+    `parent=${runtime.preferParentChatEngine ? "yes" : "no"}`,
+    `ios=${runtime.iosLike ? "yes" : "no"}`,
+    `n=${runtime.processedCount ?? 0}`
+  ];
+  if (runtime.notice) parts.push(String(runtime.notice));
+  els.diag.textContent = parts.join(" · ");
+  els.diag.hidden = false;
 }
 
 function escapeHtml(value) {
@@ -194,12 +221,29 @@ async function refreshUi() {
 
   const hideNote = state.hideTextMessages ? " · スパチャのみ" : "";
   const ledgerNote = state.ledgerEnabled ? "" : " · 台帳オフ";
-  const apiNote = state.readingApiEnabled ? " · 読みAPI" : "";
+  const apiNote =
+    state.readingApiEnabled || runtime?.readingApiFallback
+      ? " · 読みAPI"
+      : "";
+  const uglyXhr =
+    typeof runtime?.error === "string" &&
+    /XMLHttpRequestProgressEvent/i.test(runtime.error);
 
   if (!isAnyTargetEnabled(state)) {
     setStatus(`オフ（ルビなし）${hideNote}${ledgerNote}${apiNote}`);
-  } else if (runtime?.error) {
-    setStatus(runtime.error, "error");
+  } else if (runtime?.readingApiFallback || runtime?.engine === "reading-api") {
+    const n = Number(runtime.processedCount) || 0;
+    setStatus(
+      `読みAPIで動作中${hideNote}${ledgerNote} · 処理 ${n} 件`,
+      n > 0 ? "ok" : ""
+    );
+  } else if (runtime?.error && !uglyXhr) {
+    setStatus(String(runtime.error), "error");
+  } else if (uglyXhr || runtime?.tokenizerFailed) {
+    setStatus(
+      `端末内辞書が使えないため読みAPIに切替中…${hideNote}${ledgerNote}`,
+      ""
+    );
   } else if (!runtime?.ready) {
     setStatus(`辞書を準備中…（初回のみ）${hideNote}${ledgerNote}${apiNote}`);
   } else {
@@ -212,6 +256,8 @@ async function refreshUi() {
       "ok"
     );
   }
+
+  setDiag(runtime);
 
   await refreshLedger(runtime);
 }

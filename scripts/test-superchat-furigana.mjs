@@ -41,6 +41,10 @@ import {
   requestPageRubyMessage
 } from "../extensions/yt-superchat-furigana/src/page-ruby-bridge.js";
 import {
+  formatTokenizerError,
+  isIosLikeRuntime
+} from "../extensions/yt-superchat-furigana/src/ios-runtime.js";
+import {
   buildLedgerEntryId,
   TICKER_PAID_RENDERER_SELECTOR,
   collectPaidMessageRenderers,
@@ -237,6 +241,29 @@ assert.equal(
 assert.equal(
   shouldRunLiveChatEngine({ href: "https://www.streamyard.com/studio" }),
   true
+);
+
+assert.equal(isIosLikeRuntime({ userAgent: "Mozilla/5.0 (iPad; CPU OS 17_0)" }), true);
+assert.equal(
+  isIosLikeRuntime({
+    userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
+    maxTouchPoints: 5
+  }),
+  true
+);
+assert.equal(
+  isIosLikeRuntime({
+    userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/120"
+  }),
+  false
+);
+assert.match(
+  formatTokenizerError({ type: "error", target: { status: 0, statusText: "" } }),
+  /dict XHR/
+);
+assert.match(
+  formatTokenizerError({ constructor: { name: "XMLHttpRequestProgressEvent" } }),
+  /XMLHttpRequestProgressEvent/
 );
 
 // 掴み代だけ残せばよい（全体クランプだと展開パネルがほぼ動かない）
