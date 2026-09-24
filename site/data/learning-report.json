@@ -1,13 +1,13 @@
 {
-  "ts": "2026-09-24T04:24:59.629Z",
+  "ts": "2026-09-24T11:36:39.541Z",
   "mode": "synth",
-  "note": "素材 +44 / 本体ルール変化なし（日次は主に素材集め）",
+  "note": "素材 +49 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 3346,
-    "delta": 44,
+    "total": 3395,
+    "delta": 49,
     "acceptedThisRun": 55,
     "rejectedThisRun": 31
   },
@@ -66,70 +66,70 @@
   },
   "newSamples": [
     {
-      "text": "牛の角が光っている。",
+      "text": "牛の角を見て、彼は驚いた。",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:verify_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "角が生える場所で、牛の角を観察した。",
+      "text": "角が生えるとき、彼は注意深く観察した。",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:verify_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "株式市場の規模は年々拡大し、投資家の注目を集めている。",
+      "text": "株式市場の規模は今年急成長し、投資家を惹きつけた。",
       "surface": "市場",
       "gold": "しじょう",
       "source": "llm-synth:groq:verify_agree",
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "text": "金融市場は経済全体の動きを反映し、政策決定に重要な役割を果たす。",
+      "text": "金融市場の動きは経済全体に大きな影響を与える。",
       "surface": "市場",
       "gold": "しじょう",
       "source": "llm-synth:groq:verify_agree",
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "text": "ラーメンを食べると、辛いと感じたけど、香りが最高だった。",
+      "text": "ラーメンを食べたら、唐辛子が入っていて辛い味がした。",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "カレーに唐辛子を入れたら、辛いが好きな友達が笑顔になった。",
+      "text": "カレーに唐辛子を入れすぎて、辛い香りが立ち上る。",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "日常の朝食を食べながら、私は永遠の時間を想像した。",
+      "text": "日常の風景は、永遠に続くと感じさせる。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "論理的に考えると、永遠に終わらないプロセスは客観的に存在する。",
+      "text": "論理的に考えると、永遠は終わりを知らない概念だ。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "仕事が山積みで忙しい。",
+      "text": "仕事が山積みで、忙しい日々が続いている。",
       "surface": "忙しい",
       "gold": "いそがしい",
       "source": "llm-synth:groq:verify_agree",
       "note": "仕事・予定・日常の忙しさ"
     },
     {
-      "text": "予定が詰まって忙しい。",
+      "text": "予定が詰まっている今、忙しい時間が限られている。",
       "surface": "忙しい",
       "gold": "いそがしい",
       "source": "llm-synth:groq:verify_agree",
