@@ -1,15 +1,15 @@
 {
-  "ts": "2026-09-25T04:36:26.518Z",
+  "ts": "2026-09-25T11:42:27.699Z",
   "mode": "synth",
-  "note": "素材 +45 / 本体ルール変化なし（日次は主に素材集め）",
+  "note": "素材 +43 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 3535,
-    "delta": 45,
-    "acceptedThisRun": 54,
-    "rejectedThisRun": 32
+    "total": 3578,
+    "delta": 43,
+    "acceptedThisRun": 52,
+    "rejectedThisRun": 34
   },
   "benches": {
     "seed-bench": {
@@ -66,74 +66,74 @@
   },
   "newSamples": [
     {
-      "text": "牛の角が光っている。",
+      "text": "仲間に入ると楽しくなる。",
+      "surface": "入る",
+      "gold": "いる",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "気に入る／手に入る／仲間に入る（いる）"
+    },
+    {
+      "text": "角を曲がると、静かなカフェがある。",
+      "surface": "角",
+      "gold": "かど",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "街角／角を曲がる（かど）"
+    },
+    {
+      "text": "牛の角が生えると、つのが光る。",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:verify_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "角が生えるとき、風が通る。",
+      "text": "角が生えると、牛の角につのがつく。",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:verify_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "株式市場の規模は昨年比で大きく伸びた。",
+      "text": "株式市場は急激に変動し、投資家の期待が揺れた。",
       "surface": "市場",
       "gold": "しじょう",
       "source": "llm-synth:groq:verify_agree",
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "text": "経済市場の動向は金融政策に大きく左右される。",
+      "text": "経済市場の規模拡大は金融政策の調整を促した。",
       "surface": "市場",
       "gold": "しじょう",
       "source": "llm-synth:groq:verify_agree",
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "text": "ラーメンの辛い味が口に広がる。",
+      "text": "ラーメンが辛い。",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "カレーの辛い香りが鼻を刺す。",
+      "text": "カレーに唐辛子を入れると辛い。",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "永遠",
+      "text": "日常の朝食を食べると、永遠のように時間が流れる。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "永遠",
+      "text": "論理的に考えると、永遠の概念は終わりがない。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
-    },
-    {
-      "text": "仕事の合間に、彼は忙しいと言っていた。",
-      "surface": "忙しい",
-      "gold": "いそがしい",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "仕事・予定・日常の忙しさ"
-    },
-    {
-      "text": "予定が詰まっているので、日常は忙しい。",
-      "surface": "忙しい",
-      "gold": "いそがしい",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "仕事・予定・日常の忙しさ"
     }
   ]
 }
