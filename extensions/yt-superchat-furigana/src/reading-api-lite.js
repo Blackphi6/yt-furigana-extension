@@ -49,6 +49,57 @@ export function buildReadingApiHeaders() {
   return { "Content-Type": "application/json" };
 }
 
+/**
+ * content / background 共通の読み API 呼び出し。
+ * Orion では SW 経由 sendMessage が空振りしやすいので content からも直接呼ぶ。
+ * @param {string} text
+ * @param {{
+ *   endpoint: string,
+ *   userPhrases?: Record<string, string>,
+ *   timeoutMs?: number,
+ *   fetchImpl?: typeof fetch
+ * }} opts
+ * @returns {Promise<string>}
+ */
+export async function fetchReadingApiHtml(text, opts) {
+  const key = String(text || "");
+  if (!key) return "";
+  const endpoint = normalizeReadingApiUrl(opts?.endpoint || "");
+  if (!endpoint) throw new Error("読み API URL が未設定です");
+
+  const timeoutMs = Number(opts?.timeoutMs) > 0 ? Number(opts.timeoutMs) : 25000;
+  const fetchImpl = opts?.fetchImpl || fetch;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetchImpl(endpoint, {
+      method: "POST",
+      signal: controller.signal,
+      headers: buildReadingApiHeaders(),
+      body: JSON.stringify(
+        buildReadingApiRequest(key, opts?.userPhrases || {})
+      )
+    });
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(
+        `Reading API error (${response.status}): ${body.slice(0, 160)}`
+      );
+    }
+    const payload = await response.json();
+    return parseReadingApiResponseLite(payload, key);
+  } catch (error) {
+    if (error?.name === "AbortError") {
+      throw new Error(
+        `Reading API timed out after ${Math.round(timeoutMs / 1000)}s`
+      );
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 function collapseWhitespace(text) {
   return String(text ?? "")
     .normalize("NFKC")

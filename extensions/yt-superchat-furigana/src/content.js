@@ -42,6 +42,10 @@ import {
   listChatFrameWindows,
   listPageRubyTargets
 } from "./page-ruby-bridge.js";
+import {
+  fetchReadingApiHtml
+} from "./reading-api-lite.js";
+import { PUBLIC_READING_API_URL } from "../../../src/default-settings.js";
 import { formatTokenizerError, isIosLikeRuntime } from "./ios-runtime.js";
 import {
   HIDE_TEXT_MESSAGES_CLASS,
@@ -91,6 +95,11 @@ function markReadingApiFallback(reason) {
     error: "",
     notice: reason ? `端末内辞書不可 → 読みAPI（${reason}）` : "端末内辞書不可 → 読みAPI"
   });
+  // SW が死んでいても content から起こす
+  void fetch(
+    `${String(PUBLIC_READING_API_URL || "").replace(/\/+$/, "")}/healthz`,
+    { method: "GET" }
+  ).catch(() => {});
   try {
     chrome.runtime.sendMessage({ type: "YTSCF_WARM_READING_API" }, () => {});
   } catch {
@@ -150,6 +159,9 @@ let tokenizerPromise = null;
 
 /** @type {Map<string, string>} */
 const htmlCache = new Map();
+/** content 直 fetch 用キャッシュ（SW 不通時） */
+/** @type {Map<string, string>} */
+const apiDirectCache = new Map();
 
 let processedCount = 0;
 let ledgerCount = 0;
@@ -166,6 +178,10 @@ const pickerDocs = new WeakSet();
 let mo = null;
 /** @type {Record<string, unknown>} */
 let statusPending = {};
+/** 直近の読み API エラー（ポップアップ診断用） */
+let lastApiError = "";
+let lastScanDomHits = 0;
+let lastScanBridgeTargets = 0;
 
 function currentVideoId() {
   // チャット iframe は v= が無いので top / chatframe も見る
@@ -342,6 +358,9 @@ function setStatus(partial) {
           chatWindows: listChatFrameWindows(document).length,
           preferParentChatEngine: preferParentChatEngine(),
           iosLike: isIosLikeRuntime(navigator),
+          lastApiError,
+          lastScanDomHits,
+          lastScanBridgeTargets,
           ...patch
         }
       });
@@ -489,17 +508,63 @@ function convertLocal(text, options = {}) {
  * @param {string} text
  * @returns {Promise<string>}
  */
+async function convertViaReadingApiDirect(text) {
+  const key = String(text || "");
+  const hit = apiDirectCache.get(key);
+  if (hit != null) return hit;
+  let userPhrases = {};
+  try {
+    const store = await loadUserReadingStore();
+    userPhrases = { ...(store.phrases || {}) };
+  } catch {
+    userPhrases = {};
+  }
+  const html = await fetchReadingApiHtml(key, {
+    endpoint: PUBLIC_READING_API_URL,
+    userPhrases,
+    timeoutMs: 28000
+  });
+  if (apiDirectCache.size >= CACHE_MAX) {
+    const first = apiDirectCache.keys().next().value;
+    if (first != null) apiDirectCache.delete(first);
+  }
+  apiDirectCache.set(key, html);
+  return html;
+}
+
+/**
+ * @param {string} text
+ * @returns {Promise<string>}
+ */
 async function convertViaReadingApi(text) {
+  // 1) SW 経由（デスクトップ向け）
   try {
     const res = await chrome.runtime.sendMessage({
       type: "YTSCF_CONVERT_READING_API",
       text
     });
     if (res?.ok && typeof res.html === "string" && res.html) {
+      lastApiError = "";
       return res.html;
     }
-  } catch {
-    /* fallback below */
+    if (res && res.ok === false && res.error) {
+      lastApiError = String(res.error).slice(0, 160);
+    }
+  } catch (err) {
+    lastApiError = formatTokenizerError(err).slice(0, 160);
+  }
+
+  // 2) content から直接 fetch（Orion で SW が死んでいるとき）
+  try {
+    const html = await convertViaReadingApiDirect(text);
+    if (html) {
+      lastApiError = "";
+      setStatus({ lastApiError: "", apiPath: "content-fetch" });
+      return html;
+    }
+  } catch (err) {
+    lastApiError = formatTokenizerError(err).slice(0, 160);
+    setStatus({ lastApiError, apiPath: "content-fetch-fail" });
   }
   return "";
 }
@@ -582,6 +647,18 @@ async function processOne(el, enabledForKind) {
   try {
     const html = await convert(plain);
     if (!html || html === plain) {
+      // 読み API 失敗時は done にせず次回スキャンで再試行
+      if (
+        needsFurigana(plain) &&
+        (readingApiFallback || state.readingApiEnabled) &&
+        !tokenize
+      ) {
+        setStatus({
+          lastApiMiss: plain.slice(0, 48),
+          lastApiError: lastApiError || "empty html"
+        });
+        return;
+      }
       el.setAttribute("data-ytscf-done", "1");
       return;
     }
@@ -589,7 +666,7 @@ async function processOne(el, enabledForKind) {
     if (!el.isConnected) return;
     applyFuriganaToMessage(el, html, plain);
     processedCount += 1;
-    setStatus({ processedCount });
+    setStatus({ processedCount, lastApiError: "" });
   } finally {
     pendingApiEls.delete(el);
   }
@@ -616,6 +693,8 @@ async function scanViaPageBridge() {
   }
 
   const targets = await listPageRubyTargets(wins, cssHref);
+  lastScanBridgeTargets = targets.length;
+  setStatus({ lastScanBridgeTargets: targets.length });
   /** @type {Array<{ key: string, html: string, original: string }>} */
   const batch = [];
   for (const t of targets) {
@@ -707,12 +786,23 @@ function scan() {
       }
     }
   }
+  lastScanDomHits = domHits;
+  setStatus({ lastScanDomHits: domHits });
 
-  // Orion: DOM 横断できなくても MAIN 橋で付ける
-  if (domHits === 0 || preferParentChatEngine()) {
-    void scanViaPageBridge().catch((err) => {
-      console.warn("[YT Live Chat Furigana] page bridge", err?.message || err);
-    });
+  // Orion: DOM 横断できなくても MAIN 橋で付ける。
+  // DOM はあるが API 失敗で n=0 のときも橋を試す。
+  if (
+    domHits === 0 ||
+    preferParentChatEngine() ||
+    (readingApiFallback && processedCount === 0)
+  ) {
+    void scanViaPageBridge()
+      .then((applied) => {
+        setStatus({ lastScanBridgeApplied: applied });
+      })
+      .catch((err) => {
+        console.warn("[YT Live Chat Furigana] page bridge", err?.message || err);
+      });
   }
 }
 

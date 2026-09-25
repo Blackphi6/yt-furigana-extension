@@ -6,12 +6,7 @@ import {
   withToggledHideTextMessages
 } from "./state.js";
 import { PUBLIC_READING_API_URL } from "../../../src/default-settings.js";
-import {
-  buildReadingApiHeaders,
-  buildReadingApiRequest,
-  normalizeReadingApiUrl,
-  parseReadingApiResponseLite
-} from "./reading-api-lite.js";
+import { fetchReadingApiHtml } from "./reading-api-lite.js";
 import { loadUserReadingStore } from "../../../src/user-reading-dict.js";
 
 const STORAGE_KEY = "ytscfState";
@@ -72,42 +67,18 @@ async function convertWithReadingApi(text) {
   const hit = apiHtmlCache.get(key);
   if (hit != null) return hit;
 
-  const endpoint = normalizeReadingApiUrl(PUBLIC_READING_API_URL);
-  if (!endpoint) throw new Error("読み API URL が未設定です");
-
   const store = await loadUserReadingStore();
-  const userPhrases = { ...(store.phrases || {}) };
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), READING_API_TIMEOUT_MS);
-  try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      signal: controller.signal,
-      headers: buildReadingApiHeaders(),
-      body: JSON.stringify(buildReadingApiRequest(key, userPhrases))
-    });
-    if (!response.ok) {
-      const body = await response.text();
-      throw new Error(`Reading API error (${response.status}): ${body.slice(0, 160)}`);
-    }
-    const payload = await response.json();
-    const html = parseReadingApiResponseLite(payload, key);
-    if (apiHtmlCache.size >= CACHE_MAX) {
-      const first = apiHtmlCache.keys().next().value;
-      if (first != null) apiHtmlCache.delete(first);
-    }
-    apiHtmlCache.set(key, html);
-    return html;
-  } catch (error) {
-    if (error?.name === "AbortError") {
-      throw new Error(
-        `Reading API timed out after ${Math.round(READING_API_TIMEOUT_MS / 1000)}s`
-      );
-    }
-    throw error;
-  } finally {
-    clearTimeout(timeoutId);
+  const html = await fetchReadingApiHtml(key, {
+    endpoint: PUBLIC_READING_API_URL,
+    userPhrases: { ...(store.phrases || {}) },
+    timeoutMs: READING_API_TIMEOUT_MS
+  });
+  if (apiHtmlCache.size >= CACHE_MAX) {
+    const first = apiHtmlCache.keys().next().value;
+    if (first != null) apiHtmlCache.delete(first);
   }
+  apiHtmlCache.set(key, html);
+  return html;
 }
 
 async function warmReadingApi() {

@@ -61,10 +61,15 @@ function setDiag(runtime) {
     `apiFb=${runtime.readingApiFallback ? "yes" : "no"}`,
     `chatWin=${runtime.chatWindows ?? "?"}`,
     `chatDocs=${runtime.chatDocs ?? "?"}`,
+    `dom=${runtime.lastScanDomHits ?? "?"}`,
+    `bridge=${runtime.lastScanBridgeTargets ?? "?"}`,
     `parent=${runtime.preferParentChatEngine ? "yes" : "no"}`,
     `ios=${runtime.iosLike ? "yes" : "no"}`,
     `n=${runtime.processedCount ?? 0}`
   ];
+  if (runtime.apiPath) parts.push(`api=${runtime.apiPath}`);
+  if (runtime.lastApiError) parts.push(`err=${runtime.lastApiError}`);
+  if (runtime.lastApiMiss) parts.push(`miss=${runtime.lastApiMiss}`);
   if (runtime.notice) parts.push(String(runtime.notice));
   els.diag.textContent = parts.join(" · ");
   els.diag.hidden = false;

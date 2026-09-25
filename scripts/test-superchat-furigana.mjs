@@ -45,6 +45,10 @@ import {
   isIosLikeRuntime
 } from "../extensions/yt-superchat-furigana/src/ios-runtime.js";
 import {
+  fetchReadingApiHtml,
+  parseReadingApiResponseLite
+} from "../extensions/yt-superchat-furigana/src/reading-api-lite.js";
+import {
   buildLedgerEntryId,
   TICKER_PAID_RENDERER_SELECTOR,
   collectPaidMessageRenderers,
@@ -265,6 +269,27 @@ assert.match(
   formatTokenizerError({ constructor: { name: "XMLHttpRequestProgressEvent" } }),
   /XMLHttpRequestProgressEvent/
 );
+
+{
+  const html = await fetchReadingApiHtml("配信ありがとう", {
+    endpoint: "https://example.test",
+    timeoutMs: 1000,
+    fetchImpl: async () =>
+      /** @type {any} */ ({
+        ok: true,
+        async json() {
+          return {
+            tokens: [
+              { surface: "配信", reading: "はいしん" },
+              { surface: "ありがとう", reading: "" }
+            ]
+          };
+        }
+      })
+  });
+  assert.match(html, /<ruby>/);
+  assert.match(html, /はいしん/);
+}
 
 // 掴み代だけ残せばよい（全体クランプだと展開パネルがほぼ動かない）
 assert.deepEqual(clampPanelPosition(0, 0, 360, 200, 1000, 800), {
