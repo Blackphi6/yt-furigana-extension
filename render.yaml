@@ -18,7 +18,8 @@ services:
     healthCheckPath: /health
     envVars:
       - key: YT_FURIGANA_CORS_ORIGINS
-        value: https://blackphi6.github.io,http://127.0.0.1:4173,http://localhost:4173,http://127.0.0.1:5500,http://localhost:5500
+        # Orion/iOS の拡張 content script はページ origin で fetch する（Live Chat の読みAPIフォールバック）
+        value: https://blackphi6.github.io,https://www.youtube.com,https://m.youtube.com,https://streamyard.com,https://www.streamyard.com,http://127.0.0.1:4173,http://localhost:4173,http://127.0.0.1:5500,http://localhost:5500
       - key: YT_FURIGANA_RATE_LIMIT_PER_MIN
         value: "20"
       - key: YT_FURIGANA_RATE_LIMIT_GET_PER_MIN

@@ -77,24 +77,31 @@ let ledgerPanel = null;
 /** 読み API 変換中の要素（二重実行防止） */
 const pendingApiEls = new WeakSet();
 
-/** kuromoji が使えない端末（Orion/iOS 等）では読み API へ自動フォールバック */
+/**
+ * kuromoji が使えない端末では読み API へフォールバック。
+ * ただしチャット本文を外部送信するので、ユーザーが読み API をオンにしたときだけ（プライバシーポリシー）。
+ */
 let tokenizerFailed = false;
 let readingApiFallback = false;
 
-/** kuromoji 起動が長い／固まる端末向け（iPad Orion で無限待ちを防ぐ） */
-const KUROMOJI_TIMEOUT_MS = 2500;
+/** kuromoji 起動が固まる端末向け。iPad は辞書展開に数秒かかるので短くしすぎない */
+const KUROMOJI_TIMEOUT_MS = 15000;
 
 function markReadingApiFallback(reason) {
   tokenizerFailed = true;
-  readingApiFallback = true;
+  readingApiFallback = state.readingApiEnabled;
+  const suffix = reason ? `（${reason}）` : "";
   setStatus({
-    ready: true,
+    ready: readingApiFallback,
     tokenizerFailed: true,
-    readingApiFallback: true,
-    engine: "reading-api",
+    readingApiFallback,
+    engine: readingApiFallback ? "reading-api" : "none",
     error: "",
-    notice: reason ? `端末内辞書不可 → 読みAPI（${reason}）` : "端末内辞書不可 → 読みAPI"
+    notice: readingApiFallback
+      ? `端末内辞書不可 → 読みAPI${suffix}`
+      : `端末内辞書不可${suffix}。読みAPIを設定でオンにすると使えます`
   });
+  if (!readingApiFallback) return;
   // SW が死んでいても content から起こす
   void fetch(
     `${String(PUBLIC_READING_API_URL || "").replace(/\/+$/, "")}/healthz`,
@@ -438,18 +445,12 @@ function ensureTokenizer() {
   if (tokenizerFailed) return Promise.reject(new Error("tokenizer unavailable"));
   if (tokenizerPromise) return tokenizerPromise;
 
-  // iOS 系は最初から読み API（XHR ProgressEvent を踏まない）
-  if (isIosLikeRuntime(navigator)) {
-    markReadingApiFallback("iOS/Orion");
-    return Promise.reject(new Error("tokenizer skipped on iOS-like runtime"));
-  }
-
   tokenizerPromise = new Promise((resolve, reject) => {
     let settled = false;
+    // 遅い端末では一旦 API に逃がすが、kuromoji が後から完成したら端末内へ戻す
     const timer = setTimeout(() => {
       if (settled) return;
       settled = true;
-      tokenizerPromise = null;
       markReadingApiFallback(`timeout ${KUROMOJI_TIMEOUT_MS}ms`);
       reject(new Error(`kuromoji timeout ${KUROMOJI_TIMEOUT_MS}ms`));
     }, KUROMOJI_TIMEOUT_MS);
@@ -457,10 +458,11 @@ function ensureTokenizer() {
     kuromoji
       .builder({ dicPath: chrome.runtime.getURL("dict/") })
       .build((error, built) => {
-        if (settled) return;
+        const late = settled;
         settled = true;
         clearTimeout(timer);
         if (error) {
+          if (late) return;
           tokenizerPromise = null;
           markReadingApiFallback(formatTokenizerError(error));
           reject(
@@ -471,6 +473,13 @@ function ensureTokenizer() {
           return;
         }
         tokenize = (text) => built.tokenize(text);
+        if (late) {
+          tokenizerFailed = false;
+          readingApiFallback = false;
+          void loadCorePhraseDicts().then(() => {
+            if (isAnyTargetEnabled(state)) reprocessEnabled();
+          });
+        }
         setStatus({
           ready: true,
           error: "",
@@ -598,7 +607,7 @@ async function convertFuriganaForPreview(text) {
     }
     await Promise.all([
       ensureTokenizer().catch(() => {
-        readingApiFallback = true;
+        readingApiFallback = state.readingApiEnabled;
       }),
       learningReady ? Promise.resolve() : reapplyUserReadings()
     ]);
@@ -746,7 +755,8 @@ function scan() {
 
   if (!isAnyTargetEnabled(state)) return;
   // 読み API 時もフォールバック用に辞書を用意。API のみでも学習句は載せる
-  if ((!tokenize && !readingApiFallback) || !learningReady) {
+  // tokenizerFailed で API 不許可のときは再試行ループにしない
+  if ((!tokenize && !tokenizerFailed) || !learningReady) {
     void (async () => {
       try {
         await Promise.all([
@@ -895,6 +905,8 @@ chrome.storage.onChanged.addListener((changes, area) => {
     }
     reprocessEnabled();
   } else if (!next.readingApiEnabled && prev.readingApiEnabled) {
+    // オフ後は自動フォールバックでも送信しない
+    readingApiFallback = false;
     reprocessEnabled();
   }
   syncLiveChatEngine();

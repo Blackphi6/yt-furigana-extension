@@ -73,7 +73,8 @@ app = FastAPI(
 _cors = os.environ.get(
     "YT_FURIGANA_CORS_ORIGINS",
     "http://127.0.0.1:4173,http://localhost:4173,http://127.0.0.1:5500,http://localhost:5500,"
-    "https://blackphi6.github.io,null",
+    "https://blackphi6.github.io,https://www.youtube.com,https://m.youtube.com,"
+    "https://streamyard.com,https://www.streamyard.com,null",
 )
 app.add_middleware(
     CORSMiddleware,
