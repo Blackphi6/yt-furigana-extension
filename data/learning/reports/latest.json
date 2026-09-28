@@ -1,15 +1,15 @@
 {
-  "ts": "2026-09-28T05:01:35.313Z",
-  "mode": "synth",
-  "note": "素材 +52 / 本体ルール変化なし（日次は主に素材集め）",
+  "ts": "2026-09-28T10:03:33.835Z",
+  "mode": "retrain",
+  "note": "素材増なし / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
     "total": 4109,
-    "delta": 52,
-    "acceptedThisRun": 59,
-    "rejectedThisRun": 27
+    "delta": 0,
+    "acceptedThisRun": 0,
+    "rejectedThisRun": 0
   },
   "benches": {
     "seed-bench": {
@@ -64,76 +64,5 @@
     "contextRuleCount": 74,
     "changed": false
   },
-  "newSamples": [
-    {
-      "text": "牛の角が光っている。",
-      "surface": "角",
-      "gold": "つの",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "牛の角／角が生える（つの）"
-    },
-    {
-      "text": "角が生えるときは、風が吹く。",
-      "surface": "角",
-      "gold": "つの",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "牛の角／角が生える（つの）"
-    },
-    {
-      "text": "株式市場は規模が拡大し、経済成長を牽引する重要な指標となっている。",
-      "surface": "市場",
-      "gold": "しじょう",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "株式・規模・経済・金融の文脈"
-    },
-    {
-      "text": "金融市場の動向は、経済全体の安定性に直結するため、政策決定者は慎重に監視している。",
-      "surface": "市場",
-      "gold": "しじょう",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "株式・規模・経済・金融の文脈"
-    },
-    {
-      "text": "辛いラーメン",
-      "surface": "辛い",
-      "gold": "からい",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "ラーメン・カレー・味・唐辛子"
-    },
-    {
-      "text": "辛いカレー",
-      "surface": "辛い",
-      "gold": "からい",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "ラーメン・カレー・味・唐辛子"
-    },
-    {
-      "text": "彼は永遠に終わらない時間の中で、星を数えていた。",
-      "surface": "永遠",
-      "gold": "えいえん",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
-    },
-    {
-      "text": "永遠のテーマは、日常の小さな瞬間に潜む不変の美しさだ。",
-      "surface": "永遠",
-      "gold": "えいえん",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
-    },
-    {
-      "text": "今日の仕事は忙しい。",
-      "surface": "忙しい",
-      "gold": "いそがしい",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "仕事・予定・日常の忙しさ"
-    },
-    {
-      "text": "予定が多くて忙しい。",
-      "surface": "忙しい",
-      "gold": "いそがしい",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "仕事・予定・日常の忙しさ"
-    }
-  ]
+  "newSamples": []
 }
