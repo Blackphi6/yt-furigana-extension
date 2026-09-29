@@ -56,6 +56,8 @@ function setDiag(runtime) {
     return;
   }
   const parts = [
+    `v=${chrome.runtime.getManifest?.().version || "?"}`,
+    `frame=${runtime.frame || "?"}`,
     `engine=${runtime.engine || "?"}`,
     `tokFail=${runtime.tokenizerFailed ? "yes" : "no"}`,
     `apiFb=${runtime.readingApiFallback ? "yes" : "no"}`,

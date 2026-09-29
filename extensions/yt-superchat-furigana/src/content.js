@@ -195,8 +195,70 @@ function currentVideoId() {
   return resolveVideoId({ href: location.href, doc: document });
 }
 
-function hasChatAppInDocument() {
+/** チャット iframe 側の content script が動いている印（同一オリジンなので親から見える） */
+const ENGINE_MARK_ATTR = "data-ytscf-engine";
+/** iframe 側 content script（document_idle）の起動を待つ猶予 */
+const PARENT_ENGINE_GRACE_MS = 4000;
+
+/** 同一フレームへの多重注入の検出（DOM は注入インスタンス間で共有） */
+const INSTANCE_ATTR = "data-ytscf-instances";
+const instanceNo =
+  Number(document.documentElement?.getAttribute(INSTANCE_ATTR) || 0) + 1;
+document.documentElement?.setAttribute(INSTANCE_ATTR, String(instanceNo));
+// Orion は同じ iframe に content script を2回注入する。kuromoji が二重に載り iPad でメモリ上限に達する
+const duplicateInstance = instanceNo > 1;
+
+if (!isTopYoutubeWatchFrame() && /\/live_chat/.test(location.pathname)) {
+  document.documentElement?.setAttribute(ENGINE_MARK_ATTR, "1");
+}
+
+/** @type {WeakMap<Document, number>} */
+const orphanChatSeenAt = new WeakMap();
+
+/**
+ * iframe に content script が刺さらない端末だけ親が肩代わりする。
+ * 両方で kuromoji を起動すると iPad ではメモリ上限でタブごと落ちる。
+ * @param {Document} doc
+ */
+function isOrphanChatDoc(doc) {
+  if (doc.documentElement?.hasAttribute(ENGINE_MARK_ATTR)) return false;
+  const now = Date.now();
+  const since = orphanChatSeenAt.get(doc);
+  if (since == null) {
+    orphanChatSeenAt.set(doc, now);
+    setTimeout(syncLiveChatEngine, PARENT_ENGINE_GRACE_MS + 100);
+    return false;
+  }
+  return now - since >= PARENT_ENGINE_GRACE_MS;
+}
+
+/**
+ * このフレームがふりがなを担当する文書。視聴ページ本体は孤児チャット iframe のみ。
+ * @returns {Document[]}
+ */
+function furiganaDocuments() {
+  const docs = chatDocuments();
+  if (!isTopYoutubeWatchFrame()) return docs;
+  return docs.filter(
+    (doc) =>
+      doc !== document &&
+      Boolean(doc.querySelector("yt-live-chat-app")) &&
+      isOrphanChatDoc(doc)
+  );
+}
+
+function anyChatApp() {
   return chatDocuments().some((doc) => Boolean(doc.querySelector("yt-live-chat-app")));
+}
+
+function hasChatAppInDocument() {
+  if (!isTopYoutubeWatchFrame()) return anyChatApp();
+  return furiganaDocuments().length > 0;
+}
+
+function shouldRunFuriganaHere() {
+  if (!isTopYoutubeWatchFrame()) return true;
+  return furiganaDocuments().length > 0 || preferParentChatEngine();
 }
 
 /**
@@ -205,7 +267,7 @@ function hasChatAppInDocument() {
  */
 function preferParentChatEngine() {
   if (!isTopYoutubeWatchFrame()) return false;
-  if (hasChatAppInDocument()) return false;
+  if (anyChatApp()) return false;
   try {
     const frames = document.querySelectorAll(
       "#chatframe, iframe#chatframe, iframe[src*='live_chat'], ytd-live-chat-frame iframe"
@@ -246,7 +308,7 @@ function observeRootForDoc(doc) {
 }
 
 function ensurePicker() {
-  for (const doc of chatDocuments()) {
+  for (const doc of furiganaDocuments()) {
     if (pickerDocs.has(doc)) continue;
     pickerDocs.add(doc);
     installReadingPicker(doc);
@@ -316,7 +378,11 @@ function syncLiveChatEngine() {
   }
   ensurePicker();
   ensureObserver();
-  if (!isAnyTargetEnabled(state) && !state.ledgerEnabled) return;
+  // 台帳だけのフレームでは kuromoji を起動しない
+  if (!isAnyTargetEnabled(state) || !shouldRunFuriganaHere()) {
+    queueScan();
+    return;
+  }
   void (async () => {
     await Promise.all([
       ensureTokenizer().catch(() => {
@@ -343,6 +409,9 @@ function setStatus(partial) {
     statusTimer = 0;
     const patch = statusPending;
     statusPending = {};
+    // ふりがな担当でない視聴ページ本体はチャット iframe の診断を上書きしない
+    const topIdle = isTopYoutubeWatchFrame() && !shouldRunFuriganaHere();
+    if (topIdle && !state.ledgerEnabled) return;
     const apiReady = readingApiFallback || state.readingApiEnabled;
     try {
       chrome.storage.local.set({
@@ -365,6 +434,9 @@ function setStatus(partial) {
           chatWindows: listChatFrameWindows(document).length,
           preferParentChatEngine: preferParentChatEngine(),
           iosLike: isIosLikeRuntime(navigator),
+          frame: isTopYoutubeWatchFrame() ? "top" : "chat",
+          instance: instanceNo,
+          furiganaHere: !topIdle,
           lastApiError,
           lastScanDomHits,
           lastScanBridgeTargets,
@@ -429,7 +501,7 @@ function clearDoneMarks(elements) {
  * 有効な対象だけ付け直す。
  */
 function reprocessEnabled() {
-  for (const doc of chatDocuments()) {
+  for (const doc of furiganaDocuments()) {
     if (state.superChatEnabled) {
       clearDoneMarks(collectSuperChatMessageElements(doc));
     }
@@ -731,7 +803,7 @@ function scan() {
   scanQueued = false;
   if (!shouldRunEngineNow()) return;
 
-  const docs = chatDocuments();
+  const docs = furiganaDocuments();
 
   // ふりがな ON/OFF と独立して台帳を拾う（スパチャのみ表示中も蓄積）
   if (state.ledgerEnabled && !ledgerInflight) {
@@ -753,7 +825,7 @@ function scan() {
       });
   }
 
-  if (!isAnyTargetEnabled(state)) return;
+  if (!isAnyTargetEnabled(state) || !shouldRunFuriganaHere()) return;
   // 読み API 時もフォールバック用に辞書を用意。API のみでも学習句は載せる
   // tokenizerFailed で API 不許可のときは再試行ループにしない
   if ((!tokenize && !tokenizerFailed) || !learningReady) {
@@ -883,7 +955,7 @@ function ensureLedgerPanel() {
 }
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area !== "local") return;
+  if (duplicateInstance || area !== "local") return;
 
   if (changes[USER_READING_DICT_KEY] && shouldRunEngineNow()) {
     void reapplyUserReadings().then(() => {
@@ -913,6 +985,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
 });
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (duplicateInstance) return false;
   if (message?.type === "YTSCF_PING") {
     sendResponse({
       ok: true,
@@ -962,4 +1035,4 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   return false;
 });
 
-void loadState();
+if (!duplicateInstance) void loadState();
