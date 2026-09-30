@@ -2,10 +2,66 @@
  * YouTube ページ世界（MAIN）で帯の Polymer データを読む。
  * 隔離世界の content.js からは .data / showItemEndpoint が見えない。
  * クリックしなくても本文を台帳へ渡すためだけに使う。timedtext は使わない。
+ * ライブ中は get_live_chat 応答からもスパチャを拾う（DOM の仮想リストから消える前に）。
  */
+import {
+  collectPaidDtos,
+  extractPaidDtosFromLiveChatJson,
+  flattenPaidRecord,
+  isLiveChatDataUrl,
+  paidDtoKey
+} from "./live-chat-paid.js";
+
 (() => {
   if (window.__ytscfScPageBridge) return;
   window.__ytscfScPageBridge = true;
+
+  const PUSH = "YTSCF_PAGE_PAID_PUSH";
+  /** 通信で拾ったスパチャ（動画1本の配信中に溜まる分。古いものから落とす） */
+  const CAPTURED_MAX = 2000;
+  /** @type {Map<string, ReturnType<typeof flattenPaidRecord>>} */
+  const captured = new Map();
+
+  /**
+   * @param {unknown} json
+   */
+  function captureFromJson(json) {
+    const fresh = [];
+    for (const dto of extractPaidDtosFromLiveChatJson(json)) {
+      const key = paidDtoKey(dto);
+      if (captured.has(key)) continue;
+      captured.set(key, dto);
+      fresh.push(dto);
+    }
+    while (captured.size > CAPTURED_MAX) {
+      captured.delete(captured.keys().next().value);
+    }
+    // 隔離世界の content.js へ即時通知（タブが裏でも MutationObserver を待たない）
+    if (fresh.length) window.postMessage({ type: PUSH, entries: fresh }, "*");
+  }
+
+  // YouTube のチャット取得は fetch（2026-09 時点で XHR は未使用を確認済み）
+  const nativeFetch = window.fetch;
+  if (typeof nativeFetch === "function") {
+    window.fetch = function ytscfFetch(...args) {
+      const promise = nativeFetch.apply(this, args);
+      const input = args[0];
+      let url = "";
+      try {
+        // string / URL / Request
+        url = typeof input === "string" ? input : String(input?.url || input || "");
+      } catch {
+        url = "";
+      }
+      if (isLiveChatDataUrl(url)) {
+        promise
+          .then((res) => res.clone().json())
+          .then(captureFromJson)
+          .catch(() => {});
+      }
+      return promise;
+    };
+  }
 
   const REQ = "YTSCF_PAGE_PAID_REQUEST";
   const RES = "YTSCF_PAGE_PAID_RESULT";
@@ -22,37 +78,6 @@
   const PAID_SEL =
     "yt-live-chat-paid-message-renderer, yt-live-chat-paid-sticker-renderer";
   const TEXT_SEL = "yt-live-chat-text-message-renderer";
-
-  function simpleText(value) {
-    if (!value) return "";
-    if (typeof value === "string") return value;
-    if (typeof value !== "object") return "";
-    const o = /** @type {Record<string, unknown>} */ (value);
-    if (typeof o.simpleText === "string") return o.simpleText;
-    if (Array.isArray(o.runs)) {
-      return o.runs
-        .map((r) => {
-          if (!r || typeof r !== "object") return "";
-          const t = /** @type {{ text?: unknown }} */ (r).text;
-          return typeof t === "string" ? t : "";
-        })
-        .join("");
-    }
-    return "";
-  }
-
-  /**
-   * @param {unknown} value
-   */
-  function colorIntToHex(value) {
-    const n = Number(value);
-    if (!Number.isFinite(n)) return "";
-    const u = n >>> 0;
-    const r = (u >> 16) & 0xff;
-    const g = (u >> 8) & 0xff;
-    const b = u & 0xff;
-    return `#${[r, g, b].map((c) => c.toString(16).padStart(2, "0")).join("")}`;
-  }
 
   /**
    * @param {string} raw
@@ -207,81 +232,6 @@
     return out;
   }
 
-  /**
-   * @param {Record<string, unknown>} rec
-   */
-  function flatten(rec) {
-    const author = simpleText(rec.authorName);
-    const amount = simpleText(rec.purchaseAmountText) || simpleText(rec.amountText) || simpleText(rec.amount);
-    const message = simpleText(rec.message).trim();
-    const sticker =
-      typeof rec.altText === "string"
-        ? rec.altText
-        : simpleText(
-            /** @type {{ accessibility?: { accessibilityData?: { label?: string } } }} */ (
-              rec
-            ).accessibility?.accessibilityData?.label
-          );
-    const text = message || String(sticker || "").trim();
-    if (!author && !amount && !text) return null;
-    const thumbs =
-      rec.authorPhoto && typeof rec.authorPhoto === "object"
-        ? /** @type {{ thumbnails?: { url?: string }[] }} */ (rec.authorPhoto)
-            .thumbnails
-        : null;
-    const photo =
-      Array.isArray(thumbs) && thumbs.length
-        ? String(thumbs[thumbs.length - 1]?.url || thumbs[0]?.url || "")
-        : "";
-    return {
-      id: String(rec.id || "").trim(),
-      author,
-      amount,
-      message: text,
-      timestamp: simpleText(rec.timestampText).trim(),
-      authorPhotoUrl: /^https?:\/\//i.test(photo) ? photo : "",
-      colorHex: colorIntToHex(rec.bodyBackgroundColor),
-      headerColorHex: colorIntToHex(rec.headerBackgroundColor)
-    };
-  }
-
-  /**
-   * @param {unknown} node
-   * @param {unknown[]} out
-   * @param {Set<string>} seen
-   * @param {number} [depth]
-   */
-  function walkInitial(node, out, seen, depth = 0) {
-    if (!node || depth > 14) return;
-    if (typeof node !== "object") return;
-    if (Array.isArray(node)) {
-      for (const n of node) walkInitial(n, out, seen, depth + 1);
-      return;
-    }
-    const o = /** @type {Record<string, unknown>} */ (node);
-    const rec =
-      (o.liveChatPaidMessageRenderer && typeof o.liveChatPaidMessageRenderer === "object"
-        ? /** @type {Record<string, unknown>} */ (o.liveChatPaidMessageRenderer)
-        : null) ||
-      (o.liveChatPaidStickerRenderer && typeof o.liveChatPaidStickerRenderer === "object"
-        ? /** @type {Record<string, unknown>} */ (o.liveChatPaidStickerRenderer)
-        : null);
-    if (rec) {
-      const dto = flatten(rec);
-      if (dto) {
-        const key = dto.id || `${dto.author}\u0001${dto.amount}\u0001${dto.message}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          out.push(dto);
-        }
-      }
-      return;
-    }
-    for (const v of Object.values(o)) {
-      if (v && typeof v === "object") walkInitial(v, out, seen, depth + 1);
-    }
-  }
-
   function collect() {
     const isChat =
       /\/live_chat/i.test(location.pathname || "") ||
@@ -305,7 +255,7 @@
         }
       }
       if (!rec) continue;
-      const dto = flatten(rec);
+      const dto = flattenPaidRecord(rec);
       if (!dto) continue;
       if (!dto.colorHex || !dto.headerColorHex) {
         const css = colorsFromHost(el);
@@ -314,19 +264,22 @@
           dto.headerColorHex = css.headerColorHex;
         }
       }
-      const key = dto.id || `${dto.author}\u0001${dto.amount}\u0001${dto.message}`;
+      const key = paidDtoKey(dto);
       if (seen.has(key)) continue;
       seen.add(key);
       out.push(dto);
     }
     try {
-      const data = window.ytInitialData;
-      const actions =
-        data?.continuationContents?.liveChatContinuation?.actions ||
-        data?.contents?.liveChatRenderer?.actions;
-      if (actions) walkInitial(actions, out, seen);
+      collectPaidDtos(window.ytInitialData?.contents?.liveChatRenderer?.actions, out, seen);
     } catch {
       /* ignore */
+    }
+    // 通信で拾った分（DOM から既に消えたスパチャ）
+    for (const dto of captured.values()) {
+      const key = paidDtoKey(dto);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(dto);
     }
     return out;
   }

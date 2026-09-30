@@ -54,6 +54,8 @@ import {
   shouldRunLiveChatEngine
 } from "./state.js";
 import {
+  PAGE_PAID_PUSH_TYPE,
+  ingestPagePaidDtos,
   ingestPaidMessagesFromDocument,
   resolveVideoId
 } from "./sc-ledger.js";
@@ -256,7 +258,11 @@ function hasChatAppInDocument() {
   return furiganaDocuments().length > 0;
 }
 
-function shouldRunFuriganaHere() {
+/**
+ * このフレームがチャット処理（ふりがな・台帳書き込み）を担当するか。
+ * 担当を1フレームに絞らないと台帳の load→save が競合して行が消える。
+ */
+function ownsChatHere() {
   if (!isTopYoutubeWatchFrame()) return true;
   return furiganaDocuments().length > 0 || preferParentChatEngine();
 }
@@ -379,7 +385,7 @@ function syncLiveChatEngine() {
   ensurePicker();
   ensureObserver();
   // 台帳だけのフレームでは kuromoji を起動しない
-  if (!isAnyTargetEnabled(state) || !shouldRunFuriganaHere()) {
+  if (!isAnyTargetEnabled(state) || !ownsChatHere()) {
     queueScan();
     return;
   }
@@ -410,7 +416,7 @@ function setStatus(partial) {
     const patch = statusPending;
     statusPending = {};
     // ふりがな担当でない視聴ページ本体はチャット iframe の診断を上書きしない
-    const topIdle = isTopYoutubeWatchFrame() && !shouldRunFuriganaHere();
+    const topIdle = isTopYoutubeWatchFrame() && !ownsChatHere();
     if (topIdle && !state.ledgerEnabled) return;
     const apiReady = readingApiFallback || state.readingApiEnabled;
     try {
@@ -806,26 +812,21 @@ function scan() {
   const docs = furiganaDocuments();
 
   // ふりがな ON/OFF と独立して台帳を拾う（スパチャのみ表示中も蓄積）
-  if (state.ledgerEnabled && !ledgerInflight) {
+  if (state.ledgerEnabled && !ledgerInflight && ownsChatHere()) {
     ledgerInflight = true;
     void ingestPaidMessagesFromDocument(document, {
       videoId: currentVideoId(),
       href: location.href
     })
-      .then((result) => {
-        if (result.total !== ledgerCount) {
-          ledgerCount = result.total;
-          setStatus({ ledgerCount });
-        }
-        // panel は storage.onChanged で更新（ここでは refresh しない）
-      })
+      // panel は storage.onChanged で更新（ここでは refresh しない）
+      .then(reportLedgerTotal)
       .catch(() => {})
       .finally(() => {
         ledgerInflight = false;
       });
   }
 
-  if (!isAnyTargetEnabled(state) || !shouldRunFuriganaHere()) return;
+  if (!isAnyTargetEnabled(state) || !ownsChatHere()) return;
   // 読み API 時もフォールバック用に辞書を用意。API のみでも学習句は載せる
   // tokenizerFailed で API 不許可のときは再試行ループにしない
   if ((!tokenize && !tokenizerFailed) || !learningReady) {
@@ -1033,6 +1034,28 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return false;
   }
   return false;
+});
+
+/**
+ * @param {{ total: number }} result
+ */
+function reportLedgerTotal(result) {
+  if (result.total === ledgerCount) return;
+  ledgerCount = result.total;
+  setStatus({ ledgerCount });
+}
+
+// ページ世界が get_live_chat 応答から拾ったスパチャ（DOM から流れ去る前・タブが裏でも届く）
+window.addEventListener("message", (ev) => {
+  if (duplicateInstance || ev.source !== window) return;
+  const d = ev.data;
+  if (!d || d.type !== PAGE_PAID_PUSH_TYPE || !Array.isArray(d.entries)) return;
+  if (!state.ledgerEnabled) return;
+  void ingestPagePaidDtos(d.entries.slice(0, 500), currentVideoId())
+    .then(reportLedgerTotal)
+    .catch((err) => {
+      console.warn("[YT Live Chat Furigana] ledger push", err?.message || err);
+    });
 });
 
 if (!duplicateInstance) void loadState();

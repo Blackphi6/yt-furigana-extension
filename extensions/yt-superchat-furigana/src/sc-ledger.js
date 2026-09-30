@@ -1135,6 +1135,8 @@ export async function adoptUnknownLedgerItems(videoId) {
 
 export const PAGE_PAID_REQUEST_TYPE = "YTSCF_PAGE_PAID_REQUEST";
 export const PAGE_PAID_RESULT_TYPE = "YTSCF_PAGE_PAID_RESULT";
+/** ページ世界 → 同一フレームの content.js（通信で拾ったスパチャの即時通知） */
+export const PAGE_PAID_PUSH_TYPE = "YTSCF_PAGE_PAID_PUSH";
 
 /**
  * ページ世界（MAIN）から来た DTO を台帳行にする。
@@ -1161,6 +1163,9 @@ export function ledgerEntryFromPageDto(dto, videoId, now) {
   );
   const photo = String(o.authorPhotoUrl || "").trim();
   const fromAmount = superChatColorsFromAmount(amount);
+  // ライブは timestampText が無いので投稿時刻（µs）を観測時刻に使う
+  const usec = Number(o.timestampUsec);
+  const postedAt = Number.isFinite(usec) && usec > 0 ? Math.floor(usec / 1000) : 0;
   const colorHex =
     cssColorToHex(String(o.colorHex || "")) || fromAmount?.colorHex || null;
   const headerColorHex =
@@ -1172,7 +1177,7 @@ export function ledgerEntryFromPageDto(dto, videoId, now) {
     author,
     amount,
     message,
-    observedAt: Number(now) || Date.now(),
+    observedAt: postedAt || Number(now) || Date.now(),
     videoTimecode: timestamp,
     videoTimecodeSec: timestamp ? parseTimecodeToSeconds(timestamp) : null,
     videoId: String(videoId || "").trim(),
@@ -1297,19 +1302,43 @@ export async function ingestPaidMessagesFromDocument(root, opts = {}) {
   const fromPage = (pageDtos || [])
     .map((dto) => ledgerEntryFromPageDto(dto, videoId))
     .filter(Boolean);
-  const incoming = [...fromDom, ...fromPage];
-  if (!incoming.length) {
+  return upsertLedgerLocked(videoId, [...fromDom, ...fromPage]);
+}
+
+/** @type {Promise<unknown>} */
+let ledgerWriteChain = Promise.resolve();
+
+/**
+ * load → merge → save を直列化する。スキャンと通信 push が同時に書くと片方が消える。
+ * @param {string} videoId
+ * @param {(ScLedgerEntry | null)[]} incoming
+ * @returns {Promise<{ added: number, total: number, videoId: string }>}
+ */
+function upsertLedgerLocked(videoId, incoming) {
+  const run = ledgerWriteChain.then(async () => {
+    const items = /** @type {ScLedgerEntry[]} */ (incoming.filter(Boolean));
     const store = await loadLedgerStore();
-    const total = store.byVideo[videoId]?.items?.length || 0;
-    return { added: 0, total, videoId };
-  }
-  const store = await loadLedgerStore();
-  const { store: next, added, changed } = upsertLedgerEntries(
-    store,
-    videoId,
-    /** @type {ScLedgerEntry[]} */ (incoming)
+    if (!items.length) {
+      return { added: 0, total: store.byVideo[videoId]?.items?.length || 0, videoId };
+    }
+    const { store: next, added, changed } = upsertLedgerEntries(store, videoId, items);
+    if (added > 0 || changed) await saveLedgerStore(next);
+    return { added, total: next.byVideo[videoId]?.items?.length || 0, videoId };
+  });
+  ledgerWriteChain = run.catch(() => {});
+  return run;
+}
+
+/**
+ * ページ世界が get_live_chat 応答から拾った DTO をそのまま台帳へ。
+ * @param {unknown[]} dtos
+ * @param {string} videoId
+ */
+export function ingestPagePaidDtos(dtos, videoId) {
+  const vid = String(videoId || "").trim() || "_unknown";
+  const now = Date.now();
+  return upsertLedgerLocked(
+    vid,
+    (Array.isArray(dtos) ? dtos : []).map((dto) => ledgerEntryFromPageDto(dto, vid, now))
   );
-  if (added > 0 || changed) await saveLedgerStore(next);
-  const total = next.byVideo[videoId]?.items?.length || 0;
-  return { added, total, videoId };
 }
