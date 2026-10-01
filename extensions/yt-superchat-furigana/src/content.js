@@ -47,6 +47,7 @@ import {
 } from "./reading-api-lite.js";
 import { PUBLIC_READING_API_URL } from "../../../src/default-settings.js";
 import { formatTokenizerError, isIosLikeRuntime } from "./ios-runtime.js";
+import { getDictLoadLog } from "./kuromoji-dict-loader.cjs";
 import {
   HIDE_TEXT_MESSAGES_CLASS,
   isAnyTargetEnabled,
@@ -89,8 +90,14 @@ let readingApiFallback = false;
 /** kuromoji 起動が固まる端末向け。iPad は辞書展開に数秒かかるので短くしすぎない */
 const KUROMOJI_TIMEOUT_MS = 15000;
 
+/** 端末内辞書の失敗理由（診断用。後続の setStatus で消えないよう保持） */
+let tokenizerError = "";
+/** background（service worker）が応答するか: "" 未確認 / "yes" / "no" */
+let bgAlive = "";
+
 function markReadingApiFallback(reason) {
   tokenizerFailed = true;
+  tokenizerError = String(reason || "").slice(0, 160);
   readingApiFallback = state.readingApiEnabled;
   const suffix = reason ? `（${reason}）` : "";
   setStatus({
@@ -440,6 +447,10 @@ function setStatus(partial) {
           chatWindows: listChatFrameWindows(document).length,
           preferParentChatEngine: preferParentChatEngine(),
           iosLike: isIosLikeRuntime(navigator),
+          tokErr: tokenizerError,
+          dictVia: getDictLoadLog().via,
+          dictErr: getDictLoadLog().errors.join(" | ").slice(0, 240),
+          bg: bgAlive,
           frame: isTopYoutubeWatchFrame() ? "top" : "chat",
           instance: instanceNo,
           furiganaHere: !topIdle,
@@ -1058,4 +1069,14 @@ window.addEventListener("message", (ev) => {
     });
 });
 
-if (!duplicateInstance) void loadState();
+if (!duplicateInstance) {
+  void loadState();
+  try {
+    chrome.runtime.sendMessage({ type: "YTSCF_BG_PING" }, (res) => {
+      bgAlive = !chrome.runtime.lastError && res?.ok ? "yes" : "no";
+      setStatus({});
+    });
+  } catch {
+    bgAlive = "no";
+  }
+}

@@ -91,7 +91,45 @@ async function warmReadingApi() {
   return { ok: true, endpoint: `${base}/v1/readings` };
 }
 
+/** kuromoji 辞書の中継対象（拡張同梱の .dat.gz のみ） */
+const DICT_FILE_RE = /^dict\/[A-Za-z0-9_]+\.dat\.gz$/;
+
+/**
+ * @param {ArrayBuffer} buf
+ */
+function arrayBufferToBase64(buf) {
+  const bytes = new Uint8Array(buf);
+  let bin = "";
+  const CHUNK = 0x8000;
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
+  }
+  return btoa(bin);
+}
+
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message?.type === "YTSCF_BG_PING") {
+    sendResponse({ ok: true });
+    return false;
+  }
+  // content script から拡張 URL を読めない端末（iPad Orion）向けの辞書中継
+  if (message?.type === "YTSCF_DICT_FILE") {
+    const path = String(message.path || "");
+    if (!DICT_FILE_RE.test(path)) {
+      sendResponse({ ok: false, error: "bad path" });
+      return false;
+    }
+    fetch(chrome.runtime.getURL(path))
+      .then((res) => {
+        if (!res.ok) throw new Error(`fetch ${res.status}`);
+        return res.arrayBuffer();
+      })
+      .then((buf) => sendResponse({ ok: true, b64: arrayBufferToBase64(buf) }))
+      .catch((error) =>
+        sendResponse({ ok: false, error: String(error?.message || error) })
+      );
+    return true;
+  }
   if (message?.type === "YTSCF_CONVERT_READING_API") {
     convertWithReadingApi(String(message.text || ""))
       .then((html) => sendResponse({ ok: true, html, source: "reading-api" }))

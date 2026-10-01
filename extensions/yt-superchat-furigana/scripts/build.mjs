@@ -49,19 +49,13 @@ for (const phraseName of [
   }
 }
 
-const kuromojiBrowserLoader = path.join(
-  repoRoot,
-  "node_modules",
-  "kuromoji",
-  "src",
-  "loader",
-  "BrowserDictionaryLoader.js"
-);
+// iPad Orion で XHR が通らないので fetch / XHR / background 中継の多経路ローダーへ差し替え
+const kuromojiBrowserLoader = path.join(extRoot, "src", "kuromoji-dict-loader.cjs");
 
 const kuromojiPlugin = {
   name: "kuromoji-browser",
   setup(buildApi) {
-    buildApi.onResolve({ filter: /NodeDictionaryLoader\.js$/ }, () => ({
+    buildApi.onResolve({ filter: /(?:Node|Browser)DictionaryLoader(?:\.js)?$/ }, () => ({
       path: kuromojiBrowserLoader
     }));
     buildApi.onResolve({ filter: /^path$/ }, () => ({
@@ -80,7 +74,8 @@ const common = {
 await Promise.all([
   esbuild.build({
     ...common,
-    format: "esm",
+    // iOS の Orion は module 型 service worker を起動できないことがあるので classic
+    format: "iife",
     entryPoints: [path.join(extRoot, "src/background.js")],
     outfile: path.join(dist, "background.js")
   }),
