@@ -76,9 +76,22 @@ _cors = os.environ.get(
     "https://blackphi6.github.io,https://www.youtube.com,https://m.youtube.com,"
     "https://streamyard.com,https://www.streamyard.com,null",
 )
+# Live Chat 拡張の content script（Orion/iOS）はページ origin で fetch する。
+# ダッシュボードの環境変数で上書きされても落ちないよう常に許可する。
+_EXTENSION_PAGE_ORIGINS = (
+    "https://www.youtube.com",
+    "https://m.youtube.com",
+    "https://streamyard.com",
+    "https://www.streamyard.com",
+)
+_cors_origins = list(
+    dict.fromkeys(
+        [o.strip() for o in _cors.split(",") if o.strip()] + list(_EXTENSION_PAGE_ORIGINS)
+    )
+)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[o.strip() for o in _cors.split(",") if o.strip()],
+    allow_origins=_cors_origins,
     allow_credentials=False,
     allow_methods=["GET", "POST", "PUT", "OPTIONS"],
     allow_headers=["*"],
