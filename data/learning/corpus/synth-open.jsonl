@@ -4670,3 +4670,45 @@
 {"text":"永遠に終わらない思い出は、日常の中で小さな奇跡を呼び起こす。","surface":"永遠","candidates":["えいえん","とわ"],"gold":"えいえん","source":"llm-synth:groq:verify_agree","note":"日常・論理・客観（永遠のテーマ、永遠に終わらない など）"}
 {"text":"仕事の合間に電話を受けると、忙しいと感じた。","surface":"忙しい","candidates":["いそがしい","せわしい"],"gold":"いそがしい","source":"llm-synth:groq:verify_agree","note":"仕事・予定・日常の忙しさ"}
 {"text":"予定が詰まっていると、日常のちょっとした時間さえ忙しい。","surface":"忙しい","candidates":["いそがしい","せわしい"],"gold":"いそがしい","source":"llm-synth:groq:verify_agree","note":"仕事・予定・日常の忙しさ"}
+{"text":"永遠の歌詞を胸に抱き、星空へと旅立つとわ。","surface":"永遠","candidates":["えいえん","とわ"],"gold":"とわ","source":"llm-synth:groq:arbitrate_agree","note":"歌詞・誓い・愛など主観・文学寄りの文脈（デフォルトはえいえん）"}
+{"text":"朝の市場で魚を買うと、朝食がとても新鮮に感じる。","surface":"市場","candidates":["いちば","しじょう"],"gold":"いちば","source":"llm-synth:groq:verify_agree","note":"朝の市場で魚を買う、鮮魚・野菜売り場"}
+{"text":"市場の鮮魚・野菜売り場で買った野菜は、毎日使えるほど新鮮だ。","surface":"市場","candidates":["いちば","しじょう"],"gold":"いちば","source":"llm-synth:groq:verify_agree","note":"朝の市場で魚を買う、鮮魚・野菜売り場"}
+{"text":"先輩の退職という出来事が、私の心に辛い影を落とした。","surface":"辛い","candidates":["からい","つらい"],"gold":"つらい","source":"llm-synth:groq:verify_agree","note":"経験・出来事・境遇（味ではない）"}
+{"text":"新入社員としての初日、期待と不安の境遇が辛いほどに重かった。","surface":"辛い","candidates":["からい","つらい"],"gold":"つらい","source":"llm-synth:groq:verify_agree","note":"経験・出来事・境遇（味ではない）"}
+{"text":"町中に噂が広まると、誰もが急いで話を確認する。","surface":"町中","candidates":["まちじゅう","まちなか"],"gold":"まちじゅう","source":"llm-synth:groq:verify_agree","note":"噂が町中に広まる／町中に知れ渡る（まちじゅう）"}
+{"text":"町中に知れ渡るニュースは、すぐに人々の心を揺さぶる。","surface":"町中","candidates":["まちじゅう","まちなか"],"gold":"まちじゅう","source":"llm-synth:groq:verify_agree","note":"噂が町中に広まる／町中に知れ渡る（まちじゅう）"}
+{"text":"大事な人を大事にすることが、私にとって大切だ。","surface":"大事","candidates":["おおごと","だいじ"],"gold":"だいじ","source":"llm-synth:groq:verify_agree","note":"大事な人／大事にする／大切"}
+{"text":"大事にすることは、誰にとっても大事なことだ。","surface":"大事","candidates":["おおごと","だいじ"],"gold":"だいじ","source":"llm-synth:groq:verify_agree","note":"大事な人／大事にする／大切"}
+{"text":"表に出るときは、まず顔を整えることが大切だ。","surface":"表","candidates":["おもて","ひょう"],"gold":"おもて","source":"llm-synth:groq:verify_agree","note":"裏と表／表に出る／玄関・顔の表"}
+{"text":"玄関の表に貼った案内板を見て、来訪者を迎える準備をした。","surface":"表","candidates":["おもて","ひょう"],"gold":"おもて","source":"llm-synth:groq:verify_agree","note":"裏と表／表に出る／玄関・顔の表"}
+{"text":"本日の予定を表で一覧化し、会議で共有した。","surface":"表","candidates":["おもて","ひょう"],"gold":"ひょう","source":"llm-synth:groq:verify_agree","note":"グラフ・データ・一覧・表にまとめる"}
+{"text":"風が吹くと、静かな森は黄金色に染まる。","surface":"風","candidates":["かぜ","ふう","ふり"],"gold":"かぜ","source":"llm-synth:groq:verify_agree","note":"風が吹く／強風／風で髪が乱れる"}
+{"text":"どういう風に書くかを示す例文だ。","surface":"風","candidates":["かぜ","ふう","ふり"],"gold":"ふう","source":"llm-synth:groq:verify_agree","note":"こんな風に／どういう風に書く（様子・やり方）"}
+{"text":"彼は博士として論文を書き、学位を取得した。","surface":"博士","candidates":["はかせ","はくし"],"gold":"はくし","source":"llm-synth:groq:arbitrate_agree","note":"博士号／学位／論文"}
+{"text":"博士号を持つ彼は、論文を発表し学位を証明した。","surface":"博士","candidates":["はかせ","はくし"],"gold":"はくし","source":"llm-synth:groq:verify_agree","note":"博士号／学位／論文"}
+{"text":"今日は朝から散歩に出かける。","surface":"今日","candidates":["きょう","こんじつ","こんち","こんにち"],"gold":"きょう","source":"llm-synth:groq:verify_agree","note":"今日は／明日・昨日と対になる日常のきょう"}
+{"text":"昨日の雨の後、今日は晴れた。","surface":"今日","candidates":["きょう","こんじつ","こんち","こんにち"],"gold":"きょう","source":"llm-synth:groq:verify_agree","note":"今日は／明日・昨日と対になる日常のきょう"}
+{"text":"彼は絵が上手で、色使いが素晴らしい。","surface":"上手","candidates":["うわて","かみて","じょうしゅ","じょうず"],"gold":"じょうず","source":"llm-synth:groq:verify_agree","note":"絵が上手／歌が上手だ（技能）"}
+{"text":"歌が上手だと友達からよく褒められる。","surface":"上手","candidates":["うわて","かみて","じょうしゅ","じょうず"],"gold":"じょうず","source":"llm-synth:groq:verify_agree","note":"絵が上手／歌が上手だ（技能）"}
+{"text":"相撲の上手が見事に投げを決めた。","surface":"上手","candidates":["うわて","かみて","じょうしゅ","じょうず"],"gold":"うわて","source":"llm-synth:groq:verify_agree","note":"交渉で上手に回る／相撲の上手（うわて）"}
+{"text":"毎月一日、私は早朝に散歩に出かけることに決めた。","surface":"一日","candidates":["いちにち","ついたち"],"gold":"ついたち","source":"llm-synth:groq:verify_agree","note":"毎月一日／月の初日（ついたち）"}
+{"text":"人気がない夜道で、星の光さえも遠く感じた。","surface":"人気","candidates":["じんき","にんき","ひとけ","ひとげ"],"gold":"ひとけ","source":"llm-synth:groq:arbitrate_agree","note":"人気のない道／人気がない夜道（人の気配）"}
+{"text":"人気が高い新人アイドルは、SNSで急速に人気者となった。","surface":"人気","candidates":["じんき","にんき","ひとけ","ひとげ"],"gold":"にんき","source":"llm-synth:groq:verify_agree","note":"人気が高い／人気者（にんき）"}
+{"text":"人気者の彼は、イベントでファンと直接交流し、人気が高いと評判だ。","surface":"人気","candidates":["じんき","にんき","ひとけ","ひとげ"],"gold":"にんき","source":"llm-synth:groq:verify_agree","note":"人気が高い／人気者（にんき）"}
+{"text":"朝の静けさの中、本を開くと、物語が息を吹き返す。","surface":"開く","candidates":["あく","ひらく"],"gold":"ひらく","source":"llm-synth:groq:verify_agree","note":"本を開く／店を開く／会議を開く（ひらく）"}
+{"text":"店を開くと、カフェの香りが客を迎えてくれる。","surface":"開く","candidates":["あく","ひらく"],"gold":"ひらく","source":"llm-synth:groq:verify_agree","note":"本を開く／店を開く／会議を開く（ひらく）"}
+{"text":"蓋が開くと、熱々のスープが香り立った。","surface":"開く","candidates":["あく","ひらく"],"gold":"あく","source":"llm-synth:groq:verify_agree","note":"ドアが開く／蓋が開く（あく・自動）"}
+{"text":"時が行く春の風は静かに散りゆく","surface":"行く","candidates":["いく","ゆく"],"gold":"ゆく","source":"llm-synth:groq:verify_agree","note":"時が行く／行く末／文語・歌詞寄りのゆく"}
+{"text":"明日、学校へ行くと友だちに会う予定だ。","surface":"行く","candidates":["いく","ゆく"],"gold":"いく","source":"llm-synth:groq:verify_agree","note":"学校へ行く／明日行く（日常のいく）"}
+{"text":"今日は雨が降るけど、家でゆっくり行くのが好きだ。","surface":"行く","candidates":["いく","ゆく"],"gold":"いく","source":"llm-synth:groq:verify_agree","note":"学校へ行く／明日行く（日常のいく）"}
+{"text":"背負っ荷物を背負っ","surface":"背負っ","candidates":["せおっ","しょっ"],"gold":"せおっ","source":"llm-synth:groq:verify_agree","note":"リュック・荷物・子供を背中に載せる物理の背負って（せおう）"}
+{"text":"新しいカフェの席に入ると、気に入る香りが広がった。","surface":"入る","candidates":["いる","はいる"],"gold":"いる","source":"llm-synth:groq:verify_agree","note":"気に入る／手に入る／仲間に入る（いる）"}
+{"text":"古い図書館の奥に入ると、手に入る静かな時間が待っていた。","surface":"入る","candidates":["いる","はいる"],"gold":"いる","source":"llm-synth:groq:verify_agree","note":"気に入る／手に入る／仲間に入る（いる）"}
+{"text":"牛の角を持つ雄牛が牧場で静かに歩いている。","surface":"角","candidates":["かく","かど","すみ","つの"],"gold":"つの","source":"llm-synth:groq:verify_agree","note":"牛の角／角が生える（つの）"}
+{"text":"角が生える木の枝が春風に揺れている。","surface":"角","candidates":["かく","かど","すみ","つの"],"gold":"つの","source":"llm-synth:groq:verify_agree","note":"牛の角／角が生える（つの）"}
+{"text":"株式市場の流動性は、投資家の信頼を左右する重要な指標です。","surface":"市場","candidates":["いちば","しじょう"],"gold":"しじょう","source":"llm-synth:groq:verify_agree","note":"株式・規模・経済・金融の文脈"}
+{"text":"金融市場の規模拡大は、経済成長の新たなエンジンとなるでしょう。","surface":"市場","candidates":["いちば","しじょう"],"gold":"しじょう","source":"llm-synth:groq:verify_agree","note":"株式・規模・経済・金融の文脈"}
+{"text":"辛いラーメンを食べたら、口の中に唐辛子の熱が広がった。","surface":"辛い","candidates":["からい","つらい"],"gold":"からい","source":"llm-synth:groq:verify_agree","note":"ラーメン・カレー・味・唐辛子"}
+{"text":"カレーの辛い味が好きで、毎回唐辛子を追加して食べる。","surface":"辛い","candidates":["からい","つらい"],"gold":"からい","source":"llm-synth:groq:verify_agree","note":"ラーメン・カレー・味・唐辛子"}
+{"text":"日常の散歩道で、雨が止まらず永遠に続くように感じた。","surface":"永遠","candidates":["えいえん","とわ"],"gold":"えいえん","source":"llm-synth:groq:verify_agree","note":"日常・論理・客観（永遠のテーマ、永遠に終わらない など）"}
+{"text":"論理的に考えると、星の光は永遠に空を照らし続ける。","surface":"永遠","candidates":["えいえん","とわ"],"gold":"えいえん","source":"llm-synth:groq:verify_agree","note":"日常・論理・客観（永遠のテーマ、永遠に終わらない など）"}
