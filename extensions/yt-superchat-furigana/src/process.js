@@ -5,6 +5,8 @@
 
 export const DONE_ATTR = "data-ytscf-done";
 export const ORIGINAL_ATTR = "data-ytscf-original";
+/** ルビ入り HTML を載せた印（YouTube の再描画でルビだけ消えたことを検出する） */
+export const RUBY_ATTR = "data-ytscf-ruby";
 
 /** Super Chat 本文 */
 export const PAID_MESSAGE_SELECTOR =
@@ -159,6 +161,15 @@ export function isAlreadyProcessed(el) {
 }
 
 /**
+ * 処理済みの印は残っているのにルビが消えた（本文だけ再描画された）か。
+ * ルビを載せた要素に限るので、読み無しの文で付け直しが無限に続くことはない。
+ * @param {HTMLElement} el
+ */
+export function lostRuby(el) {
+  return Boolean(el?.hasAttribute?.(RUBY_ATTR) && !el.querySelector?.("rt"));
+}
+
+/**
  * #message からルビ無しのプレーンテキストを取る。
  * @param {HTMLElement} el
  * @param {{ ignoreSaved?: boolean }} [options]
@@ -205,6 +216,8 @@ export function applyFuriganaToMessage(el, html, originalPlain) {
   el.setAttribute(DONE_ATTR, "1");
   el.classList?.add?.("ytscf-done");
   el.innerHTML = html;
+  if (/<rt[\s>]/.test(String(html))) el.setAttribute(RUBY_ATTR, "1");
+  else el.removeAttribute?.(RUBY_ATTR);
   return true;
 }
 
@@ -220,6 +233,7 @@ export function restoreMessage(el) {
   }
   el.removeAttribute(DONE_ATTR);
   el.removeAttribute(ORIGINAL_ATTR);
+  el.removeAttribute(RUBY_ATTR);
   el.classList?.remove?.("ytscf-done");
 }
 

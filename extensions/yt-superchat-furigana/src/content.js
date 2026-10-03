@@ -33,6 +33,7 @@ import {
   extractPlainMessage,
   isAlreadyProcessed,
   listAccessibleChatDocuments,
+  lostRuby,
   needsFurigana,
   restoreChatMessages,
   restoreSuperChatMessages
@@ -197,6 +198,8 @@ let statusPending = {};
 /** 直近の読み API エラー（ポップアップ診断用） */
 let lastApiError = "";
 let lastScanDomHits = 0;
+/** スパチャ本文: 見つけた数 / ルビが載っている数（診断用） */
+let lastScanSc = "";
 let lastScanBridgeTargets = 0;
 
 function currentVideoId() {
@@ -456,6 +459,7 @@ function setStatus(partial) {
           furiganaHere: !topIdle,
           lastApiError,
           lastScanDomHits,
+          sc: lastScanSc,
           lastScanBridgeTargets,
           ...patch
         }
@@ -728,7 +732,7 @@ async function processOne(el, enabledForKind) {
   if (isAlreadyProcessed(el)) {
     const saved = el.getAttribute("data-ytscf-original");
     const live = extractPlainMessage(el, { ignoreSaved: true });
-    if (saved != null && saved === live) return;
+    if (saved != null && saved === live && !lostRuby(el)) return;
     el.removeAttribute("data-ytscf-done");
     el.removeAttribute("data-ytscf-original");
     el.classList.remove("ytscf-done");
@@ -881,6 +885,12 @@ function scan() {
     }
   }
   lastScanDomHits = domHits;
+  if (state.superChatEnabled) {
+    const scEls = docs.flatMap((doc) =>
+      collectSuperChatMessageElements(doc).filter((el) => el.closest?.("yt-live-chat-paid-message-renderer"))
+    );
+    lastScanSc = `${scEls.length}/${scEls.filter((el) => el.querySelector("rt")).length}`;
+  }
   setStatus({ lastScanDomHits: domHits });
 
   // Orion: DOM 横断できなくても MAIN 橋で付ける。

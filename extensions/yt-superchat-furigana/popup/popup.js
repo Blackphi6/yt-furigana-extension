@@ -69,6 +69,7 @@ function setDiag(runtime) {
     `ios=${runtime.iosLike ? "yes" : "no"}`,
     `n=${runtime.processedCount ?? 0}`
   ];
+  if (runtime.sc) parts.push(`sc=${runtime.sc}`);
   if (runtime.bg) parts.push(`bg=${runtime.bg}`);
   if (runtime.dictVia) parts.push(`dict=${runtime.dictVia}`);
   if (runtime.tokErr) parts.push(`tokErr=${runtime.tokErr}`);
