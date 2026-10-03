@@ -1,23 +1,42 @@
 {
-  "ts": "2026-10-02T22:08:44.371Z",
+  "ts": "2026-10-03T04:59:51.739Z",
   "generatedFrom": "synth-log.jsonl+corpus/synth-open.jsonl",
   "summary": {
-    "total": 4783,
+    "total": 4828,
     "shown": 800,
     "logCount": 77,
-    "corpusCount": 4762,
+    "corpusCount": 4806,
     "bySource": {
-      "llm-synth:groq:verify_agree": 699,
-      "llm-synth:groq:arbitrate_agree": 25,
-      "judges_disagree_with_gold": 21,
+      "llm-synth:groq:verify_agree": 701,
+      "llm-synth:groq:arbitrate_agree": 24,
+      "judges_disagree_with_gold": 22,
       "arbitrate_agree": 1,
-      "verify_agree": 54
+      "verify_agree": 52
     }
   },
   "entries": [
     {
-      "ts": "2026-10-02T22:08:41.546Z",
-      "text": "子供の笑顔は永遠のテーマとして心に残る。",
+      "ts": "2026-10-03T04:59:51.069Z",
+      "text": "忙しい",
+      "surface": "忙しい",
+      "candidates": [
+        "いそがしい",
+        "せわしい"
+      ],
+      "gold": "いそがしい",
+      "verify_guess": "いそがしい",
+      "arbitrate_guess": null,
+      "source": "verify_agree",
+      "verify_raw": "いそがしい",
+      "arb_raw": "",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "openai/gpt-oss-120b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": "仕事・予定・日常の忙しさ"
+    },
+    {
+      "ts": "2026-10-03T04:59:43.610Z",
+      "text": "論理的に考えると、時間の流れは永遠に終わらないという仮説が成立する。",
       "surface": "永遠",
       "candidates": [
         "えいえん",
@@ -35,8 +54,8 @@
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "ts": "2026-10-02T22:08:39.063Z",
-      "text": "毎朝コーヒーを飲む時間は永遠に終わらないと感じる。",
+      "ts": "2026-10-03T04:59:41.290Z",
+      "text": "日常の朝食を食べながら、私は永遠に終わらないコーヒーの香りを想像した。",
       "surface": "永遠",
       "candidates": [
         "えいえん",
@@ -54,8 +73,8 @@
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "ts": "2026-10-02T22:08:33.841Z",
-      "text": "カレーに唐辛子を入れたら、辛い味が強くなる。",
+      "ts": "2026-10-03T04:59:36.110Z",
+      "text": "ラーメンに唐辛子を入れると辛いからい香りが立つ。",
       "surface": "辛い",
       "candidates": [
         "からい",
@@ -73,8 +92,8 @@
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "ts": "2026-10-02T22:08:31.619Z",
-      "text": "ラーメンを食べると、辛い香りが鼻をつく。",
+      "ts": "2026-10-03T04:59:33.804Z",
+      "text": "カレーを食べると辛いからいと感じる。",
       "surface": "辛い",
       "candidates": [
         "からい",
@@ -92,8 +111,8 @@
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "ts": "2026-10-02T22:08:26.435Z",
-      "text": "市場は金融の健康度を示す重要指標だ。",
+      "ts": "2026-10-03T04:59:28.762Z",
+      "text": "金融市場は経済に大きな影響を与える。",
       "surface": "市場",
       "candidates": [
         "いちば",
@@ -111,8 +130,8 @@
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "ts": "2026-10-02T22:08:23.940Z",
-      "text": "株式市場の規模は今年大きく拡大した。",
+      "ts": "2026-10-03T04:59:26.135Z",
+      "text": "株式市場は規模が大きい。",
       "surface": "市場",
       "candidates": [
         "いちば",
@@ -130,8 +149,8 @@
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "ts": "2026-10-02T22:08:18.984Z",
-      "text": "角が生える瞬間、牛の角はさらに長くなる。",
+      "ts": "2026-10-03T04:59:21.321Z",
+      "text": "角が生える牛の角を見て、彼は驚いた。",
       "surface": "角",
       "candidates": [
         "かく",
@@ -151,8 +170,8 @@
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "ts": "2026-10-02T22:08:16.699Z",
-      "text": "角が生えると、牛の角が大きくなる。",
+      "ts": "2026-10-03T04:59:18.821Z",
+      "text": "牛の角が春になると、角が生えるように輝く。",
       "surface": "角",
       "candidates": [
         "かく",
@@ -172,8 +191,8 @@
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "ts": "2026-10-02T22:08:11.482Z",
-      "text": "雨の日、角を曲がると古い図書館が出てくる。",
+      "ts": "2026-10-03T04:59:13.635Z",
+      "text": "彼は角を曲がると、古い図書館が見えた。",
       "surface": "角",
       "candidates": [
         "かく",
@@ -193,29 +212,8 @@
       "note": "街角／角を曲がる（かど）"
     },
     {
-      "ts": "2026-10-02T22:08:09.075Z",
-      "text": "彼は駅前の角を曲がると、カフェが見えた。",
-      "surface": "角",
-      "candidates": [
-        "かく",
-        "かど",
-        "すみ",
-        "つの"
-      ],
-      "gold": "かど",
-      "verify_guess": "かど",
-      "arbitrate_guess": null,
-      "source": "verify_agree",
-      "verify_raw": "かど",
-      "arb_raw": "",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "openai/gpt-oss-120b",
-      "arbitrator": "openai/gpt-oss-120b",
-      "note": "街角／角を曲がる（かど）"
-    },
-    {
-      "ts": "2026-10-02T22:08:04.003Z",
-      "text": "風呂に入ると、心も体もゆっくりとリラックスする。",
+      "ts": "2026-10-03T04:59:08.602Z",
+      "text": "夜になると、風呂に入るとすぐに眠る。",
       "surface": "入る",
       "candidates": [
         "いる",
@@ -233,8 +231,8 @@
       "note": ""
     },
     {
-      "ts": "2026-10-02T22:07:58.941Z",
-      "text": "部屋に入ると、窓から差し込む朝日が暖かく映る。",
+      "ts": "2026-10-03T04:59:03.662Z",
+      "text": "今日、私は静かな部屋に入る。",
       "surface": "入る",
       "candidates": [
         "いる",
@@ -252,27 +250,8 @@
       "note": ""
     },
     {
-      "ts": "2026-10-02T22:07:51.577Z",
-      "text": "古い本を図書館で手に入ると、すぐに読む。",
-      "surface": "入る",
-      "candidates": [
-        "いる",
-        "はいる"
-      ],
-      "gold": "いる",
-      "verify_guess": "いる",
-      "arbitrate_guess": null,
-      "source": "verify_agree",
-      "verify_raw": "いる",
-      "arb_raw": "",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "openai/gpt-oss-120b",
-      "arbitrator": "openai/gpt-oss-120b",
-      "note": "気に入る／手に入る／仲間に入る（いる）"
-    },
-    {
-      "ts": "2026-10-02T22:07:49.067Z",
-      "text": "このカフェの雰囲気が気に入ると、何度も入る。",
+      "ts": "2026-10-03T04:58:56.121Z",
+      "text": "彼は仲間に入ると、すぐに手に入る情報を共有してくれた。",
       "surface": "入る",
       "candidates": [
         "いる",
@@ -290,8 +269,27 @@
       "note": "気に入る／手に入る／仲間に入る（いる）"
     },
     {
-      "ts": "2026-10-02T22:07:44.291Z",
-      "text": "運命を引き受ける慣用（しょう）を背負っ、歩む。",
+      "ts": "2026-10-03T04:58:53.782Z",
+      "text": "私は新しい趣味に入ると、気に入るものが次々と見つかる。",
+      "surface": "入る",
+      "candidates": [
+        "いる",
+        "はいる"
+      ],
+      "gold": "いる",
+      "verify_guess": "いる",
+      "arbitrate_guess": null,
+      "source": "verify_agree",
+      "verify_raw": "はいる",
+      "arb_raw": "",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "openai/gpt-oss-120b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": "気に入る／手に入る／仲間に入る（いる）"
+    },
+    {
+      "ts": "2026-10-03T04:58:48.671Z",
+      "text": "彼は運命を引き受ける慣用(しょう)を背負っとして、挑戦を続けた。",
       "surface": "背負っ",
       "candidates": [
         "せおっ",
@@ -309,8 +307,8 @@
       "note": ""
     },
     {
-      "ts": "2026-10-02T22:07:38.963Z",
-      "text": "会社の将来を背負っ、立ち上がる。",
+      "ts": "2026-10-03T04:58:43.635Z",
+      "text": "私は明日、会社の将来を背負って立つ決意を固めた。",
       "surface": "背負っ",
       "candidates": [
         "せおっ",
@@ -328,8 +326,8 @@
       "note": ""
     },
     {
-      "ts": "2026-10-02T22:07:31.503Z",
-      "text": "荷物を背負っ、山道を急ぎ足で歩く。",
+      "ts": "2026-10-03T04:58:36.241Z",
+      "text": "背負っで子供を背中に乗せた。",
       "surface": "背負っ",
       "candidates": [
         "せおっ",
@@ -347,8 +345,8 @@
       "note": "リュック・荷物・子供を背中に載せる物理の背負って（せおう）"
     },
     {
-      "ts": "2026-10-02T22:07:28.913Z",
-      "text": "リュックを背負っ、朝の風を感じる。",
+      "ts": "2026-10-03T04:58:33.610Z",
+      "text": "背負っでリュックを軽く持った。",
       "surface": "背負っ",
       "candidates": [
         "せおっ",
@@ -366,8 +364,8 @@
       "note": "リュック・荷物・子供を背中に載せる物理の背負って（せおう）"
     },
     {
-      "ts": "2026-10-02T22:07:23.869Z",
-      "text": "明日行く。",
+      "ts": "2026-10-03T04:58:28.652Z",
+      "text": "学校へ行くとき、友達と話す。",
       "surface": "行く",
       "candidates": [
         "いく",
@@ -385,8 +383,8 @@
       "note": "学校へ行く／明日行く（日常のいく）"
     },
     {
-      "ts": "2026-10-02T22:07:21.488Z",
-      "text": "私は学校へ行く。",
+      "ts": "2026-10-03T04:58:26.086Z",
+      "text": "明日、図書館へ行く。",
       "surface": "行く",
       "candidates": [
         "いく",
@@ -404,27 +402,27 @@
       "note": "学校へ行く／明日行く（日常のいく）"
     },
     {
-      "ts": "2026-10-02T22:07:16.570Z",
-      "text": "時が行く、風もまた行く。",
+      "ts": "2026-10-03T04:58:21.263Z",
+      "text": "時が行くと、心の奥底に残る記憶だけが輝く。",
       "surface": "行く",
       "candidates": [
         "いく",
         "ゆく"
       ],
       "gold": "ゆく",
-      "verify_guess": "ゆく",
-      "arbitrate_guess": null,
-      "source": "verify_agree",
-      "verify_raw": "ゆく",
-      "arb_raw": "",
+      "verify_guess": "いく",
+      "arbitrate_guess": "いく",
+      "source": "judges_disagree_with_gold",
+      "verify_raw": "いく",
+      "arb_raw": "いく",
       "generator": "openai/gpt-oss-20b",
       "verifier": "openai/gpt-oss-120b",
       "arbitrator": "openai/gpt-oss-120b",
-      "note": "時が行く／行く末／文語・歌詞寄りのゆく"
+      "note": ""
     },
     {
-      "ts": "2026-10-02T22:07:11.573Z",
-      "text": "食べると、蓋が開く音が聞こえた。",
+      "ts": "2026-10-03T04:58:13.694Z",
+      "text": "蓋が開くと、熱い蒸気が鍋から立ち上がった。",
       "surface": "開く",
       "candidates": [
         "あく",
@@ -442,8 +440,8 @@
       "note": "ドアが開く／蓋が開く（あく・自動）"
     },
     {
-      "ts": "2026-10-02T22:07:09.004Z",
-      "text": "朝、窓のドアが開くと、風が入ってきた。",
+      "ts": "2026-10-03T04:58:11.424Z",
+      "text": "ドアが開くと、春の風が室内に入ってきた。",
       "surface": "開く",
       "candidates": [
         "あく",
@@ -461,8 +459,8 @@
       "note": "ドアが開く／蓋が開く（あく・自動）"
     },
     {
-      "ts": "2026-10-02T22:07:04.102Z",
-      "text": "店を開くと、明るい音楽が流れ始める。",
+      "ts": "2026-10-03T04:58:06.189Z",
+      "text": "毎朝、私は本を開くときに静かな時間を楽しむ。",
       "surface": "開く",
       "candidates": [
         "あく",
@@ -480,8 +478,8 @@
       "note": "本を開く／店を開く／会議を開く（ひらく）"
     },
     {
-      "ts": "2026-10-02T22:07:01.562Z",
-      "text": "本を開くと、ページの香りが漂う。",
+      "ts": "2026-10-03T04:58:03.735Z",
+      "text": "私は午前九時に店を開くと、すぐに客が来る。",
       "surface": "開く",
       "candidates": [
         "あく",
@@ -499,8 +497,8 @@
       "note": "本を開く／店を開く／会議を開く（ひらく）"
     },
     {
-      "ts": "2026-10-02T22:06:56.427Z",
-      "text": "一行だけ書くと、文章がスッキリする。",
+      "ts": "2026-10-03T04:57:58.726Z",
+      "text": "テキストの一行を見れば、情報がすぐに把握できる。",
       "surface": "一行",
       "candidates": [
         "いちぎょう",
@@ -518,8 +516,8 @@
       "note": "一行だけ書く／テキストの一行（いちぎょう）"
     },
     {
-      "ts": "2026-10-02T22:06:53.977Z",
-      "text": "テキストの一行だけ書くと、意図が伝わる。",
+      "ts": "2026-10-03T04:57:56.066Z",
+      "text": "このメモは一行だけ書くと、内容が簡潔にまとまる。",
       "surface": "一行",
       "candidates": [
         "いちぎょう",
@@ -537,8 +535,8 @@
       "note": "一行だけ書く／テキストの一行（いちぎょう）"
     },
     {
-      "ts": "2026-10-02T22:06:49.053Z",
-      "text": "観光客の一行が到着したとき、みんなが歓声を上げた。",
+      "ts": "2026-10-03T04:57:51.139Z",
+      "text": "観光客の一行が到着した。",
       "surface": "一行",
       "candidates": [
         "いちぎょう",
@@ -556,27 +554,8 @@
       "note": "観光客の一行／一行が到着した（いっこう）"
     },
     {
-      "ts": "2026-10-02T22:06:46.532Z",
-      "text": "観光客の一行が到着した瞬間、空気が一変した。",
-      "surface": "一行",
-      "candidates": [
-        "いちぎょう",
-        "いっこう"
-      ],
-      "gold": "いっこう",
-      "verify_guess": "いっこう",
-      "arbitrate_guess": null,
-      "source": "verify_agree",
-      "verify_raw": "いっこう",
-      "arb_raw": "",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "openai/gpt-oss-120b",
-      "arbitrator": "openai/gpt-oss-120b",
-      "note": "観光客の一行／一行が到着した（いっこう）"
-    },
-    {
-      "ts": "2026-10-02T22:06:41.759Z",
-      "text": "その俳優は人気者で、ファンから絶大な支持を受けている。",
+      "ts": "2026-10-03T04:57:43.729Z",
+      "text": "彼女はSNSで人気者として注目されている。",
       "surface": "人気",
       "candidates": [
         "じんき",
@@ -596,8 +575,8 @@
       "note": "人気が高い／人気者（にんき）"
     },
     {
-      "ts": "2026-10-02T22:06:39.023Z",
-      "text": "彼は今、人気が高いアーティストとして注目されている。",
+      "ts": "2026-10-03T04:57:41.144Z",
+      "text": "彼の歌は、毎年の音楽フェスで人気が高いと評判だ。",
       "surface": "人気",
       "candidates": [
         "じんき",
@@ -617,27 +596,50 @@
       "note": "人気が高い／人気者（にんき）"
     },
     {
-      "ts": "2026-10-02T22:06:31.482Z",
-      "text": "プロジェクトは丸一日かかると予想された。",
-      "surface": "一日",
+      "ts": "2026-10-03T04:57:36.226Z",
+      "text": "人気がない夜道でひとけに気づいた。",
+      "surface": "人気",
       "candidates": [
-        "いちにち",
-        "ついたち"
+        "じんき",
+        "にんき",
+        "ひとけ",
+        "ひとげ"
       ],
-      "gold": "いちにち",
-      "verify_guess": "いちにち",
-      "arbitrate_guess": null,
-      "source": "verify_agree",
-      "verify_raw": "いちにち",
-      "arb_raw": "",
+      "gold": "ひとけ",
+      "verify_guess": "にんき",
+      "arbitrate_guess": "にんき",
+      "source": "judges_disagree_with_gold",
+      "verify_raw": "にんき",
+      "arb_raw": "にんき",
       "generator": "openai/gpt-oss-20b",
       "verifier": "openai/gpt-oss-120b",
       "arbitrator": "openai/gpt-oss-120b",
-      "note": "一日中／丸一日かかる（いちにち）"
+      "note": ""
     },
     {
-      "ts": "2026-10-02T22:06:26.884Z",
-      "text": "毎月一日は、家族で朝食を作る日だ。",
+      "ts": "2026-10-03T04:57:31.392Z",
+      "text": "人気のない道でひとけが見えた。",
+      "surface": "人気",
+      "candidates": [
+        "じんき",
+        "にんき",
+        "ひとけ",
+        "ひとげ"
+      ],
+      "gold": "ひとけ",
+      "verify_guess": "にんき",
+      "arbitrate_guess": "にんき",
+      "source": "judges_disagree_with_gold",
+      "verify_raw": "にんき",
+      "arb_raw": "にんき",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "openai/gpt-oss-120b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": ""
+    },
+    {
+      "ts": "2026-10-03T04:57:21.196Z",
+      "text": "毎月一日は新しい始まりを告げる。",
       "surface": "一日",
       "candidates": [
         "いちにち",
@@ -655,8 +657,8 @@
       "note": "毎月一日／月の初日（ついたち）"
     },
     {
-      "ts": "2026-10-02T22:06:21.519Z",
-      "text": "上手町から登場した俳優は観客を魅了した。",
+      "ts": "2026-10-03T04:57:16.139Z",
+      "text": "上手から登場（かみて）すると、会場が歓声で包まれた。",
       "surface": "上手",
       "candidates": [
         "うわて",
@@ -676,29 +678,8 @@
       "note": "舞台の上手で堂々と／上手から登場（かみて）"
     },
     {
-      "ts": "2026-10-02T22:06:18.991Z",
-      "text": "舞台の上手町で堂々と演技を披露する。",
-      "surface": "上手",
-      "candidates": [
-        "うわて",
-        "かみて",
-        "じょうしゅ",
-        "じょうず"
-      ],
-      "gold": "かみて",
-      "verify_guess": "かみて",
-      "arbitrate_guess": null,
-      "source": "verify_agree",
-      "verify_raw": "かみて",
-      "arb_raw": "",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "openai/gpt-oss-120b",
-      "arbitrator": "openai/gpt-oss-120b",
-      "note": "舞台の上手で堂々と／上手から登場（かみて）"
-    },
-    {
-      "ts": "2026-10-02T22:06:14.028Z",
-      "text": "劇場の上手側から、演者の熱演を見守っていた。",
+      "ts": "2026-10-03T04:57:13.562Z",
+      "text": "舞台の上手で堂々と、観客は拍手を送った。",
       "surface": "上手",
       "candidates": [
         "うわて",
@@ -718,8 +699,8 @@
       "note": ""
     },
     {
-      "ts": "2026-10-02T22:06:09.063Z",
-      "text": "舞台の上手で観客を迎えるスタッフが、笑顔で挨拶した。",
+      "ts": "2026-10-03T04:57:06.128Z",
+      "text": "劇場の上手側に立って、観客を迎える。",
       "surface": "上手",
       "candidates": [
         "うわて",
@@ -739,8 +720,29 @@
       "note": ""
     },
     {
-      "ts": "2026-10-02T22:06:01.389Z",
-      "text": "上手",
+      "ts": "2026-10-03T04:57:01.322Z",
+      "text": "舞台の上手で照明を担当している。",
+      "surface": "上手",
+      "candidates": [
+        "うわて",
+        "かみて",
+        "じょうしゅ",
+        "じょうず"
+      ],
+      "gold": "かみて",
+      "verify_guess": "うわて",
+      "arbitrate_guess": "うわて",
+      "source": "judges_disagree_with_gold",
+      "verify_raw": "うわて",
+      "arb_raw": "うわて",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "openai/gpt-oss-120b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": ""
+    },
+    {
+      "ts": "2026-10-03T04:56:54.107Z",
+      "text": "交渉で上手に回ると、相手はうわてで納得する。",
       "surface": "上手",
       "candidates": [
         "うわて",
@@ -760,8 +762,29 @@
       "note": ""
     },
     {
-      "ts": "2026-10-02T22:05:49.008Z",
-      "text": "歌が上手だと友達はよく言う。",
+      "ts": "2026-10-03T04:56:48.770Z",
+      "text": "相撲の上手が試合をうわてで決める。",
+      "surface": "上手",
+      "candidates": [
+        "うわて",
+        "かみて",
+        "じょうしゅ",
+        "じょうず"
+      ],
+      "gold": "うわて",
+      "verify_guess": "うわて",
+      "arbitrate_guess": null,
+      "source": "verify_agree",
+      "verify_raw": "うわて",
+      "arb_raw": "",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "openai/gpt-oss-120b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": "交渉で上手に回る／相撲の上手（うわて）"
+    },
+    {
+      "ts": "2026-10-03T04:56:44.243Z",
+      "text": "私は歌が上手だと友達に言われ、コンクールで入賞した。",
       "surface": "上手",
       "candidates": [
         "うわて",
@@ -781,8 +804,8 @@
       "note": "絵が上手／歌が上手だ（技能）"
     },
     {
-      "ts": "2026-10-02T22:05:46.590Z",
-      "text": "彼は絵が上手だ。",
+      "ts": "2026-10-03T04:56:41.357Z",
+      "text": "彼は絵が上手で、クラスの中で一番色使いが鮮やかだ。",
       "surface": "上手",
       "candidates": [
         "うわて",
@@ -802,8 +825,8 @@
       "note": "絵が上手／歌が上手だ（技能）"
     },
     {
-      "ts": "2026-10-02T22:05:41.529Z",
-      "text": "今日は雨が降っているので、外出は控えました。",
+      "ts": "2026-10-03T04:56:36.119Z",
+      "text": "今日は雨が降っているので、家でゆっくり過ごす。",
       "surface": "今日",
       "candidates": [
         "きょう",
@@ -823,8 +846,8 @@
       "note": "今日は／明日・昨日と対になる日常のきょう"
     },
     {
-      "ts": "2026-10-02T22:05:36.367Z",
-      "text": "今日では、彼の演技が多くの人に感動を与えている。",
+      "ts": "2026-10-03T04:56:31.219Z",
+      "text": "今日では、彼は毎朝ジョギングを欠かさない。",
       "surface": "今日",
       "candidates": [
         "きょう",
@@ -844,8 +867,8 @@
       "note": ""
     },
     {
-      "ts": "2026-10-02T22:05:31.496Z",
-      "text": "今日この頃、私は新しいプロジェクトに取り組み始めた。",
+      "ts": "2026-10-03T04:56:26.245Z",
+      "text": "今日この頃、私は新しい趣味を始めた。",
       "surface": "今日",
       "candidates": [
         "きょう",
@@ -865,8 +888,8 @@
       "note": ""
     },
     {
-      "ts": "2026-10-02T22:05:23.815Z",
-      "text": "博士号を取得した彼は、次の研究で新しい論文を執筆した。",
+      "ts": "2026-10-03T04:56:18.718Z",
+      "text": "博士号を取得した彼は研究に没頭した。",
       "surface": "博士",
       "candidates": [
         "はかせ",
@@ -884,8 +907,8 @@
       "note": "博士号／学位／論文"
     },
     {
-      "ts": "2026-10-02T22:05:21.522Z",
-      "text": "博士は論文を発表して、学位を取得した。",
+      "ts": "2026-10-03T04:56:16.021Z",
+      "text": "私は博士の論文を読みました。",
       "surface": "博士",
       "candidates": [
         "はかせ",
@@ -903,8 +926,8 @@
       "note": "博士号／学位／論文"
     },
     {
-      "ts": "2026-10-02T22:05:16.613Z",
-      "text": "彼は呼び方としての博士と呼ばれ、尊敬されている。",
+      "ts": "2026-10-03T04:56:11.166Z",
+      "text": "私は呼び方としての博士に頼んだ。",
       "surface": "博士",
       "candidates": [
         "はかせ",
@@ -922,27 +945,27 @@
       "note": ""
     },
     {
-      "ts": "2026-10-02T22:05:11.568Z",
-      "text": "物知り博士が図書館で古本を探している。",
+      "ts": "2026-10-03T04:56:06.205Z",
+      "text": "彼はいつも物知り博士として質問に答えてくれる。",
       "surface": "博士",
       "candidates": [
         "はかせ",
         "はくし"
       ],
       "gold": "はかせ",
-      "verify_guess": "はくし",
-      "arbitrate_guess": "はくし",
-      "source": "judges_disagree_with_gold",
-      "verify_raw": "はくし",
-      "arb_raw": "はくし",
+      "verify_guess": "はかせ",
+      "arbitrate_guess": null,
+      "source": "verify_agree",
+      "verify_raw": "はかせ",
+      "arb_raw": "",
       "generator": "openai/gpt-oss-20b",
       "verifier": "openai/gpt-oss-120b",
       "arbitrator": "openai/gpt-oss-120b",
-      "note": ""
+      "note": "物知り博士／呼び方としての博士"
     },
     {
-      "ts": "2026-10-02T22:05:03.952Z",
-      "text": "どういう風に説明すれば、相手に理解しやすいかがわかる。",
+      "ts": "2026-10-03T04:56:01.084Z",
+      "text": "彼女はどういう風に問題を解決するかを示した。",
       "surface": "風",
       "candidates": [
         "かぜ",
@@ -961,8 +984,8 @@
       "note": "こんな風に／どういう風に書く（様子・やり方）"
     },
     {
-      "ts": "2026-10-02T22:05:01.510Z",
-      "text": "こんな風に書くと、読者の心に残る文章になる。",
+      "ts": "2026-10-03T04:55:58.656Z",
+      "text": "こんな風に本を読むと、心が落ち着く。",
       "surface": "風",
       "candidates": [
         "かぜ",
@@ -981,8 +1004,8 @@
       "note": "こんな風に／どういう風に書く（様子・やり方）"
     },
     {
-      "ts": "2026-10-02T22:04:56.420Z",
-      "text": "風で髪が乱れると、夏の風景がまるで生きているように感じる。",
+      "ts": "2026-10-03T04:55:53.572Z",
+      "text": "風が吹くと、庭の花が揺れだす。",
       "surface": "風",
       "candidates": [
         "かぜ",
@@ -1001,28 +1024,8 @@
       "note": "風が吹く／強風／風で髪が乱れる"
     },
     {
-      "ts": "2026-10-02T22:04:53.878Z",
-      "text": "風が吹くと、窓のカーテンが揺れ、静かな午後が彩られる。",
-      "surface": "風",
-      "candidates": [
-        "かぜ",
-        "ふう",
-        "ふり"
-      ],
-      "gold": "かぜ",
-      "verify_guess": "かぜ",
-      "arbitrate_guess": null,
-      "source": "verify_agree",
-      "verify_raw": "かぜ",
-      "arb_raw": "",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "openai/gpt-oss-120b",
-      "arbitrator": "openai/gpt-oss-120b",
-      "note": "風が吹く／強風／風で髪が乱れる"
-    },
-    {
-      "ts": "2026-10-02T22:04:48.961Z",
-      "text": "表にまとめた一覧を確認した。",
+      "ts": "2026-10-03T04:55:48.765Z",
+      "text": "グラフを表にすると、数値の変化が視覚的に把握できます。",
       "surface": "表",
       "candidates": [
         "おもて",
@@ -1040,8 +1043,8 @@
       "note": "グラフ・データ・一覧・表にまとめる"
     },
     {
-      "ts": "2026-10-02T22:04:46.466Z",
-      "text": "表を使ってデータを整理した。",
+      "ts": "2026-10-03T04:55:46.032Z",
+      "text": "データを表にまとめると、全体像が一目でわかります。",
       "surface": "表",
       "candidates": [
         "おもて",
@@ -1059,8 +1062,8 @@
       "note": "グラフ・データ・一覧・表にまとめる"
     },
     {
-      "ts": "2026-10-02T22:04:41.476Z",
-      "text": "玄関の表に貼った名札は、訪問者に歓迎の印だ。",
+      "ts": "2026-10-03T04:55:41.083Z",
+      "text": "玄関に立つと、顔の表が鏡に映る。",
       "surface": "表",
       "candidates": [
         "おもて",
@@ -1078,8 +1081,8 @@
       "note": "裏と表／表に出る／玄関・顔の表"
     },
     {
-      "ts": "2026-10-02T22:04:39.021Z",
-      "text": "裏と表を見せると、彼の気持ちは明らかになる。",
+      "ts": "2026-10-03T04:55:38.718Z",
+      "text": "裏と表を比べると、表は光を反射する。",
       "surface": "表",
       "candidates": [
         "おもて",
@@ -1097,8 +1100,8 @@
       "note": "裏と表／表に出る／玄関・顔の表"
     },
     {
-      "ts": "2026-10-02T22:04:34.105Z",
-      "text": "大事にするべきは、心の中の小さな希望です。",
+      "ts": "2026-10-03T04:55:33.641Z",
+      "text": "毎朝、健康を大事にすることを忘れない。",
       "surface": "大事",
       "candidates": [
         "おおごと",
@@ -1116,8 +1119,8 @@
       "note": "大事な人／大事にする／大切"
     },
     {
-      "ts": "2026-10-02T22:04:31.514Z",
-      "text": "大事な人の笑顔は、私の毎日を照らす光だ。",
+      "ts": "2026-10-03T04:55:30.999Z",
+      "text": "大事な人の笑顔を見つめると、心が温まる。",
       "surface": "大事",
       "candidates": [
         "おおごと",
@@ -1135,8 +1138,27 @@
       "note": "大事な人／大事にする／大切"
     },
     {
-      "ts": "2026-10-02T22:04:26.400Z",
-      "text": "彼の言葉は騒ぎ・事件に発展する直前の大事だった。",
+      "ts": "2026-10-03T04:55:26.301Z",
+      "text": "その瞬間、騒ぎ・事件に発展する直前の大事が明らかになった。",
+      "surface": "大事",
+      "candidates": [
+        "おおごと",
+        "だいじ"
+      ],
+      "gold": "おおごと",
+      "verify_guess": "おおごと",
+      "arbitrate_guess": null,
+      "source": "verify_agree",
+      "verify_raw": "おおごと",
+      "arb_raw": "",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "openai/gpt-oss-120b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": "大事になる／騒ぎ・事件に発展する直前"
+    },
+    {
+      "ts": "2026-10-03T04:55:23.849Z",
+      "text": "彼の言葉は大事になる前に、誰もが注意を促した。",
       "surface": "大事",
       "candidates": [
         "おおごと",
@@ -1154,27 +1176,8 @@
       "note": ""
     },
     {
-      "ts": "2026-10-02T22:04:21.478Z",
-      "text": "明日の会議で大事になる議題が出た。",
-      "surface": "大事",
-      "candidates": [
-        "おおごと",
-        "だいじ"
-      ],
-      "gold": "おおごと",
-      "verify_guess": "だいじ",
-      "arbitrate_guess": "だいじ",
-      "source": "judges_disagree_with_gold",
-      "verify_raw": "だいじ",
-      "arb_raw": "だいじ",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "openai/gpt-oss-120b",
-      "arbitrator": "openai/gpt-oss-120b",
-      "note": ""
-    },
-    {
-      "ts": "2026-10-02T22:04:13.888Z",
-      "text": "町中のカフェで朝食を楽しむ。",
+      "ts": "2026-10-03T04:55:16.077Z",
+      "text": "市街地の中心である町中には、毎朝風が心地よく吹く。",
       "surface": "町中",
       "candidates": [
         "まちじゅう",
@@ -1192,8 +1195,27 @@
       "note": "町中のカフェ／市街地の中心（まちなか）"
     },
     {
-      "ts": "2026-10-02T22:04:08.941Z",
-      "text": "町中に知れ渡るニュースは、すぐに街の喧騒を変えてしまった。",
+      "ts": "2026-10-03T04:55:13.786Z",
+      "text": "町中のカフェで朝食をとると、街の雰囲気が一気に広がる。",
+      "surface": "町中",
+      "candidates": [
+        "まちじゅう",
+        "まちなか"
+      ],
+      "gold": "まちなか",
+      "verify_guess": "まちじゅう",
+      "arbitrate_guess": "まちじゅう",
+      "source": "judges_disagree_with_gold",
+      "verify_raw": "まちじゅう",
+      "arb_raw": "まちじゅう",
+      "generator": "openai/gpt-oss-20b",
+      "verifier": "openai/gpt-oss-120b",
+      "arbitrator": "openai/gpt-oss-120b",
+      "note": ""
+    },
+    {
+      "ts": "2026-10-03T04:55:06.151Z",
+      "text": "町中に知れ渡る新しいレストランの評判は、瞬く間に人気が急上昇した。",
       "surface": "町中",
       "candidates": [
         "まちじゅう",
@@ -1211,8 +1233,8 @@
       "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
     },
     {
-      "ts": "2026-10-02T22:04:06.466Z",
-      "text": "噂が町中に広まると、みんなが急いで情報を確認した。",
+      "ts": "2026-10-03T04:55:03.618Z",
+      "text": "噂が町中に広まると、誰もがその話を耳にする。",
       "surface": "町中",
       "candidates": [
         "まちじゅう",
@@ -1230,8 +1252,8 @@
       "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
     },
     {
-      "ts": "2026-10-02T22:04:01.491Z",
-      "text": "仕事の失敗で自分を責めると、辛いと感じる。",
+      "ts": "2026-10-03T04:54:58.626Z",
+      "text": "失恋の痛みが心に残り、辛い。",
       "surface": "辛い",
       "candidates": [
         "からい",
@@ -1249,8 +1271,8 @@
       "note": "経験・出来事・境遇（味ではない）"
     },
     {
-      "ts": "2026-10-02T22:03:58.887Z",
-      "text": "離婚の知らせを受けて、心が辛い。",
+      "ts": "2026-10-03T04:54:56.085Z",
+      "text": "新しい仕事のプロジェクトが思い通りに進まず、辛い。",
       "surface": "辛い",
       "candidates": [
         "からい",
@@ -1268,8 +1290,8 @@
       "note": "経験・出来事・境遇（味ではない）"
     },
     {
-      "ts": "2026-10-02T22:03:53.928Z",
-      "text": "市場で買った鮮魚と野菜売り場の新鮮さに感動した。",
+      "ts": "2026-10-03T04:54:51.155Z",
+      "text": "鮮魚・野菜売り場が並ぶ市場で、私は朝食の準備を始めた。",
       "surface": "市場",
       "candidates": [
         "いちば",
@@ -1287,8 +1309,8 @@
       "note": "朝の市場で魚を買う、鮮魚・野菜売り場"
     },
     {
-      "ts": "2026-10-02T22:03:51.421Z",
-      "text": "朝の市場で鮮魚を買うと、野菜売り場も賑やかだ。",
+      "ts": "2026-10-03T04:54:48.581Z",
+      "text": "朝の市場で魚を買うと、鮮魚の香りが街に広がる。",
       "surface": "市場",
       "candidates": [
         "いちば",
@@ -1306,8 +1328,8 @@
       "note": "朝の市場で魚を買う、鮮魚・野菜売り場"
     },
     {
-      "ts": "2026-10-02T22:03:46.430Z",
-      "text": "魚を選んだ後、野菜の甘い香りが漂う市場で友人と楽しい時間を過ごした。",
+      "ts": "2026-10-03T04:54:43.518Z",
+      "text": "市場で野菜を選び、魚も一緒に買った。",
       "surface": "市場",
       "candidates": [
         "いちば",
@@ -1325,8 +1347,8 @@
       "note": "朝市・魚・野菜など物理的な市場"
     },
     {
-      "ts": "2026-10-02T22:03:43.925Z",
-      "text": "朝市で新鮮な魚と野菜を買ったとき、笑顔が広がった市場の雰囲気に心が温まった。",
+      "ts": "2026-10-03T04:54:41.229Z",
+      "text": "朝市の市場で新鮮な魚を買った。",
       "surface": "市場",
       "candidates": [
         "いちば",
@@ -1344,8 +1366,8 @@
       "note": "朝市・魚・野菜など物理的な市場"
     },
     {
-      "ts": "2026-10-02T22:03:36.576Z",
-      "text": "忙しい朝、子どもの笑い声が街をせわしいに染める。",
+      "ts": "2026-10-03T04:54:33.656Z",
+      "text": "忙しい市場で、せわしない声が風に溶けていく。",
       "surface": "忙しい",
       "candidates": [
         "いそがしい",
@@ -1363,8 +1385,8 @@
       "note": ""
     },
     {
-      "ts": "2026-10-02T22:03:31.522Z",
-      "text": "忙しい午後、雨の音が窓辺でざわめく。",
+      "ts": "2026-10-03T04:54:28.712Z",
+      "text": "忙しい午後、窓辺の猫はせわしないまま日差しを浴びていた。",
       "surface": "忙しい",
       "candidates": [
         "いそがしい",
@@ -1382,46 +1404,8 @@
       "note": ""
     },
     {
-      "ts": "2026-10-02T22:03:23.990Z",
-      "text": "暇もない忙しい世界で、詩的な心がせわしい風を切り裂く。",
-      "surface": "忙しい",
-      "candidates": [
-        "いそがしい",
-        "せわしい"
-      ],
-      "gold": "せわしい",
-      "verify_guess": "いそがしい",
-      "arbitrate_guess": "いそがしい",
-      "source": "judges_disagree_with_gold",
-      "verify_raw": "いそがしい",
-      "arb_raw": "いそがしい",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "openai/gpt-oss-120b",
-      "arbitrator": "openai/gpt-oss-120b",
-      "note": ""
-    },
-    {
-      "ts": "2026-10-02T22:03:19.014Z",
-      "text": "歌詞を詠むたびに、落ち着かない様子が忙しい世界に溶け込む。",
-      "surface": "忙しい",
-      "candidates": [
-        "いそがしい",
-        "せわしい"
-      ],
-      "gold": "せわしい",
-      "verify_guess": "いそがしい",
-      "arbitrate_guess": "いそがしい",
-      "source": "judges_disagree_with_gold",
-      "verify_raw": "いそがしい",
-      "arb_raw": "いそがしい",
-      "generator": "openai/gpt-oss-20b",
-      "verifier": "openai/gpt-oss-120b",
-      "arbitrator": "openai/gpt-oss-120b",
-      "note": ""
-    },
-    {
-      "ts": "2026-10-02T22:03:11.536Z",
-      "text": "永遠の眠りに包まれた彼女の瞳は、永遠の愛を語る。",
+      "ts": "2026-10-03T04:54:18.622Z",
+      "text": "永遠に続く夢を抱きしめると、風が囁くとわ。",
       "surface": "永遠",
       "candidates": [
         "えいえん",
@@ -1439,8 +1423,8 @@
       "note": ""
     },
     {
-      "ts": "2026-10-02T22:03:06.467Z",
-      "text": "ただ永遠に星を見つめ、永遠の愛を誓う。",
+      "ts": "2026-10-03T04:54:13.580Z",
+      "text": "永遠の愛を誓うと、星々も静かに微笑むとわ。",
       "surface": "永遠",
       "candidates": [
         "えいえん",
@@ -1458,8 +1442,8 @@
       "note": ""
     },
     {
-      "ts": "2026-10-02T22:02:58.925Z",
-      "text": "愛の歌を永遠に綴るとわ、心は揺らぐことなく",
+      "ts": "2026-10-03T04:54:06.119Z",
+      "text": "誓いの言葉は永遠に響き、愛が深まるとわ",
       "surface": "永遠",
       "candidates": [
         "えいえん",
@@ -1477,8 +1461,8 @@
       "note": ""
     },
     {
-      "ts": "2026-10-02T22:02:53.932Z",
-      "text": "永遠の誓いを胸に、歌詞の旋律が流れ出すとわ",
+      "ts": "2026-10-03T04:54:01.162Z",
+      "text": "永遠の歌詞が風に乗り、二人の心を結ぶとわ",
       "surface": "永遠",
       "candidates": [
         "えいえん",
@@ -1494,6 +1478,941 @@
       "verifier": "openai/gpt-oss-120b",
       "arbitrator": "openai/gpt-oss-120b",
       "note": ""
+    },
+    {
+      "ts": "",
+      "text": "子供の笑顔は永遠のテーマとして心に残る。",
+      "surface": "永遠",
+      "candidates": [
+        "えいえん",
+        "とわ"
+      ],
+      "gold": "えいえん",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
+    },
+    {
+      "ts": "",
+      "text": "毎朝コーヒーを飲む時間は永遠に終わらないと感じる。",
+      "surface": "永遠",
+      "candidates": [
+        "えいえん",
+        "とわ"
+      ],
+      "gold": "えいえん",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
+    },
+    {
+      "ts": "",
+      "text": "カレーに唐辛子を入れたら、辛い味が強くなる。",
+      "surface": "辛い",
+      "candidates": [
+        "からい",
+        "つらい"
+      ],
+      "gold": "からい",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "ラーメン・カレー・味・唐辛子"
+    },
+    {
+      "ts": "",
+      "text": "ラーメンを食べると、辛い香りが鼻をつく。",
+      "surface": "辛い",
+      "candidates": [
+        "からい",
+        "つらい"
+      ],
+      "gold": "からい",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "ラーメン・カレー・味・唐辛子"
+    },
+    {
+      "ts": "",
+      "text": "市場は金融の健康度を示す重要指標だ。",
+      "surface": "市場",
+      "candidates": [
+        "いちば",
+        "しじょう"
+      ],
+      "gold": "しじょう",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "株式・規模・経済・金融の文脈"
+    },
+    {
+      "ts": "",
+      "text": "株式市場の規模は今年大きく拡大した。",
+      "surface": "市場",
+      "candidates": [
+        "いちば",
+        "しじょう"
+      ],
+      "gold": "しじょう",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "株式・規模・経済・金融の文脈"
+    },
+    {
+      "ts": "",
+      "text": "角が生える瞬間、牛の角はさらに長くなる。",
+      "surface": "角",
+      "candidates": [
+        "かく",
+        "かど",
+        "すみ",
+        "つの"
+      ],
+      "gold": "つの",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "牛の角／角が生える（つの）"
+    },
+    {
+      "ts": "",
+      "text": "角が生えると、牛の角が大きくなる。",
+      "surface": "角",
+      "candidates": [
+        "かく",
+        "かど",
+        "すみ",
+        "つの"
+      ],
+      "gold": "つの",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "牛の角／角が生える（つの）"
+    },
+    {
+      "ts": "",
+      "text": "雨の日、角を曲がると古い図書館が出てくる。",
+      "surface": "角",
+      "candidates": [
+        "かく",
+        "かど",
+        "すみ",
+        "つの"
+      ],
+      "gold": "かど",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "街角／角を曲がる（かど）"
+    },
+    {
+      "ts": "",
+      "text": "彼は駅前の角を曲がると、カフェが見えた。",
+      "surface": "角",
+      "candidates": [
+        "かく",
+        "かど",
+        "すみ",
+        "つの"
+      ],
+      "gold": "かど",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "街角／角を曲がる（かど）"
+    },
+    {
+      "ts": "",
+      "text": "古い本を図書館で手に入ると、すぐに読む。",
+      "surface": "入る",
+      "candidates": [
+        "いる",
+        "はいる"
+      ],
+      "gold": "いる",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "気に入る／手に入る／仲間に入る（いる）"
+    },
+    {
+      "ts": "",
+      "text": "このカフェの雰囲気が気に入ると、何度も入る。",
+      "surface": "入る",
+      "candidates": [
+        "いる",
+        "はいる"
+      ],
+      "gold": "いる",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "気に入る／手に入る／仲間に入る（いる）"
+    },
+    {
+      "ts": "",
+      "text": "荷物を背負っ、山道を急ぎ足で歩く。",
+      "surface": "背負っ",
+      "candidates": [
+        "せおっ",
+        "しょっ"
+      ],
+      "gold": "せおっ",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "リュック・荷物・子供を背中に載せる物理の背負って（せおう）"
+    },
+    {
+      "ts": "",
+      "text": "リュックを背負っ、朝の風を感じる。",
+      "surface": "背負っ",
+      "candidates": [
+        "せおっ",
+        "しょっ"
+      ],
+      "gold": "せおっ",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "リュック・荷物・子供を背中に載せる物理の背負って（せおう）"
+    },
+    {
+      "ts": "",
+      "text": "時が行く、風もまた行く。",
+      "surface": "行く",
+      "candidates": [
+        "いく",
+        "ゆく"
+      ],
+      "gold": "ゆく",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "時が行く／行く末／文語・歌詞寄りのゆく"
+    },
+    {
+      "ts": "",
+      "text": "食べると、蓋が開く音が聞こえた。",
+      "surface": "開く",
+      "candidates": [
+        "あく",
+        "ひらく"
+      ],
+      "gold": "あく",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "ドアが開く／蓋が開く（あく・自動）"
+    },
+    {
+      "ts": "",
+      "text": "朝、窓のドアが開くと、風が入ってきた。",
+      "surface": "開く",
+      "candidates": [
+        "あく",
+        "ひらく"
+      ],
+      "gold": "あく",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "ドアが開く／蓋が開く（あく・自動）"
+    },
+    {
+      "ts": "",
+      "text": "店を開くと、明るい音楽が流れ始める。",
+      "surface": "開く",
+      "candidates": [
+        "あく",
+        "ひらく"
+      ],
+      "gold": "ひらく",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "本を開く／店を開く／会議を開く（ひらく）"
+    },
+    {
+      "ts": "",
+      "text": "本を開くと、ページの香りが漂う。",
+      "surface": "開く",
+      "candidates": [
+        "あく",
+        "ひらく"
+      ],
+      "gold": "ひらく",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "本を開く／店を開く／会議を開く（ひらく）"
+    },
+    {
+      "ts": "",
+      "text": "一行だけ書くと、文章がスッキリする。",
+      "surface": "一行",
+      "candidates": [
+        "いちぎょう",
+        "いっこう"
+      ],
+      "gold": "いちぎょう",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "一行だけ書く／テキストの一行（いちぎょう）"
+    },
+    {
+      "ts": "",
+      "text": "テキストの一行だけ書くと、意図が伝わる。",
+      "surface": "一行",
+      "candidates": [
+        "いちぎょう",
+        "いっこう"
+      ],
+      "gold": "いちぎょう",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "一行だけ書く／テキストの一行（いちぎょう）"
+    },
+    {
+      "ts": "",
+      "text": "観光客の一行が到着したとき、みんなが歓声を上げた。",
+      "surface": "一行",
+      "candidates": [
+        "いちぎょう",
+        "いっこう"
+      ],
+      "gold": "いっこう",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "観光客の一行／一行が到着した（いっこう）"
+    },
+    {
+      "ts": "",
+      "text": "観光客の一行が到着した瞬間、空気が一変した。",
+      "surface": "一行",
+      "candidates": [
+        "いちぎょう",
+        "いっこう"
+      ],
+      "gold": "いっこう",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "観光客の一行／一行が到着した（いっこう）"
+    },
+    {
+      "ts": "",
+      "text": "その俳優は人気者で、ファンから絶大な支持を受けている。",
+      "surface": "人気",
+      "candidates": [
+        "じんき",
+        "にんき",
+        "ひとけ",
+        "ひとげ"
+      ],
+      "gold": "にんき",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "人気が高い／人気者（にんき）"
+    },
+    {
+      "ts": "",
+      "text": "彼は今、人気が高いアーティストとして注目されている。",
+      "surface": "人気",
+      "candidates": [
+        "じんき",
+        "にんき",
+        "ひとけ",
+        "ひとげ"
+      ],
+      "gold": "にんき",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "人気が高い／人気者（にんき）"
+    },
+    {
+      "ts": "",
+      "text": "毎月一日は、家族で朝食を作る日だ。",
+      "surface": "一日",
+      "candidates": [
+        "いちにち",
+        "ついたち"
+      ],
+      "gold": "ついたち",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "毎月一日／月の初日（ついたち）"
+    },
+    {
+      "ts": "",
+      "text": "上手町から登場した俳優は観客を魅了した。",
+      "surface": "上手",
+      "candidates": [
+        "うわて",
+        "かみて",
+        "じょうしゅ",
+        "じょうず"
+      ],
+      "gold": "かみて",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "舞台の上手で堂々と／上手から登場（かみて）"
+    },
+    {
+      "ts": "",
+      "text": "舞台の上手町で堂々と演技を披露する。",
+      "surface": "上手",
+      "candidates": [
+        "うわて",
+        "かみて",
+        "じょうしゅ",
+        "じょうず"
+      ],
+      "gold": "かみて",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "舞台の上手で堂々と／上手から登場（かみて）"
+    },
+    {
+      "ts": "",
+      "text": "歌が上手だと友達はよく言う。",
+      "surface": "上手",
+      "candidates": [
+        "うわて",
+        "かみて",
+        "じょうしゅ",
+        "じょうず"
+      ],
+      "gold": "じょうず",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "絵が上手／歌が上手だ（技能）"
+    },
+    {
+      "ts": "",
+      "text": "今日は雨が降っているので、外出は控えました。",
+      "surface": "今日",
+      "candidates": [
+        "きょう",
+        "こんじつ",
+        "こんち",
+        "こんにち"
+      ],
+      "gold": "きょう",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "今日は／明日・昨日と対になる日常のきょう"
+    },
+    {
+      "ts": "",
+      "text": "博士号を取得した彼は、次の研究で新しい論文を執筆した。",
+      "surface": "博士",
+      "candidates": [
+        "はかせ",
+        "はくし"
+      ],
+      "gold": "はくし",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "博士号／学位／論文"
+    },
+    {
+      "ts": "",
+      "text": "博士は論文を発表して、学位を取得した。",
+      "surface": "博士",
+      "candidates": [
+        "はかせ",
+        "はくし"
+      ],
+      "gold": "はくし",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "博士号／学位／論文"
+    },
+    {
+      "ts": "",
+      "text": "どういう風に説明すれば、相手に理解しやすいかがわかる。",
+      "surface": "風",
+      "candidates": [
+        "かぜ",
+        "ふう",
+        "ふり"
+      ],
+      "gold": "ふう",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "こんな風に／どういう風に書く（様子・やり方）"
+    },
+    {
+      "ts": "",
+      "text": "風で髪が乱れると、夏の風景がまるで生きているように感じる。",
+      "surface": "風",
+      "candidates": [
+        "かぜ",
+        "ふう",
+        "ふり"
+      ],
+      "gold": "かぜ",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "風が吹く／強風／風で髪が乱れる"
+    },
+    {
+      "ts": "",
+      "text": "風が吹くと、窓のカーテンが揺れ、静かな午後が彩られる。",
+      "surface": "風",
+      "candidates": [
+        "かぜ",
+        "ふう",
+        "ふり"
+      ],
+      "gold": "かぜ",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "風が吹く／強風／風で髪が乱れる"
+    },
+    {
+      "ts": "",
+      "text": "表にまとめた一覧を確認した。",
+      "surface": "表",
+      "candidates": [
+        "おもて",
+        "ひょう"
+      ],
+      "gold": "ひょう",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "グラフ・データ・一覧・表にまとめる"
+    },
+    {
+      "ts": "",
+      "text": "表を使ってデータを整理した。",
+      "surface": "表",
+      "candidates": [
+        "おもて",
+        "ひょう"
+      ],
+      "gold": "ひょう",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "グラフ・データ・一覧・表にまとめる"
+    },
+    {
+      "ts": "",
+      "text": "玄関の表に貼った名札は、訪問者に歓迎の印だ。",
+      "surface": "表",
+      "candidates": [
+        "おもて",
+        "ひょう"
+      ],
+      "gold": "おもて",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "裏と表／表に出る／玄関・顔の表"
+    },
+    {
+      "ts": "",
+      "text": "裏と表を見せると、彼の気持ちは明らかになる。",
+      "surface": "表",
+      "candidates": [
+        "おもて",
+        "ひょう"
+      ],
+      "gold": "おもて",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "裏と表／表に出る／玄関・顔の表"
+    },
+    {
+      "ts": "",
+      "text": "大事にするべきは、心の中の小さな希望です。",
+      "surface": "大事",
+      "candidates": [
+        "おおごと",
+        "だいじ"
+      ],
+      "gold": "だいじ",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "大事な人／大事にする／大切"
+    },
+    {
+      "ts": "",
+      "text": "大事な人の笑顔は、私の毎日を照らす光だ。",
+      "surface": "大事",
+      "candidates": [
+        "おおごと",
+        "だいじ"
+      ],
+      "gold": "だいじ",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "大事な人／大事にする／大切"
+    },
+    {
+      "ts": "",
+      "text": "町中のカフェで朝食を楽しむ。",
+      "surface": "町中",
+      "candidates": [
+        "まちじゅう",
+        "まちなか"
+      ],
+      "gold": "まちなか",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "町中のカフェ／市街地の中心（まちなか）"
+    },
+    {
+      "ts": "",
+      "text": "町中に知れ渡るニュースは、すぐに街の喧騒を変えてしまった。",
+      "surface": "町中",
+      "candidates": [
+        "まちじゅう",
+        "まちなか"
+      ],
+      "gold": "まちじゅう",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
+    },
+    {
+      "ts": "",
+      "text": "仕事の失敗で自分を責めると、辛いと感じる。",
+      "surface": "辛い",
+      "candidates": [
+        "からい",
+        "つらい"
+      ],
+      "gold": "つらい",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "経験・出来事・境遇（味ではない）"
+    },
+    {
+      "ts": "",
+      "text": "離婚の知らせを受けて、心が辛い。",
+      "surface": "辛い",
+      "candidates": [
+        "からい",
+        "つらい"
+      ],
+      "gold": "つらい",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "経験・出来事・境遇（味ではない）"
+    },
+    {
+      "ts": "",
+      "text": "市場で買った鮮魚と野菜売り場の新鮮さに感動した。",
+      "surface": "市場",
+      "candidates": [
+        "いちば",
+        "しじょう"
+      ],
+      "gold": "いちば",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "朝の市場で魚を買う、鮮魚・野菜売り場"
+    },
+    {
+      "ts": "",
+      "text": "魚を選んだ後、野菜の甘い香りが漂う市場で友人と楽しい時間を過ごした。",
+      "surface": "市場",
+      "candidates": [
+        "いちば",
+        "しじょう"
+      ],
+      "gold": "いちば",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "朝市・魚・野菜など物理的な市場"
+    },
+    {
+      "ts": "",
+      "text": "朝市で新鮮な魚と野菜を買ったとき、笑顔が広がった市場の雰囲気に心が温まった。",
+      "surface": "市場",
+      "candidates": [
+        "いちば",
+        "しじょう"
+      ],
+      "gold": "いちば",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:arbitrate_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "朝市・魚・野菜など物理的な市場"
     },
     {
       "ts": "",
@@ -13200,6 +14119,25 @@
     },
     {
       "ts": "",
+      "text": "朝の市場で鮮魚を買うと、野菜売り場も賑やかだ。",
+      "surface": "市場",
+      "candidates": [
+        "いちば",
+        "しじょう"
+      ],
+      "gold": "いちば",
+      "verify_guess": null,
+      "arbitrate_guess": null,
+      "source": "llm-synth:groq:verify_agree",
+      "verify_raw": "",
+      "arb_raw": "",
+      "generator": "",
+      "verifier": "",
+      "arbitrator": "",
+      "note": "朝の市場で魚を買う、鮮魚・野菜売り場"
+    },
+    {
+      "ts": "",
       "text": "市場の朝市で魚と野菜を並べる店主に感心した。",
       "surface": "市場",
       "candidates": [
@@ -14633,940 +15571,6 @@
       "verifier": "",
       "arbitrator": "",
       "note": "一日中／丸一日かかる（いちにち）"
-    },
-    {
-      "ts": "",
-      "text": "毎月一日、家族で朝食を囲みながら新年の計画を立てる。",
-      "surface": "一日",
-      "candidates": [
-        "いちにち",
-        "ついたち"
-      ],
-      "gold": "ついたち",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "毎月一日／月の初日（ついたち）"
-    },
-    {
-      "ts": "",
-      "text": "上手から登場（かみて）し、観客は歓声を上げた。",
-      "surface": "上手",
-      "candidates": [
-        "うわて",
-        "かみて",
-        "じょうしゅ",
-        "じょうず"
-      ],
-      "gold": "かみて",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "舞台の上手で堂々と／上手から登場（かみて）"
-    },
-    {
-      "ts": "",
-      "text": "劇場の上手側から、照明が点灯した。",
-      "surface": "上手",
-      "candidates": [
-        "うわて",
-        "かみて",
-        "じょうしゅ",
-        "じょうず"
-      ],
-      "gold": "かみて",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "舞台の上手／劇場の上手側（かみて）。技能のじょうずではない"
-    },
-    {
-      "ts": "",
-      "text": "相撲の上手は、土俵の上に立つときに姿勢を整える。",
-      "surface": "上手",
-      "candidates": [
-        "うわて",
-        "かみて",
-        "じょうしゅ",
-        "じょうず"
-      ],
-      "gold": "うわて",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "交渉で上手に回る／相撲の上手（うわて）"
-    },
-    {
-      "ts": "",
-      "text": "歌が上手だと聞いて、彼女は友達に合唱の練習を提案した。",
-      "surface": "上手",
-      "candidates": [
-        "うわて",
-        "かみて",
-        "じょうしゅ",
-        "じょうず"
-      ],
-      "gold": "じょうず",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "絵が上手／歌が上手だ（技能）"
-    },
-    {
-      "ts": "",
-      "text": "絵が上手な彼は、子どもたちに簡単な線画を教えてくれる。",
-      "surface": "上手",
-      "candidates": [
-        "うわて",
-        "かみて",
-        "じょうしゅ",
-        "じょうず"
-      ],
-      "gold": "じょうず",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "絵が上手／歌が上手だ（技能）"
-    },
-    {
-      "ts": "",
-      "text": "今日は友達とカフェでランチを楽しんで、ゆっくり過ごした。",
-      "surface": "今日",
-      "candidates": [
-        "きょう",
-        "こんじつ",
-        "こんち",
-        "こんにち"
-      ],
-      "gold": "きょう",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "今日は／明日・昨日と対になる日常のきょう"
-    },
-    {
-      "ts": "",
-      "text": "今日は朝から雨が降っているので、傘を忘れずに出かけるべきだ。",
-      "surface": "今日",
-      "candidates": [
-        "きょう",
-        "こんじつ",
-        "こんち",
-        "こんにち"
-      ],
-      "gold": "きょう",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "今日は／明日・昨日と対になる日常のきょう"
-    },
-    {
-      "ts": "",
-      "text": "彼女は論文を書きながら博士の座席で休憩した。",
-      "surface": "博士",
-      "candidates": [
-        "はかせ",
-        "はくし"
-      ],
-      "gold": "はくし",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "博士号／学位／論文"
-    },
-    {
-      "ts": "",
-      "text": "彼は博士号を取得した研究者だ。",
-      "surface": "博士",
-      "candidates": [
-        "はかせ",
-        "はくし"
-      ],
-      "gold": "はくし",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "博士号／学位／論文"
-    },
-    {
-      "ts": "",
-      "text": "友人に呼び方としての博士と呼ばれると嬉しい。",
-      "surface": "博士",
-      "candidates": [
-        "はかせ",
-        "はくし"
-      ],
-      "gold": "はかせ",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:arbitrate_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "物知り博士／呼び方としての博士"
-    },
-    {
-      "ts": "",
-      "text": "どういう風に雨が降るのか、彼は窓辺で観察していた。",
-      "surface": "風",
-      "candidates": [
-        "かぜ",
-        "ふう",
-        "ふり"
-      ],
-      "gold": "ふう",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "こんな風に／どういう風に書く（様子・やり方）"
-    },
-    {
-      "ts": "",
-      "text": "こんな風に本を開くと、ページが静かに揺れた。",
-      "surface": "風",
-      "candidates": [
-        "かぜ",
-        "ふう",
-        "ふり"
-      ],
-      "gold": "ふう",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "こんな風に／どういう風に書く（様子・やり方）"
-    },
-    {
-      "ts": "",
-      "text": "データの一覧を表で示した。",
-      "surface": "表",
-      "candidates": [
-        "おもて",
-        "ひょう"
-      ],
-      "gold": "ひょう",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "グラフ・データ・一覧・表にまとめる"
-    },
-    {
-      "ts": "",
-      "text": "グラフを表にまとめた。",
-      "surface": "表",
-      "candidates": [
-        "おもて",
-        "ひょう"
-      ],
-      "gold": "ひょう",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "グラフ・データ・一覧・表にまとめる"
-    },
-    {
-      "ts": "",
-      "text": "玄関の表に立つと、顔の表情が自然に映える。",
-      "surface": "表",
-      "candidates": [
-        "おもて",
-        "ひょう"
-      ],
-      "gold": "おもて",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "裏と表／表に出る／玄関・顔の表"
-    },
-    {
-      "ts": "",
-      "text": "裏と表を見比べると、表はいつも明るい印象を与える。",
-      "surface": "表",
-      "candidates": [
-        "おもて",
-        "ひょう"
-      ],
-      "gold": "おもて",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "裏と表／表に出る／玄関・顔の表"
-    },
-    {
-      "ts": "",
-      "text": "大事にすることは、日常の中で大事な小さな瞬間を大切にすることだ。",
-      "surface": "大事",
-      "candidates": [
-        "おおごと",
-        "だいじ"
-      ],
-      "gold": "だいじ",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "大事な人／大事にする／大切"
-    },
-    {
-      "ts": "",
-      "text": "市街地の中心にある町中を散策し、古い建物に思いを馳せる。",
-      "surface": "町中",
-      "candidates": [
-        "まちじゅう",
-        "まちなか"
-      ],
-      "gold": "まちなか",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "町中のカフェ／市街地の中心（まちなか）"
-    },
-    {
-      "ts": "",
-      "text": "町中のカフェで、朝日を浴びながらコーヒーを楽しむ。",
-      "surface": "町中",
-      "candidates": [
-        "まちじゅう",
-        "まちなか"
-      ],
-      "gold": "まちなか",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "町中のカフェ／市街地の中心（まちなか）"
-    },
-    {
-      "ts": "",
-      "text": "町中に知れ渡る情報を早く確認することが大切だ。",
-      "surface": "町中",
-      "candidates": [
-        "まちじゅう",
-        "まちなか"
-      ],
-      "gold": "まちじゅう",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
-    },
-    {
-      "ts": "",
-      "text": "噂が町中に広まると、店主はすぐに対応策を考えた。",
-      "surface": "町中",
-      "candidates": [
-        "まちじゅう",
-        "まちなか"
-      ],
-      "gold": "まちじゅう",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "噂が町中に広まる／町中に知れ渡る（まちじゅう）"
-    },
-    {
-      "ts": "",
-      "text": "新しい職場での失敗は辛い出来事だった。",
-      "surface": "辛い",
-      "candidates": [
-        "からい",
-        "つらい"
-      ],
-      "gold": "つらい",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "経験・出来事・境遇（味ではない）"
-    },
-    {
-      "ts": "",
-      "text": "彼の離婚は辛い経験だった。",
-      "surface": "辛い",
-      "candidates": [
-        "からい",
-        "つらい"
-      ],
-      "gold": "つらい",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "経験・出来事・境遇（味ではない）"
-    },
-    {
-      "ts": "",
-      "text": "市場の朝は、鮮魚と野菜売り場の匂いが混ざり合い、活気に満ちている。",
-      "surface": "市場",
-      "candidates": [
-        "いちば",
-        "しじょう"
-      ],
-      "gold": "いちば",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "朝の市場で魚を買う、鮮魚・野菜売り場"
-    },
-    {
-      "ts": "",
-      "text": "朝の市場で鮮魚を買うと、野菜売り場で色とりどりの品が並ぶ。",
-      "surface": "市場",
-      "candidates": [
-        "いちば",
-        "しじょう"
-      ],
-      "gold": "いちば",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "朝の市場で魚を買う、鮮魚・野菜売り場"
-    },
-    {
-      "ts": "",
-      "text": "市場で野菜を選ぶとき、朝市の人が笑顔で挨拶してくれた。",
-      "surface": "市場",
-      "candidates": [
-        "いちば",
-        "しじょう"
-      ],
-      "gold": "いちば",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "朝市・魚・野菜など物理的な市場"
-    },
-    {
-      "ts": "",
-      "text": "朝市で市場の魚を買って、家に帰った。",
-      "surface": "市場",
-      "candidates": [
-        "いちば",
-        "しじょう"
-      ],
-      "gold": "いちば",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "朝市・魚・野菜など物理的な市場"
-    },
-    {
-      "ts": "",
-      "text": "予定が詰まって忙しい朝を迎える。",
-      "surface": "忙しい",
-      "candidates": [
-        "いそがしい",
-        "せわしい"
-      ],
-      "gold": "いそがしい",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "仕事・予定・日常の忙しさ"
-    },
-    {
-      "ts": "",
-      "text": "仕事で忙しい日々を過ごしている。",
-      "surface": "忙しい",
-      "candidates": [
-        "いそがしい",
-        "せわしい"
-      ],
-      "gold": "いそがしい",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "仕事・予定・日常の忙しさ"
-    },
-    {
-      "ts": "",
-      "text": "永遠のテーマとして、時間を超える音楽は人を魅了する。",
-      "surface": "永遠",
-      "candidates": [
-        "えいえん",
-        "とわ"
-      ],
-      "gold": "えいえん",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
-    },
-    {
-      "ts": "",
-      "text": "永遠に終わらない星空を眺めると、心が安らぐ。",
-      "surface": "永遠",
-      "candidates": [
-        "えいえん",
-        "とわ"
-      ],
-      "gold": "えいえん",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
-    },
-    {
-      "ts": "",
-      "text": "辛いカレーに唐辛子を入れて、味がさらに深くなる。",
-      "surface": "辛い",
-      "candidates": [
-        "からい",
-        "つらい"
-      ],
-      "gold": "からい",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "ラーメン・カレー・味・唐辛子"
-    },
-    {
-      "ts": "",
-      "text": "辛いラーメンを食べて、体が熱くなる。",
-      "surface": "辛い",
-      "candidates": [
-        "からい",
-        "つらい"
-      ],
-      "gold": "からい",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "ラーメン・カレー・味・唐辛子"
-    },
-    {
-      "ts": "",
-      "text": "金融市場の動向は経済全体に大きな影響を与えるため、慎重に監視する必要がある。",
-      "surface": "市場",
-      "candidates": [
-        "いちば",
-        "しじょう"
-      ],
-      "gold": "しじょう",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "株式・規模・経済・金融の文脈"
-    },
-    {
-      "ts": "",
-      "text": "株式市場の規模は急激に拡大し、投資家の関心を集めている。",
-      "surface": "市場",
-      "candidates": [
-        "いちば",
-        "しじょう"
-      ],
-      "gold": "しじょう",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "株式・規模・経済・金融の文脈"
-    },
-    {
-      "ts": "",
-      "text": "角が生えると、森の中で静かに光る。",
-      "surface": "角",
-      "candidates": [
-        "かく",
-        "かど",
-        "すみ",
-        "つの"
-      ],
-      "gold": "つの",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "牛の角／角が生える（つの）"
-    },
-    {
-      "ts": "",
-      "text": "牛の角が山の頂に立つ。",
-      "surface": "角",
-      "candidates": [
-        "かく",
-        "かど",
-        "すみ",
-        "つの"
-      ],
-      "gold": "つの",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "牛の角／角が生える（つの）"
-    },
-    {
-      "ts": "",
-      "text": "彼は急いで角を曲がると、見知らぬ店に入った。",
-      "surface": "角",
-      "candidates": [
-        "かく",
-        "かど",
-        "すみ",
-        "つの"
-      ],
-      "gold": "かど",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "街角／角を曲がる（かど）"
-    },
-    {
-      "ts": "",
-      "text": "仲間に入ると、心が軽くなることを気に入る。",
-      "surface": "入る",
-      "candidates": [
-        "いる",
-        "はいる"
-      ],
-      "gold": "いる",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "気に入る／手に入る／仲間に入る（いる）"
-    },
-    {
-      "ts": "",
-      "text": "好きな本を手に入るまで、ずっと探し続けた。",
-      "surface": "入る",
-      "candidates": [
-        "いる",
-        "はいる"
-      ],
-      "gold": "いる",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "気に入る／手に入る／仲間に入る（いる）"
-    },
-    {
-      "ts": "",
-      "text": "背負っ（せおっ）荷物を軽くして、子供と一緒に散歩した。",
-      "surface": "背負っ",
-      "candidates": [
-        "せおっ",
-        "しょっ"
-      ],
-      "gold": "せおっ",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "リュック・荷物・子供を背中に載せる物理の背負って（せおう）"
-    },
-    {
-      "ts": "",
-      "text": "背負っ（せおっ）リュックを背中に載せて、子供が笑った。",
-      "surface": "背負っ",
-      "candidates": [
-        "せおっ",
-        "しょっ"
-      ],
-      "gold": "せおっ",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "リュック・荷物・子供を背中に載せる物理の背負って（せおう）"
-    },
-    {
-      "ts": "",
-      "text": "今日の午後、図書館へ行く前に本を借りる。",
-      "surface": "行く",
-      "candidates": [
-        "いく",
-        "ゆく"
-      ],
-      "gold": "いく",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "学校へ行く／明日行く（日常のいく）"
-    },
-    {
-      "ts": "",
-      "text": "明日、学校へ行くと友達が待っている。",
-      "surface": "行く",
-      "candidates": [
-        "いく",
-        "ゆく"
-      ],
-      "gold": "いく",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "学校へ行く／明日行く（日常のいく）"
-    },
-    {
-      "ts": "",
-      "text": "蓋が開くと、香り高いコーヒーの香りが立ち上った。",
-      "surface": "開く",
-      "candidates": [
-        "あく",
-        "ひらく"
-      ],
-      "gold": "あく",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "ドアが開く／蓋が開く（あく・自動）"
-    },
-    {
-      "ts": "",
-      "text": "ドアが開くと、外の風が室内へ入ってきた。",
-      "surface": "開く",
-      "candidates": [
-        "あく",
-        "ひらく"
-      ],
-      "gold": "あく",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "ドアが開く／蓋が開く（あく・自動）"
-    },
-    {
-      "ts": "",
-      "text": "その日、町の小さな店を開くと、子どもたちが笑顔で走り回った。",
-      "surface": "開く",
-      "candidates": [
-        "あく",
-        "ひらく"
-      ],
-      "gold": "ひらく",
-      "verify_guess": null,
-      "arbitrate_guess": null,
-      "source": "llm-synth:groq:verify_agree",
-      "verify_raw": "",
-      "arb_raw": "",
-      "generator": "",
-      "verifier": "",
-      "arbitrator": "",
-      "note": "本を開く／店を開く／会議を開く（ひらく）"
     }
   ]
 }
