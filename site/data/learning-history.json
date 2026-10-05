@@ -1,143 +1,6 @@
 {
-  "updatedAt": "2026-10-05T05:15:43.881Z",
+  "updatedAt": "2026-10-05T10:44:39.381Z",
   "entries": [
-    {
-      "ts": "2026-09-19T04:18:20.388Z",
-      "mode": "synth",
-      "note": "素材 +48 / 本体ルール変化なし（日次は主に素材集め）",
-      "gateOk": true,
-      "floorsOk": true,
-      "regress": false,
-      "corpus": {
-        "total": 2411,
-        "delta": 48,
-        "acceptedThisRun": 54,
-        "rejectedThisRun": 32
-      },
-      "benches": {
-        "seed-bench": {
-          "passed": 22,
-          "total": 22,
-          "rate": 1,
-          "minPassRate": 1,
-          "failed": []
-        },
-        "hard-heteronym": {
-          "passed": 41,
-          "total": 41,
-          "rate": 1,
-          "minPassRate": 0.85,
-          "failed": []
-        },
-        "easy-regression": {
-          "passed": 8,
-          "total": 8,
-          "rate": 1,
-          "minPassRate": 0.9,
-          "failed": []
-        }
-      },
-      "vsBaseline": {
-        "seed-bench": {
-          "rate": 1,
-          "passed": 22,
-          "total": 22,
-          "baselineRate": 1,
-          "deltaRate": 0
-        },
-        "hard-heteronym": {
-          "rate": 1,
-          "passed": 41,
-          "total": 41,
-          "baselineRate": 1,
-          "deltaRate": 0
-        },
-        "easy-regression": {
-          "rate": 1,
-          "passed": 8,
-          "total": 8,
-          "baselineRate": 1,
-          "deltaRate": 0
-        }
-      },
-      "overrides": {
-        "phraseCount": 13,
-        "contextRuleCount": 73,
-        "changed": false
-      },
-      "newSamples": [
-        {
-          "text": "牛の角が山の麓に輝いている。",
-          "surface": "角",
-          "gold": "つの",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "牛の角／角が生える（つの）"
-        },
-        {
-          "text": "角が生える牧草地で子牛が遊んでいる。",
-          "surface": "角",
-          "gold": "つの",
-          "source": "llm-synth:groq:arbitrate_agree",
-          "note": "牛の角／角が生える（つの）"
-        },
-        {
-          "text": "株式市場の規模が拡大し、投資家の注目が高まっている。",
-          "surface": "市場",
-          "gold": "しじょう",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "株式・規模・経済・金融の文脈"
-        },
-        {
-          "text": "経済の動向が金融市場に影響を与え、為替レートが揺れた。",
-          "surface": "市場",
-          "gold": "しじょう",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "株式・規模・経済・金融の文脈"
-        },
-        {
-          "text": "辛いラーメンを食べた。",
-          "surface": "辛い",
-          "gold": "からい",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "ラーメン・カレー・味・唐辛子"
-        },
-        {
-          "text": "辛いカレーを味わった。",
-          "surface": "辛い",
-          "gold": "からい",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "ラーメン・カレー・味・唐辛子"
-        },
-        {
-          "text": "永遠のテーマを語ると、誰もが心に響く光が生まれる。",
-          "surface": "永遠",
-          "gold": "えいえん",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
-        },
-        {
-          "text": "永遠に終わらない日常の小さな幸せは、確かに奇跡の証だ。",
-          "surface": "永遠",
-          "gold": "えいえん",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
-        },
-        {
-          "text": "今日の仕事は忙しい。",
-          "surface": "忙しい",
-          "gold": "いそがしい",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "仕事・予定・日常の忙しさ"
-        },
-        {
-          "text": "予定が多くて日常が忙しい。",
-          "surface": "忙しい",
-          "gold": "いそがしい",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "仕事・予定・日常の忙しさ"
-        }
-      ]
-    },
     {
       "ts": "2026-09-19T10:48:45.028Z",
       "mode": "synth",
@@ -8170,6 +8033,74 @@
           "note": "仕事・予定・日常の忙しさ"
         }
       ]
+    },
+    {
+      "ts": "2026-10-05T10:44:39.381Z",
+      "mode": "retrain",
+      "note": "素材増なし / 本体ルール変化なし（日次は主に素材集め）",
+      "gateOk": true,
+      "floorsOk": true,
+      "regress": false,
+      "corpus": {
+        "total": 5141,
+        "delta": 0,
+        "acceptedThisRun": 0,
+        "rejectedThisRun": 0
+      },
+      "benches": {
+        "seed-bench": {
+          "passed": 22,
+          "total": 22,
+          "rate": 1,
+          "minPassRate": 1,
+          "failed": []
+        },
+        "hard-heteronym": {
+          "passed": 41,
+          "total": 42,
+          "rate": 0.9761904761904762,
+          "minPassRate": 0.85,
+          "failed": [
+            "naname-hasu"
+          ]
+        },
+        "easy-regression": {
+          "passed": 8,
+          "total": 8,
+          "rate": 1,
+          "minPassRate": 0.9,
+          "failed": []
+        }
+      },
+      "vsBaseline": {
+        "seed-bench": {
+          "rate": 1,
+          "passed": 22,
+          "total": 22,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "hard-heteronym": {
+          "rate": 0.9761904761904762,
+          "passed": 41,
+          "total": 42,
+          "baselineRate": 0.9761904761904762,
+          "deltaRate": 0
+        },
+        "easy-regression": {
+          "rate": 1,
+          "passed": 8,
+          "total": 8,
+          "baselineRate": 1,
+          "deltaRate": 0
+        }
+      },
+      "overrides": {
+        "phraseCount": 13,
+        "contextRuleCount": 74,
+        "changed": false
+      },
+      "newSamples": []
     }
   ]
 }
