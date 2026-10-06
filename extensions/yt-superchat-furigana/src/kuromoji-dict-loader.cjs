@@ -9,11 +9,20 @@
 var DictionaryLoader = require("kuromoji/src/loader/DictionaryLoader.js");
 var zlib = require("zlibjs/bin/gunzip.min.js");
 
-/** @type {{ via: string, errors: string[] }} */
-var dictLoadLog = { via: "", errors: [] };
+/** kuromoji が読む辞書ファイル数（base/check/tid×3/cc/unk×6） */
+var DICT_FILE_TOTAL = 12;
+
+/** @type {{ via: string, errors: string[], loaded: number, startedAt: number }} */
+var dictLoadLog = { via: "", errors: [], loaded: 0, startedAt: 0 };
 
 function getDictLoadLog() {
-  return { via: dictLoadLog.via, errors: dictLoadLog.errors.slice() };
+  return {
+    via: dictLoadLog.via,
+    errors: dictLoadLog.errors.slice(),
+    loaded: dictLoadLog.loaded,
+    total: DICT_FILE_TOTAL,
+    startedAt: dictLoadLog.startedAt
+  };
 }
 
 /** 診断用。並列ロードで同じ失敗が何度も出るので種類ごとに1回だけ残す */
@@ -155,8 +164,10 @@ function MultiPathDictionaryLoader(dic_path) {
 MultiPathDictionaryLoader.prototype = Object.create(DictionaryLoader.prototype);
 
 MultiPathDictionaryLoader.prototype.loadArrayBuffer = function (url, callback) {
+  if (!dictLoadLog.startedAt) dictLoadLog.startedAt = Date.now();
   loadWithFallback(url).then(
     function (buf) {
+      dictLoadLog.loaded += 1;
       callback(null, buf);
     },
     function (err) {

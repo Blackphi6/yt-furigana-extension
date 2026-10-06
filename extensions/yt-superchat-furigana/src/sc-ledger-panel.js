@@ -2,6 +2,8 @@
  * 視聴ページ top frame 用の累積スパチャパネル。
  */
 
+import { formatRemaining } from "./eta.js";
+import { getDictLoadLog } from "./kuromoji-dict-loader.cjs";
 import {
   SC_LEDGER_STORAGE_KEY,
   adoptUnknownLedgerItems,
@@ -715,16 +717,26 @@ export function installScLedgerPanel(deps) {
 
     let authorHtml = "";
     let messageHtml = "";
+    // 初回は辞書の読み込み待ちになるので進捗と残り時間を出す
+    const previewTicker = setInterval(() => {
+      const log = getDictLoadLog();
+      if (!log.startedAt || log.loaded >= log.total) return;
+      setStatus(
+        `プレビュー生成中… 辞書 ${log.loaded}/${log.total}（${formatRemaining(log.startedAt, log.loaded, log.total)}）`
+      );
+    }, 1000);
     try {
       [authorHtml, messageHtml] = await Promise.all([
         furiganaHtml(entry.author || ""),
         furiganaHtml(String(entry.message || "").trim())
       ]);
     } catch (err) {
+      clearInterval(previewTicker);
       if (previewRoot !== overlay) return;
       closePreview();
       throw err;
     }
+    clearInterval(previewTicker);
     // 待ちのあいだに閉じられていたら差し替えない
     if (previewRoot !== overlay) return;
     overlay.removeAttribute("aria-busy");
@@ -802,7 +814,8 @@ export function installScLedgerPanel(deps) {
     // アーカイブ再生なら配信中扱いにしない
     const isLive =
       detectIsLiveNow(document) && !detectIsChatReplayPage(document);
-    setStatus("取得中…");
+    setStatus("取得中…（残り時間を計測中）");
+    const fetchStartedAt = Date.now();
     setFetchProgress({
       visible: true,
       ratio: durationMs ? 0 : null,
@@ -844,14 +857,19 @@ export function installScLedgerPanel(deps) {
               : null;
           const pct =
             ratio != null ? `${Math.round(ratio * 100)}%` : `page ${page}`;
+          // 長さが分からない動画は残り時間を出せない
+          const eta =
+            ratio != null
+              ? formatRemaining(fetchStartedAt, Math.round(ratio * 1000), 1000)
+              : "残り時間は不明";
           setFetchProgress({
             visible: true,
             ratio,
             indeterminate: ratio == null,
-            label: `${pct} · 計 ${totalSeen}`
+            label: `${pct} · ${eta} · 計 ${totalSeen}`
           });
           setStatus(
-            `取得中… ${pct} · page ${page} · +${added} · 計 ${totalSeen}`
+            `取得中… ${pct}（${eta}）· page ${page} · +${added} · 計 ${totalSeen}`
           );
         }
       });
@@ -1018,10 +1036,12 @@ export function installScLedgerPanel(deps) {
         return;
       }
       const btn = /** @type {HTMLElement} */ (actEl);
-      setStatus(`ダウンロード 0/${selected.length}`);
+      const dlStartedAt = Date.now();
+      setStatus(`ダウンロード 0/${selected.length}（残り時間を計測中）`);
       void downloadScCardPngBatch(selected, {
         resolveOpts: (e) => cardFuriganaOpts(e),
-        onProgress: (i, n) => setStatus(`ダウンロード ${i}/${n}`)
+        onProgress: (i, n) =>
+          setStatus(`ダウンロード ${i}/${n}（${formatRemaining(dlStartedAt, i, n)}）`)
       })
         .then(() => {
           flashActionSuccess(btn);
@@ -1082,10 +1102,12 @@ export function installScLedgerPanel(deps) {
         setStatus("範囲に該当する SC がありません");
         return;
       }
-      setStatus(`ダウンロード 0/${filtered.length}`);
+      const dlStartedAt = Date.now();
+      setStatus(`ダウンロード 0/${filtered.length}（残り時間を計測中）`);
       void downloadScCardPngBatch(filtered, {
         resolveOpts: (e) => cardFuriganaOpts(e),
-        onProgress: (i, n) => setStatus(`ダウンロード ${i}/${n}`)
+        onProgress: (i, n) =>
+          setStatus(`ダウンロード ${i}/${n}（${formatRemaining(dlStartedAt, i, n)}）`)
       })
         .then(() => {
           flashActionSuccess(/** @type {HTMLElement} */ (actEl));

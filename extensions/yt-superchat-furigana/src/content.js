@@ -453,6 +453,9 @@ function setStatus(partial) {
           tokErr: tokenizerError,
           dictVia: getDictLoadLog().via,
           dictErr: getDictLoadLog().errors.join(" | ").slice(0, 240),
+          dictLoaded: getDictLoadLog().loaded,
+          dictTotal: getDictLoadLog().total,
+          dictStartedAt: getDictLoadLog().startedAt,
           bg: bgAlive,
           frame: isTopYoutubeWatchFrame() ? "top" : "chat",
           instance: instanceNo,
@@ -540,6 +543,8 @@ function ensureTokenizer() {
 
   tokenizerPromise = new Promise((resolve, reject) => {
     let settled = false;
+    // ポップアップの「残り時間」用に読み込み進捗を流す（完成まで）
+    const progressTicker = setInterval(() => setStatus({}), 1000);
     // 遅い端末では一旦 API に逃がすが、kuromoji が後から完成したら端末内へ戻す
     const timer = setTimeout(() => {
       if (settled) return;
@@ -554,6 +559,7 @@ function ensureTokenizer() {
         const late = settled;
         settled = true;
         clearTimeout(timer);
+        clearInterval(progressTicker);
         if (error) {
           if (late) return;
           tokenizerPromise = null;
@@ -569,6 +575,7 @@ function ensureTokenizer() {
         if (late) {
           tokenizerFailed = false;
           readingApiFallback = false;
+          tokenizerError = "";
           void loadCorePhraseDicts().then(() => {
             if (isAnyTargetEnabled(state)) reprocessEnabled();
           });

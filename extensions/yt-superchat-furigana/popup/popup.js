@@ -1,4 +1,5 @@
 import { isAnyTargetEnabled, normalizeYtscfState } from "../src/state.js";
+import { formatRemaining } from "../src/eta.js";
 import {
   SC_LEDGER_STORAGE_KEY,
   clearLedgerForVideo,
@@ -42,6 +43,19 @@ function setStatus(message, kind = "") {
   els.status.textContent = message || "";
   if (kind) els.status.dataset.state = kind;
   else delete els.status.dataset.state;
+}
+
+/**
+ * 辞書読み込み中の表示（ファイル数と残り時間）。
+ * @param {Record<string, unknown> | null | undefined} runtime
+ */
+function dictLoadingLabel(runtime) {
+  const loaded = Number(runtime?.dictLoaded) || 0;
+  const total = Number(runtime?.dictTotal) || 0;
+  const startedAt = Number(runtime?.dictStartedAt) || 0;
+  if (!total || !startedAt) return "辞書を準備中…（初回のみ・残り時間を計測中）";
+  if (loaded >= total) return "辞書を組み立て中…（残りわずか）";
+  return `辞書を読み込み中 ${loaded}/${total}（${formatRemaining(startedAt, loaded, total)}）`;
 }
 
 /**
@@ -251,13 +265,20 @@ async function refreshUi() {
     );
   } else if (runtime?.error && !uglyXhr) {
     setStatus(String(runtime.error), "error");
+  } else if (
+    runtime?.tokenizerFailed &&
+    /^timeout/.test(String(runtime.tokErr || "")) &&
+    Number(runtime.dictTotal) > 0
+  ) {
+    // 遅い端末（iPad 等）は時間切れ後も読み込みを続けていて、完成すると自動で切り替わる
+    setStatus(`${dictLoadingLabel(runtime)} · 端末が遅いため時間がかかっています${hideNote}${ledgerNote}`);
   } else if (uglyXhr || runtime?.tokenizerFailed) {
     setStatus(
       `端末内辞書が使えないため読みAPIに切替中…${hideNote}${ledgerNote}`,
       ""
     );
   } else if (!runtime?.ready) {
-    setStatus(`辞書を準備中…（初回のみ）${hideNote}${ledgerNote}${apiNote}`);
+    setStatus(`${dictLoadingLabel(runtime)}${hideNote}${ledgerNote}${apiNote}`);
   } else {
     const n = Number(runtime.processedCount) || 0;
     const parts = [];

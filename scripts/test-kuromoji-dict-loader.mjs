@@ -49,5 +49,7 @@ assert.equal(log.via, "bg", "background 中継で読めた");
 assert.ok(log.errors.some((e) => e.startsWith("fetch: Load failed")), "fetch の失敗理由を記録");
 assert.ok(log.errors.some((e) => e.startsWith("xhr:")), "XHR の失敗理由を記録");
 assert.equal(bgCalls, 12, "12 ファイルすべて中継");
+assert.equal(log.loaded, log.total, "ポップアップの残り時間用に読み込み数を数える");
+assert.ok(log.startedAt > 0);
 
 console.log("test-kuromoji-dict-loader: ok");
