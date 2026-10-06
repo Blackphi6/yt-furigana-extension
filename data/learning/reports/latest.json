@@ -1,13 +1,13 @@
 {
-  "ts": "2026-10-06T06:02:43.685Z",
+  "ts": "2026-10-06T13:15:24.260Z",
   "mode": "synth",
-  "note": "素材 +42 / 本体ルール変化なし（日次は主に素材集め）",
+  "note": "素材 +41 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 5269,
-    "delta": 42,
+    "total": 5310,
+    "delta": 41,
     "acceptedThisRun": 53,
     "rejectedThisRun": 33
   },
@@ -66,70 +66,70 @@
   },
   "newSamples": [
     {
-      "text": "牛の角が光っている。",
+      "text": "牛の角が山の麓でひっそりと光っている。",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:verify_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "角が生えるとき、彼は驚いた。",
+      "text": "角が生える草原で、風が吹き抜ける。",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:verify_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "市場の規模が拡大すると、株式の流動性も高まる。",
+      "text": "株式市場は、投資家にとって重要な指標だ。",
       "surface": "市場",
       "gold": "しじょう",
       "source": "llm-synth:groq:verify_agree",
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "text": "金融政策が変わると、市場全体の経済活動に大きな影響が出る。",
+      "text": "市場規模は、経済成長の指標として重視される。",
       "surface": "市場",
       "gold": "しじょう",
       "source": "llm-synth:groq:verify_agree",
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "text": "辛いラーメンを食べたら、口の中に唐辛子の香りが広がった。",
+      "text": "辛い",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "カレーの味が辛いと、辛いと感じるときは、唐辛子を足してみてください。",
+      "text": "辛い",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "日常の朝食を食べながら、私は永遠に終わらない時間の流れを考える。",
+      "text": "永遠に終わらない星空を見上げると、心に静かな安らぎが広がる。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "論理的に考えると、永遠のテーマは「無限の可能性」である。",
+      "text": "永遠のテーマである時間の流れを考えると、私たちは常に変化を感じる。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "仕事が山積みで、忙しい日々を送っている。",
+      "text": "仕事が多くて、忙しい。",
       "surface": "忙しい",
       "gold": "いそがしい",
       "source": "llm-synth:groq:verify_agree",
       "note": "仕事・予定・日常の忙しさ"
     },
     {
-      "text": "予定が詰まっていて、日常が忙しいと感じる。",
+      "text": "予定が詰まっていて、忙しい。",
       "surface": "忙しい",
       "gold": "いそがしい",
       "source": "llm-synth:groq:verify_agree",
