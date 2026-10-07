@@ -262,13 +262,16 @@ export function extractPaidEntriesFromActions(actions, videoId) {
  */
 export function findLiveChatContinuation(data) {
   /** @type {{ continuation: string, isReplay: boolean } | null} */
-  let found = null;
+  let replay = null;
+  /** @type {{ continuation: string, isReplay: boolean } | null} */
+  let other = null;
 
+  // 木全体を見る。ヘッダの切替メニュー（reload）が本体より先に出ても replay 用を優先する
   /**
    * @param {unknown} node
    */
   function walk(node) {
-    if (!node || found) return;
+    if (!node || replay) return;
     if (Array.isArray(node)) {
       for (const n of node) walk(n);
       return;
@@ -280,27 +283,18 @@ export function findLiveChatContinuation(data) {
         o.liveChatReplayContinuationData
       ).continuation;
       if (c) {
-        found = { continuation: String(c), isReplay: true };
+        replay = { continuation: String(c), isReplay: true };
         return;
       }
     }
-    if (o.reloadContinuationData) {
-      const c = /** @type {{ continuation?: string }} */ (o.reloadContinuationData)
-        .continuation;
-      // replay 優先。ライブ用は後で上書きしない
-      if (c && !found) {
-        found = { continuation: String(c), isReplay: false };
-      }
-    }
-    if (
-      !found &&
-      (o.invalidationContinuationData || o.timedContinuationData)
-    ) {
-      const raw = /** @type {{ continuation?: string }} */ (
-        o.invalidationContinuationData || o.timedContinuationData
+    if (!other) {
+      const raw = /** @type {{ continuation?: string } | undefined} */ (
+        o.reloadContinuationData ||
+          o.invalidationContinuationData ||
+          o.timedContinuationData
       );
-      if (raw.continuation) {
-        found = { continuation: String(raw.continuation), isReplay: false };
+      if (raw?.continuation) {
+        other = { continuation: String(raw.continuation), isReplay: false };
       }
     }
     for (const v of Object.values(o)) {
@@ -309,7 +303,7 @@ export function findLiveChatContinuation(data) {
   }
 
   walk(data);
-  return found;
+  return replay || other;
 }
 
 /**
@@ -480,6 +474,20 @@ export function readChatFrameUrl(doc = document) {
 }
 
 /**
+ * ISO 8601 の動画長（meta[itemprop=duration] の "PT135M56S" 等）→ ms。不正・0 は null。
+ * @param {string} iso
+ * @returns {number | null}
+ */
+export function parseIsoDurationMs(iso) {
+  const m = String(iso || "").match(/^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/);
+  if (!m) return null;
+  const [, d, h, min, sec] = m;
+  const ms =
+    (((Number(d) || 0) * 24 + (Number(h) || 0)) * 3600 + (Number(min) || 0) * 60 + (Number(sec) || 0)) * 1000;
+  return ms > 0 ? Math.floor(ms) : null;
+}
+
+/**
  * プレイヤー動画の再生時間（秒）。ライブは Infinity / NaN になりやすい。
  * @param {Document} [doc]
  * @returns {number | null}
@@ -572,6 +580,9 @@ export function readChatBootstrapFromHtml(html) {
   return {
     apiKey,
     clientVersion,
+    // get_live_chat_replay にそのまま渡せるトークン（チャット iframe の文書にだけある）
+    replayContinuation: cont?.isReplay ? cont.continuation : "",
+    // live_chat_replay ページを開くためのトークン（API に渡すと 400）
     continuation: fromStart || cont?.continuation || "",
     isReplay: Boolean(fromStart || cont?.isReplay),
     initialData
@@ -656,7 +667,10 @@ export async function fetchLiveChatReplayBootstrap(opts) {
     }
     const html = await res.text();
     const boot = readChatBootstrapFromHtml(html.slice(0, 1_500_000));
-    if (boot.isReplay && boot.continuation) return boot;
+    // 取得したページ内の API 用トークンを返す（切替メニューの reload トークンは API で 400）
+    if (boot.replayContinuation) {
+      return { ...boot, continuation: boot.replayContinuation, isReplay: true };
+    }
     lastError = new Error(
       "この配信は開始からのチャット再生（巻き戻し）に対応していません"
     );

@@ -25,6 +25,7 @@ import {
   detectIsLiveNow,
   fetchAllSuperChatsFromReplay,
   fetchLiveChatReplayBootstrap,
+  parseIsoDurationMs,
   readChatBootstrapFromDocument
 } from "./chat-replay-sc.js";
 import {
@@ -329,6 +330,12 @@ export function installScLedgerPanel(deps) {
    * @returns {number | null} 動画尺 ms
    */
   function videoDurationMs() {
+    // 広告再生中の video は広告の長さ（15 秒等）なので、ページの動画長を使う
+    if (document.querySelector("#movie_player.ad-showing")) {
+      return parseIsoDurationMs(
+        document.querySelector("meta[itemprop=duration]")?.getAttribute("content") || ""
+      );
+    }
     const video =
       document.querySelector("video.html5-main-video") ||
       document.querySelector("video");
@@ -785,20 +792,28 @@ export function installScLedgerPanel(deps) {
       setStatus("videoId が分かりません");
       return;
     }
-    let boot = readChatBootstrapFromDocument(document);
-    if (!boot.continuation) {
-      try {
-        const frame = document.querySelector(
-          "#chatframe, iframe[src*='live_chat']"
-        );
-        const doc = /** @type {HTMLIFrameElement | null} */ (frame)
-          ?.contentDocument;
-        if (doc) boot = readChatBootstrapFromDocument(doc);
-      } catch {
-        /* cross-origin 等 */
-      }
+    const pageBoot = readChatBootstrapFromDocument(document);
+    // チャット iframe（live_chat_replay）だけが get_live_chat_replay 用のトークンを持つ
+    let frameBoot = null;
+    try {
+      const frame = document.querySelector(
+        "#chatframe, iframe[src*='live_chat']"
+      );
+      const doc = /** @type {HTMLIFrameElement | null} */ (frame)
+        ?.contentDocument;
+      if (doc) frameBoot = readChatBootstrapFromDocument(doc);
+    } catch {
+      /* cross-origin 等 */
     }
-    if (!boot?.continuation) {
+    const boot = {
+      ...pageBoot,
+      apiKey: pageBoot.apiKey || frameBoot?.apiKey || "",
+      clientVersion: pageBoot.clientVersion || frameBoot?.clientVersion || "",
+      continuation: pageBoot.continuation || frameBoot?.continuation || "",
+      replayContinuation:
+        frameBoot?.replayContinuation || pageBoot.replayContinuation || ""
+    };
+    if (!boot.continuation && !boot.replayContinuation) {
       setStatus(
         "チャットの continuation が見つかりません。右のライブチャットを開いて再試行してください。"
       );
@@ -823,25 +838,32 @@ export function installScLedgerPanel(deps) {
       label: durationMs ? "0%" : "取得中…"
     });
     try {
-      let replayBoot = boot;
-      try {
-        const fromStart = await fetchLiveChatReplayBootstrap({
-          continuation: boot.continuation,
-          videoId: vid,
-          signal: fetchAbort.signal
-        });
-        replayBoot = {
-          apiKey: fromStart.apiKey || boot.apiKey,
-          clientVersion: fromStart.clientVersion || boot.clientVersion,
-          continuation: fromStart.continuation,
-          isReplay: true
-        };
-      } catch (bootErr) {
-        if (isLive) {
-          await ingestVisibleLiveFallback(vid, true);
-          return;
+      let replayBoot = {
+        apiKey: boot.apiKey,
+        clientVersion: boot.clientVersion,
+        continuation: boot.replayContinuation
+      };
+      // アーカイブはチャット iframe のトークンをそのまま使う（live_chat_replay を fetch すると
+      // YouTube がエラーページを返すことがあり、iPad で全件取得が失敗していた）
+      if (!replayBoot.continuation) {
+        try {
+          const fromStart = await fetchLiveChatReplayBootstrap({
+            continuation: boot.continuation,
+            videoId: vid,
+            signal: fetchAbort.signal
+          });
+          replayBoot = {
+            apiKey: fromStart.apiKey || boot.apiKey,
+            clientVersion: fromStart.clientVersion || boot.clientVersion,
+            continuation: fromStart.continuation
+          };
+        } catch (bootErr) {
+          if (isLive) {
+            await ingestVisibleLiveFallback(vid, true);
+            return;
+          }
+          throw bootErr;
         }
-        if (!boot.isReplay) throw bootErr;
       }
       const entries = await fetchAllSuperChatsFromReplay({
         videoId: vid,

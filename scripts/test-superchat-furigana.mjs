@@ -79,6 +79,7 @@ import {
   extractPaidEntriesFromActions,
   extractReplayBeginningContinuation,
   findLiveChatContinuation,
+  parseIsoDurationMs,
   maxReplayOffsetMs,
   paidRendererJsonToEntry,
   readChatBootstrapFromHtml,
@@ -1242,6 +1243,53 @@ assert.equal(bridged[0].message, "クリックなし本文");
   );
   assert.equal(boot.continuation, "html-replay");
   assert.equal(boot.isReplay, true);
+  assert.equal(boot.replayContinuation, "html-replay");
+
+  // 視聴ページ本体（BjhiGEsDLBM 型）: 切替メニューの reload トークンしか無い。
+  // これは live_chat_replay ページ用で、get_live_chat_replay に渡すと 400 になる
+  const subMenu = {
+    sortFilterSubMenuRenderer: {
+      subMenuItems: [
+        { title: "上位のチャットのリプレイ", continuation: { reloadContinuationData: { continuation: "top-reload" } } },
+        { title: "チャットのリプレイ", continuation: { reloadContinuationData: { continuation: "all-reload" } } }
+      ]
+    }
+  };
+  const watchBoot = readChatBootstrapFromHtml(
+    `ytInitialData = ${JSON.stringify({
+      contents: {
+        twoColumnWatchNextResults: {
+          conversationBar: {
+            liveChatRenderer: {
+              continuations: [{ reloadContinuationData: { continuation: "top-reload" } }],
+              header: { liveChatHeaderRenderer: { viewSelector: subMenu } },
+              isReplay: true
+            }
+          }
+        }
+      }
+    })};`
+  );
+  assert.equal(watchBoot.replayContinuation, "", "reload トークンを API 用にしない");
+
+  // チャット iframe（live_chat_replay）: ヘッダの reload トークンが先に出ても API 用トークンを選ぶ
+  const frameData = {
+    continuationContents: {
+      liveChatContinuation: {
+        header: { liveChatHeaderRenderer: { viewSelector: subMenu } },
+        continuations: [{ liveChatReplayContinuationData: { continuation: "frame-replay" } }]
+      }
+    }
+  };
+  assert.equal(findLiveChatContinuation(frameData)?.continuation, "frame-replay");
+  const frameBoot = readChatBootstrapFromHtml(`ytInitialData = ${JSON.stringify(frameData)};`);
+  assert.equal(frameBoot.replayContinuation, "frame-replay");
+
+  // 広告中の進捗計算用: ページの動画長
+  assert.equal(parseIsoDurationMs("PT135M56S"), (135 * 60 + 56) * 1000);
+  assert.equal(parseIsoDurationMs("PT2H3M4S"), (2 * 3600 + 3 * 60 + 4) * 1000);
+  assert.equal(parseIsoDurationMs("PT0M0S"), null);
+  assert.equal(parseIsoDurationMs(""), null);
 }
 
 assert.equal(sanitizeFilenamePart('a/b:c*'), "a_b_c_");
