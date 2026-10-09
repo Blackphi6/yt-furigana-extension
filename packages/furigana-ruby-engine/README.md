@@ -1,4 +1,4 @@
-# yt-furigana-engine
+# furigana-ruby-engine
 
 日本語テキストにひらがなルビ（`<ruby>`）を付けるエンジンです。ブラウザ拡張「YT Furigana」「YT Live Chat Furigana」の読み付け部分を切り出したもので、**ブラウザ（拡張・Web ページ）と Node.js の両方で動きます**。`chrome.*` には依存しません。
 
@@ -6,12 +6,12 @@
 - 同梱の句辞書: 熟字訓・常用漢字の読み・人名・駅名・英語のカタカナ読み
 - 文脈による読み分け（例: 「今日」「一日」「方」など）
 
-「YT」は製品名の略称で、YouTube の商標ではありません。非公式です。
+YouTube・Google とは関係のない非公式プロジェクトです。
 
 ## インストール
 
 ```bash
-npm install yt-furigana-engine
+npm install furigana-ruby-engine
 ```
 
 辞書（約 20MB の gzip）をパッケージに同梱しています。
@@ -21,7 +21,7 @@ npm install yt-furigana-engine
 ### Node.js
 
 ```js
-import { createFuriganaEngine } from "yt-furigana-engine";
+import { createFuriganaEngine } from "furigana-ruby-engine";
 
 const engine = await createFuriganaEngine();
 engine.toHtml("今日は漢字の読みを練習する");
@@ -30,10 +30,10 @@ engine.toHtml("今日は漢字の読みを練習する");
 
 ### ブラウザ（Web ページ）
 
-`node_modules/yt-furigana-engine/dict/` を静的ファイルとして配信し、その URL を渡します。
+`node_modules/furigana-ruby-engine/dict/` を静的ファイルとして配信し、その URL を渡します。
 
 ```js
-import { createFuriganaEngine } from "yt-furigana-engine";
+import { createFuriganaEngine } from "furigana-ruby-engine";
 
 const engine = await createFuriganaEngine({
   dictionaryBaseUrl: new URL("/assets/furigana-dict/", location.href)

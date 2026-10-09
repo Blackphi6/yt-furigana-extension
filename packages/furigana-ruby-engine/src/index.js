@@ -1,5 +1,5 @@
 /**
- * yt-furigana-engine: 日本語テキストにひらがなルビ（<ruby>）を付けるエンジン。
+ * furigana-ruby-engine: 日本語テキストにひらがなルビ（<ruby>）を付けるエンジン。
  * ブラウザ（拡張・Web ページ）と Node の両方で動く。chrome.* には依存しない。
  */
 import { buildFuriganaHtml, hasKanji } from "../../../src/furigana.js";
@@ -29,7 +29,7 @@ function defaultLoadFile(baseUrl) {
   const isNode = typeof process !== "undefined" && Boolean(process.versions?.node);
   if (!isNode) {
     throw new Error(
-      "yt-furigana-engine: ブラウザでは dictionaryBaseUrl（dict/ を配信する URL）か loadFile を指定してください"
+      "furigana-ruby-engine: ブラウザでは dictionaryBaseUrl（dict/ を配信する URL）か loadFile を指定してください"
     );
   }
   const dictDir = new URL("../dict/", import.meta.url);

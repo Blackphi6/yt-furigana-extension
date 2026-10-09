@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * yt-furigana-engine のビルド: エンジン一式を 1 ファイルの ESM にまとめ、辞書とライセンスを同梱する。
+ * furigana-ruby-engine のビルド: エンジン一式を 1 ファイルの ESM にまとめ、辞書とライセンスを同梱する。
  */
 import * as esbuild from "esbuild";
 import { copyFile, cp, mkdir, rm } from "node:fs/promises";
@@ -71,4 +71,4 @@ await cp(path.join(repoRoot, "third_party"), path.join(pkgRoot, "third_party"), 
   recursive: true
 });
 
-console.log(`yt-furigana-engine build complete (${DICT_FILES.length} dict files)`);
+console.log(`furigana-ruby-engine build complete (${DICT_FILES.length} dict files)`);

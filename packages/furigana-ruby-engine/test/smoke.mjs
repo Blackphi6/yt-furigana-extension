@@ -40,4 +40,4 @@ globalThis.process = undefined;
 await assert.rejects(() => createFuriganaEngine(), /dictionaryBaseUrl/);
 globalThis.process = saved;
 
-console.log("yt-furigana-engine smoke: ok");
+console.log("furigana-ruby-engine smoke: ok");
