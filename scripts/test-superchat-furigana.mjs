@@ -293,27 +293,14 @@ assert.match(
 }
 
 // 掴み代だけ残せばよい（全体クランプだと展開パネルがほぼ動かない）
-assert.deepEqual(clampPanelPosition(0, 0, 360, 200, 1000, 800), {
-  left: 0,
-  top: 8
-});
-assert.deepEqual(clampPanelPosition(900, 700, 360, 200, 1000, 800), {
-  left: 900,
-  top: 700
-});
-assert.deepEqual(clampPanelPosition(120, 80, 360, 200, 1000, 800), {
-  left: 120,
-  top: 80
-});
-assert.deepEqual(clampPanelPosition(-40, -20, 2000, 2000, 400, 300), {
-  left: -40,
-  top: 8
-});
-// 画面下へ大きく動かしてもタイトルバーは残る
-assert.deepEqual(clampPanelPosition(10, 900, 360, 640, 1000, 800), {
-  left: 10,
-  top: 752
-});
+// パネル全体をウインドウ内（余白 8px）に収める
+assert.deepEqual(clampPanelPosition(0, 0, 360, 200, 1000, 800), { left: 8, top: 8 });
+assert.deepEqual(clampPanelPosition(900, 700, 360, 200, 1000, 800), { left: 632, top: 592 });
+assert.deepEqual(clampPanelPosition(120, 80, 360, 200, 1000, 800), { left: 120, top: 80 });
+// ウインドウより大きいときは左上に寄せる（はみ出しは CSS の max-height で抑える）
+assert.deepEqual(clampPanelPosition(-40, -20, 2000, 2000, 400, 300), { left: 8, top: 8 });
+// 画面下へ大きく動かしてもパネルの下端はウインドウ内
+assert.deepEqual(clampPanelPosition(10, 900, 360, 640, 1000, 800), { left: 10, top: 152 });
 assert.equal(parseStoredPanelPos(null), null);
 assert.equal(parseStoredPanelPos({ left: "x", top: 1 }), null);
 assert.deepEqual(parseStoredPanelPos({ left: 12, top: 34 }), {

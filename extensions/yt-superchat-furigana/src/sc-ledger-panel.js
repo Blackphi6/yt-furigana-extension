@@ -42,14 +42,9 @@ const COLLAPSED_KEY = "ytscfLedgerPanelCollapsed";
 const POS_KEY = "ytscfLedgerPanelPos";
 const DRAG_THRESHOLD_PX = 4;
 
-/** 画面外にはみ出しても掴める最小幅（px） */
-const CLAMP_KEEP_WIDTH = 80;
-/** タイトルバー相当。全体高さでクランプすると展開時にほぼ動けない */
-const CLAMP_KEEP_HEIGHT = 40;
-
 /**
- * パネル位置を画面内に収める。
- * 展開時はパネル全体ではなく「掴み代」だけ残す（自由に寄せられる）。
+ * パネル全体をウインドウ内（余白 margin）に収める。
+ * ウインドウより大きいときは左上に寄せる（高さは CSS の max-height で収まる）。
  * @param {number} left
  * @param {number} top
  * @param {number} width
@@ -65,16 +60,11 @@ export function clampPanelPosition(left, top, width, height, vw, vh, margin = 8)
   const viewW = Math.max(0, Number(vw) || 0);
   const viewH = Math.max(0, Number(vh) || 0);
   const m = Math.max(0, Number(margin) || 0);
-  const keepW = Math.min(CLAMP_KEEP_WIDTH, w || CLAMP_KEEP_WIDTH);
-  const keepH = Math.min(CLAMP_KEEP_HEIGHT, h || CLAMP_KEEP_HEIGHT);
-  // 左右: 大半はみ出し可。上下: バーは画面内に残す（上にはみ出しすぎない）
-  const minL = m - Math.max(0, w - keepW);
-  const maxL = Math.max(minL, viewW - keepW - m);
-  const minT = m;
-  const maxT = Math.max(minT, viewH - keepH - m);
+  const maxL = Math.max(m, viewW - w - m);
+  const maxT = Math.max(m, viewH - h - m);
   return {
-    left: Math.min(maxL, Math.max(minL, Number(left) || 0)),
-    top: Math.min(maxT, Math.max(minT, Number(top) || 0))
+    left: Math.min(maxL, Math.max(m, Number(left) || 0)),
+    top: Math.min(maxT, Math.max(m, Number(top) || 0))
   };
 }
 
@@ -402,6 +392,10 @@ export function installScLedgerPanel(deps) {
     applyCollapsed();
   }
 
+  // スクロールバーを除いた見えている範囲（innerWidth はスクロールバー込み）
+  const viewportWidth = () => document.documentElement.clientWidth || window.innerWidth;
+  const viewportHeight = () => document.documentElement.clientHeight || window.innerHeight;
+
   /** @type {{ left: number, top: number } | null} */
   let storedPos = null;
 
@@ -420,8 +414,8 @@ export function installScLedgerPanel(deps) {
       pos.top,
       rect.width || 360,
       rect.height || 48,
-      window.innerWidth,
-      window.innerHeight
+      viewportWidth(),
+      viewportHeight()
     );
     root.classList.add("is-moved");
     root.style.left = `${Math.round(clamped.left)}px`;
@@ -1224,8 +1218,8 @@ export function installScLedgerPanel(deps) {
       rect.top,
       rect.width,
       rect.height,
-      window.innerWidth,
-      window.innerHeight
+      viewportWidth(),
+      viewportHeight()
     );
     applyPosition(pos);
     savePosition(pos);
@@ -1238,6 +1232,12 @@ export function installScLedgerPanel(deps) {
 
   bar?.addEventListener("pointerdown", onBarPointerDown);
   window.addEventListener("resize", onViewportResize);
+  // 一覧が伸びる・折りたたむ等でサイズが変わってもウインドウ外へ出さない
+  if (typeof ResizeObserver === "function") {
+    new ResizeObserver(() => {
+      if (storedPos && !dragging) applyPosition(storedPos);
+    }).observe(root);
+  }
 
   // SPA 遷移は軽く監視（subtree 全変更で HTML スキャンしない）
   let moTimer = 0;
