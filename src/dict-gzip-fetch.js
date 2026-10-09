@@ -3,8 +3,39 @@
  * 1 本ずつキュー + 短いリトライ。
  */
 
+import zlib from "zlibjs/bin/gunzip.min.js";
+
 /** @type {Promise<unknown>} */
 let fetchChain = Promise.resolve();
+
+/**
+ * 拡張以外（npm ライブラリ等）向け: 辞書ファイル名 → gz バイト列を返す関数。
+ * 未設定なら拡張の chrome.runtime.getURL から fetch する。
+ * @type {((fileName: string) => Promise<ArrayBuffer | Uint8Array>) | null}
+ */
+let dictionaryFileLoader = null;
+
+/**
+ * @param {((fileName: string) => Promise<ArrayBuffer | Uint8Array>) | null} loader
+ */
+export function setDictionaryFileLoader(loader) {
+  dictionaryFileLoader = typeof loader === "function" ? loader : null;
+}
+
+/**
+ * gzip を展開して文字列に。Orion の隔離世界ではネイティブ展開が型エラーになるので zlibjs に戻す。
+ * @param {ArrayBuffer | Uint8Array} bytes
+ */
+export async function gunzipToText(bytes) {
+  const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  try {
+    if (typeof DecompressionStream !== "function") throw new Error("no DecompressionStream");
+    const stream = new Blob([u8]).stream().pipeThrough(new DecompressionStream("gzip"));
+    return await new Response(stream).text();
+  } catch {
+    return new TextDecoder().decode(new zlib.Zlib.Gunzip(u8).decompress());
+  }
+}
 
 /**
  * @param {unknown} error
@@ -51,6 +82,19 @@ export async function fetchGzipJsonDict(relativePath, opts = {}) {
   const label = opts.label || relativePath;
   const attempts = opts.attempts ?? 3;
   const explicitUrl = opts.url ? String(opts.url) : "";
+
+  if (dictionaryFileLoader && !explicitUrl) {
+    const loader = dictionaryFileLoader;
+    const fileName = String(relativePath || "").replace(/^\/?(dict\/)?/, "");
+    return enqueueDictFetch(async () => {
+      const bytes = await loader(fileName);
+      const jsonText = fileName.endsWith(".gz")
+        ? await gunzipToText(bytes)
+        : new TextDecoder().decode(bytes);
+      const parsed = JSON.parse(jsonText);
+      return parsed && typeof parsed === "object" ? parsed : {};
+    });
+  }
 
   return enqueueDictFetch(async () => {
     const dictUrl = explicitUrl || resolveExtensionDictUrl(relativePath);

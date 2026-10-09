@@ -63,6 +63,8 @@
     "macos:dmg": "bash macos/YTFurigana/scripts/make-dmg.sh",
     "web-furigana:build": "node extensions/web-furigana/scripts/build.mjs",
     "superchat:build": "node extensions/yt-superchat-furigana/scripts/build.mjs",
+    "engine:build": "node packages/yt-furigana-engine/scripts/build.mjs",
+    "engine:test": "npm run engine:build && node packages/yt-furigana-engine/test/smoke.mjs",
     "pack:superchat": "node scripts/pack-superchat-store.mjs",
     "capture:superchat": "node scripts/capture-superchat-screenshots.mjs",
     "probe:api": "node scripts/probe-public-api.mjs",

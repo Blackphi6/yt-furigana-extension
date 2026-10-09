@@ -139,7 +139,18 @@ export const PHRASE_DICT_TIERS = {
 export const CORE_PHRASE_DICT_IDS = PHRASE_DICT_TIERS.core.map((d) => d.id);
 export const HEAVY_PHRASE_DICT_IDS = PHRASE_DICT_TIERS.heavy.map((d) => d.id);
 
+/** npm ライブラリ利用時はコンソールを汚さない（拡張は従来どおり出す） */
+let readyLogEnabled = true;
+
+/**
+ * @param {boolean} enabled
+ */
+export function setPhraseDictReadyLog(enabled) {
+  readyLogEnabled = Boolean(enabled);
+}
+
 function logReady(label, count) {
+  if (!readyLogEnabled) return;
   console.log(`[YT Furigana] ${label} ready (${count})`);
 }
 
