@@ -59,10 +59,13 @@ await esbuild.build({
   ]
 });
 
+// ルートの dict/ は git 管理外なので、CI でも揃う生成元から直接コピーする
+const dictSource = (name) =>
+  name.endsWith(".dat.gz")
+    ? path.join(repoRoot, "node_modules/kuromoji/dict", name)
+    : path.join(repoRoot, "data/generated", name);
 await Promise.all(
-  DICT_FILES.map((name) =>
-    copyFile(path.join(repoRoot, "dict", name), path.join(pkgRoot, "dict", name))
-  )
+  DICT_FILES.map((name) => copyFile(dictSource(name), path.join(pkgRoot, "dict", name)))
 );
 for (const name of ["LICENSE", "COPYING", "NOTICE"]) {
   await copyFile(path.join(repoRoot, name), path.join(pkgRoot, name));

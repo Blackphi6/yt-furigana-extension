@@ -1,0 +1,41 @@
+name: Publish furigana-ruby-engine
+
+# タグ furigana-ruby-engine-v<version> を push すると npm へ公開する。
+# 認証は Trusted Publishing（OIDC）。初回だけはパッケージが未登録で OIDC を設定できないため、
+# Secrets の NPM_TOKEN を使う（公開後に Trusted Publisher を登録したら削除してよい）。
+on:
+  push:
+    tags:
+      - "furigana-ruby-engine-v*"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      # Trusted Publishing には npm 11.5.1 以上が必要
+      - run: npm install -g npm@11.21.0
+      - run: npm ci
+      - name: タグとバージョンの一致を確認
+        working-directory: packages/furigana-ruby-engine
+        run: |
+          version=$(node -p 'require("./package.json").version')
+          if [ "${GITHUB_REF_NAME}" != "furigana-ruby-engine-v${version}" ]; then
+            echo "タグ ${GITHUB_REF_NAME} と package.json の ${version} が一致しません"
+            exit 1
+          fi
+      - name: 公開
+        working-directory: packages/furigana-ruby-engine
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
