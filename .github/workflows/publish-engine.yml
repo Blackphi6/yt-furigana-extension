@@ -1,8 +1,7 @@
 name: Publish furigana-ruby-engine
 
 # タグ furigana-ruby-engine-v<version> を push すると npm へ公開する。
-# 認証は Trusted Publishing（OIDC）。初回だけはパッケージが未登録で OIDC を設定できないため、
-# Secrets の NPM_TOKEN を使う（公開後に Trusted Publisher を登録したら削除してよい）。
+# 認証は Trusted Publishing（OIDC）なので、保存するトークンは不要。
 on:
   push:
     tags:
@@ -37,5 +36,3 @@ jobs:
       - name: 公開
         working-directory: packages/furigana-ruby-engine
         run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
