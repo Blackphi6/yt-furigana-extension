@@ -10,6 +10,7 @@ import {
   MANUAL_PHRASE_READINGS,
   rebuildManualPhraseIndex
 } from "../../../src/reading-context.js";
+import { collectReadingCandidates } from "../../../src/reading-candidates.js";
 import { applyUserReadingLearning } from "../../../src/user-reading-dict.js";
 import { buildKuromojiTokenizer } from "./kuromoji-loader.js";
 
@@ -64,6 +65,7 @@ export async function createFuriganaEngine(options = {}) {
     );
   }
   const tokenize = (text) => tokenizer.tokenize(String(text ?? ""));
+  const userReadings = { ...(options.userReadings || {}) };
 
   return {
     /**
@@ -76,6 +78,20 @@ export async function createFuriganaEngine(options = {}) {
         wrapWords: opts.clickable === true,
         contextText: opts.contextText
       });
+    },
+    /**
+     * 語の読み候補（拡張の読み選択メニューと同じ。スコア順・最大 8 件）。
+     * @param {string} surface
+     * @param {{ currentReading?: string, contextText?: string }} [opts]
+     * @returns {{ reading: string, source: string, label: string }[]}
+     */
+    candidates(surface, opts = {}) {
+      return collectReadingCandidates(
+        String(surface ?? ""),
+        opts.currentReading || "",
+        opts.contextText || "",
+        userReadings
+      );
     },
     /** kuromoji の形態素（surface_form / reading など） */
     tokenize,

@@ -28,6 +28,16 @@ engine.toHtml("今日は漢字の読みを練習する");
 // → <ruby>今日<rt>きょう</rt></ruby>は<ruby>漢字<rt>かんじ</rt></ruby>の…
 ```
 
+### 読み候補
+
+読みを選び直すメニューなどに使えます。`contextText` を渡すと、文脈に合う読みが上位に来ます。
+
+```js
+engine.candidates("一日", { contextText: "一日中ずっと" });
+// → [{ reading: "いちにち", source: "context", label: "文脈" },
+//    { reading: "ついたち", source: "dict", label: "辞書" }]
+```
+
 ### ブラウザ（Web ページ）
 
 `node_modules/furigana-ruby-engine/dict/` を静的ファイルとして配信し、その URL を渡します。
@@ -73,6 +83,7 @@ WebKit 系（Safari / Orion）の content script で `fetch` が通らない場�
 | メソッド | 説明 |
 |---|---|
 | `toHtml(text, { clickable?, contextText? })` | ルビ付き HTML（本文は HTML エスケープ済み）。`clickable: true` で語ごとの `<span class="yt-furigana-word">` 付き |
+| `candidates(surface, { currentReading?, contextText? })` | 語の読み候補（スコア順・最大 8 件）。`{ reading, source, label }` の配列 |
 | `tokenize(text)` | kuromoji の形態素（`surface_form` / `reading` など） |
 | `hasKanji(text)` | 漢字を含むか |
 

@@ -21,6 +21,18 @@ assert.doesNotMatch(escaped, /<script>/);
 assert.equal(engine.tokenize("漢字")[0].surface_form, "漢字");
 assert.equal(engine.hasKanji("ひらがな"), false);
 
+// 3.5) 読み候補（拡張の読み選択メニューと同じ）
+const kata = engine.candidates("方").map((c) => c.reading);
+assert.ok(kata.includes("ほう") && kata.includes("かた"), "同形異音の候補が出ること");
+const withCurrent = engine.candidates("方", { currentReading: "かた" });
+assert.deepEqual(withCurrent[0], { reading: "かた", source: "current", label: "現在" });
+for (const c of withCurrent) {
+  assert.equal(typeof c.reading, "string");
+  assert.equal(typeof c.source, "string");
+  assert.equal(typeof c.label, "string");
+}
+assert.deepEqual(engine.candidates(""), []);
+
 // 4) 独自ローダー（拡張なら chrome.runtime.getURL で読む想定）+ ユーザー読み
 const requested = [];
 const custom = await createFuriganaEngine({
@@ -33,6 +45,10 @@ const custom = await createFuriganaEngine({
 });
 assert.ok(requested.includes("base.dat.gz"));
 assert.match(custom.toHtml("髙橋さん"), /<rt>たかはし<\/rt>/);
+assert.ok(
+  custom.candidates("髙橋").some((c) => c.reading === "たかはし" && c.source === "user"),
+  "userReadings が候補にも出ること"
+);
 
 // 5) ブラウザで URL 未指定は分かるエラー
 const saved = globalThis.process;
