@@ -1,15 +1,15 @@
 {
-  "ts": "2026-10-15T16:50:47.128Z",
+  "ts": "2026-10-15T21:17:21.380Z",
   "mode": "synth",
-  "note": "素材 +42 / 本体ルール変化なし（日次は主に素材集め）",
+  "note": "素材 +47 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 6610,
-    "delta": 42,
-    "acceptedThisRun": 53,
-    "rejectedThisRun": 33
+    "total": 6657,
+    "delta": 47,
+    "acceptedThisRun": 54,
+    "rejectedThisRun": 32
   },
   "benches": {
     "seed-bench": {
@@ -66,74 +66,74 @@
   },
   "newSamples": [
     {
-      "text": "牛の角がとても硬い。",
+      "text": "新しいゲームを手に入ると、友達がすぐに気に入る。",
+      "surface": "入る",
+      "gold": "いる",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "気に入る／手に入る／仲間に入る（いる）"
+    },
+    {
+      "text": "角を曲がると、静かな公園が見えた。",
+      "surface": "角",
+      "gold": "かど",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "街角／角を曲がる（かど）"
+    },
+    {
+      "text": "牛の角が光っている。",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:verify_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "角が生えると、牛は威嚇する。",
+      "text": "角が生えると、角が生える場所が痛い。",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:verify_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "株式市場の規模は年々拡大し、経済全体に影響を与えている。",
+      "text": "株式市場の規模は、経済成長の指標として重要だ。",
       "surface": "市場",
       "gold": "しじょう",
       "source": "llm-synth:groq:verify_agree",
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "text": "金融市場は急速に変化し、投資家のリスク管理が重要となっている。",
+      "text": "金融市場は、企業の資金調達に不可欠な場である。",
       "surface": "市場",
       "gold": "しじょう",
       "source": "llm-synth:groq:verify_agree",
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "text": "辛いラーメンを食べたら、味がとても辛いと感じた。",
+      "text": "辛いカレーが好きだ",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "辛いカレーに唐辛子を入れたら、辛さがさらに辛い。",
+      "text": "ラーメンの辛い味が最高だ",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "日常の風景を見つめると、光と影が永遠に終わらないリズムを奏でていると感じる。",
+      "text": "日常の風景を観ると、そこに永遠に終わらない静けさがある。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "論理的に考えると、宇宙の膨張は永遠に続くと予測され、客観的な観測がそれを裏付けている。",
+      "text": "論理的に考えると、時間は永遠に終わらない循環である。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
-    },
-    {
-      "text": "仕事が忙しい。",
-      "surface": "忙しい",
-      "gold": "いそがしい",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "仕事・予定・日常の忙しさ"
-    },
-    {
-      "text": "予定が忙しい。",
-      "surface": "忙しい",
-      "gold": "いそがしい",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "仕事・予定・日常の忙しさ"
     }
   ]
 }
