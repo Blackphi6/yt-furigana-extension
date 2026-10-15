@@ -48,4 +48,20 @@ const html = readingApiSpansToHtml(
 assert.match(html, /data-surface="鬼滅の刃"/);
 assert.match(html, /data-reading="きめつのやいば"/);
 
+// API の語の途中で切れる辞書句は使わない（例: 大|人気 に人名「大人」を被せない）
+const crossing = mergeSpansWithLocalPhrases(
+  original,
+  [{ start: 6, end: 8, surface: "刃を", reading: "はを", source: "api" }],
+  {}
+);
+assert.ok(!crossing.some((s) => s.surface === "鬼滅の刃"), "API 語をまたぐ句は捨てる");
+assert.ok(crossing.some((s) => s.surface === "刃を"));
+// ユーザー登録はまたいでも優先する
+const userCrossing = mergeSpansWithLocalPhrases(
+  original,
+  [{ start: 6, end: 8, surface: "刃を", reading: "はを", source: "api" }],
+  { 鬼滅の刃: "きめつのやいば" }
+);
+assert.ok(userCrossing.some((s) => s.surface === "鬼滅の刃" && s.source === "manual"));
+
 console.log("phrase-hits / dict+API combo tests passed.");

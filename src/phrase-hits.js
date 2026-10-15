@@ -109,14 +109,6 @@ export function mergeSpansWithLocalPhrases(originalText, apiSpans, userPhrases =
   const hits = collectLocalPhraseHits(text, userPhrases);
   if (hits.length === 0) return apiSpans || [];
 
-  const phraseSpans = hits.map((hit) => ({
-    start: hit.start,
-    end: hit.end,
-    surface: hit.surface,
-    reading: hit.reading,
-    source: hit.source
-  }));
-
   const api = (apiSpans || [])
     .map((span) => ({
       start: span.start,
@@ -126,6 +118,22 @@ export function mergeSpansWithLocalPhrases(originalText, apiSpans, userPhrases =
       source: span.source || "api"
     }))
     .filter((span) => span.end > span.start);
+
+  // 句の端が API の語の内側にあるなら、API の区切りと矛盾する（大|人気 に人名「大人」など）。
+  // ユーザー登録・固定句だけはまたいでも優先する。
+  const insideApiWord = (pos) => api.some((span) => span.start < pos && pos < span.end);
+  const phraseSpans = hits
+    .filter(
+      (hit) =>
+        hit.source === "manual" || !(insideApiWord(hit.start) || insideApiWord(hit.end))
+    )
+    .map((hit) => ({
+      start: hit.start,
+      end: hit.end,
+      surface: hit.surface,
+      reading: hit.reading,
+      source: hit.source
+    }));
 
   // 句を優先しつつ、重ならない API span を残す
   const selected = [...phraseSpans];
