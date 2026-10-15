@@ -3,6 +3,7 @@
  */
 import {
   buildRuby,
+  escapeHtml,
   wrapFuriganaWord,
   hasKanji,
   isRegisterableSurface,
@@ -130,7 +131,7 @@ function renderSurface(surface, reading) {
     }
   }
   const ruby = buildRuby(surface, normalized, { preserveKatakana });
-  if (!isRegisterableSurface(surface)) return surface;
+  if (!isRegisterableSurface(surface)) return escapeHtml(surface);
   return wrapFuriganaWord(surface, normalized, ruby, { preserveKatakana });
 }
 
@@ -189,10 +190,10 @@ export function parseReadingApiResponseLite(payload, originalText) {
   let html = "";
   for (const span of spans) {
     if (span.start < cursor) continue;
-    if (span.start > cursor) html += text.slice(cursor, span.start);
+    if (span.start > cursor) html += escapeHtml(text.slice(cursor, span.start));
     html += renderSurface(text.slice(span.start, span.end), span.reading);
     cursor = span.end;
   }
-  if (cursor < text.length) html += text.slice(cursor);
+  if (cursor < text.length) html += escapeHtml(text.slice(cursor));
   return html;
 }
