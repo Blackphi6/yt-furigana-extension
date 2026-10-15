@@ -13,6 +13,10 @@ import {
 import { collectReadingCandidates } from "../../../src/reading-candidates.js";
 import { applyUserReadingLearning } from "../../../src/user-reading-dict.js";
 import { buildKuromojiTokenizer } from "./kuromoji-loader.js";
+import { fetchReadingApiHtml, resolveReadingApiOption } from "./reading-api-client.js";
+
+/** 読み API の HTML は常に語ごとの span 付きなので、素の <ruby> が欲しいときは外す（本文はエスケープ済み） */
+const unwrapWords = (html) => html.replace(/<span class="yt-furigana-word"[^>]*>|<\/span>/g, "");
 
 /**
  * 既定の読み込み: dictionaryBaseUrl があれば fetch、Node ならパッケージ同梱の dict/ を fs で読む。
@@ -66,6 +70,13 @@ export async function createFuriganaEngine(options = {}) {
   }
   const tokenize = (text) => tokenizer.tokenize(String(text ?? ""));
   const userReadings = { ...(options.userReadings || {}) };
+  const readingApi = resolveReadingApiOption(options.readingApi);
+
+  const toHtml = (text, opts = {}) =>
+    buildFuriganaHtml(String(text ?? ""), tokenize, {
+      wrapWords: opts.clickable === true,
+      contextText: opts.contextText
+    });
 
   return {
     /**
@@ -73,11 +84,23 @@ export async function createFuriganaEngine(options = {}) {
      * @param {string} text
      * @param {{ clickable?: boolean, contextText?: string }} [opts]
      */
-    toHtml(text, opts = {}) {
-      return buildFuriganaHtml(String(text ?? ""), tokenize, {
-        wrapWords: opts.clickable === true,
-        contextText: opts.contextText
-      });
+    toHtml,
+    /**
+     * readingApi を指定していれば読み API で、なければ手元のエンジンでルビ HTML を作る。
+     * API が失敗・時間切れのときは手元のエンジンの結果を返す。
+     * @param {string} text
+     * @param {{ clickable?: boolean, contextText?: string }} [opts]
+     */
+    async toHtmlAsync(text, opts = {}) {
+      const source = String(text ?? "");
+      if (!readingApi || !hasKanji(source)) return toHtml(source, opts);
+      try {
+        const html = await fetchReadingApiHtml(source, readingApi, userReadings);
+        return opts.clickable === true ? html : unwrapWords(html);
+      } catch (error) {
+        if (options.debug === true) console.warn("[furigana-ruby-engine] reading API failed", error);
+        return toHtml(source, opts);
+      }
     },
     /**
      * 語の読み候補（拡張の読み選択メニューと同じ。スコア順・最大 8 件）。

@@ -50,6 +50,57 @@ assert.ok(
   "userReadings が候補にも出ること"
 );
 
+// 4.5) 読み API（ネットワークに出ないよう手元のモックサーバーで確認）
+{
+  const { createServer } = await import("node:http");
+  let lastRequest = null;
+  let fail = false;
+  const server = createServer((req, res) => {
+    let body = "";
+    req.on("data", (chunk) => (body += chunk));
+    req.on("end", () => {
+      lastRequest = { url: req.url, auth: req.headers.authorization, body: JSON.parse(body) };
+      if (fail) {
+        res.writeHead(500).end("boom");
+        return;
+      }
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(
+        JSON.stringify({
+          tokens: [{ surface: "生米", span: [0, 2], reading: "なまごめ", source: "base_engine" }]
+        })
+      );
+    });
+  });
+  await new Promise((r) => server.listen(0, "127.0.0.1", r));
+  const url = `http://127.0.0.1:${server.address().port}`;
+  try {
+    const remote = await createFuriganaEngine({
+      readingApi: { url, apiKey: "test-key" },
+      userReadings: { 髙橋: "たかはし" }
+    });
+    assert.match(await remote.toHtmlAsync("生米"), /<rt>なまごめ<\/rt>/, "API の読みを使うこと");
+    assert.equal(lastRequest.url, "/v1/readings");
+    assert.equal(lastRequest.auth, "Bearer test-key");
+    assert.equal(lastRequest.body.text, "生米");
+    assert.deepEqual(lastRequest.body.user_dict, [{ surface: "髙橋", reading: "たかはし" }]);
+
+    fail = true;
+    assert.match(
+      await remote.toHtmlAsync("漢字"),
+      /<rt>かんじ<\/rt>/,
+      "API が失敗したら手元のエンジンで返すこと"
+    );
+
+    // 指定しなければ API には送らない（プライバシー）
+    lastRequest = null;
+    assert.match(await engine.toHtmlAsync("漢字"), /<rt>かんじ<\/rt>/);
+    assert.equal(lastRequest, null, "readingApi 未指定では通信しないこと");
+  } finally {
+    server.close();
+  }
+}
+
 // 5) ブラウザで URL 未指定は分かるエラー
 const saved = globalThis.process;
 globalThis.process = undefined;

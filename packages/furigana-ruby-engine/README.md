@@ -28,6 +28,27 @@ engine.toHtml("今日は漢字の読みを練習する");
 // → <ruby>今日<rt>きょう</rt></ruby>は<ruby>漢字<rt>かんじ</rt></ruby>の…
 ```
 
+### 読み API（任意）
+
+`readingApi` を指定すると、`toHtmlAsync()` がサーバー側の読み推定 API を使い、手元の辞書（人名・駅名・熟字訓など）を重ねて返します。API が失敗・時間切れのときは手元のエンジンの結果を返します。
+
+```js
+const engine = await createFuriganaEngine({ readingApi: true });
+await engine.toHtmlAsync("生麦生米を食べた");
+// → <ruby>生麦<rt>なまむぎ</rt></ruby><ruby>生米<rt>なまごめ</rt></ruby>を…
+```
+
+- **本文が API サーバーへ送られます。** 指定しなければ通信しません。利用者に送信を知らせてください
+- `true` は公開 API（https://yt-furigana-readings.onrender.com）。無料枠のため、しばらく使わないと初回の応答に 30 秒ほどかかります。自前のサーバーは `{ url, apiKey, timeoutMs }` で指定します
+- 公開 API はブラウザの任意の Web ページからは呼べません（CORS）。Node.js とブラウザ拡張から使えます
+- 読み API が常に手元より正確とは限りません（例: 「明日」を「あす」、「大人気」を「おおにんき」と読むことがあります）
+
+| option | 説明 |
+|---|---|
+| `url` | API のベース URL（`/v1/readings` は省略可） |
+| `apiKey` | `Authorization: Bearer` に載せるキー |
+| `timeoutMs` | 時間切れまでのミリ秒（既定 30000） |
+
 ### 読み候補
 
 読みを選び直すメニューなどに使えます。`contextText` を渡すと、文脈に合う読みが上位に来ます。
@@ -76,13 +97,15 @@ WebKit 系（Safari / Orion）の content script で `fetch` が通らない場�
 | `loadFile(name)` | 辞書ファイル名 → gzip のバイト列（`ArrayBuffer` / `Uint8Array`）。読み込み方法を自分で決めたいとき |
 | `phraseDictionaries` | 句辞書（熟字訓・人名・駅名など）を読むか。既定 `true` |
 | `userReadings` | 表層 → 読み。例 `{ "髙橋": "たかはし" }` |
-| `debug` | 辞書の読み込み完了をコンソールに出す。既定 `false` |
+| `readingApi` | `toHtmlAsync` で読み API を使う。`true` で公開 API、または `{ url, apiKey, timeoutMs }`。既定は使わない |
+| `debug` | 辞書の読み込み完了・読み API の失敗をコンソールに出す。既定 `false` |
 
 ### `FuriganaEngine`
 
 | メソッド | 説明 |
 |---|---|
 | `toHtml(text, { clickable?, contextText? })` | ルビ付き HTML（本文は HTML エスケープ済み）。`clickable: true` で語ごとの `<span class="yt-furigana-word">` 付き |
+| `toHtmlAsync(text, { clickable?, contextText? })` | `readingApi` 指定時は読み API + 手元の辞書。未指定・失敗時は `toHtml` と同じ |
 | `candidates(surface, { currentReading?, contextText? })` | 語の読み候補（スコア順・最大 8 件）。`{ reading, source, label }` の配列 |
 | `tokenize(text)` | kuromoji の形態素（`surface_form` / `reading` など） |
 | `hasKanji(text)` | 漢字を含むか |
