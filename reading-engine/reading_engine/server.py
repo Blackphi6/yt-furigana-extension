@@ -248,7 +248,9 @@ def health() -> dict[str, Any]:
         "status": "ok",
         "readingsAuth": require_auth_for_readings(),
         "stripeConfigured": stripe_configured(),
-        "buildId": os.environ.get("YT_FURIGANA_BUILD_ID") or "local",
+        "buildId": os.environ.get("YT_FURIGANA_BUILD_ID")
+        or os.environ.get("RENDER_GIT_COMMIT", "")[:7]
+        or "local",
         "engineVersion": "0.3.2-modernbert-reranker",
         "reranker": {
             "loaded": loaded,
