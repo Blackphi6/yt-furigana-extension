@@ -115,6 +115,16 @@ def admin_ingest_shortcut() -> RedirectResponse:
 
 
 @app.on_event("startup")
+def _warm_reranker() -> None:
+    """再ランクのモデルを裏で読み込む。遅い CPU では数十秒かかり、/health で待たせると起動判定が時間切れになる。"""
+    import threading
+
+    from reading_engine.reranker import get_reranker
+
+    threading.Thread(target=get_reranker, name="reranker-warm", daemon=True).start()
+
+
+@app.on_event("startup")
 def _bootstrap_shared_readings() -> None:
     """Image seed → curated, rebuild pack so Free clients see phrases after deploy."""
     try:
@@ -241,9 +251,9 @@ def root() -> dict[str, Any]:
 
 @app.get("/health")
 def health() -> dict[str, Any]:
-    from reading_engine.reranker import get_reranker, reranker_backend
+    from reading_engine.reranker import reranker_status
 
-    loaded = get_reranker() is not None
+    loaded, backend = reranker_status()
     return {
         "status": "ok",
         "readingsAuth": require_auth_for_readings(),
@@ -254,7 +264,7 @@ def health() -> dict[str, Any]:
         "engineVersion": "0.3.2-modernbert-reranker",
         "reranker": {
             "loaded": loaded,
-            "backend": reranker_backend() if loaded else "none",
+            "backend": backend,
         },
     }
 

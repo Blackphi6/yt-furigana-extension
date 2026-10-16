@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+import threading
 from pathlib import Path
 from typing import Sequence
 
@@ -92,7 +93,7 @@ class CandidateRerankerOnnx:
     def __init__(self, onnx_path: Path, tokenizer_dir: Path) -> None:
         import numpy as np
         import onnxruntime as ort
-        from transformers import AutoTokenizer
+        from tokenizers import Tokenizer
 
         self._np = np
         opts = ort.SessionOptions()
@@ -103,10 +104,21 @@ class CandidateRerankerOnnx:
             sess_options=opts,
             providers=["CPUExecutionProvider"],
         )
-        self.tokenizer = AutoTokenizer.from_pretrained(str(tokenizer_dir))
+        # transformers の AutoTokenizer は同じ tokenizer.json を読むだけで約 240MB 使い、
+        # Render 無料枠（512MB）で落ちる。tokenizers で直接読む（出力は同一）
+        tokenizer = Tokenizer.from_file(str(Path(tokenizer_dir) / "tokenizer.json"))
+        config_path = Path(tokenizer_dir) / "tokenizer_config.json"
+        config = json.loads(config_path.read_text(encoding="utf-8")) if config_path.exists() else {}
+        pad_token = config.get("pad_token") or "<pad>"
+        tokenizer.enable_truncation(max_length=128)
         # 長さの次元が数値なら固定長で書き出された古いモデル
         seq_dim = self.session.get_inputs()[0].shape[1]
-        self._padding = "max_length" if isinstance(seq_dim, int) else True
+        tokenizer.enable_padding(
+            pad_id=tokenizer.token_to_id(pad_token) or 0,
+            pad_token=pad_token,
+            length=seq_dim if isinstance(seq_dim, int) else None,
+        )
+        self.tokenizer = tokenizer
 
     def score_pairs(
         self,
@@ -119,18 +131,14 @@ class CandidateRerankerOnnx:
             return []
         context = context_window(text, surface, span)
         rows = [f"{context} [SEP] {surface} [SEP] {cand}" for cand in candidates]
-        encoded = self.tokenizer(
-            rows,
-            truncation=True,
-            padding=self._padding,
-            max_length=128,
-            return_tensors="np",
-        )
+        encoded = self.tokenizer.encode_batch(rows)
         logits = self.session.run(
             None,
             {
-                "input_ids": encoded["input_ids"].astype("int64"),
-                "attention_mask": encoded["attention_mask"].astype("int64"),
+                "input_ids": self._np.array([e.ids for e in encoded], dtype="int64"),
+                "attention_mask": self._np.array(
+                    [e.attention_mask for e in encoded], dtype="int64"
+                ),
             },
         )[0]
         pos = logits[:, 1]
@@ -187,6 +195,7 @@ _reranker: CandidateRerankerOnnx | CandidateRerankerTorch | None = None
 _load_attempted = False
 _reranker_backend = "none"
 _load_failures = 0
+_load_lock = threading.Lock()
 
 
 def get_reranker() -> CandidateRerankerOnnx | CandidateRerankerTorch | None:
@@ -194,6 +203,15 @@ def get_reranker() -> CandidateRerankerOnnx | CandidateRerankerTorch | None:
     global _reranker, _load_attempted, _reranker_backend, _load_failures
     if _load_attempted and (_reranker is not None or _load_failures >= 3):
         return _reranker
+    # 同時に読み込むと遅い CPU で import が競合して失敗し、3 回で諦めてしまう
+    with _load_lock:
+        if _load_attempted and (_reranker is not None or _load_failures >= 3):
+            return _reranker
+        return _load_reranker()
+
+
+def _load_reranker() -> CandidateRerankerOnnx | CandidateRerankerTorch | None:
+    global _reranker, _load_attempted, _reranker_backend, _load_failures
     _load_attempted = True
 
     model_dir, onnx_path = resolve_reranker_paths()
@@ -233,6 +251,11 @@ def get_reranker() -> CandidateRerankerOnnx | CandidateRerankerTorch | None:
 def reranker_backend() -> str:
     get_reranker()
     return _reranker_backend
+
+
+def reranker_status() -> tuple[bool, str]:
+    """読み込み済みか（読み込みは始めない）。/health を遅い読み込みで待たせないため。"""
+    return _reranker is not None, _reranker_backend if _reranker is not None else "none"
 
 
 def confidence_threshold() -> float:
