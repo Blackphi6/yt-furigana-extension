@@ -91,7 +91,9 @@ assert.ok(
       readingApi: { url, apiKey: "test-key" },
       userReadings: { 髙橋: "たかはし" }
     });
-    await new Promise((r) => setTimeout(r, 50));
+    for (let i = 0; i < 100 && healthHits === 0; i += 1) {
+      await new Promise((r) => setTimeout(r, 20));
+    }
     assert.equal(healthHits, 1, "作成時にサーバーを起こしておくこと");
 
     assert.match(await remote.toHtmlAsync("生米"), /<rt>なまごめ<\/rt>/, "API の読みを使うこと");
