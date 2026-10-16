@@ -417,7 +417,7 @@ class ReadingEngine:
         reranker = get_reranker()
         if reranker is not None and len(cands) >= 2:
             try:
-                pairs = reranker.score_pairs(full_text, surface, cands)
+                pairs = reranker.score_pairs(full_text, surface, cands, span)
                 scored = [(score, cand, "reranker") for cand, score in pairs]
                 reading, conf, source = _pick_constrained(
                     cands, scored, base, self._threshold

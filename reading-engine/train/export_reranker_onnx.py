@@ -35,9 +35,10 @@ def export_onnx(model_dir: Path, out_dir: Path) -> Path:
         str(onnx_path),
         input_names=["input_ids", "attention_mask"],
         output_names=["logits"],
+        # 長さも可変にする。固定 128 だと短い字幕でも 128 トークン分計算して遅い
         dynamic_axes={
-            "input_ids": {0: "batch"},
-            "attention_mask": {0: "batch"},
+            "input_ids": {0: "batch", 1: "sequence"},
+            "attention_mask": {0: "batch", 1: "sequence"},
             "logits": {0: "batch"},
         },
         opset_version=17,
