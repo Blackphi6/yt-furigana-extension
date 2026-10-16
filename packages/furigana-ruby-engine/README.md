@@ -38,6 +38,21 @@ await engine.toHtmlAsync("生麦生米を食べた");
 // → <ruby>生麦<rt>なまむぎ</rt></ruby><ruby>生米<rt>なまごめ</rt></ruby>を…
 ```
 
+#### 字幕など、すぐ表示したいとき
+
+`prefetch()` で先に問い合わせておくと、表示するときは通信せずにすぐ返ります。`maxWaitMs` を付けると、間に合わない行は手元の結果ですぐ返し、API の結果は届きしだい次から使います。
+
+```js
+const engine = await createFuriganaEngine({ readingApi: true }); // 作成時にサーバーを起こす
+engine.prefetch(captionLines);                                  // 字幕の全行を先読み
+element.innerHTML = await engine.toHtmlAsync(line, { maxWaitMs: 150 });
+```
+
+- 一度取れた結果は行ごとに覚えます（最大 2000 行）。同じ行では通信しません
+- 先読みは数行を 1 回にまとめて送ります（公開 API は 1 分あたりの回数に上限があります）
+
+#### 注意
+
 - **本文が API サーバーへ送られます。** 指定しなければ通信しません。利用者に送信を知らせてください
 - `true` は公開 API（https://yt-furigana-readings.onrender.com）。無料枠のため、しばらく使わないと初回の応答に 30 秒ほどかかります。自前のサーバーは `{ url, apiKey, timeoutMs }` で指定します
 - 公開 API はブラウザの任意の Web ページからは呼べません（CORS）。Node.js とブラウザ拡張から使えます
@@ -105,7 +120,8 @@ WebKit 系（Safari / Orion）の content script で `fetch` が通らない場�
 | メソッド | 説明 |
 |---|---|
 | `toHtml(text, { clickable?, contextText? })` | ルビ付き HTML（本文は HTML エスケープ済み）。`clickable: true` で語ごとの `<span class="yt-furigana-word">` 付き |
-| `toHtmlAsync(text, { clickable?, contextText? })` | `readingApi` 指定時は読み API + 手元の辞書。未指定・失敗時は `toHtml` と同じ |
+| `toHtmlAsync(text, { clickable?, contextText?, maxWaitMs? })` | `readingApi` 指定時は読み API + 手元の辞書。未指定・失敗・`maxWaitMs` 超過時は `toHtml` と同じ |
+| `prefetch(texts)` | 先に読み API へ問い合わせて覚えておく。`readingApi` 未指定なら何もしない |
 | `candidates(surface, { currentReading?, contextText? })` | 語の読み候補（スコア順・最大 8 件）。`{ reading, source, label }` の配列 |
 | `tokenize(text)` | kuromoji の形態素（`surface_form` / `reading` など） |
 | `hasKanji(text)` | 漢字を含むか |

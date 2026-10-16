@@ -13,7 +13,16 @@ import {
 import { collectReadingCandidates } from "../../../src/reading-candidates.js";
 import { applyUserReadingLearning } from "../../../src/user-reading-dict.js";
 import { buildKuromojiTokenizer } from "./kuromoji-loader.js";
-import { fetchReadingApiHtml, resolveReadingApiOption } from "./reading-api-client.js";
+import {
+  chunkLines,
+  fetchReadingApiLines,
+  resolveReadingApiOption,
+  warmReadingApi
+} from "./reading-api-client.js";
+
+/** 読み API の結果を覚えておく行数（字幕 1 本分は十分入る） */
+const API_CACHE_LIMIT = 2000;
+const TIMED_OUT = Symbol("timed out");
 
 /** 読み API の HTML は常に語ごとの span 付きなので、素の <ruby> が欲しいときは外す（本文はエスケープ済み） */
 const unwrapWords = (html) => html.replace(/<span class="yt-furigana-word"[^>]*>|<\/span>/g, "");
@@ -78,6 +87,44 @@ export async function createFuriganaEngine(options = {}) {
       contextText: opts.contextText
     });
 
+  // 行 → API の HTML（null は「API は読みなし」なので手元で描く）。失敗した行は覚えない
+  const apiCache = new Map();
+  // 行 → 問い合わせ中の結果（失敗時は undefined）
+  const inflight = new Map();
+  const remember = (line, html) => {
+    apiCache.delete(line);
+    apiCache.set(line, html);
+    if (apiCache.size > API_CACHE_LIMIT) apiCache.delete(apiCache.keys().next().value);
+  };
+  const render = (line, html, opts) => {
+    if (html == null) return toHtml(line, opts);
+    return opts.clickable === true ? html : unwrapWords(html);
+  };
+  const request = (lines) => {
+    const batch = fetchReadingApiLines(lines, readingApi, userReadings).then(
+      (results) => {
+        for (const [line, html] of results) remember(line, html);
+        return results;
+      },
+      (error) => {
+        if (options.debug === true) console.warn("[furigana-ruby-engine] reading API failed", error);
+        return null;
+      }
+    );
+    for (const line of lines) {
+      const pending = batch.then((results) => (results ? results.get(line) : undefined));
+      inflight.set(line, pending);
+      pending.finally(() => {
+        if (inflight.get(line) === pending) inflight.delete(line);
+      });
+    }
+    return batch;
+  };
+  const needsApi = (line) =>
+    hasKanji(line) && !apiCache.has(line) && !inflight.has(line);
+
+  if (readingApi) warmReadingApi(readingApi);
+
   return {
     /**
      * ルビ付き HTML。既定は <ruby> だけの素の HTML（clickable: true で拡張と同じ語単位の span 付き）。
@@ -92,15 +139,36 @@ export async function createFuriganaEngine(options = {}) {
      * @param {{ clickable?: boolean, contextText?: string }} [opts]
      */
     async toHtmlAsync(text, opts = {}) {
-      const source = String(text ?? "");
-      if (!readingApi || !hasKanji(source)) return toHtml(source, opts);
-      try {
-        const html = await fetchReadingApiHtml(source, readingApi, userReadings);
-        return opts.clickable === true ? html : unwrapWords(html);
-      } catch (error) {
-        if (options.debug === true) console.warn("[furigana-ruby-engine] reading API failed", error);
-        return toHtml(source, opts);
-      }
+      const line = String(text ?? "");
+      if (!readingApi || !hasKanji(line)) return toHtml(line, opts);
+      if (apiCache.has(line)) return render(line, apiCache.get(line), opts);
+      if (!inflight.has(line)) request([line]);
+      const pending = inflight.get(line);
+      const waitMs = Number(opts.maxWaitMs);
+      let timer;
+      const result =
+        Number.isFinite(waitMs) && waitMs >= 0
+          ? await Promise.race([
+              pending,
+              new Promise((resolve) => {
+                timer = setTimeout(() => resolve(TIMED_OUT), waitMs);
+              })
+            ])
+          : await pending;
+      clearTimeout(timer);
+      // 間に合わない・失敗したときは手元の結果（問い合わせは続き、届いたら次から使う）
+      if (result === TIMED_OUT || result === undefined) return toHtml(line, opts);
+      return render(line, result, opts);
+    },
+    /**
+     * 先に読み API へ問い合わせて結果を覚えておく（字幕の全行など）。数行ずつ 1 回にまとめる。
+     * @param {string[]} texts
+     */
+    async prefetch(texts) {
+      if (!readingApi) return;
+      const lines = [...new Set((texts || []).map((t) => String(t ?? "")))].filter(needsApi);
+      // 公開 API は 1 分あたりの回数に上限があるので、まとめた塊を順番に送る
+      for (const chunk of chunkLines(lines)) await request(chunk);
     },
     /**
      * 語の読み候補（拡張の読み選択メニューと同じ。スコア順・最大 8 件）。

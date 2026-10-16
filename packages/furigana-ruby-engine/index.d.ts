@@ -41,6 +41,14 @@ export interface ToHtmlOptions {
   contextText?: string;
 }
 
+export interface ToHtmlAsyncOptions extends ToHtmlOptions {
+  /**
+   * 読み API を待つ上限（ミリ秒）。過ぎたら手元のエンジンの結果を返し、
+   * API の結果は届いたら覚えて次から使う。省略時は timeoutMs まで待つ
+   */
+  maxWaitMs?: number;
+}
+
 export interface CandidatesOptions {
   /** 今表示している読み。指定すると先頭に source: "current" で入る */
   currentReading?: string;
@@ -61,7 +69,9 @@ export interface FuriganaEngine {
   /** ルビ付き HTML（本文は HTML エスケープ済み） */
   toHtml(text: string, options?: ToHtmlOptions): string;
   /** readingApi 指定時は読み API + 手元の辞書で、未指定時は toHtml と同じ。API 失敗時は toHtml の結果 */
-  toHtmlAsync(text: string, options?: ToHtmlOptions): Promise<string>;
+  toHtmlAsync(text: string, options?: ToHtmlAsyncOptions): Promise<string>;
+  /** 先に読み API へ問い合わせて覚えておく（字幕の全行など）。数行ずつ 1 回にまとめる。readingApi 未指定なら何もしない */
+  prefetch(texts: string[]): Promise<void>;
   /** 語の読み候補（スコア順・最大 8 件）。読み選択メニューなどに使う */
   candidates(surface: string, options?: CandidatesOptions): ReadingCandidate[];
   /** kuromoji の形態素解析結果 */
