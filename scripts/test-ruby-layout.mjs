@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import {
+  isRubyFitted,
   MAX_RT_TIGHTEN_EM,
   MIN_CAPTION_SCALE,
   MIN_KEEP_ONE_LINE_SCALE,
@@ -135,6 +136,18 @@ assert.equal(shouldKeepCaptionOneLine(2), false);
   assert.equal(plan.fontSizePx, 28);
   assert.equal(plan.needsWiden, false);
   assert.equal(shouldReleaseKeepOneLine(plan), false);
+}
+
+// 読み変更後に字幕用の配置を当て直すのは、最初からその配置だった語だけ（スパチャ等の素の <ruby> はずれる）
+{
+  const withRt = (position) => ({
+    querySelector: (sel) =>
+      sel === "rt" ? { style: { getPropertyValue: (k) => (k === "position" ? position : "") } } : null
+  });
+  assert.equal(isRubyFitted(withRt("absolute")), true);
+  assert.equal(isRubyFitted(withRt("")), false, "素の <ruby> は字幕用の配置にしない");
+  assert.equal(isRubyFitted({ querySelector: () => null }), false);
+  assert.equal(isRubyFitted(null), false);
 }
 
 console.log("Ruby layout tests passed.");

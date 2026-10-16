@@ -669,6 +669,16 @@ function applyRubyFitPass(root) {
 }
 
 /**
+ * fitRubyReadings で字幕用の配置（rt を絶対位置）にした語か。
+ * 読みを変えたあと同じ配置に戻すのはこの語だけ。素の <ruby>（スパチャ等）に当てると読みがずれる。
+ * @param {Element|null|undefined} wordEl
+ */
+export function isRubyFitted(wordEl) {
+  const rt = wordEl?.querySelector?.("rt");
+  return rt?.style?.getPropertyValue?.("position") === "absolute";
+}
+
+/**
  * 余白付きルビを適用する。
  * 注入前に単一行だった字幕は折り返さず、縮小／窓幅で1行を維持する。
  * @param {ParentNode|Element|null|undefined} root

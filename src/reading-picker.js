@@ -16,7 +16,7 @@ import {
   LEARNING_INBOX_LIMIT,
   appendLearningEvent
 } from "./reading-learning.js";
-import { fitRubyReadings } from "./ruby-layout.js";
+import { fitRubyReadings, isRubyFitted } from "./ruby-layout.js";
 import { splitContributionContext } from "./contributions.js";
 import {
   saveOccurrenceOverrideForText,
@@ -339,13 +339,15 @@ async function applyReadingChoice(wordEl, surface, reading, contextText, extra =
     tmp.innerHTML = html;
     const newEl = tmp.firstElementChild;
     if (newEl && extra.selectedEls[0]?.parentNode) {
+      const refit = isRubyFitted(extra.selectedEls[0]);
       extra.selectedEls[0].replaceWith(newEl);
       for (let i = 1; i < extra.selectedEls.length; i += 1) {
         extra.selectedEls[i]?.remove();
       }
-      requestAnimationFrame(() => fitRubyReadings(newEl));
+      if (refit) requestAnimationFrame(() => fitRubyReadings(newEl));
     }
   } else {
+    const refit = isRubyFitted(wordEl);
     wordEl.setAttribute("data-surface", surface);
     wordEl.setAttribute("data-reading", normalized);
     if (span) {
@@ -366,7 +368,7 @@ async function applyReadingChoice(wordEl, surface, reading, contextText, extra =
       wordEl.removeAttribute("data-tip");
       wordEl.title = "クリックで読み候補。ドラッグで複数語をまとめて指定";
     }
-    requestAnimationFrame(() => fitRubyReadings(wordEl));
+    if (refit) requestAnimationFrame(() => fitRubyReadings(wordEl));
   }
 
   // 出現が1つだけなら従来どおりグローバル／文脈学習。複数なら出現上書きのみ。
