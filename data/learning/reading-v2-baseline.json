@@ -1,0 +1,158 @@
+{
+  "ts": "2026-10-17T12:28:40.520Z",
+  "cases": 40,
+  "engines": {
+    "sudachi": {
+      "passed": 32,
+      "total": 40,
+      "byCategory": {
+        "接尾辞": {
+          "passed": 11,
+          "total": 12
+        },
+        "同形異音": {
+          "passed": 5,
+          "total": 8
+        },
+        "固有名詞": {
+          "passed": 6,
+          "total": 6
+        },
+        "連濁": {
+          "passed": 8,
+          "total": 9
+        },
+        "数詞": {
+          "passed": 2,
+          "total": 5
+        }
+      },
+      "failed": [
+        {
+          "id": "suffix-ichinichijuu",
+          "surface": "一日中",
+          "want": "いちにちじゅう",
+          "got": "いちにっちゅう"
+        },
+        {
+          "id": "hetero-tsuitachi",
+          "surface": "一日",
+          "want": "ついたち",
+          "got": "いちにち"
+        },
+        {
+          "id": "hetero-konnichi",
+          "surface": "今日",
+          "want": "こんにち",
+          "got": "きょう"
+        },
+        {
+          "id": "hetero-uwate",
+          "surface": "上手",
+          "want": "うわて",
+          "got": "じょうず"
+        },
+        {
+          "id": "rendaku-gaisha",
+          "surface": "株式会社",
+          "want": "かぶしきがいしゃ",
+          "got": "かぶしきかいしゃ"
+        },
+        {
+          "id": "number-sanbon",
+          "surface": "三本",
+          "want": "さんぼん",
+          "got": "さんぽん"
+        },
+        {
+          "id": "number-ippon",
+          "surface": "一本",
+          "want": "いっぽん",
+          "got": "いちぽん"
+        },
+        {
+          "id": "number-roppiki",
+          "surface": "六匹",
+          "want": "ろっぴき",
+          "got": "ろくひき"
+        }
+      ]
+    },
+    "kuromoji": {
+      "passed": 32,
+      "total": 40,
+      "byCategory": {
+        "接尾辞": {
+          "passed": 11,
+          "total": 12
+        },
+        "同形異音": {
+          "passed": 5,
+          "total": 8
+        },
+        "固有名詞": {
+          "passed": 5,
+          "total": 6
+        },
+        "連濁": {
+          "passed": 8,
+          "total": 9
+        },
+        "数詞": {
+          "passed": 3,
+          "total": 5
+        }
+      },
+      "failed": [
+        {
+          "id": "suffix-ichinichijuu",
+          "surface": "一日中",
+          "want": "いちにちじゅう",
+          "got": "（区切り違い）"
+        },
+        {
+          "id": "hetero-ichinichi",
+          "surface": "一日",
+          "want": "いちにち",
+          "got": "ついたち"
+        },
+        {
+          "id": "hetero-konnichi",
+          "surface": "今日",
+          "want": "こんにち",
+          "got": "きょう"
+        },
+        {
+          "id": "hetero-uwate",
+          "surface": "上手",
+          "want": "うわて",
+          "got": "（区切り違い）"
+        },
+        {
+          "id": "proper-takanashi",
+          "surface": "小鳥遊",
+          "want": "たかなし",
+          "got": "ことり遊"
+        },
+        {
+          "id": "rendaku-makuhiki",
+          "surface": "幕引き",
+          "want": "まくひき",
+          "got": "まくびき"
+        },
+        {
+          "id": "number-sanbon",
+          "surface": "三本",
+          "want": "さんぼん",
+          "got": "みつもと"
+        },
+        {
+          "id": "number-roppiki",
+          "surface": "六匹",
+          "want": "ろっぴき",
+          "got": "ろくひき"
+        }
+      ]
+    }
+  }
+}
