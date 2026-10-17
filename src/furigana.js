@@ -41,6 +41,7 @@ export {
 } from "./latin-letter-reading.js";
 
 import { applyNumberCounterReadings } from "./number-counter.js";
+import { applyNameCueReadings } from "./name-cues.js";
 import {
   isAlphabetLetterSpelling,
   stripLeadingAlphabetReading,
@@ -511,6 +512,8 @@ export function buildFuriganaHtml(text, tokenize, options = {}) {
   }
   // 上書きで隣の漢字が消えた／解析漏れでも、クリック登録できる unset を残す
   tokens = fillUncoveredTokenGaps(spanBase, tokens);
+  // 敬称の直前は人名辞書の読み（相場さん＝あいば、小鳥遊さん＝たかなし）
+  tokens = applyNameCueReadings(tokens, spanBase);
   // 切れ端の単漢字に Unihan 既定を載せる（読み無し放置が最悪）
   tokens = applyKanjiReadings(tokens);
 

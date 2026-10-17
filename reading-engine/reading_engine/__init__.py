@@ -21,6 +21,7 @@ from typing import Any
 from fugashi import Tagger
 
 from reading_engine.reranker import confidence_threshold, get_reranker
+from reading_engine.name_cues import name_cue_spans
 from reading_engine.sudachi_long import (
     is_compositional_number,
     is_number_with_counter,
@@ -466,6 +467,13 @@ class ReadingEngine:
         phrase_map.update(MANUAL_PHRASES)
         phrase_map.update(user_map)
         phrase_spans = collect_phrase_spans(text, phrase_map)
+        # 敬称の直前は人名の読み（相場さん＝あいば）。ユーザー登録に重なるものは使わない
+        user_spans = [(a, b) for a, b, surf, _ in phrase_spans if surf in user_map]
+        cue_spans = [
+            sp
+            for sp in name_cue_spans(text)
+            if sp[2] not in user_map and not any(sp[0] < b and sp[1] > a for a, b in user_spans)
+        ]
 
         words = list(self.tagger(text))
         cursor = 0
@@ -479,8 +487,20 @@ class ReadingEngine:
             cursor = end
             exact_word_spans.add((start, end, surface))
 
-        tokens: list[dict[str, Any]] = []
+        tokens: list[dict[str, Any]] = [
+            {
+                "surface": surface,
+                "span": [start, end],
+                "reading": reading,
+                "confidence": 0.95,
+                "source": "name_cue",
+                "candidates": [reading],
+            }
+            for start, end, surface, reading in cue_spans
+        ]
         for start, end, surface, reading in phrase_spans:
+            if any(start < t["span"][1] and end > t["span"][0] for t in tokens):
+                continue
             if surface not in user_map:
                 if match_trust_reading(surface, text, (start, end)):
                     continue
