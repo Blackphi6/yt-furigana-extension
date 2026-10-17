@@ -57,6 +57,7 @@ import {
   filterLedgerBySearch,
   filterLedgerByTimecodeRange,
   formatFetchAllSuperChatsStatus,
+  isExtensionContextInvalidated,
   ledgerItemsToCsv,
   parseLedgerAmountNumber,
   ledgerEntryFromPageDto,
@@ -1288,6 +1289,12 @@ assert.equal(bridged[0].message, "クリックなし本文");
   const seekBoot = readChatBootstrapFromHtml(`ytInitialData = ${JSON.stringify(seekFrameData)};`);
   assert.equal(seekBoot.replayContinuation, "frame-replay");
   assert.equal(seekBoot.seekContinuation, "frame-seek");
+
+  // 拡張の再読み込み・自動更新後、開いたままのタブに残る古いコードのエラーは黙って止める
+  assert.equal(isExtensionContextInvalidated(new Error("Extension context invalidated.")), true);
+  assert.equal(isExtensionContextInvalidated("Extension context invalidated."), true);
+  assert.equal(isExtensionContextInvalidated(new Error("HTTP 500")), false);
+  assert.equal(isExtensionContextInvalidated(null), false);
 
   // 広告中の進捗計算用: ページの動画長
   assert.equal(parseIsoDurationMs("PT135M56S"), (135 * 60 + 56) * 1000);

@@ -59,6 +59,7 @@ import {
   PAGE_PAID_PUSH_TYPE,
   ingestPagePaidDtos,
   ingestPaidMessagesFromDocument,
+  isExtensionContextInvalidated,
   resolveVideoId
 } from "./sc-ledger.js";
 import { installScLedgerPanel, isTopYoutubeWatchFrame } from "./sc-ledger-panel.js";
@@ -340,6 +341,19 @@ function stopObserver() {
   }
 }
 
+/**
+ * 警告を出す。拡張が再読み込みされたあとのタブに残った古いコードなら、警告せずに監視を止める。
+ * @returns {boolean} 古いコードだったか
+ */
+function warnOrStopIfOrphaned(label, error) {
+  if (isExtensionContextInvalidated(error)) {
+    stopObserver();
+    return true;
+  }
+  console.warn(label, error?.message || error);
+  return false;
+}
+
 function hookChatFrame(frame) {
   if (!frame || hookedFrames.has(frame)) return;
   hookedFrames.add(frame);
@@ -409,7 +423,7 @@ function syncLiveChatEngine() {
     if (!tokenizerFailed) await loadCorePhraseDicts();
     queueScan();
   })().catch((error) => {
-    console.warn("[YT Live Chat Furigana]", error?.message || error);
+    if (warnOrStopIfOrphaned("[YT Live Chat Furigana]", error)) return;
     if (!readingApiFallback) {
       markReadingApiFallback(formatTokenizerError(error));
     }
@@ -867,7 +881,7 @@ function scan() {
         }
         queueScan();
       } catch (error) {
-        console.warn("[YT Live Chat Furigana]", error?.message || error);
+        if (warnOrStopIfOrphaned("[YT Live Chat Furigana]", error)) return;
         setStatus({ ready: false, error: String(error?.message || error) });
       }
     })();
@@ -912,7 +926,7 @@ function scan() {
         setStatus({ lastScanBridgeApplied: applied });
       })
       .catch((err) => {
-        console.warn("[YT Live Chat Furigana] page bridge", err?.message || err);
+        warnOrStopIfOrphaned("[YT Live Chat Furigana] page bridge", err);
       });
   }
 }
@@ -1082,7 +1096,7 @@ window.addEventListener("message", (ev) => {
   void ingestPagePaidDtos(d.entries.slice(0, 500), currentVideoId())
     .then(reportLedgerTotal)
     .catch((err) => {
-      console.warn("[YT Live Chat Furigana] ledger push", err?.message || err);
+      warnOrStopIfOrphaned("[YT Live Chat Furigana] ledger push", err);
     });
 });
 

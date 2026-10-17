@@ -910,6 +910,16 @@ export function toggleLedgerEntryRead(store, videoId, entryId) {
  * @param {ScLedgerEntry[]} entries
  * @param {number} [added]
  */
+/**
+ * 拡張の再読み込み・自動更新で、開いたままのタブに残った古いコードが出すエラーか。
+ * これは直せないので警告せず、古いコードを止める。
+ * @param {unknown} error
+ */
+export function isExtensionContextInvalidated(error) {
+  const message = typeof error === "string" ? error : /** @type {{ message?: unknown }} */ (error)?.message;
+  return /Extension context invalidated/i.test(String(message || ""));
+}
+
 export function formatFetchAllSuperChatsStatus(entries, added = 0) {
   const n = Array.isArray(entries) ? entries.length : 0;
   if (n === 0) return "スパチャはありませんでした";
