@@ -29,9 +29,11 @@
 .ytp-caption-segment[data-yt-furigana-keep-one-line="1"],
 .caption-visual-line[data-yt-furigana-keep-one-line="1"],
 .vjs-text-track-cue-line > span[data-yt-furigana-keep-one-line="1"],
+.player-timedtext-text-container[data-yt-furigana-keep-one-line="1"],
 .ytp-caption-segment[data-yt-furigana-keep-one-line="1"] .yt-furigana-one-line,
 .caption-visual-line[data-yt-furigana-keep-one-line="1"] .yt-furigana-one-line,
-.vjs-text-track-cue-line > span[data-yt-furigana-keep-one-line="1"] .yt-furigana-one-line {
+.vjs-text-track-cue-line > span[data-yt-furigana-keep-one-line="1"] .yt-furigana-one-line,
+.player-timedtext-text-container[data-yt-furigana-keep-one-line="1"] .yt-furigana-one-line {
   white-space: nowrap !important;
   word-break: keep-all !important;
   overflow-wrap: normal !important;
@@ -119,6 +121,40 @@
   cursor: pointer;
 }
 
+/* Netflix: 行ごとに独立した絶対配置ボックス。padding-top は使わず読みを上へ浮かせる */
+.player-timedtext,
+.player-timedtext-text-container {
+  overflow: visible !important;
+}
+
+.player-timedtext-text-container[data-yt-furigana-styled],
+.player-timedtext-text-container[data-yt-furigana-done] {
+  line-break: strict;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+
+.player-timedtext-text-container[data-yt-furigana-styled] ruby,
+.player-timedtext-text-container[data-yt-furigana-done] ruby {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+.player-timedtext-text-container[data-yt-furigana-styled] rt,
+.player-timedtext-text-container[data-yt-furigana-done] rt {
+  top: auto !important;
+  bottom: calc(100% + 0.08em) !important;
+  transform: translateX(-50%) !important;
+  pointer-events: auto !important;
+}
+
+/* Netflix の字幕レイヤーも pointer-events:none（動画操作のため）。読み候補クリック用に再有効化 */
+.player-timedtext .yt-furigana-word,
+.player-timedtext .yt-furigana-word rt {
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
 /*
  * ルビレイアウトは「拡張が加工した字幕」にだけ効かせる。
  * あらかじめ SRV3 等でふりがなが載っている字幕のネイティブ <ruby> を壊さないため。
@@ -129,6 +165,8 @@
 .caption-visual-line[data-yt-furigana-done] ruby,
 .vjs-text-track-cue-line > span[data-yt-furigana-styled] ruby,
 .vjs-text-track-cue-line > span[data-yt-furigana-done] ruby,
+.player-timedtext-text-container[data-yt-furigana-styled] ruby,
+.player-timedtext-text-container[data-yt-furigana-done] ruby,
 ytd-transcript-segment-renderer .segment-text[data-yt-furigana-styled] ruby,
 ytd-transcript-segment-renderer .segment-text[data-yt-furigana-done] ruby {
   /* flex 縦積み禁止: 読み幅で単語が広がり 1 行が折れる */
@@ -148,6 +186,8 @@ ytd-transcript-segment-renderer .segment-text[data-yt-furigana-done] ruby {
 .caption-visual-line[data-yt-furigana-done] ruby > .yt-furigana-rb,
 .vjs-text-track-cue-line > span[data-yt-furigana-styled] ruby > .yt-furigana-rb,
 .vjs-text-track-cue-line > span[data-yt-furigana-done] ruby > .yt-furigana-rb,
+.player-timedtext-text-container[data-yt-furigana-styled] ruby > .yt-furigana-rb,
+.player-timedtext-text-container[data-yt-furigana-done] ruby > .yt-furigana-rb,
 ytd-transcript-segment-renderer .segment-text[data-yt-furigana-styled] ruby > .yt-furigana-rb,
 ytd-transcript-segment-renderer .segment-text[data-yt-furigana-done] ruby > .yt-furigana-rb {
   display: inline !important;
@@ -160,6 +200,8 @@ ytd-transcript-segment-renderer .segment-text[data-yt-furigana-done] ruby > .yt-
 .caption-visual-line[data-yt-furigana-done] rt,
 .vjs-text-track-cue-line > span[data-yt-furigana-styled] rt,
 .vjs-text-track-cue-line > span[data-yt-furigana-done] rt,
+.player-timedtext-text-container[data-yt-furigana-styled] rt,
+.player-timedtext-text-container[data-yt-furigana-done] rt,
 ytd-transcript-segment-renderer .segment-text[data-yt-furigana-styled] rt,
 ytd-transcript-segment-renderer .segment-text[data-yt-furigana-done] rt {
   /* absolute なら幅は本文だけ。読みは左右にはみ出してよい */

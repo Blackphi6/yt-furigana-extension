@@ -263,7 +263,7 @@ export function markKeepOneLineCaption(element) {
     Boolean(element.querySelector?.("br")) || /[\n\r]/.test(probeSource);
   const looksLikeCaptionSegment = Boolean(
     element.matches?.(
-      ".ytp-caption-segment, .caption-visual-line, .vjs-text-track-cue-line > span, .vjs-text-track-cue-line"
+      ".ytp-caption-segment, .caption-visual-line, .vjs-text-track-cue-line > span, .vjs-text-track-cue-line, .player-timedtext-text-container"
     ) || element.closest?.(".caption-window, .vjs-text-track-display")
   );
 
@@ -330,7 +330,7 @@ function resolveCaptionHost(root) {
   if (root instanceof HTMLElement) {
     return (
       root.closest?.(
-        ".yt-furigana-yt-overlay, .ytp-caption-segment, .caption-visual-line, .vjs-text-track-cue-line > span, [data-yt-furigana-styled]"
+        ".yt-furigana-yt-overlay, .ytp-caption-segment, .caption-visual-line, .vjs-text-track-cue-line > span, .player-timedtext-text-container, [data-yt-furigana-styled]"
       ) || root
     );
   }
@@ -460,7 +460,7 @@ function resolveKeepOneLineAvailableWidth(host) {
   if (win instanceof HTMLElement) {
     winW = win.clientWidth || win.getBoundingClientRect().width || 0;
   }
-  const player = host.closest?.(".html5-video-player, .video-js");
+  const player = host.closest?.(".html5-video-player, .video-js, .watch-video");
   const playerW =
     player instanceof HTMLElement
       ? player.clientWidth || player.getBoundingClientRect().width || 0
@@ -594,11 +594,15 @@ function enforceKeepOneLine(host, root) {
   }
 }
 
+/**
+ * TVer / Netflix: 字幕コンテナが行ごとに固定サイズ・絶対配置で、padding-top による
+ * 本文の押し下げが崩れやコリジョンの原因になる。読みは bottom 側へ浮かせる。
+ */
 function isInsideTVerCaption(node) {
   return Boolean(
     node &&
       typeof node.closest === "function" &&
-      node.closest(".vjs-text-track-display")
+      node.closest(".vjs-text-track-display, .player-timedtext-text-container")
   );
 }
 

@@ -1,10 +1,10 @@
 # YT Furigana
 
-YouTube / TVer の日本語字幕にひらがなルビを表示する Chrome 拡張です（非公式・各社とは無関係）。
+YouTube / TVer / Netflix の日本語字幕にひらがなルビを表示する Chrome 拡張です（非公式・各社とは無関係）。
 
 字幕・歌詞などの著作権は各権利者に帰属します。本拡張は画面上の表示加工であり、コンテンツの再配布を目的としません。
 
-**商標:** YouTube、TVer、Google Chrome は各社の商標です。**「YT」は製品名の略称であり、YouTube の商標ではありません。** Kuromoji、Sudachi、NEologd 等は各プロジェクトの名称です。詳細は [`docs/TRADEMARK-AND-ATTRIBUTION.md`](docs/TRADEMARK-AND-ATTRIBUTION.md)。
+**商標:** YouTube、TVer、Netflix、Google Chrome は各社の商標です。**「YT」は製品名の略称であり、YouTube の商標ではありません。** Kuromoji、Sudachi、NEologd 等は各プロジェクトの名称です。詳細は [`docs/TRADEMARK-AND-ATTRIBUTION.md`](docs/TRADEMARK-AND-ATTRIBUTION.md)。
 
 **サイト**: https://blackphi6.github.io/yt-furigana-extension/  
 **インストール**: https://blackphi6.github.io/yt-furigana-extension/install.html  
@@ -37,7 +37,7 @@ npm run pack:store
 
 ## 使い方
 
-1. YouTube / TVer で日本語字幕を表示
+1. YouTube / TVer / Netflix で日本語字幕を表示
 2. 漢字の上にルビが付く
 3. 漢字を押すと読み候補 → 端末内に学習
 

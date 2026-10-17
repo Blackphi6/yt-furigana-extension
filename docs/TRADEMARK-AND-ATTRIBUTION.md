@@ -6,8 +6,8 @@
 ## 1. 製品名「YT Furigana」
 
 - **「YT」は製品名の略称であり、YouTube および Google の商標・サービス名ではありません。**
-- 本拡張は Google / YouTube / TVer の**公式アプリ・公式機能・提携製品ではありません**。
-- ストア説明・サイトでは「YouTube / TVer の字幕に対応する**非公式**ツール」と表記します。
+- 本拡張は Google / YouTube / TVer / Netflix の**公式アプリ・公式機能・提携製品ではありません**。
+- ストア説明・サイトでは「YouTube / TVer / Netflix の字幕に対応する**非公式**ツール」と表記します。
 
 ## 2. プラットフォーム・サービス名（事実記載のみ）
 
@@ -15,6 +15,7 @@
 |------|------|------|
 | YouTube | 対応サイトとして記載 | ロゴ・公式風デザインを使わない |
 | TVer | 対応サイトとして記載 | 同上 |
+| Netflix | 対応サイトとして記載 | 同上 |
 | Google Chrome / Chrome Web Store | 配布先として記載 | Google 製公式拡張ではない |
 | GitHub / GitHub Sponsors | リポジトリ・支援 | GitHub 後援・認定ではない |
 | Stripe | Premium 決済（任意） | Stripe 提携サービスではない |

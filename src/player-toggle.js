@@ -175,6 +175,7 @@ export function findControlPlacement() {
     document.querySelector(".video-js") ||
     document.querySelector("#movie_player") ||
     document.querySelector(".html5-video-player") ||
+    document.querySelector(".watch-video") ||
     document.querySelector("[class*='EpisodePlayer']") ||
     document.querySelector("[class*='Player']");
   if (player instanceof HTMLElement) return { host: player, kind: "floating" };

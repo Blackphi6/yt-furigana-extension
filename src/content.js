@@ -115,7 +115,14 @@ const YOUTUBE_CAPTION_SELECTORS = [".ytp-caption-segment", ".caption-visual-line
 const TVER_CAPTION_LINE_SELECTOR = ".vjs-text-track-cue-line";
 const TVER_CAPTION_TEXT_SELECTOR = `${TVER_CAPTION_LINE_SELECTOR} > span`;
 const TVER_CAPTION_SELECTORS = [TVER_CAPTION_TEXT_SELECTOR, TVER_CAPTION_LINE_SELECTOR];
-const CAPTION_SELECTORS = [...YOUTUBE_CAPTION_SELECTORS, ...TVER_CAPTION_SELECTORS];
+/** Netflix: 1 行 = 1 個の .player-timedtext-text-container（span のネストは不定なので行全体を差し替え対象にする） */
+const NETFLIX_CAPTION_LINE_SELECTOR = ".player-timedtext-text-container";
+const NETFLIX_CAPTION_SELECTORS = [NETFLIX_CAPTION_LINE_SELECTOR];
+const CAPTION_SELECTORS = [
+  ...YOUTUBE_CAPTION_SELECTORS,
+  ...TVER_CAPTION_SELECTORS,
+  ...NETFLIX_CAPTION_SELECTORS
+];
 
 function isYouTubeHost() {
   return /(^|\.)youtube\.com$/i.test(location.hostname);
@@ -125,12 +132,18 @@ function isTVerHost() {
   return /(^|\.)tver\.jp$/i.test(location.hostname);
 }
 
+function isNetflixHost() {
+  return /(^|\.)netflix\.com$/i.test(location.hostname);
+}
+
 function getSiteVideoKey() {
   const youtubeId = getYouTubeVideoId();
   if (youtubeId) return `yt:${youtubeId}`;
   const episode = location.pathname.match(/\/episodes\/([a-z0-9]+)/i);
   if (episode) return `tver:${episode[1]}`;
   if (isTVerHost()) return `tver:${location.pathname}`;
+  const netflixWatch = location.pathname.match(/\/watch\/(\d+)/i);
+  if (netflixWatch) return `nf:${netflixWatch[1]}`;
   return location.href;
 }
 
@@ -139,6 +152,7 @@ function getObserverRoot() {
     document.querySelector(".html5-video-player") ||
     document.querySelector(".vjs-text-track-display") ||
     document.querySelector(".video-js") ||
+    document.querySelector(".watch-video") ||
     document.querySelector("[class*='EpisodePlayer']") ||
     document.body
   );
@@ -994,9 +1008,9 @@ async function processCaptions(root = document) {
 }
 
 function scheduleTVerLateLineSweep() {
-  if (!isTVerHost()) return;
+  if (!isTVerHost() && !isNetflixHost()) return;
   const gen = ++tverLateSweepGen;
-  // 1行目処理後に2行目 cue が遅延追加されるケースを拾う
+  // 1行目処理後に2行目 cue が遅延追加されるケースを拾う（TVer/Netflix共通）
   for (const ms of [120, 280, 500]) {
     window.setTimeout(() => {
       if (!enabled || gen !== tverLateSweepGen) return;
@@ -1028,6 +1042,7 @@ function isCaptionElement(node) {
   if (YOUTUBE_CAPTION_SELECTORS.some((selector) => node.matches(selector))) {
     return true;
   }
+  if (node.matches(NETFLIX_CAPTION_LINE_SELECTOR)) return !node.closest("ruby");
   if (node.matches(TVER_CAPTION_TEXT_SELECTOR)) return !node.closest("ruby");
   if (!node.matches(TVER_CAPTION_LINE_SELECTOR)) return false;
   // Prefer direct text spans when Video.js provides them. Fall back to the
@@ -1051,7 +1066,7 @@ function tryApplyCachedFurigana(root) {
   }
   if (root && typeof root.querySelectorAll === "function") {
     for (const node of root.querySelectorAll(
-      ".ytp-caption-segment, .caption-visual-line, .vjs-text-track-cue-line > span, .vjs-text-track-cue-line"
+      ".ytp-caption-segment, .caption-visual-line, .vjs-text-track-cue-line > span, .vjs-text-track-cue-line, .player-timedtext-text-container"
     )) {
       if (node instanceof HTMLElement && isCaptionElement(node)) targets.push(node);
     }
@@ -1134,6 +1149,16 @@ function findCaptionElements(root = document) {
 
   const youtubeLines = queryCaptionScope(youtubeScope, ".caption-visual-line");
   if (youtubeLines.length > 0) return youtubeLines;
+
+  // Netflix: 行ごとに span のネスト段数が変わるため、コンテナ全体を1要素として扱う
+  const netflixScope = isDocumentRoot
+    ? document.querySelector(".player-timedtext") || root
+    : root;
+  const netflixTargets = queryCaptionScope(
+    netflixScope,
+    NETFLIX_CAPTION_LINE_SELECTOR
+  ).filter((el) => el instanceof HTMLElement && !el.closest("ruby"));
+  if (netflixTargets.length > 0) return netflixTargets;
 
   const tverScope = isDocumentRoot
     ? document.querySelector(".vjs-text-track-display") ||
@@ -1353,6 +1378,9 @@ function collectTeardownCaptionElements() {
     for (const el of document.querySelectorAll(selector)) {
       if (el instanceof HTMLElement) out.push(el);
     }
+  }
+  for (const el of document.querySelectorAll(NETFLIX_CAPTION_LINE_SELECTOR)) {
+    if (el instanceof HTMLElement) out.push(el);
   }
   return out;
 }
