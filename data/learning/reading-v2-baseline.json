@@ -1,10 +1,10 @@
 {
-  "ts": "2026-10-17T12:38:38.986Z",
-  "cases": 40,
+  "ts": "2026-10-17T14:12:31.790Z",
+  "cases": 44,
   "engines": {
     "sudachi": {
-      "passed": 36,
-      "total": 40,
+      "passed": 40,
+      "total": 44,
       "byCategory": {
         "接尾辞": {
           "passed": 12,
@@ -15,8 +15,8 @@
           "total": 8
         },
         "固有名詞": {
-          "passed": 6,
-          "total": 6
+          "passed": 10,
+          "total": 10
         },
         "連濁": {
           "passed": 8,
@@ -29,10 +29,10 @@
       },
       "failed": [
         {
-          "id": "hetero-tsuitachi",
+          "id": "hetero-ichinichi",
           "surface": "一日",
-          "want": "ついたち",
-          "got": "いちにち"
+          "want": "いちにち",
+          "got": "ついたち"
         },
         {
           "id": "hetero-konnichi",
@@ -44,7 +44,7 @@
           "id": "hetero-uwate",
           "surface": "上手",
           "want": "うわて",
-          "got": "じょうず"
+          "got": "（区切り違い）"
         },
         {
           "id": "rendaku-gaisha",
@@ -55,8 +55,8 @@
       ]
     },
     "kuromoji": {
-      "passed": 36,
-      "total": 40,
+      "passed": 40,
+      "total": 44,
       "byCategory": {
         "接尾辞": {
           "passed": 12,
@@ -67,8 +67,8 @@
           "total": 8
         },
         "固有名詞": {
-          "passed": 5,
-          "total": 6
+          "passed": 9,
+          "total": 10
         },
         "連濁": {
           "passed": 9,

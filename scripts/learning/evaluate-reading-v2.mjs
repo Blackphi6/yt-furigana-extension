@@ -17,6 +17,8 @@ import {
   readingOfSpan
 } from "./bench-utils.mjs";
 import { applyLearnedOverridesNow } from "../../src/reading-context.js";
+import { setDictionaryFileLoader } from "../../src/dict-gzip-fetch.js";
+import { startCorePhraseDicts } from "../../src/phrase-dict-boot.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const benchPath = path.join(root, "data/learning/benches/reading-v2-regression.jsonl");
@@ -34,6 +36,9 @@ try {
 
 /** 本体の拡張と同じ: Sudachi（WASM、分割モード C）＋句辞書＋学習済みの上書き */
 async function sudachiEngine() {
+  // 拡張と同じく人名・地名などの句辞書を読み込む（読み込まないと人名の読みが使われない）
+  setDictionaryFileLoader((name) => readFile(path.join(root, "dict", name)));
+  await startCorePhraseDicts();
   const tokenize = await createBenchTokenizer();
   applyLearnedOverridesNow(learned || { phrases: {}, contextRules: [] });
   return (text) => buildFuriganaHtml(text, tokenize);
