@@ -1,18 +1,18 @@
 {
-  "ts": "2026-10-17T14:12:31.790Z",
-  "cases": 44,
+  "ts": "2026-10-17T14:20:23.815Z",
+  "cases": 49,
   "engines": {
     "sudachi": {
-      "passed": 40,
-      "total": 44,
+      "passed": 48,
+      "total": 49,
       "byCategory": {
         "接尾辞": {
           "passed": 12,
           "total": 12
         },
         "同形異音": {
-          "passed": 5,
-          "total": 8
+          "passed": 13,
+          "total": 13
         },
         "固有名詞": {
           "passed": 10,
@@ -29,24 +29,6 @@
       },
       "failed": [
         {
-          "id": "hetero-ichinichi",
-          "surface": "一日",
-          "want": "いちにち",
-          "got": "ついたち"
-        },
-        {
-          "id": "hetero-konnichi",
-          "surface": "今日",
-          "want": "こんにち",
-          "got": "きょう"
-        },
-        {
-          "id": "hetero-uwate",
-          "surface": "上手",
-          "want": "うわて",
-          "got": "（区切り違い）"
-        },
-        {
           "id": "rendaku-gaisha",
           "surface": "株式会社",
           "want": "かぶしきがいしゃ",
@@ -55,16 +37,16 @@
       ]
     },
     "kuromoji": {
-      "passed": 40,
-      "total": 44,
+      "passed": 48,
+      "total": 49,
       "byCategory": {
         "接尾辞": {
           "passed": 12,
           "total": 12
         },
         "同形異音": {
-          "passed": 5,
-          "total": 8
+          "passed": 13,
+          "total": 13
         },
         "固有名詞": {
           "passed": 9,
@@ -80,24 +62,6 @@
         }
       },
       "failed": [
-        {
-          "id": "hetero-ichinichi",
-          "surface": "一日",
-          "want": "いちにち",
-          "got": "ついたち"
-        },
-        {
-          "id": "hetero-konnichi",
-          "surface": "今日",
-          "want": "こんにち",
-          "got": "きょう"
-        },
-        {
-          "id": "hetero-uwate",
-          "surface": "上手",
-          "want": "うわて",
-          "got": "（区切り違い）"
-        },
         {
           "id": "proper-takanashi",
           "surface": "小鳥遊",
