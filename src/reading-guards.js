@@ -92,6 +92,30 @@ export function repairShimaiTokens(tokens) {
 }
 
 /**
+ * 接尾語の読みのほかに、単独の語として普通の読みを持つ漢字。
+ * kuromoji は「一日中雨」の 雨 を 豪雨 の う（接尾）と読み、前の語と1つのルビにまとめてしまう。
+ * 本物の接尾語（豪雨・雷雨）は1字の語に付くので、2字以上の語のあとだけ普通の名詞に戻す。
+ */
+const FALSE_SUFFIX_READINGS = { 雨: "アメ" };
+
+/**
+ * 結合の前（解析の直後）に当てる。入力は変更しない。
+ * @param {Array<{ surface_form?: string, surface?: string, reading?: string, pos?: string, pos_detail_1?: string }>} tokens
+ */
+export function repairFalseKanjiSuffix(tokens) {
+  if (!Array.isArray(tokens)) return tokens || [];
+  return tokens.map((token, i) => {
+    const surface = String(token.surface_form || token.surface || "");
+    const plain = FALSE_SUFFIX_READINGS[surface];
+    const prev = String(tokens[i - 1]?.surface_form || tokens[i - 1]?.surface || "");
+    // kuromoji は 名詞/接尾、Sudachi は 接尾辞
+    const isSuffix = token.pos_detail_1 === "接尾" || token.pos === "接尾辞";
+    if (!plain || !isSuffix || prev.length < 2) return token;
+    return { ...token, reading: plain, pronunciation: plain, pos: "名詞", pos_detail_1: "一般" };
+  });
+}
+
+/**
  * 「中明かされた」のように空白無しだと 中明 が一塊（なかあ）になることがある。
  * ModernBERT 本体ではなく境界ガード。span 付き API トークンにも対応。
  * @param {Array<{ surface_form?: string, surface?: string, reading?: string, pronunciation?: string, span?: number[] }>} tokens

@@ -179,6 +179,8 @@ const UNIT_SPECS = {
   "枚": { suffix: "まい" },
   "冊": { suffix: "さつ" },
   "本": { suffix: "ほん" },
+  "匹": { suffix: "ひき" },
+  "杯": { suffix: "はい" },
   "個": { suffix: "こ" },
   // 点数（日本語単位 → ひらがな）。10・20…は「じゅっ」促音
   "点": {
@@ -574,29 +576,24 @@ export function readNumberWithUnit(number, unit) {
     return finish(`${cardinal}ふん`);
   }
 
-  // 本: 簡易の促音・濁音
-  if (unit === "本") {
+  // 本・匹・杯: 1・6・8・10 は促音＋半濁音、3 は濁音（いっぽん・さんぼん・ろっぴき・さんばい）
+  const H_ROW = { "本": ["ぽん", "ぼん", "ほん"], "匹": ["ぴき", "びき", "ひき"], "杯": ["ぱい", "ばい", "はい"] };
+  if (H_ROW[unit]) {
+    const [handaku, daku, sei] = H_ROW[unit];
     const cardinal = readCardinal(number);
     if (!cardinal) return "";
+    if (number === 100) return finish(`ひゃっ${handaku}`);
+    if (number % 10 === 0 && number >= 10 && number <= 90) {
+      const t = number / 10;
+      return finish(`${t === 1 ? "" : DIGIT[t]}じゅっ${handaku}`);
+    }
     const last = number % 10;
-    if (number === 1) return finish("いっぽん");
-    if (number === 3) return finish("さんぼん");
-    if (number === 6) return finish("ろっぽん");
-    if (number === 8) return finish("はっぽん");
-    if (number === 10) return finish("じゅっぽん");
-    if (last === 1) {
-      return finish(`${readCardinal(number - 1)}いっぽん`);
-    }
-    if (last === 3) {
-      return finish(`${readCardinal(number - 3)}さんぼん`);
-    }
-    if (last === 6) {
-      return finish(`${readCardinal(number - 6)}ろっぽん`);
-    }
-    if (last === 8) {
-      return finish(`${readCardinal(number - 8)}はっぽん`);
-    }
-    return finish(`${cardinal}ほん`);
+    const head = number === last ? "" : readCardinal(number - last) || "";
+    if (last === 1) return finish(`${head}いっ${handaku}`);
+    if (last === 3) return finish(`${head}さん${daku}`);
+    if (last === 6) return finish(`${head}ろっ${handaku}`);
+    if (last === 8) return finish(`${head}はっ${handaku}`);
+    return finish(`${cardinal}${sei}`);
   }
 
   // 階/回: 1・6・8・10 および末尾同型（21階→にじゅういっかい、20階→にじゅっかい）
@@ -620,6 +617,12 @@ export function readNumberWithUnit(number, unit) {
       const head = number === 8 ? "" : readCardinal(number - 8) || "";
       return finish(`${head}はっ${suffix}`);
     }
+  }
+
+  if (unit === "冊") {
+    if (number === 1) return finish("いっさつ");
+    if (number === 8) return finish("はっさつ");
+    if (number === 10) return finish("じゅっさつ");
   }
 
   if (unit === "個") {

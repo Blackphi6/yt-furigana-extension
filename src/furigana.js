@@ -40,6 +40,7 @@ export {
   stripMixedSurfaceAlphabetReading
 } from "./latin-letter-reading.js";
 
+import { applyNumberCounterReadings } from "./number-counter.js";
 import {
   isAlphabetLetterSpelling,
   stripLeadingAlphabetReading,
@@ -373,6 +374,7 @@ import {
 } from "./inline-paren-reading.js";
 import { stripAnnotationMarkers } from "./annotation-markers.js";
 import {
+  repairFalseKanjiSuffix,
   repairForbiddenReadings,
   repairShimaiTokens,
   splitFalseNakaAkaTokens
@@ -470,12 +472,18 @@ export function buildFuriganaHtml(text, tokenize, options = {}) {
 
   const analyzed = applyKanjiReadings(
     applyEnglishKatakanaReadings(
-      splitFalseNakaAkaTokens(
-        repairShimaiTokens(
-          mergeTokensForRuby(tokenize(useLookup ? lookupText : prepared), {
-            extraSurfaces: MANUAL_PHRASE_READINGS.keys(),
-            phraseTrie: getCombinedPhraseTrie()
-          })
+      // 数詞＋助数詞は規則で読む（三本→さんぼん。解析器は さんぽん や人名 みつもと と読むことがある）
+      applyNumberCounterReadings(
+        splitFalseNakaAkaTokens(
+          repairShimaiTokens(
+            mergeTokensForRuby(
+              repairFalseKanjiSuffix(tokenize(useLookup ? lookupText : prepared)),
+              {
+                extraSurfaces: MANUAL_PHRASE_READINGS.keys(),
+                phraseTrie: getCombinedPhraseTrie()
+              }
+            )
+          )
         )
       )
     )
