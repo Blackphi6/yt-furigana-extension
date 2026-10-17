@@ -21,6 +21,11 @@ from typing import Any
 from fugashi import Tagger
 
 from reading_engine.reranker import confidence_threshold, get_reranker
+from reading_engine.sudachi_long import (
+    is_compositional_number,
+    is_number_with_counter,
+    long_unit_spans,
+)
 from reading_engine.trust_patterns import match_trust_reading
 from reading_engine.annotation_markers import strip_annotation_markers
 from reading_engine.personal_names import (
@@ -198,7 +203,18 @@ CONTEXT_RULES: list[dict[str, Any]] = [
 ]
 
 # 複合語の強制読み（拡張 MANUAL_PHRASE_READINGS と同期）
+# 接尾語の読みのほかに、単独の語として普通の読みを持つ漢字（拡張の reading-guards.js と揃える）
+FALSE_SUFFIX_READINGS: dict[str, str] = {"雨": "あめ"}
+
 MANUAL_PHRASES: dict[str, str] = {
+    # 拡張の reading-context.js と揃える（解析器が 一|日中 と区切る、会社→がいしゃ の連濁）
+    "一日中": "いちにちじゅう",
+    "一年中": "いちねんじゅう",
+    "一晩中": "ひとばんじゅう",
+    "株式会社": "かぶしきがいしゃ",
+    "有限会社": "ゆうげんがいしゃ",
+    "合同会社": "ごうどうがいしゃ",
+    "幕引き": "まくひき",
     "故郷": "こきょう",
     "太后": "たいこう",
     "紅色": "べにいろ",
@@ -298,6 +314,11 @@ class ReadingEngine:
         for entry in self.creative:
             self._creative_by_surface.setdefault(entry.surface, []).append(entry)
         self._threshold = confidence_threshold()
+
+    def _is_ambiguous_heteronym(self, surface: str) -> bool:
+        """読みが2通り以上あるか。じゅう／ぢゅう のような表記の揺れだけなら1通りとみなす。"""
+        readings = {r.replace("ぢ", "じ").replace("づ", "ず") for r in self.heteronyms.get(surface, [])}
+        return len(readings) >= 2
 
     def _base_reading(self, word) -> str:
         kana = getattr(word.feature, "kana", None) or getattr(word.feature, "pron", None) or ""
@@ -464,7 +485,7 @@ class ReadingEngine:
                 if match_trust_reading(surface, text, (start, end)):
                     continue
                 # 同形異音は lattice（cue / reranker）へ回す
-                if len(self.heteronyms.get(surface, [])) >= 2:
+                if self._is_ambiguous_heteronym(surface):
                     continue
             tokens.append(
                 {
@@ -472,7 +493,12 @@ class ReadingEngine:
                     "span": [start, end],
                     "reading": reading,
                     "confidence": 1.0,
-                    "source": "user_dict" if surface in user_map else "personal_name",
+                    # 固定句と人名を分ける（ゲートB で外すのは人名だけ）
+                    "source": "user_dict"
+                    if surface in user_map
+                    else "manual"
+                    if surface in MANUAL_PHRASES
+                    else "personal_name",
                     "candidates": [reading],
                 }
             )
@@ -502,6 +528,55 @@ class ReadingEngine:
                 }
             )
 
+        # Sudachi（モード C）の長い単位の読み。UniDic が2語以上に分けた複合語だけ（行動|力→こうどうりょく）。
+        # 同形異音語は文脈規則と再ランク、数詞＋助数詞は数詞の規則に任せる。
+        for start, end, surface, reading in long_unit_spans(text) or []:
+            # ゲートB: 長い一般語の内側だけに当たった人名辞書（日本橋 ⊃ 本橋＝もとはし）は長い語に譲る
+            inner_names = [
+                t
+                for t in tokens
+                if t["source"] == "personal_name"
+                and start <= t["span"][0]
+                and t["span"][1] <= end
+                and (t["span"][1] - t["span"][0]) < (end - start)
+            ]
+            tokens = [t for t in tokens if t not in inner_names]
+            if overlaps_existing(start, end):
+                tokens.extend(inner_names)
+                continue
+            # UniDic でも1語なら、今までどおり UniDic の語として候補から選ぶ
+            if (start, end, surface) in exact_word_spans:
+                continue
+            if is_number_with_counter(surface) and is_compositional_number(surface, reading):
+                continue
+            if self._is_ambiguous_heteronym(surface):
+                # 同形異音語は長い単位のまま候補を並べ、文脈規則と再ランクで選ぶ（二十歳＝はたち／にじゅっさい）
+                cands = self._candidates_for(surface, reading, text)
+                picked, conf, source, out_cands = self._select_reading(
+                    surface, reading, cands, text, (start, end)
+                )
+                tokens.append(
+                    {
+                        "surface": surface,
+                        "span": [start, end],
+                        "reading": picked if picked in out_cands else reading,
+                        "confidence": conf,
+                        "source": source,
+                        "candidates": out_cands,
+                    }
+                )
+                continue
+            tokens.append(
+                {
+                    "surface": surface,
+                    "span": [start, end],
+                    "reading": reading,
+                    "confidence": 0.9,
+                    "source": "sudachi_long",
+                    "candidates": [reading],
+                }
+            )
+
         def overlaps_phrase(start: int, end: int) -> bool:
             for t in tokens:
                 p0, p1 = t["span"]
@@ -510,9 +585,12 @@ class ReadingEngine:
             return False
 
         cursor = 0
+        prev_surface = ""
 
         for word in words:
             surface = word.surface
+            after = prev_surface
+            prev_surface = surface
             start = text.find(surface, cursor)
             if start < 0:
                 start = cursor
@@ -542,6 +620,9 @@ class ReadingEngine:
                 continue
 
             base = self._base_reading(word)
+            # UniDic は「一日中雨」の 雨 を 豪雨 の う（接尾辞）と読む。本物の接尾は1字の語に付く
+            if surface in FALSE_SUFFIX_READINGS and getattr(word.feature, "pos1", "") == "接尾辞" and len(after) >= 2:
+                base = FALSE_SUFFIX_READINGS[surface]
             # 3) lattice
             cands = self._candidates_for(surface, base, text)
             if not cands:

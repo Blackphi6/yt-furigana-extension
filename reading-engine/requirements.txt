@@ -7,3 +7,6 @@ stripe>=11.0.0
 # reranker（ONNX 推論 + tokenizer.json）。transformers は学習用（requirements-train.txt）だけ
 tokenizers>=0.20.0
 onnxruntime>=1.19.0
+# 長い単位の読み（行動力・日本橋）。無ければ UniDic だけで動く
+sudachipy>=0.6.8
+sudachidict_core>=20240409

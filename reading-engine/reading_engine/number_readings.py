@@ -368,7 +368,7 @@ def merge_number_tokens(
     preferred = [
         t
         for t in existing
-        if str(t.get("source") or "") in ("user_dict", "personal_name")
+        if str(t.get("source") or "") in ("user_dict", "manual", "personal_name")
         and isinstance(t.get("span"), list)
         and any(
             t["span"][0] == n["span"][0] and t["span"][1] == n["span"][1]
