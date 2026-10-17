@@ -1271,6 +1271,23 @@ assert.equal(bridged[0].message, "クリックなし本文");
   assert.equal(findLiveChatContinuation(frameData)?.continuation, "frame-replay");
   const frameBoot = readChatBootstrapFromHtml(`ytInitialData = ${JSON.stringify(frameData)};`);
   assert.equal(frameBoot.replayContinuation, "frame-replay");
+  assert.equal(frameBoot.seekContinuation, "", "シーク用トークンが無ければ空");
+
+  // チャット iframe の replay トークンは「今の再生位置」から始まる（途中から見ていると前半を取りこぼす）。
+  // シーク用トークンがあれば、それで先頭（playerOffsetMs 0）から取る
+  const seekFrameData = {
+    continuationContents: {
+      liveChatContinuation: {
+        continuations: [
+          { liveChatReplayContinuationData: { continuation: "frame-replay" } },
+          { playerSeekContinuationData: { continuation: "frame-seek" } }
+        ]
+      }
+    }
+  };
+  const seekBoot = readChatBootstrapFromHtml(`ytInitialData = ${JSON.stringify(seekFrameData)};`);
+  assert.equal(seekBoot.replayContinuation, "frame-replay");
+  assert.equal(seekBoot.seekContinuation, "frame-seek");
 
   // 広告中の進捗計算用: ページの動画長
   assert.equal(parseIsoDurationMs("PT135M56S"), (135 * 60 + 56) * 1000);

@@ -804,8 +804,14 @@ export function installScLedgerPanel(deps) {
       apiKey: pageBoot.apiKey || frameBoot?.apiKey || "",
       clientVersion: pageBoot.clientVersion || frameBoot?.clientVersion || "",
       continuation: pageBoot.continuation || frameBoot?.continuation || "",
+      // replay トークンは今の再生位置から始まり、途中から見ていると前半を取りこぼす（iPad は続きから再生する）。
+      // シーク用トークンがあれば、playerOffsetMs 0 で先頭から取る
       replayContinuation:
-        frameBoot?.replayContinuation || pageBoot.replayContinuation || ""
+        frameBoot?.seekContinuation ||
+        frameBoot?.replayContinuation ||
+        pageBoot.seekContinuation ||
+        pageBoot.replayContinuation ||
+        ""
     };
     if (!boot.continuation && !boot.replayContinuation) {
       setStatus(

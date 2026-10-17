@@ -568,6 +568,31 @@ export function detectIsChatReplayPage(doc = document) {
 /**
  * @param {string} html
  */
+/**
+ * チャット再生のシーク用トークン。今の再生位置に関係なく、playerOffsetMs で位置を指定して取れる。
+ * @param {unknown} data
+ */
+export function findPlayerSeekContinuation(data) {
+  let found = "";
+  /**
+   * @param {unknown} node
+   */
+  function walk(node) {
+    if (!node || found || typeof node !== "object") return;
+    const o = /** @type {Record<string, unknown>} */ (node);
+    const seek = /** @type {{ continuation?: string } | undefined} */ (o.playerSeekContinuationData);
+    if (seek?.continuation) {
+      found = String(seek.continuation);
+      return;
+    }
+    for (const v of Object.values(o)) {
+      if (v && typeof v === "object") walk(v);
+    }
+  }
+  walk(data);
+  return found;
+}
+
 export function readChatBootstrapFromHtml(html) {
   const text = String(html || "");
   const apiKey = extractInnertubeApiKey(text);
@@ -582,6 +607,8 @@ export function readChatBootstrapFromHtml(html) {
     clientVersion,
     // get_live_chat_replay にそのまま渡せるトークン（チャット iframe の文書にだけある）
     replayContinuation: cont?.isReplay ? cont.continuation : "",
+    // チャット iframe の replay トークンは今の再生位置から始まる。先頭から取るときはこちら
+    seekContinuation: findPlayerSeekContinuation(initialData),
     // live_chat_replay ページを開くためのトークン（API に渡すと 400）
     continuation: fromStart || cont?.continuation || "",
     isReplay: Boolean(fromStart || cont?.isReplay),
@@ -668,8 +695,12 @@ export async function fetchLiveChatReplayBootstrap(opts) {
     const html = await res.text();
     const boot = readChatBootstrapFromHtml(html.slice(0, 1_500_000));
     // 取得したページ内の API 用トークンを返す（切替メニューの reload トークンは API で 400）
-    if (boot.replayContinuation) {
-      return { ...boot, continuation: boot.replayContinuation, isReplay: true };
+    if (boot.seekContinuation || boot.replayContinuation) {
+      return {
+        ...boot,
+        continuation: boot.seekContinuation || boot.replayContinuation,
+        isReplay: true
+      };
     }
     lastError = new Error(
       "この配信は開始からのチャット再生（巻き戻し）に対応していません"
