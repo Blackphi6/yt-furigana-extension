@@ -17,7 +17,8 @@ globalThis.chrome = { storage: { local: area } };
 
 const {
   extractPaidDtosFromLiveChatJson,
-  isLiveChatDataUrl
+  isLiveChatDataUrl,
+  ytText
 } = await import("../extensions/yt-superchat-furigana/src/live-chat-paid.js");
 const { ingestPagePaidDtos, loadLedgerStore } = await import(
   "../extensions/yt-superchat-furigana/src/sc-ledger.js"
@@ -29,7 +30,7 @@ const paid = (id, name, amount, text) => ({
   authorName: { simpleText: name },
   authorPhoto: { thumbnails: [{ url: "https://yt3.ggpht.com/a=s32" }, { url: "https://yt3.ggpht.com/a=s64" }] },
   purchaseAmountText: { simpleText: amount },
-  message: { runs: [{ text }, { emoji: { emojiId: "x" } }, { text: "！" }] },
+  message: { runs: [{ text }, { emoji: { emojiId: "😃", shortcuts: [":smiley:"], isCustomEmoji: false } }, { text: "！" }] },
   headerBackgroundColor: 4278239141,
   bodyBackgroundColor: 4280150454
 });
@@ -76,7 +77,7 @@ const dtos = extractPaidDtosFromLiveChatJson(response);
 assert.equal(dtos.length, 2, "本文とティッカーの同一 SC は1件、ステッカーも拾う");
 assert.deepEqual(
   { id: dtos[0].id, author: dtos[0].author, amount: dtos[0].amount, message: dtos[0].message },
-  { id: "sc1", author: "@alice", amount: "¥500", message: "応援！" }
+  { id: "sc1", author: "@alice", amount: "¥500", message: "応援😃！" }
 );
 assert.equal(dtos[0].authorPhotoUrl, "https://yt3.ggpht.com/a=s64");
 assert.equal(dtos[0].timestampUsec, "1790000000000000");
@@ -98,5 +99,17 @@ await Promise.all(
 const store = await loadLedgerStore();
 assert.equal(store.byVideo.vid1.items.length, 20, "並行書き込みで欠落しない");
 assert.equal(store.byVideo.vid1.items[0].observedAt, 1790000000000, "timestampUsec を観測時刻に");
+
+// 絵文字: 標準の絵文字は文字そのもの、チャンネル独自の絵文字は短縮名（以前は捨てていた）
+assert.equal(
+  ytText({
+    runs: [
+      { text: "やった" },
+      { emoji: { emojiId: "😃", shortcuts: [":grinning_face_with_big_eyes:"], isCustomEmoji: false } },
+      { emoji: { emojiId: "UCxyz/abc", shortcuts: [":_hello:"], isCustomEmoji: true } }
+    ]
+  }),
+  "やった😃:_hello:"
+);
 
 console.log("test-live-chat-paid: ok");

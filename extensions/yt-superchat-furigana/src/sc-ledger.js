@@ -733,6 +733,15 @@ export function collectPaidMessageRenderers(root) {
  * @param {ScLedgerEntry} prev
  * @param {ScLedgerEntry} incoming
  */
+/**
+ * 本文の充実度。以前の版は絵文字を :grinning_face_with_big_eyes: のような短縮名で保存していたので、
+ * 短縮名を除いて文字数（コードポイント）で比べる。そうしないと取り直した絵文字が長さで負ける。
+ * @param {string} message
+ */
+function messageWeight(message) {
+  return [...String(message || "").replace(/:[A-Za-z0-9_-]+:/g, "")].length;
+}
+
 function enrichLedgerEntry(prev, incoming) {
   const prevAmt = sanitizeLedgerAmount(prev.amount);
   const nextAmt = sanitizeLedgerAmount(incoming.amount);
@@ -742,7 +751,7 @@ function enrichLedgerEntry(prev, incoming) {
     ...prev,
     author: prev.author || incoming.author || "",
     amount: nextAmt || prevAmt || "",
-    message: nextMsg.length > prevMsg.length ? nextMsg : prevMsg,
+    message: messageWeight(nextMsg) > messageWeight(prevMsg) ? nextMsg : prevMsg,
     authorPhotoUrl: prev.authorPhotoUrl || incoming.authorPhotoUrl || null,
     colorHex: prev.colorHex || incoming.colorHex || null,
     headerColorHex: prev.headerColorHex || incoming.headerColorHex || null,

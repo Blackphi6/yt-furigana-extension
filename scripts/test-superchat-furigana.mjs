@@ -1058,6 +1058,30 @@ assert.equal(resolveYtScColors({ amount: "¥20000" }).header, "#d00000");
 assert.equal(resolveYtScColors({ colorHex: "#e62117" }).fg, "#ffffff");
 assert.equal(resolveYtScColors({ colorHex: "#ffca28" }).fg, "#111111");
 assert.equal(runsToPlainText([{ text: "こん" }, { text: "にちは" }]), "こんにちは");
+// 以前の版で短縮名のまま保存したスパチャは、取り直したら絵文字に置き換える
+{
+  const old = [{ id: "e1", author: "@a", amount: "¥500", message: "教えてください:grinning_face_with_big_eyes:" }];
+  const fresh = [{ id: "e1", author: "@a", amount: "¥500", message: "教えてください😃" }];
+  const merged = mergeLedgerItems(old, fresh);
+  assert.equal(merged.items[0].message, "教えてください😃");
+  assert.equal(merged.changed, true);
+  // 本文が欠けた取り込みで、長い本文を短い本文に戻さない（従来どおり）
+  const partial = mergeLedgerItems(fresh, [{ id: "e1", author: "@a", amount: "¥500", message: "教えて" }]);
+  assert.equal(partial.items[0].message, "教えてください😃");
+}
+// 標準の絵文字は :grinning_face_with_big_eyes: ではなく絵文字そのもの
+assert.equal(
+  runsToPlainText([
+    { text: "教えてください" },
+    { emoji: { emojiId: "😃", shortcuts: [":grinning_face_with_big_eyes:", ":smiley:"], isCustomEmoji: false } }
+  ]),
+  "教えてください😃"
+);
+assert.equal(
+  runsToPlainText([{ emoji: { emojiId: "UCxyz/abc", shortcuts: [":_hello:"], isCustomEmoji: true } }]),
+  ":_hello:",
+  "チャンネル独自の絵文字は文字にできないので短縮名"
+);
 {
   const entry = paidRendererJsonToEntry(
     {

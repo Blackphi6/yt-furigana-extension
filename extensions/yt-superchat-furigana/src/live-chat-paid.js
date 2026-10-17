@@ -6,6 +6,20 @@
 /**
  * @param {unknown} value
  */
+/**
+ * YouTube の絵文字 run を文字にする。標準の絵文字は文字そのもの、
+ * チャンネル独自の絵文字（emojiId が UC… の画像）は文字にできないので短縮名。
+ * @param {unknown} emoji
+ */
+export function emojiToText(emoji) {
+  if (!emoji || typeof emoji !== "object") return "";
+  const e = /** @type {{ emojiId?: unknown, shortcuts?: unknown, isCustomEmoji?: unknown }} */ (emoji);
+  const id = typeof e.emojiId === "string" ? e.emojiId : "";
+  if (id && e.isCustomEmoji !== true && !/^UC[\w-]+\//.test(id)) return id;
+  if (Array.isArray(e.shortcuts) && e.shortcuts[0]) return String(e.shortcuts[0]);
+  return id;
+}
+
 export function ytText(value) {
   if (!value) return "";
   if (typeof value === "string") return value;
@@ -16,8 +30,9 @@ export function ytText(value) {
     return o.runs
       .map((r) => {
         if (!r || typeof r !== "object") return "";
-        const t = /** @type {{ text?: unknown }} */ (r).text;
-        return typeof t === "string" ? t : "";
+        const run = /** @type {{ text?: unknown, emoji?: unknown }} */ (r);
+        if (typeof run.text === "string") return run.text;
+        return emojiToText(run.emoji);
       })
       .join("");
   }

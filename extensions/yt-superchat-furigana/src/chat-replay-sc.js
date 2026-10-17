@@ -9,6 +9,7 @@ import {
   parseTimecodeToSeconds,
   youtubeColorIntToHex
 } from "./sc-ledger.js";
+import { emojiToText } from "./live-chat-paid.js";
 
 export { youtubeColorIntToHex };
 
@@ -103,15 +104,7 @@ export function runsToPlainText(runs) {
       if (!r || typeof r !== "object") return "";
       const o = /** @type {Record<string, unknown>} */ (r);
       if (typeof o.text === "string") return o.text;
-      const emoji = o.emoji;
-      if (emoji && typeof emoji === "object") {
-        const e = /** @type {Record<string, unknown>} */ (emoji);
-        if (typeof e.shortcuts === "object" && Array.isArray(e.shortcuts)) {
-          return String(e.shortcuts[0] || "");
-        }
-        if (typeof e.emojiId === "string") return e.emojiId;
-      }
-      return "";
+      return emojiToText(o.emoji);
     })
     .join("")
     .replace(/\s+/g, " ")
