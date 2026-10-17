@@ -321,24 +321,27 @@ export function nativeCaptionAlreadyShowsReadings(segment) {
   }
   if (smallKanaHits >= 1) return true;
 
-  // 1行なのにルビ分の高さがある（YouTube が既に上余白／読み行を確保）
-  try {
-    const rect = segment.getBoundingClientRect();
-    const lhRaw = getComputedStyle(segment).lineHeight;
-    const lh =
-      lhRaw === "normal"
-        ? baseFs * 1.2
-        : Number.parseFloat(lhRaw) || baseFs * 1.2;
-    const plain = collectCaptionPlainText(segment).replace(/\s+/g, "");
-    if (
-      plain &&
-      plain.length <= 48 &&
-      rect.height >= Math.max(lh * 1.5, baseFs * 1.55)
-    ) {
-      return true;
+  // 1行なのにルビ分の高さがある（YouTube が既に上余白／読み行を確保）。
+  // Netflix の .player-timedtext-text-container はセーフエリア分の高さを常に持つため対象外
+  if (!segment.matches(".player-timedtext-text-container")) {
+    try {
+      const rect = segment.getBoundingClientRect();
+      const lhRaw = getComputedStyle(segment).lineHeight;
+      const lh =
+        lhRaw === "normal"
+          ? baseFs * 1.2
+          : Number.parseFloat(lhRaw) || baseFs * 1.2;
+      const plain = collectCaptionPlainText(segment).replace(/\s+/g, "");
+      if (
+        plain &&
+        plain.length <= 48 &&
+        rect.height >= Math.max(lh * 1.5, baseFs * 1.55)
+      ) {
+        return true;
+      }
+    } catch {
+      /* ignore */
     }
-  } catch {
-    /* ignore */
   }
 
   // 同じ窓に「かなだけの別セグメント」があり、この行の上に重なっている
