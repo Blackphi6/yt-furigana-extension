@@ -3,6 +3,7 @@
  */
 
 import { formatRemaining } from "./eta.js";
+import { installReadingPicker } from "../../../src/reading-picker.js";
 import { getDictLoadLog } from "./kuromoji-dict-loader.cjs";
 import {
   SC_LEDGER_STORAGE_KEY,
@@ -656,6 +657,17 @@ export function installScLedgerPanel(deps) {
 
   /** @type {HTMLElement | null} */
   let previewRoot = null;
+  /** プレビューの入れ物。読み選択はここだけに登録する（親ページの字幕などには反応させない） */
+  let previewHost = null;
+
+  function ensurePreviewHost() {
+    if (previewHost?.isConnected) return previewHost;
+    previewHost = document.createElement("div");
+    previewHost.className = "ytscf-sc-preview-host";
+    document.documentElement.appendChild(previewHost);
+    installReadingPicker(previewHost);
+    return previewHost;
+  }
 
   function closePreview() {
     previewRoot?.remove();
@@ -712,7 +724,7 @@ export function installScLedgerPanel(deps) {
     overlay.addEventListener("click", (ev) => {
       if (shouldCloseScPreview(ev.target, overlay)) closePreview();
     });
-    document.documentElement.appendChild(overlay);
+    ensurePreviewHost().appendChild(overlay);
     previewRoot = overlay;
     document.addEventListener("keydown", onPreviewKey);
 

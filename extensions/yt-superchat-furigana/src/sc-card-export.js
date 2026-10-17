@@ -457,7 +457,7 @@ export function buildScPreviewCardHtml(entry, opts = {}) {
   const amount = escapeScHtml(entry.amount || "Super Chat");
   const tc = formatScTimecode(entry);
   const bodyBlock = rawMessage
-    ? `<div class="ytscf-sc-preview__body" style="background:${body};color:${fg}">${messageHtml}</div>`
+    ? `<div class="ytscf-sc-preview__body" data-ytscf-original="${escapeScHtml(rawMessage)}" style="background:${body};color:${fg}">${messageHtml}</div>`
     : "";
   const tcBlock = tc
     ? `<div class="ytscf-sc-preview__tc">▶ ${escapeScHtml(tc)}</div>`

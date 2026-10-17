@@ -727,7 +727,8 @@ async function convertFuriganaForPreview(text) {
     ]);
     if (tokenize) {
       if (!tokenizerFailed) await loadCorePhraseDicts();
-      return convertLocal(plain, { wrapWords: false });
+      // プレビューでも語をクリックして読みを選び直せるよう、語ごとの枠を付ける
+      return convertLocal(plain, { wrapWords: true });
     }
     if (readingApiFallback) {
       return (await convertViaReadingApi(plain)) || "";
