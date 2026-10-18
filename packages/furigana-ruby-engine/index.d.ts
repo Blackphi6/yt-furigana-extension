@@ -21,6 +21,11 @@ export interface CreateFuriganaEngineOptions {
    * 指定すると本文が API サーバーへ送られる。既定は使わない（通信しない）
    */
   readingApi?: true | ReadingApiOptions;
+  /**
+   * 形態素解析器を差し替える（Sudachi など）。(text) => kuromoji 形式の形態素の配列。
+   * 渡すと同梱の kuromoji の辞書は読み込まない
+   */
+  tokenize?: (text: string) => KuromojiToken[];
   /** 辞書の読み込み完了・読み API の失敗をコンソールに出す（既定 false） */
   debug?: boolean;
 }

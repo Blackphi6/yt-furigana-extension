@@ -19,6 +19,27 @@ assert.doesNotMatch(escaped, /<script>/);
 
 // 3) 形態素
 assert.equal(engine.tokenize("漢字")[0].surface_form, "漢字");
+
+// 解析器の差し替え: tokenize を渡すと kuromoji を読み込まずにそれを使う（Sudachi などを外から渡せる）
+{
+  let loadedKuromoji = false;
+  let called = 0;
+  const custom = await createFuriganaEngine({
+    loadFile: async (name) => {
+      if (name.endsWith(".dat.gz")) loadedKuromoji = true;
+      return readFile(new URL(`../dict/${name}`, import.meta.url));
+    },
+    phraseDictionaries: false,
+    tokenize: (text) => {
+      called += 1;
+      return engine.tokenize(text).map((t) => (t.surface_form === "行動" ? { ...t, reading: "コウドウ" } : t));
+    }
+  });
+  assert.match(custom.toHtml("行動する"), /<rt>こうどう<\/rt>/);
+  assert.ok(called > 0, "渡した解析器を使うこと");
+  assert.equal(loadedKuromoji, false, "解析器を渡したら kuromoji の辞書を読まないこと");
+  await assert.rejects(() => createFuriganaEngine({ tokenize: "kuromoji" }), /tokenize/);
+}
 assert.equal(engine.hasKanji("ひらがな"), false);
 
 // 3.5) 読み候補（拡張の読み選択メニューと同じ）

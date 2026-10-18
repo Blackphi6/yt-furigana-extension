@@ -59,15 +59,22 @@ function defaultLoadFile(baseUrl) {
  *   loadFile?: (fileName: string) => Promise<ArrayBuffer | Uint8Array>,
  *   phraseDictionaries?: boolean,
  *   userReadings?: Record<string, string>,
+ *   tokenize?: (text: string) => Array<{ surface_form: string, reading?: string, pronunciation?: string }>,
  *   debug?: boolean
  * }} [options]
  */
 export async function createFuriganaEngine(options = {}) {
+  if (options.tokenize != null && typeof options.tokenize !== "function") {
+    throw new TypeError("furigana-ruby-engine: tokenize は (text) => 形態素の配列 の関数で渡してください");
+  }
   const loadFile = options.loadFile || defaultLoadFile(options.dictionaryBaseUrl);
   // 固有名詞・熟字訓などの句辞書も同じ読み込み口を通す
   setDictionaryFileLoader(loadFile);
   setPhraseDictReadyLog(options.debug === true);
-  const tokenizer = await buildKuromojiTokenizer(loadFile);
+  // 解析器は差し替えられる（Sudachi など）。渡されなければ同梱の kuromoji（IPADIC）
+  const tokenizer = options.tokenize
+    ? { tokenize: options.tokenize }
+    : await buildKuromojiTokenizer(loadFile);
   if (options.phraseDictionaries !== false) await startCorePhraseDicts();
   if (options.userReadings && typeof options.userReadings === "object") {
     applyUserReadingLearning(

@@ -28,6 +28,19 @@ engine.toHtml("今日は漢字の読みを練習する");
 // → <ruby>今日<rt>きょう</rt></ruby>は<ruby>漢字<rt>かんじ</rt></ruby>の…
 ```
 
+### 形態素解析器の差し替え
+
+既定は同梱の kuromoji（IPADIC）です。`tokenize` に解析器を渡すと、それを使います（kuromoji の辞書は読み込みません）。
+kuromoji 形式（`surface_form` と カタカナの `reading`）の形態素の配列を返す関数なら、Sudachi・MeCab など何でも使えます。
+
+```js
+const engine = await createFuriganaEngine({
+  tokenize: (text) => mySudachi(text).map((m) => ({ surface_form: m.surface, reading: m.reading }))
+});
+```
+
+複合語（行動力・日本橋・株式会社）は、長い単位で区切る解析器（Sudachi のモード C）のほうが正しく読めます。
+
 ### 読み API（任意）
 
 `readingApi` を指定すると、`toHtmlAsync()` がサーバー側の読み推定 API を使い、手元の辞書（人名・駅名・熟字訓など）を重ねて返します。API が失敗・時間切れのときは手元のエンジンの結果を返します。
@@ -113,6 +126,7 @@ WebKit 系（Safari / Orion）の content script で `fetch` が通らない場�
 | `phraseDictionaries` | 句辞書（熟字訓・人名・駅名など）を読むか。既定 `true` |
 | `userReadings` | 表層 → 読み。例 `{ "髙橋": "たかはし" }` |
 | `readingApi` | `toHtmlAsync` で読み API を使う。`true` で公開 API、または `{ url, apiKey, timeoutMs }`。既定は使わない |
+| `tokenize` | 形態素解析器を差し替える。`(text) => 形態素の配列`。既定は同梱の kuromoji |
 | `debug` | 辞書の読み込み完了・読み API の失敗をコンソールに出す。既定 `false` |
 
 ### `FuriganaEngine`
