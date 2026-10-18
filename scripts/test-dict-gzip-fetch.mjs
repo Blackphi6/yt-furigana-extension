@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { isRetryableDictFetchError } from "../src/dict-gzip-fetch.js";
+import { isRetryableDictFetchError } from "furigana-ruby-engine/lib/dict-gzip-fetch.js";
 
 assert.equal(isRetryableDictFetchError(new Error("Failed to fetch")), true);
 assert.equal(

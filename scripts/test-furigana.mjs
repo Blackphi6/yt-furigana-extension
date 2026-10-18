@@ -1,7 +1,7 @@
 import kuromoji from "kuromoji";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildFuriganaHtml, buildRuby } from "../src/furigana.js";
+import { buildFuriganaHtml, buildRuby } from "furigana-ruby-engine/lib/furigana.js";
 import { buildRuby as buildRubySite } from "../site/build-ruby.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

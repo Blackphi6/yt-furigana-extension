@@ -6,17 +6,17 @@ import { existsSync, createReadStream, readFileSync } from "node:fs";
 import { createGunzip } from "node:zlib";
 import path from "node:path";
 import kuromoji from "kuromoji";
-import { buildFuriganaHtml } from "../src/furigana.js";
-import { MANUAL_PHRASE_READINGS } from "../src/reading-context.js";
-import { installUnidicPhrasesForTests } from "../src/unidic-phrases.js";
-import { installNeologdPhrasesForTests } from "../src/neologd-phrases.js";
-import { installPlaceNamePhrasesForTests } from "../src/place-name-phrases.js";
-import { installStationPhrasesForTests } from "../src/station-phrases.js";
+import { buildFuriganaHtml } from "furigana-ruby-engine/lib/furigana.js";
+import { MANUAL_PHRASE_READINGS } from "furigana-ruby-engine/lib/reading-context.js";
+import { installUnidicPhrasesForTests } from "furigana-ruby-engine/lib/unidic-phrases.js";
+import { installNeologdPhrasesForTests } from "furigana-ruby-engine/lib/neologd-phrases.js";
+import { installPlaceNamePhrasesForTests } from "furigana-ruby-engine/lib/place-name-phrases.js";
+import { installStationPhrasesForTests } from "furigana-ruby-engine/lib/station-phrases.js";
 import {
   installPersonalNamePhrasesForTests,
   rebuildCombinedPhraseTrie,
   findCombinedPhraseMatchAt
-} from "../src/personal-name-phrases.js";
+} from "furigana-ruby-engine/lib/personal-name-phrases.js";
 
 assert.equal(MANUAL_PHRASE_READINGS.get("一段落"), "いちだんらく");
 

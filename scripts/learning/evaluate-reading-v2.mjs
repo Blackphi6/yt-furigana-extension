@@ -9,16 +9,16 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildFuriganaHtml } from "../../src/furigana.js";
+import { buildFuriganaHtml } from "furigana-ruby-engine/lib/furigana.js";
 import {
   createBenchTokenizer,
   learnedOverridesPath,
   loadJsonl,
   readingOfSpan
 } from "./bench-utils.mjs";
-import { applyLearnedOverridesNow } from "../../src/reading-context.js";
-import { setDictionaryFileLoader } from "../../src/dict-gzip-fetch.js";
-import { startCorePhraseDicts } from "../../src/phrase-dict-boot.js";
+import { applyLearnedOverridesNow } from "furigana-ruby-engine/lib/reading-context.js";
+import { setDictionaryFileLoader } from "furigana-ruby-engine/lib/dict-gzip-fetch.js";
+import { startCorePhraseDicts } from "furigana-ruby-engine/lib/phrase-dict-boot.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const benchPath = path.join(root, "data/learning/benches/reading-v2-regression.jsonl");

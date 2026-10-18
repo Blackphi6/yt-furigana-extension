@@ -2,16 +2,16 @@
  * furigana-ruby-engine: 日本語テキストにひらがなルビ（<ruby>）を付けるエンジン。
  * ブラウザ（拡張・Web ページ）と Node の両方で動く。chrome.* には依存しない。
  */
-import { buildFuriganaHtml, hasKanji } from "../../../src/furigana.js";
-import { setDictionaryFileLoader } from "../../../src/dict-gzip-fetch.js";
-import { setPhraseDictReadyLog, startCorePhraseDicts } from "../../../src/phrase-dict-boot.js";
+import { buildFuriganaHtml, hasKanji } from "./lib/furigana.js";
+import { setDictionaryFileLoader } from "./lib/dict-gzip-fetch.js";
+import { setPhraseDictReadyLog, startCorePhraseDicts } from "./lib/phrase-dict-boot.js";
 import {
   CONTEXT_READING_RULES,
   MANUAL_PHRASE_READINGS,
   rebuildManualPhraseIndex
-} from "../../../src/reading-context.js";
-import { collectReadingCandidates } from "../../../src/reading-candidates.js";
-import { applyUserReadingLearning } from "../../../src/user-reading-dict.js";
+} from "./lib/reading-context.js";
+import { collectReadingCandidates } from "./lib/reading-candidates.js";
+import { applyUserReadingLearning } from "./lib/user-reading-dict.js";
 import { buildKuromojiTokenizer } from "./kuromoji-loader.js";
 import {
   chunkLines,

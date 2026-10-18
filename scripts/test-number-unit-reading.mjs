@@ -10,9 +10,9 @@ import {
   applyJuuSokuon,
   parseDotSeparatedDigits,
   readingForDotSeparatedDigits
-} from "../src/number-unit-reading.js";
-import { mergeTokensForRuby } from "../src/token-merge.js";
-import { buildFuriganaHtml } from "../src/furigana.js";
+} from "furigana-ruby-engine/lib/number-unit-reading.js";
+import { mergeTokensForRuby } from "furigana-ruby-engine/lib/token-merge.js";
+import { buildFuriganaHtml } from "furigana-ruby-engine/lib/furigana.js";
 
 assert.equal(readCardinal(0), "");
 assert.equal(readCardinal(7), "なな");

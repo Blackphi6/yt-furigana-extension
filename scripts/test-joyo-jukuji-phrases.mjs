@@ -5,14 +5,14 @@ import { fileURLToPath } from "node:url";
 import {
   installJoyoJukujiPhrasesForTests,
   getJoyoJukujiReading
-} from "../src/joyo-jukuji-phrases.js";
+} from "furigana-ruby-engine/lib/joyo-jukuji-phrases.js";
 import {
   rebuildCombinedPhraseTrie,
   findCombinedPhraseMatchAt,
   installPersonalNamePhrasesForTests
-} from "../src/personal-name-phrases.js";
-import { installNeologdPhrasesForTests } from "../src/neologd-phrases.js";
-import { installUnidicPhrasesForTests } from "../src/unidic-phrases.js";
+} from "furigana-ruby-engine/lib/personal-name-phrases.js";
+import { installNeologdPhrasesForTests } from "furigana-ruby-engine/lib/neologd-phrases.js";
+import { installUnidicPhrasesForTests } from "furigana-ruby-engine/lib/unidic-phrases.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const generated = path.join(root, "data/generated/joyo-jukuji-phrases.json");

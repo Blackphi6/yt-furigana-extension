@@ -15,9 +15,9 @@ import {
   learnedOverridesPath,
   learningLogPath
 } from "./bench-utils.mjs";
-import { buildFuriganaHtml } from "../../src/furigana.js";
-import { extractReadingsFromRubyHtml } from "../../src/reading-learning.js";
-import { buildLearningCues } from "../../src/user-reading-dict.js";
+import { buildFuriganaHtml } from "furigana-ruby-engine/lib/furigana.js";
+import { extractReadingsFromRubyHtml } from "furigana-ruby-engine/lib/reading-learning.js";
+import { buildLearningCues } from "furigana-ruby-engine/lib/user-reading-dict.js";
 
 const tokenize = await createBenchTokenizer();
 const seedCases = await loadJsonl(seedBenchPath());

@@ -12,7 +12,7 @@ import {
   shouldPinGlobally,
   spanFromTokenRange,
   upsertOccurrenceOverride,
-} from "../src/occurrence-overrides.js";
+} from "furigana-ruby-engine/lib/occurrence-overrides.js";
 
 {
   const text = "大人気のない大人が、大人気のアニメグッズを大人買いした。";

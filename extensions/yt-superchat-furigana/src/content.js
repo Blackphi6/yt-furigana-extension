@@ -5,7 +5,7 @@
  */
 
 import kuromoji from "kuromoji";
-import { buildFuriganaHtml, hasKanji } from "../../../src/furigana.js";
+import { buildFuriganaHtml, hasKanji } from "furigana-ruby-engine/lib/furigana.js";
 import {
   installFuriganaHoverHighlight,
   installReadingPicker
@@ -15,17 +15,17 @@ import {
   MANUAL_PHRASE_READINGS,
   rebuildManualPhraseIndex,
   reloadBundledReadingMaps
-} from "../../../src/reading-context.js";
+} from "furigana-ruby-engine/lib/reading-context.js";
 import {
   USER_READING_DICT_KEY,
   applyUserReadingLearning,
   loadUserReadingStore
-} from "../../../src/user-reading-dict.js";
-import { loadOccurrenceOverrideStore } from "../../../src/occurrence-overrides.js";
+} from "furigana-ruby-engine/lib/user-reading-dict.js";
+import { loadOccurrenceOverrideStore } from "furigana-ruby-engine/lib/occurrence-overrides.js";
 import {
   scheduleHeavyPhraseDicts,
   startCorePhraseDicts
-} from "../../../src/phrase-dict-boot.js";
+} from "furigana-ruby-engine/lib/phrase-dict-boot.js";
 import {
   applyFuriganaToMessage,
   collectChatMessageElements,

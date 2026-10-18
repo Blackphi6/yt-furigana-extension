@@ -1,7 +1,7 @@
 // 敬称など人名の手がかりの直前の語は、人名辞書の読みを使う（読み推定 v2 第3段階）
 import assert from "node:assert/strict";
-import { installPersonalNamePhrasesForTests } from "../src/personal-name-phrases.js";
-import { applyNameCueReadings, findNameBeforeCue } from "../src/name-cues.js";
+import { installPersonalNamePhrasesForTests } from "furigana-ruby-engine/lib/personal-name-phrases.js";
+import { applyNameCueReadings, findNameBeforeCue } from "furigana-ruby-engine/lib/name-cues.js";
 
 installPersonalNamePhrasesForTests({ 相場: "あいば", 小鳥遊: "たかなし", 明神: "あかがみ", 中田: "なかた" });
 

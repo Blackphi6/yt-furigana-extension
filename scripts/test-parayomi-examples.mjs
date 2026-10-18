@@ -5,8 +5,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { SudachiStateless, TokenizeMode } from "sudachi-wasm333";
 import { createSudachiTokenize } from "../src/sudachi-tokenizer.js";
-import { buildFuriganaHtml } from "../src/furigana.js";
-import { applyLearnedOverridesNow } from "../src/reading-context.js";
+import { buildFuriganaHtml } from "furigana-ruby-engine/lib/furigana.js";
+import { applyLearnedOverridesNow } from "furigana-ruby-engine/lib/reading-context.js";
 import {
   PARAYOMI_EXAMPLES,
   PARAYOMI_PRIORITY_SURFACES,

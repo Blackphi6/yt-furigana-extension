@@ -2,7 +2,7 @@
  * 匿名訂正の送信と、Free 向け共有読みパックの取得。
  * Premium の /v1/dict/shared とは別経路。
  */
-import { normalizeReading } from "./reading-normalize.js";
+import { normalizeReading } from "furigana-ruby-engine/lib/reading-normalize.js";
 import { applySharedDictEntries } from "./premium.js";
 import { PUBLIC_READING_API_URL } from "./default-settings.js";
 

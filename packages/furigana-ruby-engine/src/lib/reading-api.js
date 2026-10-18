@@ -24,6 +24,9 @@ import { applyEnglishKatakanaReadings } from "./english-katakana-reading.js";
  * 一部の読み API は全文トークンではなく、読み付き箇所だけを span 付きで返す。
  */
 
+/** 公開の読み API（Render 無料枠）。拡張の既定値とパッケージの readingApi: true で使う */
+export const PUBLIC_READING_API_URL = "https://yt-furigana-readings.onrender.com";
+
 export function normalizeReadingApiUrl(url) {
   const trimmed = String(url ?? "")
     .trim()

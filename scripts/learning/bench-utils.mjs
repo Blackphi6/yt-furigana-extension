@@ -3,10 +3,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createSudachiTokenize } from "../../src/sudachi-tokenizer.js";
 import { SudachiStateless, TokenizeMode } from "sudachi-wasm333";
-import { buildFuriganaHtml } from "../../src/furigana.js";
-import { applyLearnedOverridesNow } from "../../src/reading-context.js";
-import { evaluateRubyAgainstExpect } from "../../src/reading-learning.js";
-import { normalizeReading } from "../../src/reading-normalize.js";
+import { buildFuriganaHtml } from "furigana-ruby-engine/lib/furigana.js";
+import { applyLearnedOverridesNow } from "furigana-ruby-engine/lib/reading-context.js";
+import { evaluateRubyAgainstExpect } from "furigana-ruby-engine/lib/reading-learning.js";
+import { normalizeReading } from "furigana-ruby-engine/lib/reading-normalize.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "../..");

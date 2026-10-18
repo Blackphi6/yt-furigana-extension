@@ -7,8 +7,8 @@ import {
   applyEnglishKatakanaReadings,
   installEnglishKatakanaDictForTests,
   lookupEnglishKatakana
-} from "../src/english-katakana-reading.js";
-import { buildFuriganaHtml } from "../src/furigana.js";
+} from "furigana-ruby-engine/lib/english-katakana-reading.js";
+import { buildFuriganaHtml } from "furigana-ruby-engine/lib/furigana.js";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 

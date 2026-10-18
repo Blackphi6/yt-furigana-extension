@@ -1,7 +1,7 @@
 import { mergeSudachiAndKuromoji, createHybridTokenize } from "../src/hybrid-tokenizer.js";
 import { createSudachiTokenize } from "../src/sudachi-tokenizer.js";
 import { SudachiStateless, TokenizeMode } from "sudachi-wasm333";
-import { buildFuriganaHtml } from "../src/furigana.js";
+import { buildFuriganaHtml } from "furigana-ruby-engine/lib/furigana.js";
 import kuromoji from "kuromoji";
 import { readFile } from "node:fs/promises";
 import path from "node:path";

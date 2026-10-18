@@ -1,11 +1,11 @@
 // 数詞＋助数詞の読み（漢数字・算用数字）と、形態素列への適用
 import assert from "node:assert/strict";
-import { readNumberWithUnit } from "../src/number-unit-reading.js";
+import { readNumberWithUnit } from "furigana-ruby-engine/lib/number-unit-reading.js";
 import {
   applyNumberCounterReadings,
   kanjiNumeralToInt,
   readingForNumberWithCounter
-} from "../src/number-counter.js";
+} from "furigana-ruby-engine/lib/number-counter.js";
 
 // 漢数字
 assert.equal(kanjiNumeralToInt("三"), 3);

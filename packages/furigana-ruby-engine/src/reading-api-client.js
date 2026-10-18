@@ -1,13 +1,13 @@
 /**
  * 読み API（POST /v1/readings）クライアント。拡張の callReadingApi と同じ要求・応答の扱い。
  */
-import { PUBLIC_READING_API_URL } from "../../../src/default-settings.js";
 import {
+  PUBLIC_READING_API_URL,
   buildReadingApiHeaders,
   buildReadingApiRequest,
   normalizeReadingApiUrl,
   parseReadingApiResponse
-} from "../../../src/reading-api.js";
+} from "./lib/reading-api.js";
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 /** 1 回にまとめる文字数の上限（サーバーは 8000 字まで。長いほど 1 回の待ちが長くなる） */

@@ -7,7 +7,7 @@ import {
   matchUserContextualReadings,
   normalizeUserReadingStore
 } from "./user-reading-dict.js";
-import heteronymCandidates from "../data/generated/heteronym-candidates.json" with {
+import heteronymCandidates from "../../../../data/generated/heteronym-candidates.json" with {
   type: "json"
 };
 import { getNeologdReading } from "./neologd-phrases.js";

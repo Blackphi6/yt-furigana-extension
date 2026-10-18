@@ -1,4 +1,4 @@
-import heteronymCandidates from "../data/generated/heteronym-candidates.json" with {
+import heteronymCandidates from "../../../../data/generated/heteronym-candidates.json" with {
   type: "json"
 };
 import { findNeologdMatchAt } from "./neologd-phrases.js";

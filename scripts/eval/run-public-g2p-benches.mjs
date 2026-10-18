@@ -31,39 +31,39 @@ import { gunzipSync } from "node:zlib";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import kuromoji from "kuromoji";
-import { buildFuriganaHtml } from "../../src/furigana.js";
+import { buildFuriganaHtml } from "furigana-ruby-engine/lib/furigana.js";
 import {
   evaluateRubyAgainstExpect,
   extractReadingsFromRubyHtml,
   mergeLearnedOverrides
-} from "../../src/reading-learning.js";
-import { normalizeReading } from "../../src/reading-normalize.js";
+} from "furigana-ruby-engine/lib/reading-learning.js";
+import { normalizeReading } from "furigana-ruby-engine/lib/reading-normalize.js";
 import {
   CONTEXT_READING_RULES,
   MANUAL_PHRASE_READINGS,
   rebuildManualPhraseIndex,
   reloadBundledReadingMaps
-} from "../../src/reading-context.js";
+} from "furigana-ruby-engine/lib/reading-context.js";
 import {
   createBenchTokenizer,
   loadJsonl,
   runSeedBench,
   learnedOverridesPath
 } from "../learning/bench-utils.mjs";
-import { installNeologdPhrasesForTests } from "../../src/neologd-phrases.js";
-import { installPlaceNamePhrasesForTests } from "../../src/place-name-phrases.js";
-import { installStationPhrasesForTests } from "../../src/station-phrases.js";
-import { installUnidicPhrasesForTests } from "../../src/unidic-phrases.js";
-import { installJoyoJukujiPhrasesForTests } from "../../src/joyo-jukuji-phrases.js";
-import { installJaFuriganaPhrasesForTests } from "../../src/ja-furigana-phrases.js";
-import { installWikidataKanaPhrasesForTests } from "../../src/wikidata-kana-phrases.js";
-import { installSudachiFullPhrasesForTests } from "../../src/sudachi-full-phrases.js";
-import { installCorporateNamePhrasesForTests } from "../../src/corporate-name-phrases.js";
+import { installNeologdPhrasesForTests } from "furigana-ruby-engine/lib/neologd-phrases.js";
+import { installPlaceNamePhrasesForTests } from "furigana-ruby-engine/lib/place-name-phrases.js";
+import { installStationPhrasesForTests } from "furigana-ruby-engine/lib/station-phrases.js";
+import { installUnidicPhrasesForTests } from "furigana-ruby-engine/lib/unidic-phrases.js";
+import { installJoyoJukujiPhrasesForTests } from "furigana-ruby-engine/lib/joyo-jukuji-phrases.js";
+import { installJaFuriganaPhrasesForTests } from "furigana-ruby-engine/lib/ja-furigana-phrases.js";
+import { installWikidataKanaPhrasesForTests } from "furigana-ruby-engine/lib/wikidata-kana-phrases.js";
+import { installSudachiFullPhrasesForTests } from "furigana-ruby-engine/lib/sudachi-full-phrases.js";
+import { installCorporateNamePhrasesForTests } from "furigana-ruby-engine/lib/corporate-name-phrases.js";
 import {
   installPersonalNamePhrasesForTests,
   rebuildCombinedPhraseTrie
-} from "../../src/personal-name-phrases.js";
-import { installKanjiReadingsForTests } from "../../src/kanji-readings.js";
+} from "furigana-ruby-engine/lib/personal-name-phrases.js";
+import { installKanjiReadingsForTests } from "furigana-ruby-engine/lib/kanji-readings.js";
 import { scoreJoyoParakeetItems } from "./joyo-parakeet-score.mjs";
 import { parseYomiBenchRows } from "./yomi-bench-parse.mjs";
 

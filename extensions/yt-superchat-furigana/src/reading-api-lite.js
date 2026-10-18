@@ -9,13 +9,13 @@ import {
   isRegisterableSurface,
   isLatinWord,
   isUsefulLatinReading
-} from "../../../src/furigana.js";
-import { stripAnnotationMarkers } from "../../../src/annotation-markers.js";
+} from "furigana-ruby-engine/lib/furigana.js";
+import { stripAnnotationMarkers } from "furigana-ruby-engine/lib/annotation-markers.js";
 import {
   normalizeReading,
   normalizeUserReading,
   toKatakana
-} from "../../../src/reading-normalize.js";
+} from "furigana-ruby-engine/lib/reading-normalize.js";
 
 /**
  * @param {string} url

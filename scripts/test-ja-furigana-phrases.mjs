@@ -6,13 +6,13 @@ import {
   installJaFuriganaPhrasesForTests,
   getJaFuriganaReading,
   getJaFuriganaPhraseCount
-} from "../src/ja-furigana-phrases.js";
+} from "furigana-ruby-engine/lib/ja-furigana-phrases.js";
 import {
   rebuildCombinedPhraseTrie,
   findCombinedPhraseMatchAt,
   installPersonalNamePhrasesForTests
-} from "../src/personal-name-phrases.js";
-import { installNeologdPhrasesForTests } from "../src/neologd-phrases.js";
+} from "furigana-ruby-engine/lib/personal-name-phrases.js";
+import { installNeologdPhrasesForTests } from "furigana-ruby-engine/lib/neologd-phrases.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const metaPath = path.join(root, "data/generated/ja-furigana-phrases.meta.json");

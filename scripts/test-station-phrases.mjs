@@ -9,14 +9,14 @@ import {
   installStationPhrasesForTests,
   getStationReading,
   getStationPhraseCount
-} from "../src/station-phrases.js";
+} from "furigana-ruby-engine/lib/station-phrases.js";
 import {
   rebuildCombinedPhraseTrie,
   findCombinedPhraseMatchAt,
   installPersonalNamePhrasesForTests
-} from "../src/personal-name-phrases.js";
-import { installNeologdPhrasesForTests } from "../src/neologd-phrases.js";
-import { installPlaceNamePhrasesForTests } from "../src/place-name-phrases.js";
+} from "furigana-ruby-engine/lib/personal-name-phrases.js";
+import { installNeologdPhrasesForTests } from "furigana-ruby-engine/lib/neologd-phrases.js";
+import { installPlaceNamePhrasesForTests } from "furigana-ruby-engine/lib/place-name-phrases.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const generated = path.join(root, "data/generated/station-phrases.json");

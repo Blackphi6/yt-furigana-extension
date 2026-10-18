@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import {
   isAnnotationMarkerInner,
   stripAnnotationMarkers
-} from "../src/annotation-markers.js";
+} from "furigana-ruby-engine/lib/annotation-markers.js";
 import { stripAnnotationMarkers as siteStrip } from "../site/annotation-markers.js";
 
 assert.equal(isAnnotationMarkerInner("⑫"), true);

@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import {
   getUnidicReading,
   installUnidicPhrasesForTests
-} from "../src/unidic-phrases.js";
-import { rebuildCombinedPhraseTrie } from "../src/personal-name-phrases.js";
-import { findLongestPhraseAt } from "../src/phrase-trie.js";
+} from "furigana-ruby-engine/lib/unidic-phrases.js";
+import { rebuildCombinedPhraseTrie } from "furigana-ruby-engine/lib/personal-name-phrases.js";
+import { findLongestPhraseAt } from "furigana-ruby-engine/lib/phrase-trie.js";
 
 installUnidicPhrasesForTests({
   形態素: "けいたいそ",

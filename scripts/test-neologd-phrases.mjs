@@ -4,13 +4,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
 import kuromoji from "kuromoji";
-import { buildFuriganaHtml } from "../src/furigana.js";
+import { buildFuriganaHtml } from "furigana-ruby-engine/lib/furigana.js";
 import {
   installNeologdPhrasesForTests,
   getNeologdPhraseCount,
   getNeologdReading
-} from "../src/neologd-phrases.js";
-import { buildPhraseTrie, findLongestPhraseAt } from "../src/phrase-trie.js";
+} from "furigana-ruby-engine/lib/neologd-phrases.js";
+import { buildPhraseTrie, findLongestPhraseAt } from "furigana-ruby-engine/lib/phrase-trie.js";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(root, "..");

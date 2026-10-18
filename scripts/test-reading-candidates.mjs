@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { collectReadingCandidates } from "../src/reading-candidates.js";
+import { collectReadingCandidates } from "furigana-ruby-engine/lib/reading-candidates.js";
 
 const busy = collectReadingCandidates(
   "忙しい",

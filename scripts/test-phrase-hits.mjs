@@ -7,9 +7,9 @@ import {
   buildCombinedUserDict,
   collectLocalPhraseHits,
   mergeSpansWithLocalPhrases
-} from "../src/phrase-hits.js";
-import { installNeologdPhrasesForTests } from "../src/neologd-phrases.js";
-import { readingApiSpansToHtml } from "../src/reading-api.js";
+} from "furigana-ruby-engine/lib/phrase-hits.js";
+import { installNeologdPhrasesForTests } from "furigana-ruby-engine/lib/neologd-phrases.js";
+import { readingApiSpansToHtml } from "furigana-ruby-engine/lib/reading-api.js";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const phrases = JSON.parse(

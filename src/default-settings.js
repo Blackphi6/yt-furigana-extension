@@ -60,8 +60,10 @@ export function needsEngineOnboarding(settings = {}) {
   return settings.engineOnboardingDone !== true;
 }
 
-/** 公開デモ／共有パック用（Render）。readingApiUrl 未設定時のフォールバック */
-export const PUBLIC_READING_API_URL = "https://yt-furigana-readings.onrender.com";
+/** 公開デモ／共有パック用（Render）。readingApiUrl 未設定時のフォールバック。定義はエンジン側 */
+import { PUBLIC_READING_API_URL } from "furigana-ruby-engine/lib/reading-api.js";
+
+export { PUBLIC_READING_API_URL };
 
 /** ふりがな用途で推奨するモデル（軽い・速い順） */
 export const PREFERRED_OLLAMA_MODELS = [

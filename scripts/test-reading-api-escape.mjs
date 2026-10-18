@@ -1,6 +1,6 @@
 // 読み API の応答から作る HTML で、原文がエスケープされること（チャット本文由来の XSS 防止）
 import assert from "node:assert/strict";
-import { parseReadingApiResponse } from "../src/reading-api.js";
+import { parseReadingApiResponse } from "furigana-ruby-engine/lib/reading-api.js";
 import { parseReadingApiResponseLite } from "../extensions/yt-superchat-furigana/src/reading-api-lite.js";
 
 const attack = '<img src=x onerror=prompt>生米&"';
@@ -18,7 +18,7 @@ const fullPayload = {
 };
 
 for (const [name, parse] of [
-  ["src/reading-api.js", parseReadingApiResponse],
+  ["furigana-ruby-engine/lib/reading-api.js", parseReadingApiResponse],
   ["yt-superchat-furigana reading-api-lite.js", parseReadingApiResponseLite]
 ]) {
   const spanHtml = parse(spanPayload, attack);

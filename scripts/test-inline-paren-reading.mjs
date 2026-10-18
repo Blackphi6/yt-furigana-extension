@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import {
   extractInlineParenReadings,
   applyInlineParenReadings
-} from "../src/inline-paren-reading.js";
-import { buildFuriganaHtml } from "../src/furigana.js";
+} from "furigana-ruby-engine/lib/inline-paren-reading.js";
+import { buildFuriganaHtml } from "furigana-ruby-engine/lib/furigana.js";
 
 {
   const { text, spans } = extractInlineParenReadings("音（ね）が聞こえる");

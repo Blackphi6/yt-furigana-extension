@@ -1,28 +1,28 @@
-import { buildRuby, isNumberReadingTipSurface, isRegisterableSurface, wrapFuriganaWord } from "./furigana.js";
-import { collectReadingCandidates } from "./reading-candidates.js";
+import { buildRuby, isNumberReadingTipSurface, isRegisterableSurface, wrapFuriganaWord } from "furigana-ruby-engine/lib/furigana.js";
+import { collectReadingCandidates } from "furigana-ruby-engine/lib/reading-candidates.js";
 import {
   saveUserReadingChoice,
   loadUserReadingStore,
   buildLearningCues
-} from "./user-reading-dict.js";
+} from "furigana-ruby-engine/lib/user-reading-dict.js";
 import {
   MANUAL_PHRASE_READINGS,
   CONTEXT_READING_RULES,
   rebuildManualPhraseIndex
-} from "./reading-context.js";
-import { normalizeReading, normalizeUserReading, isValidUserReading } from "./reading-normalize.js";
+} from "furigana-ruby-engine/lib/reading-context.js";
+import { normalizeReading, normalizeUserReading, isValidUserReading } from "furigana-ruby-engine/lib/reading-normalize.js";
 import {
   LEARNING_INBOX_KEY,
   LEARNING_INBOX_LIMIT,
   appendLearningEvent
-} from "./reading-learning.js";
+} from "furigana-ruby-engine/lib/reading-learning.js";
 import { fitRubyReadings, isRubyFitted } from "./ruby-layout.js";
 import { splitContributionContext } from "./contributions.js";
 import {
   saveOccurrenceOverrideForText,
   shouldPinGlobally,
   spanFromTokenRange,
-} from "./occurrence-overrides.js";
+} from "furigana-ruby-engine/lib/occurrence-overrides.js";
 
 const POPUP_ID = "yt-furigana-reading-picker";
 export const CONTRIB_CONSENT_ID = "yt-furigana-contrib-consent";

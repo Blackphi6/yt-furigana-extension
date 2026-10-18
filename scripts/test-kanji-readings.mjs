@@ -5,9 +5,9 @@ import {
   lookupKanjiDefaultReading,
   lookupKanjiReadingCandidates,
   lookupKanjiSurfaceReading
-} from "../src/kanji-readings.js";
-import { fillUncoveredTokenGaps } from "../src/occurrence-overrides.js";
-import { buildFuriganaHtml } from "../src/furigana.js";
+} from "furigana-ruby-engine/lib/kanji-readings.js";
+import { fillUncoveredTokenGaps } from "furigana-ruby-engine/lib/occurrence-overrides.js";
+import { buildFuriganaHtml } from "furigana-ruby-engine/lib/furigana.js";
 
 installKanjiReadingsForTests({
   龍: { default: "りゅう", readings: ["りゅう", "たつ"] },

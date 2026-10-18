@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { mergeTokensForRuby } from "../src/token-merge.js";
-import { buildFuriganaHtml } from "../src/furigana.js";
+import { mergeTokensForRuby } from "furigana-ruby-engine/lib/token-merge.js";
+import { buildFuriganaHtml } from "furigana-ruby-engine/lib/furigana.js";
 import kuromoji from "kuromoji";
 import path from "node:path";
 import { fileURLToPath } from "node:url";

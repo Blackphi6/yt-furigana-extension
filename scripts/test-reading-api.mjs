@@ -8,7 +8,7 @@ import {
   readingApiTokensToHtml,
   validateReadingApiTokens,
   userDictToApiEntries
-} from "../src/reading-api.js";
+} from "furigana-ruby-engine/lib/reading-api.js";
 
 assert.equal(normalizeReadingApiUrl(""), "");
 assert.equal(

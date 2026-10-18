@@ -5,8 +5,8 @@ import {
   appendLearningEvent,
   buildAmbiguousSamples,
   extractReadingsFromRubyHtml
-} from "./reading-learning.js";
-import { CONTEXT_READING_RULES } from "./reading-context.js";
+} from "furigana-ruby-engine/lib/reading-learning.js";
+import { CONTEXT_READING_RULES } from "furigana-ruby-engine/lib/reading-context.js";
 import { DEFAULT_SETTINGS } from "./default-settings.js";
 
 const AMBIGUOUS = ambiguousSurfacesFromRules(CONTEXT_READING_RULES);

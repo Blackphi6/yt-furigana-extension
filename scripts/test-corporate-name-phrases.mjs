@@ -6,17 +6,17 @@ import {
   installCorporateNamePhrasesForTests,
   getCorporateNameReading,
   getCorporateNamePhraseCount
-} from "../src/corporate-name-phrases.js";
+} from "furigana-ruby-engine/lib/corporate-name-phrases.js";
 import {
   rebuildCombinedPhraseTrie,
   findCombinedPhraseMatchAt,
   installPersonalNamePhrasesForTests
-} from "../src/personal-name-phrases.js";
-import { installNeologdPhrasesForTests } from "../src/neologd-phrases.js";
-import { installPlaceNamePhrasesForTests } from "../src/place-name-phrases.js";
-import { installStationPhrasesForTests } from "../src/station-phrases.js";
-import { installWikidataKanaPhrasesForTests } from "../src/wikidata-kana-phrases.js";
-import { installSudachiFullPhrasesForTests } from "../src/sudachi-full-phrases.js";
+} from "furigana-ruby-engine/lib/personal-name-phrases.js";
+import { installNeologdPhrasesForTests } from "furigana-ruby-engine/lib/neologd-phrases.js";
+import { installPlaceNamePhrasesForTests } from "furigana-ruby-engine/lib/place-name-phrases.js";
+import { installStationPhrasesForTests } from "furigana-ruby-engine/lib/station-phrases.js";
+import { installWikidataKanaPhrasesForTests } from "furigana-ruby-engine/lib/wikidata-kana-phrases.js";
+import { installSudachiFullPhrasesForTests } from "furigana-ruby-engine/lib/sudachi-full-phrases.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const metaPath = path.join(root, "data/generated/corporate-name-phrases.meta.json");

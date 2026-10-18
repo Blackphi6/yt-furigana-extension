@@ -10,7 +10,7 @@ import {
   mergeLearnedOverrides,
   passesPromotionGate,
   readingMatchesExpect
-} from "../src/reading-learning.js";
+} from "furigana-ruby-engine/lib/reading-learning.js";
 
 const html =
   '<ruby>忙<rt>せわ</rt></ruby>しい<ruby>世界<rt>せかい</rt></ruby>';

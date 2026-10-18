@@ -1,5 +1,5 @@
-import { wrapFuriganaWord, hasKanji } from "./furigana.js";
-import { normalizeReading } from "./reading-normalize.js";
+import { wrapFuriganaWord, hasKanji } from "furigana-ruby-engine/lib/furigana.js";
+import { normalizeReading } from "furigana-ruby-engine/lib/reading-normalize.js";
 
 export { hasKanji };
 

@@ -4,14 +4,14 @@ import {
   normalizeUserReadingStore,
   applyUserReadingLearning,
   matchUserContextualReadings
-} from "../src/user-reading-dict.js";
-import { buildFuriganaHtml } from "../src/furigana.js";
+} from "furigana-ruby-engine/lib/user-reading-dict.js";
+import { buildFuriganaHtml } from "furigana-ruby-engine/lib/furigana.js";
 import {
   MANUAL_PHRASE_READINGS,
   CONTEXT_READING_RULES,
   rebuildManualPhraseIndex,
   resetReadingOverridesToBase
-} from "../src/reading-context.js";
+} from "furigana-ruby-engine/lib/reading-context.js";
 
 const cues = buildLearningCues("永遠", "ただ永遠に愛");
 assert.ok(cues.includes("永遠に"), cues);

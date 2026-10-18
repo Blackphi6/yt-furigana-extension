@@ -2,7 +2,7 @@
  * ライブチャットふりがな拡張の純関数テスト（ネットワーク無し）
  */
 import assert from "node:assert/strict";
-import { buildFuriganaHtml, hasKanji } from "../src/furigana.js";
+import { buildFuriganaHtml, hasKanji } from "furigana-ruby-engine/lib/furigana.js";
 import {
   applyFuriganaToMessage,
   CHAT_MESSAGE_SELECTOR,

@@ -1,7 +1,7 @@
 import kuromoji from "kuromoji";
 import { createSudachiTokenize } from "../src/sudachi-tokenizer.js";
 import { SudachiStateless, TokenizeMode } from "sudachi-wasm333";
-import { buildFuriganaHtml } from "../src/furigana.js";
+import { buildFuriganaHtml } from "furigana-ruby-engine/lib/furigana.js";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";

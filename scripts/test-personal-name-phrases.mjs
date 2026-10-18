@@ -6,13 +6,13 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import kuromoji from "kuromoji";
-import { buildFuriganaHtml } from "../src/furigana.js";
+import { buildFuriganaHtml } from "furigana-ruby-engine/lib/furigana.js";
 import {
   installPersonalNamePhrasesForTests,
   getPersonalNameReading,
   rebuildCombinedPhraseTrie
-} from "../src/personal-name-phrases.js";
-import { installNeologdPhrasesForTests } from "../src/neologd-phrases.js";
+} from "furigana-ruby-engine/lib/personal-name-phrases.js";
+import { installNeologdPhrasesForTests } from "furigana-ruby-engine/lib/neologd-phrases.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const metaPath = path.join(root, "data/generated/personal-name-phrases.meta.json");

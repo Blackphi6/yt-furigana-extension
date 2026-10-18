@@ -9,13 +9,13 @@ import {
   installPlaceNamePhrasesForTests,
   getPlaceNameReading,
   getPlaceNamePhraseCount
-} from "../src/place-name-phrases.js";
+} from "furigana-ruby-engine/lib/place-name-phrases.js";
 import {
   rebuildCombinedPhraseTrie,
   findCombinedPhraseMatchAt,
   installPersonalNamePhrasesForTests
-} from "../src/personal-name-phrases.js";
-import { installNeologdPhrasesForTests } from "../src/neologd-phrases.js";
+} from "furigana-ruby-engine/lib/personal-name-phrases.js";
+import { installNeologdPhrasesForTests } from "furigana-ruby-engine/lib/neologd-phrases.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const generated = path.join(root, "data/generated/place-name-phrases.json");

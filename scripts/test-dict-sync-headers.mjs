@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import {
   buildReadingApiHeaders,
   normalizeReadingApiUrl
-} from "../src/reading-api.js";
+} from "furigana-ruby-engine/lib/reading-api.js";
 
 assert.deepEqual(buildReadingApiHeaders({}), {
   "Content-Type": "application/json"

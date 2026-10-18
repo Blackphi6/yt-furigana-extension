@@ -18,8 +18,8 @@ import {
 import {
   emptyLearnedOverrides,
   passesPromotionGate
-} from "../../src/reading-learning.js";
-import { normalizeReading } from "../../src/reading-normalize.js";
+} from "furigana-ruby-engine/lib/reading-learning.js";
+import { normalizeReading } from "furigana-ruby-engine/lib/reading-normalize.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "../..");

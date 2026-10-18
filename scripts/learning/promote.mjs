@@ -19,7 +19,7 @@ import {
   applyPromotionCandidates,
   emptyLearnedOverrides,
   passesPromotionGate
-} from "../../src/reading-learning.js";
+} from "furigana-ruby-engine/lib/reading-learning.js";
 
 const tokenize = await createBenchTokenizer();
 const seedCases = await loadJsonl(seedBenchPath());

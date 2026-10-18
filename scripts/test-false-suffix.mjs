@@ -1,6 +1,6 @@
 // kuromoji が 2字以上の語のあとの「雨」を接尾語（豪雨の う）と読む誤りを、結合の前に直す
 import assert from "node:assert/strict";
-import { repairFalseKanjiSuffix } from "../src/reading-guards.js";
+import { repairFalseKanjiSuffix } from "furigana-ruby-engine/lib/reading-guards.js";
 
 const tokens = [
   { surface_form: "一日中", reading: "イチニチジュウ", pos: "名詞", pos_detail_1: "一般" },

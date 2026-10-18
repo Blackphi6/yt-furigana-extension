@@ -3,8 +3,8 @@ import {
   normalizeReading,
   normalizeUserReading,
   isValidUserReading
-} from "../src/reading-normalize.js";
-import { buildRuby, buildFuriganaHtml, isLatinWord, isRegisterableSurface } from "../src/furigana.js";
+} from "furigana-ruby-engine/lib/reading-normalize.js";
+import { buildRuby, buildFuriganaHtml, isLatinWord, isRegisterableSurface } from "furigana-ruby-engine/lib/furigana.js";
 
 assert.equal(normalizeReading("オンリー"), "おんりー");
 assert.equal(normalizeUserReading("オンリー"), "オンリー");

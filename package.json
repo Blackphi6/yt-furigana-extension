@@ -4,6 +4,7 @@
   "description": "YouTube/TVer/Netflix字幕にふりがな（非公式）— Chrome拡張",
   "license": "MIT",
   "private": true,
+  "workspaces": ["packages/*"],
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",

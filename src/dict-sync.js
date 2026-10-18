@@ -6,8 +6,8 @@ import {
   PLAN_PREMIUM,
   normalizePlan
 } from "./premium.js";
-import { normalizeReadingApiUrl } from "./reading-api.js";
-import { normalizeReading } from "./reading-normalize.js";
+import { normalizeReadingApiUrl } from "furigana-ruby-engine/lib/reading-api.js";
+import { normalizeReading } from "furigana-ruby-engine/lib/reading-normalize.js";
 
 function syncBaseUrl(readingApiUrl) {
   const endpoint = normalizeReadingApiUrl(readingApiUrl);

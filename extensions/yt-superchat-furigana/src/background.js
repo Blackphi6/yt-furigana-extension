@@ -7,7 +7,7 @@ import {
 } from "./state.js";
 import { PUBLIC_READING_API_URL } from "../../../src/default-settings.js";
 import { fetchReadingApiHtml } from "./reading-api-lite.js";
-import { loadUserReadingStore } from "../../../src/user-reading-dict.js";
+import { loadUserReadingStore } from "furigana-ruby-engine/lib/user-reading-dict.js";
 
 const STORAGE_KEY = "ytscfState";
 const READING_API_TIMEOUT_MS = 20000;

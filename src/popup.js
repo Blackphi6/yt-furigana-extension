@@ -7,7 +7,7 @@ import {
   normalizeStoredEngine,
   pickPreferredOllamaModel
 } from "./default-settings.js";
-import { readingApiOriginPattern } from "./reading-api.js";
+import { readingApiOriginPattern } from "furigana-ruby-engine/lib/reading-api.js";
 import {
   DEFAULT_PRICING_URL,
   DEFAULT_PRIVACY_URL,

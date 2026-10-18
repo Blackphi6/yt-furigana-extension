@@ -3,14 +3,14 @@ import {
   expandSurfaceWithDictionary,
   findLongestDictionaryMatchAt,
   getDictionarySurfaces
-} from "../src/dictionary-match.js";
-import { mergeTokensForRuby } from "../src/token-merge.js";
-import { collectReadingCandidates } from "../src/reading-candidates.js";
-import { buildFuriganaHtml } from "../src/furigana.js";
+} from "furigana-ruby-engine/lib/dictionary-match.js";
+import { mergeTokensForRuby } from "furigana-ruby-engine/lib/token-merge.js";
+import { collectReadingCandidates } from "furigana-ruby-engine/lib/reading-candidates.js";
+import { buildFuriganaHtml } from "furigana-ruby-engine/lib/furigana.js";
 import {
   MANUAL_PHRASE_READINGS,
   rebuildManualPhraseIndex
-} from "../src/reading-context.js";
+} from "furigana-ruby-engine/lib/reading-context.js";
 
 const surfaces = getDictionarySurfaces();
 

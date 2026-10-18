@@ -11,24 +11,24 @@ import {
   buildReadingApiHeaders,
   normalizeReadingApiUrl,
   parseReadingApiResponse
-} from "./reading-api.js";
+} from "furigana-ruby-engine/lib/reading-api.js";
 import {
   USER_READING_DICT_KEY,
   loadUserReadingDict,
   loadUserReadingStore,
   normalizeUserReadingStore,
   applyUserReadingLearning
-} from "./user-reading-dict.js";
+} from "furigana-ruby-engine/lib/user-reading-dict.js";
 import {
   MANUAL_PHRASE_READINGS,
   CONTEXT_READING_RULES,
   rebuildManualPhraseIndex
-} from "./reading-context.js";
+} from "furigana-ruby-engine/lib/reading-context.js";
 import {
   loadNeologdPhrases,
   getNeologdPhraseCount
-} from "./neologd-phrases.js";
-import { buildCombinedUserDict } from "./phrase-hits.js";
+} from "furigana-ruby-engine/lib/neologd-phrases.js";
+import { buildCombinedUserDict } from "furigana-ruby-engine/lib/phrase-hits.js";
 import {
   verifyLicense,
   pullAndMergeDict,

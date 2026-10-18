@@ -1,6 +1,6 @@
 import { normalizeReading, normalizeUserReading } from "./reading-normalize.js";
 import { isStandaloneKanjiToken } from "./reading-guards.js";
-import learnedOverrides from "../data/generated/learned-overrides.json" with {
+import learnedOverrides from "../../../../data/generated/learned-overrides.json" with {
   type: "json"
 };
 import { mergeLearnedOverrides } from "./reading-learning.js";

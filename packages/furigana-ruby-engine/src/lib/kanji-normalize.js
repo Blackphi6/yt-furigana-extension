@@ -4,7 +4,7 @@
  *
  * マップ: joyokanji（Apache-2.0）由来 + data/kanji-compat-extra.json
  */
-import kanjiCompatMap from "../data/generated/kanji-compat-map.json" with {
+import kanjiCompatMap from "../../../../data/generated/kanji-compat-map.json" with {
   type: "json"
 };
 

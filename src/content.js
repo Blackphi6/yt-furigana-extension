@@ -18,7 +18,7 @@ import {
   normalizeStoredEngine,
   shouldUseRemoteConversion
 } from "./default-settings.js";
-import { buildFuriganaHtml } from "./furigana.js";
+import { buildFuriganaHtml } from "furigana-ruby-engine/lib/furigana.js";
 import { insertCaptionSoftBreaks, maxLineCharsFromElement, estimateMaxLineChars } from "./caption-line-break.js";
 import { wrapKeepOneLineHtml } from "./ruby-layout.js";
 import { recordLearningSample } from "./learning-inbox.js";
@@ -43,8 +43,8 @@ import {
 import {
   applyUserReadingLearning,
   loadUserReadingStore
-} from "./user-reading-dict.js";
-import { loadOccurrenceOverrideStore } from "./occurrence-overrides.js";
+} from "furigana-ruby-engine/lib/user-reading-dict.js";
+import { loadOccurrenceOverrideStore } from "furigana-ruby-engine/lib/occurrence-overrides.js";
 import { createCaptionProcessScheduler } from "./caption-process-schedule.js";
 import { shouldReplaceProvisionalFurigana } from "./reading-api-cache.js";
 import {
@@ -63,11 +63,11 @@ import {
   CONTEXT_READING_RULES,
   rebuildManualPhraseIndex,
   reloadBundledReadingMaps
-} from "./reading-context.js";
+} from "furigana-ruby-engine/lib/reading-context.js";
 import { initSudachiTokenizer } from "./sudachi-tokenizer.js";
 import { showProgress, showSudachiProgress } from "./sudachi-progress-ui.js";
 import { createHybridTokenize } from "./hybrid-tokenizer.js";
-import { startCorePhraseDicts } from "./phrase-dict-boot.js";
+import { startCorePhraseDicts } from "furigana-ruby-engine/lib/phrase-dict-boot.js";
 import {
   describeCaptionEnsureResult,
   ensureYouTubeJapaneseCaptions

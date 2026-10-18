@@ -10,8 +10,8 @@ import {
   MANUAL_PHRASE_READINGS,
   reloadBundledReadingMaps,
   rebuildManualPhraseIndex
-} from "../src/reading-context.js";
-import { applyUserReadingLearning } from "../src/user-reading-dict.js";
+} from "furigana-ruby-engine/lib/reading-context.js";
+import { applyUserReadingLearning } from "furigana-ruby-engine/lib/user-reading-dict.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const content = readFileSync(path.join(root, "src/content.js"), "utf8");

@@ -8,7 +8,7 @@ import {
   DEFAULT_MAX_LINE_CHARS,
   ZWSP
 } from "../src/caption-line-break.js";
-import { buildFuriganaHtml } from "../src/furigana.js";
+import { buildFuriganaHtml } from "furigana-ruby-engine/lib/furigana.js";
 import { loadDefaultJapaneseParser } from "budoux";
 
 assert.equal(estimateMaxLineChars({}), DEFAULT_MAX_LINE_CHARS);
