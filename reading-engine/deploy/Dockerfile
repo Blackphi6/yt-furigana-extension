@@ -27,6 +27,8 @@ COPY data/generated/heteronym-candidates.json /app/data/generated/heteronym-cand
 COPY data/generated/shared-readings-seed.json /app/data/generated/shared-readings-seed.json
 # 敬称の直前で引く全件の人名辞書（MIT、約300KB）
 COPY data/generated/personal-name-phrases.json.gz /app/data/generated/personal-name-phrases.json.gz
+# 拡張（furigana-ruby-engine）と共有の読み推定 v2 の規則表
+COPY packages/furigana-ruby-engine/rules/v2-rules.json /app/packages/furigana-ruby-engine/rules/v2-rules.json
 COPY data/creative-ruby /app/data/creative-ruby
 COPY reading-engine/deploy/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh

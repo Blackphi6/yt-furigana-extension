@@ -2,11 +2,12 @@
  * 敬称など人名の手がかりの直前の語は、人名辞書の読みを使う（相場さん＝あいばさん、小鳥遊さん＝たかなしさん）。
  * 手がかりが無いときは一般語の読みのまま（株の相場＝そうば）。
  */
+import V2_RULES from "../../rules/v2-rules.json" with { type: "json" };
 import { getPersonalNameReading } from "./personal-name-phrases.js";
 import { MANUAL_PHRASE_READINGS } from "./reading-context.js";
 
-/** 人名のあとにしか付かない語。「様」は神仏（明神様）やお客にも付くので入れない */
-const NAME_CUES = ["さん", "くん", "ちゃん", "氏", "先生", "選手", "監督", "容疑者", "被告", "議員"];
+/** 人名のあとにしか付かない語（読み API と共有の規則表）。「様」は神仏（明神様）やお客にも付くので入れない */
+export const NAME_CUES = V2_RULES.nameCues;
 const MAX_NAME_LENGTH = 4;
 
 /**

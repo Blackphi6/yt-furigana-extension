@@ -12,10 +12,11 @@ from functools import lru_cache
 from pathlib import Path
 
 from reading_engine.personal_names import REPO_ROOT, load_personal_name_phrases
+from reading_engine.shared_rules import load_v2_rules
 
 FULL_NAMES_GZ = REPO_ROOT / "data" / "generated" / "personal-name-phrases.json.gz"
-# 人名のあとにしか付かない語。「様」は神仏（明神様）やお客にも付くので入れない
-NAME_CUES = ("さん", "くん", "ちゃん", "氏", "先生", "選手", "監督", "容疑者", "被告", "議員")
+# 人名のあとにしか付かない語（拡張と共有の規則表）。「様」は神仏（明神様）やお客にも付くので入れない
+NAME_CUES = tuple(load_v2_rules()["nameCues"])
 MAX_NAME_LENGTH = 4
 
 

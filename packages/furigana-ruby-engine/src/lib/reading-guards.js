@@ -1,4 +1,5 @@
-import { normalizeReading } from "./reading-normalize.js";
+import V2_RULES from "../../rules/v2-rules.json" with { type: "json" };
+import { normalizeReading, toKatakana } from "./reading-normalize.js";
 
 const KANJI_RE = /[\u3400-\u9fff]/;
 
@@ -96,7 +97,7 @@ export function repairShimaiTokens(tokens) {
  * kuromoji は「一日中雨」の 雨 を 豪雨 の う（接尾）と読み、前の語と1つのルビにまとめてしまう。
  * 本物の接尾語（豪雨・雷雨）は1字の語に付くので、2字以上の語のあとだけ普通の名詞に戻す。
  */
-const FALSE_SUFFIX_READINGS = { 雨: "アメ" };
+export const FALSE_SUFFIX_READINGS = V2_RULES.falseSuffixReadings;
 
 /**
  * 結合の前（解析の直後）に当てる。入力は変更しない。
@@ -106,7 +107,8 @@ export function repairFalseKanjiSuffix(tokens) {
   if (!Array.isArray(tokens)) return tokens || [];
   return tokens.map((token, i) => {
     const surface = String(token.surface_form || token.surface || "");
-    const plain = FALSE_SUFFIX_READINGS[surface];
+    // 規則表はひらがな、形態素の読みはカタカナなのでそろえる
+    const plain = toKatakana(FALSE_SUFFIX_READINGS[surface] || "");
     const prev = String(tokens[i - 1]?.surface_form || tokens[i - 1]?.surface || "");
     // kuromoji は 名詞/接尾、Sudachi は 接尾辞
     const isSuffix = token.pos_detail_1 === "接尾" || token.pos === "接尾辞";

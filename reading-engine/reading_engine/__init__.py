@@ -22,6 +22,7 @@ from fugashi import Tagger
 
 from reading_engine.reranker import confidence_threshold, get_reranker
 from reading_engine.name_cues import name_cue_spans
+from reading_engine.shared_rules import load_v2_rules
 from reading_engine.sudachi_long import (
     is_compositional_number,
     is_number_with_counter,
@@ -170,7 +171,7 @@ CONTEXT_RULES: list[dict[str, Any]] = [
     {"surface": "下手", "reading": "したて", "weight": 5, "cues": ["下手に出", "下手に回"]},
     {"surface": "下手", "reading": "へた", "weight": 3, "cues": ["下手だ", "絵が下手", "字が下手"]},
     {"surface": "今日", "reading": "きょう", "weight": 2, "cues": ["明日", "昨日", "今日は", "今日も"]},
-    {"surface": "今日", "reading": "こんにち", "weight": 3, "cues": ["今日この頃", "今日では", "今日において", "今日の日本", "今日の社会", "今日の世界", "今日に至", "今日的"]},
+    {"surface": "今日", "reading": "こんにち", "weight": 3, "cues": ["今日この頃", "今日では", "今日において"]},
     {"surface": "風", "reading": "かぜ", "weight": 3, "cues": ["吹", "強風", "風が", "風で", "風強"]},
     {"surface": "風", "reading": "ふう", "weight": 3, "cues": ["こんな風", "どういう風", "風に書", "風にやっ", "ああいう風"]},
     {"surface": "博士", "reading": "はかせ", "weight": 3, "cues": ["物知り", "博士だ", "物知り博士"]},
@@ -182,10 +183,10 @@ CONTEXT_RULES: list[dict[str, Any]] = [
     {"surface": "人気", "reading": "にんき", "weight": 4, "cues": ["人気が高", "人気者", "人気曲", "大人気"]},
     {"surface": "一行", "reading": "いちぎょう", "weight": 5, "cues": ["一行だけ", "一行書", "一行メモ", "一行残"]},
     {"surface": "一行", "reading": "いっこう", "weight": 5, "cues": ["観光客の一行", "一行が到", "一行が到着", "一行の旅"]},
-    {"surface": "一日", "reading": "ついたち", "weight": 8, "cues": ["毎月一日", "一日に給料", "月の一日", "一日付", "一日には", "結局一日", "月一日"]},
-    {"surface": "一日", "reading": "いちにち", "weight": 5, "cues": ["丸一日", "一日かか", "一日で読", "一日中", "一日中粘", "一日で", "一日を", "一日が", "一日も", "一日一", "一日の終わり", "一日に何", "一日に数", "一日に一", "一日に二", "一日に三", "一日に四", "一日に五", "一日に六", "一日に七", "一日に八", "一日に九", "一日に十", "一日に1", "一日に2", "一日に3", "一日に4", "一日に5", "一日に6", "一日に7", "一日に8", "一日に9", "一日に１", "一日に２", "一日に３", "一日に４", "一日に５", "一日に６", "一日に７", "一日に８", "一日に９"]},
+    {"surface": "一日", "reading": "ついたち", "weight": 5, "cues": ["毎月一日", "一日に給料", "月の一日", "一日付", "一日には", "結局一日"]},
+    {"surface": "一日", "reading": "いちにち", "weight": 5, "cues": ["丸一日", "一日かか", "一日で読", "一日中", "一日中粘"]},
     {"surface": "上手", "reading": "じょうず", "weight": 5, "cues": ["が上手", "歌が上手", "絵が上手", "上手だ"]},
-    {"surface": "上手", "reading": "うわて", "weight": 5, "cues": ["上手に回", "上手に出", "交渉では上手", "一枚上手"]},
+    {"surface": "上手", "reading": "うわて", "weight": 5, "cues": ["上手に回", "上手に出", "交渉では上手"]},
     # JKYB-Parakeet 誤答補正（拡張 reading-context.js と同期）
     {"surface": "公", "reading": "おおやけ", "weight": 5, "cues": ["公の場", "公の機関", "公にする", "公には"]},
     {"surface": "香", "reading": "か", "weight": 5, "cues": ["梅の香", "花の香", "の香が", "の香を", "残香"]},
@@ -202,21 +203,14 @@ CONTEXT_RULES: list[dict[str, Any]] = [
     {"surface": "痕", "reading": "あと", "weight": 5, "cues": ["足痕", "傷痕", "血痕", "痕が残"]},
     {"surface": "根", "reading": "こん", "weight": 5, "cues": ["平方根", "立方根", "累乗根"]},
 ]
+# 読み推定 v2 の文脈規則（一日＝ついたち／いちにち、今日＝こんにち など）。拡張と共有の規則表
+CONTEXT_RULES.extend({**rule, "cues": list(rule["cues"])} for rule in load_v2_rules()["contextRules"])
 
 # 複合語の強制読み（拡張 MANUAL_PHRASE_READINGS と同期）
-# 接尾語の読みのほかに、単独の語として普通の読みを持つ漢字（拡張の reading-guards.js と揃える）
-FALSE_SUFFIX_READINGS: dict[str, str] = {"雨": "あめ"}
+# 接尾語の読みのほかに、単独の語として普通の読みを持つ漢字（拡張と共有の規則表）
+FALSE_SUFFIX_READINGS: dict[str, str] = dict(load_v2_rules()["falseSuffixReadings"])
 
 MANUAL_PHRASES: dict[str, str] = {
-    # 拡張の reading-context.js と揃える（解析器が 一|日中 と区切る、会社→がいしゃ の連濁）
-    "一日中": "いちにちじゅう",
-    "一年中": "いちねんじゅう",
-    "一晩中": "ひとばんじゅう",
-    "株式会社": "かぶしきがいしゃ",
-    "有限会社": "ゆうげんがいしゃ",
-    "合同会社": "ごうどうがいしゃ",
-    "幕引き": "まくひき",
-    "一枚上手": "いちまいうわて",
     "故郷": "こきょう",
     "太后": "たいこう",
     "紅色": "べにいろ",
@@ -238,6 +232,8 @@ MANUAL_PHRASES: dict[str, str] = {
     "氷室": "ひむろ",
     "字は": "じは",
 }
+# 読み推定 v2 の固定句（一日中・株式会社・幕引きなど）。拡張と共有の規則表
+MANUAL_PHRASES.update(load_v2_rules()["phrases"])
 
 
 @dataclass
