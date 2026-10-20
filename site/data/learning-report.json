@@ -1,15 +1,15 @@
 {
-  "ts": "2026-10-19T22:18:56.574Z",
+  "ts": "2026-10-20T04:31:35.910Z",
   "mode": "synth",
-  "note": "素材 +43 / 本体ルール変化なし（日次は主に素材集め）",
+  "note": "素材 +51 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 7346,
-    "delta": 43,
-    "acceptedThisRun": 53,
-    "rejectedThisRun": 33
+    "total": 7397,
+    "delta": 51,
+    "acceptedThisRun": 60,
+    "rejectedThisRun": 26
   },
   "benches": {
     "seed-bench": {
@@ -66,70 +66,70 @@
   },
   "newSamples": [
     {
-      "text": "牛の角を見て、角が生えるのを想像した。",
+      "text": "牛の角が光っている。",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:verify_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "角が生えると、牛の角がより豪華になる。",
+      "text": "角が生えると、雄牛の威厳が増す。",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:verify_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "市場は株式の流れを反映する重要な場所だ。",
+      "text": "株式市場の規模が拡大し、投資家が注目している。",
       "surface": "市場",
       "gold": "しじょう",
       "source": "llm-synth:groq:verify_agree",
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "text": "市場の規模は経済成長の指標として注目される。",
+      "text": "金融市場は経済の健康を示す重要な指標だ。",
       "surface": "市場",
       "gold": "しじょう",
-      "source": "llm-synth:groq:arbitrate_agree",
+      "source": "llm-synth:groq:verify_agree",
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "text": "ラーメンの味は辛い。",
+      "text": "カレー辛い",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "カレーに唐辛子を入れたら辛い。",
+      "text": "ラーメン辛い",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "永遠のテーマとして、星の光は永遠に終わらない。",
+      "text": "日常の中で、子どもたちは『永遠のテーマ』を想像しながら遊びます。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "永遠に終わらない時間の流れを観察するのが好きだ。",
+      "text": "論理的に考えると、宇宙は『永遠に終わらない』運動を続けていると示唆されます。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "今日の仕事が多すぎて、私は忙しい。",
+      "text": "今日は仕事が山積みで、忙しい。",
       "surface": "忙しい",
       "gold": "いそがしい",
       "source": "llm-synth:groq:verify_agree",
       "note": "仕事・予定・日常の忙しさ"
     },
     {
-      "text": "予定が山積みで、日常の中で忙しいと感じる。",
+      "text": "予定が詰まっているので、忙しい。",
       "surface": "忙しい",
       "gold": "いそがしい",
       "source": "llm-synth:groq:verify_agree",
