@@ -1,15 +1,15 @@
 {
-  "ts": "2026-10-24T10:48:10.699Z",
+  "ts": "2026-10-24T15:50:30.663Z",
   "mode": "synth",
-  "note": "素材 +45 / 本体ルール変化なし（日次は主に素材集め）",
+  "note": "素材 +47 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 8154,
-    "delta": 45,
-    "acceptedThisRun": 52,
-    "rejectedThisRun": 34
+    "total": 8201,
+    "delta": 47,
+    "acceptedThisRun": 54,
+    "rejectedThisRun": 32
   },
   "benches": {
     "seed-bench": {
@@ -66,70 +66,70 @@
   },
   "newSamples": [
     {
-      "text": "牛の角が生えると、つのがとても鋭い。",
+      "text": "彼は急いで角を曲がると、古い図書館に到着した。",
+      "surface": "角",
+      "gold": "かど",
+      "source": "llm-synth:groq:verify_agree",
+      "note": "街角／角を曲がる（かど）"
+    },
+    {
+      "text": "牛の角を磨くと、角が生えるように輝く。",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:verify_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "角が生える牧場で、つのを切り取った。",
+      "text": "角が生えると、牛の角が大きくなることがある。",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:verify_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "株式市場の動向は経済全体に大きな影響を与える。",
+      "text": "株式市場の規模が急拡大し、経済全体に波及効果が出ている。",
       "surface": "市場",
       "gold": "しじょう",
       "source": "llm-synth:groq:verify_agree",
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "text": "金融市場の規模拡大は投資家の期待を高めている。",
+      "text": "金融市場の動向は、国内外の投資家にとって重要な経済指標となっている。",
       "surface": "市場",
       "gold": "しじょう",
       "source": "llm-synth:groq:verify_agree",
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "text": "カレーは辛い香りが鼻をくすぐる。",
+      "text": "ラーメンに唐辛子を入れすぎて、辛い香りが立ち上る。",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "ラーメンは辛いと、味がさらに深くなる。",
+      "text": "カレーに唐辛子を加えたら、辛い味が口に広がる。",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "永遠に終わらない星空を眺め、心の中で永遠のテーマを語る。",
+      "text": "日常の中で、雨が止まらないとき、私は永遠に続くと感じた。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "日常の中で、永遠に終わらない笑顔を見つけることが幸せだと気づく。",
+      "text": "論理的に考えると、星の光は永遠に見えるように思える。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "今日は会議が多くて、仕事が忙しい。",
-      "surface": "忙しい",
-      "gold": "いそがしい",
-      "source": "llm-synth:groq:verify_agree",
-      "note": "仕事・予定・日常の忙しさ"
-    },
-    {
-      "text": "予定が詰まって、日常が忙しい。",
+      "text": "仕事の合間に電話が来て、忙しいと感じた。",
       "surface": "忙しい",
       "gold": "いそがしい",
       "source": "llm-synth:groq:verify_agree",
