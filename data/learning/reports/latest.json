@@ -1,15 +1,15 @@
 {
-  "ts": "2026-10-30T12:40:56.821Z",
+  "ts": "2026-10-30T22:15:28.123Z",
   "mode": "synth",
-  "note": "素材 +44 / 本体ルール変化なし（日次は主に素材集め）",
+  "note": "素材 +48 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 9042,
-    "delta": 44,
-    "acceptedThisRun": 57,
-    "rejectedThisRun": 29
+    "total": 9090,
+    "delta": 48,
+    "acceptedThisRun": 56,
+    "rejectedThisRun": 30
   },
   "benches": {
     "seed-bench": {
@@ -66,70 +66,70 @@
   },
   "newSamples": [
     {
-      "text": "牛の角が光っている。",
+      "text": "牛の角が大きく伸びて、牧場の風景を彩る。",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:verify_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "角が生えるときは春になる。",
+      "text": "角が生えるたびに、彼の自信が増していく。",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:verify_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "株式市場は日々の経済動向を反映し、投資家の期待を左右する。",
+      "text": "株式市場の規模は、世界経済に大きな影響を与えている。",
       "surface": "市場",
       "gold": "しじょう",
       "source": "llm-synth:groq:verify_agree",
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "text": "金融市場の規模は拡大を続け、国際資金流動性に大きな影響を与えている。",
+      "text": "株式市場は、投資家にとって重要な情報源となっている。",
       "surface": "市場",
       "gold": "しじょう",
       "source": "llm-synth:groq:verify_agree",
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "text": "カレーは辛い。",
+      "text": "ラーメンの辛い味が好きだ",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "ラーメンの味は辛い。",
+      "text": "カレーの辛い香りが心に残る",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "彼は永遠のテーマを掲げ、夜明けまで語り続けた。",
+      "text": "永遠のテーマに思いを馳せると、心は静かに満たされる。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "雨が永遠に終わらないように聞こえる。",
+      "text": "永遠に終わらない日々の中で、私は小さな喜びを見つける。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "仕事の予定が多くて、いつも忙しい。",
+      "text": "今日の仕事が山積みで、忙しいと感じるほどだ。",
       "surface": "忙しい",
       "gold": "いそがしい",
       "source": "llm-synth:groq:verify_agree",
       "note": "仕事・予定・日常の忙しさ"
     },
     {
-      "text": "日常生活で、家事と仕事が重なり、忙しい。",
+      "text": "予定が詰まった日々で、忙しいとしか言いようがない。",
       "surface": "忙しい",
       "gold": "いそがしい",
       "source": "llm-synth:groq:verify_agree",
