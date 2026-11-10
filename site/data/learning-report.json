@@ -1,13 +1,13 @@
 {
-  "ts": "2026-11-09T15:57:54.124Z",
+  "ts": "2026-11-10T01:30:01.102Z",
   "mode": "synth",
-  "note": "素材 +36 / 本体ルール変化なし（日次は主に素材集め）",
+  "note": "素材 +39 / 本体ルール変化なし（日次は主に素材集め）",
   "gateOk": true,
   "floorsOk": true,
   "regress": false,
   "corpus": {
-    "total": 10325,
-    "delta": 36,
+    "total": 10364,
+    "delta": 39,
     "acceptedThisRun": 53,
     "rejectedThisRun": 33
   },
@@ -66,70 +66,70 @@
   },
   "newSamples": [
     {
-      "text": "牛の角が山の稜線に光っている。",
+      "text": "牛の角が光っている。",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:verify_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "角が生えると、羊の体が重くなる。",
+      "text": "角が生えると、風が通る。",
       "surface": "角",
       "gold": "つの",
       "source": "llm-synth:groq:verify_agree",
       "note": "牛の角／角が生える（つの）"
     },
     {
-      "text": "株式市場の規模は昨年比で大きく拡大した。",
+      "text": "株式市場の規模が拡大し、経済全体に波及効果をもたらした。",
       "surface": "市場",
       "gold": "しじょう",
       "source": "llm-synth:groq:verify_agree",
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "text": "経済市場の動向は金融政策の影響を強く受ける。",
+      "text": "金融市場の変動が企業の資金調達コストに直結し、投資戦略を再検討させた。",
       "surface": "市場",
       "gold": "しじょう",
       "source": "llm-synth:groq:verify_agree",
       "note": "株式・規模・経済・金融の文脈"
     },
     {
-      "text": "辛い",
+      "text": "ラーメンを食べて、辛いと感じるときは、唐辛子を足すと風味が増す。",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "辛い",
+      "text": "カレーを作るときに、辛いと感じたら、味を調えるために唐辛子を入れるといい。",
       "surface": "辛い",
       "gold": "からい",
       "source": "llm-synth:groq:verify_agree",
       "note": "ラーメン・カレー・味・唐辛子"
     },
     {
-      "text": "雨が降り続く街の光景は永遠に終わらないと感じる。",
+      "text": "毎朝、コーヒーを飲む時間は永遠に終わらないと感じる日常。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "彼の笑顔は永遠のテーマとして、心に刻まれた。",
+      "text": "論理的に考えると、宇宙の膨張は永遠のテーマである。",
       "surface": "永遠",
       "gold": "えいえん",
       "source": "llm-synth:groq:verify_agree",
       "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
     },
     {
-      "text": "仕事が山積みで、終わる気配がなくて忙しい",
+      "text": "仕事が山積みで、今日も忙しい。",
       "surface": "忙しい",
       "gold": "いそがしい",
       "source": "llm-synth:groq:verify_agree",
       "note": "仕事・予定・日常の忙しさ"
     },
     {
-      "text": "予定が詰まっていて、手が止まらない忙しい",
+      "text": "予定が詰まっていて、日常が忙しい。",
       "surface": "忙しい",
       "gold": "いそがしい",
       "source": "llm-synth:groq:verify_agree",
