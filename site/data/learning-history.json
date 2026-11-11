@@ -1,145 +1,6 @@
 {
-  "updatedAt": "2026-11-10T23:10:51.356Z",
+  "updatedAt": "2026-11-11T05:50:07.942Z",
   "entries": [
-    {
-      "ts": "2026-10-23T16:57:35.445Z",
-      "mode": "synth",
-      "note": "素材 +43 / 本体ルール変化なし（日次は主に素材集め）",
-      "gateOk": true,
-      "floorsOk": true,
-      "regress": false,
-      "corpus": {
-        "total": 8022,
-        "delta": 43,
-        "acceptedThisRun": 58,
-        "rejectedThisRun": 28
-      },
-      "benches": {
-        "seed-bench": {
-          "passed": 22,
-          "total": 22,
-          "rate": 1,
-          "minPassRate": 1,
-          "failed": []
-        },
-        "hard-heteronym": {
-          "passed": 41,
-          "total": 42,
-          "rate": 0.9761904761904762,
-          "minPassRate": 0.85,
-          "failed": [
-            "naname-hasu"
-          ]
-        },
-        "easy-regression": {
-          "passed": 8,
-          "total": 8,
-          "rate": 1,
-          "minPassRate": 0.9,
-          "failed": []
-        }
-      },
-      "vsBaseline": {
-        "seed-bench": {
-          "rate": 1,
-          "passed": 22,
-          "total": 22,
-          "baselineRate": 1,
-          "deltaRate": 0
-        },
-        "hard-heteronym": {
-          "rate": 0.9761904761904762,
-          "passed": 41,
-          "total": 42,
-          "baselineRate": 0.9761904761904762,
-          "deltaRate": 0
-        },
-        "easy-regression": {
-          "rate": 1,
-          "passed": 8,
-          "total": 8,
-          "baselineRate": 1,
-          "deltaRate": 0
-        }
-      },
-      "overrides": {
-        "phraseCount": 13,
-        "contextRuleCount": 74,
-        "changed": false
-      },
-      "newSamples": [
-        {
-          "text": "牛の角が大きく生える山羊が見つけた草原で、彼は喜びを感じた。",
-          "surface": "角",
-          "gold": "つの",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "牛の角／角が生える（つの）"
-        },
-        {
-          "text": "角が生えることを知ると、彼は自分の力に自信を持ち、さらに前進した。",
-          "surface": "角",
-          "gold": "つの",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "牛の角／角が生える（つの）"
-        },
-        {
-          "text": "株式市場の規模は年々拡大し続けている。",
-          "surface": "市場",
-          "gold": "しじょう",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "株式・規模・経済・金融の文脈"
-        },
-        {
-          "text": "金融市場の動向は国内経済に直結する重要指標だ。",
-          "surface": "市場",
-          "gold": "しじょう",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "株式・規模・経済・金融の文脈"
-        },
-        {
-          "text": "ラーメンは辛い。",
-          "surface": "辛い",
-          "gold": "からい",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "ラーメン・カレー・味・唐辛子"
-        },
-        {
-          "text": "カレーの味は辛い。",
-          "surface": "辛い",
-          "gold": "からい",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "ラーメン・カレー・味・唐辛子"
-        },
-        {
-          "text": "永遠のテーマが語られた講義は、学生にとって永遠に終わらない学びの源となる。",
-          "surface": "永遠",
-          "gold": "えいえん",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
-        },
-        {
-          "text": "雨が降り続く夜、窓辺で聞く雨音は永遠に終わらないと感じさせる。",
-          "surface": "永遠",
-          "gold": "えいえん",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
-        },
-        {
-          "text": "今日の仕事は忙しいので、昼休みが短い。",
-          "surface": "忙しい",
-          "gold": "いそがしい",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "仕事・予定・日常の忙しさ"
-        },
-        {
-          "text": "予定が忙しいので、週末の旅行を延期した。",
-          "surface": "忙しい",
-          "gold": "いそがしい",
-          "source": "llm-synth:groq:verify_agree",
-          "note": "仕事・予定・日常の忙しさ"
-        }
-      ]
-    },
     {
       "ts": "2026-10-23T21:21:53.760Z",
       "mode": "synth",
@@ -8121,6 +7982,145 @@
         },
         {
           "text": "予定が詰まっていて、忙しい。",
+          "surface": "忙しい",
+          "gold": "いそがしい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "仕事・予定・日常の忙しさ"
+        }
+      ]
+    },
+    {
+      "ts": "2026-11-11T05:50:07.942Z",
+      "mode": "synth",
+      "note": "素材 +42 / 本体ルール変化なし（日次は主に素材集め）",
+      "gateOk": true,
+      "floorsOk": true,
+      "regress": false,
+      "corpus": {
+        "total": 10478,
+        "delta": 42,
+        "acceptedThisRun": 56,
+        "rejectedThisRun": 30
+      },
+      "benches": {
+        "seed-bench": {
+          "passed": 22,
+          "total": 22,
+          "rate": 1,
+          "minPassRate": 1,
+          "failed": []
+        },
+        "hard-heteronym": {
+          "passed": 41,
+          "total": 42,
+          "rate": 0.9761904761904762,
+          "minPassRate": 0.85,
+          "failed": [
+            "naname-hasu"
+          ]
+        },
+        "easy-regression": {
+          "passed": 8,
+          "total": 8,
+          "rate": 1,
+          "minPassRate": 0.9,
+          "failed": []
+        }
+      },
+      "vsBaseline": {
+        "seed-bench": {
+          "rate": 1,
+          "passed": 22,
+          "total": 22,
+          "baselineRate": 1,
+          "deltaRate": 0
+        },
+        "hard-heteronym": {
+          "rate": 0.9761904761904762,
+          "passed": 41,
+          "total": 42,
+          "baselineRate": 0.9761904761904762,
+          "deltaRate": 0
+        },
+        "easy-regression": {
+          "rate": 1,
+          "passed": 8,
+          "total": 8,
+          "baselineRate": 1,
+          "deltaRate": 0
+        }
+      },
+      "overrides": {
+        "phraseCount": 13,
+        "contextRuleCount": 75,
+        "changed": false
+      },
+      "newSamples": [
+        {
+          "text": "夕暮れ時、角を曲がると小さなカフェが見える。",
+          "surface": "角",
+          "gold": "かど",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "街角／角を曲がる（かど）"
+        },
+        {
+          "text": "牛の角が輝いている。",
+          "surface": "角",
+          "gold": "つの",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "牛の角／角が生える（つの）"
+        },
+        {
+          "text": "角が生えるときに、耳を鳴らす。",
+          "surface": "角",
+          "gold": "つの",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "牛の角／角が生える（つの）"
+        },
+        {
+          "text": "株式市場の規模は今期大幅に拡大した。",
+          "surface": "市場",
+          "gold": "しじょう",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "株式・規模・経済・金融の文脈"
+        },
+        {
+          "text": "金融市場は経済成長の指標として重要視されている。",
+          "surface": "市場",
+          "gold": "しじょう",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "株式・規模・経済・金融の文脈"
+        },
+        {
+          "text": "カレーを食べたら辛い",
+          "surface": "辛い",
+          "gold": "からい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "ラーメン・カレー・味・唐辛子"
+        },
+        {
+          "text": "ラーメンが辛い",
+          "surface": "辛い",
+          "gold": "からい",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "ラーメン・カレー・味・唐辛子"
+        },
+        {
+          "text": "日常の中で、彼は永遠に続くと信じて笑った。",
+          "surface": "永遠",
+          "gold": "えいえん",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
+        },
+        {
+          "text": "論理的に考えると、永遠は客観的な概念にすぎない。",
+          "surface": "永遠",
+          "gold": "えいえん",
+          "source": "llm-synth:groq:verify_agree",
+          "note": "日常・論理・客観（永遠のテーマ、永遠に終わらない など）"
+        },
+        {
+          "text": "仕事が山積みで、今朝から忙しいと感じている。",
           "surface": "忙しい",
           "gold": "いそがしい",
           "source": "llm-synth:groq:verify_agree",
