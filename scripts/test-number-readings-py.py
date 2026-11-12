@@ -47,6 +47,60 @@ def test_collect_9ji() -> None:
     assert collect_number_tokens("1日")[0]["reading"] == "ついたち"
 
 
+def test_collect_counter_across_space() -> None:
+    # 字幕は「20 人」のように数字の前後に空白を入れることが多い
+    for text, surface in (
+        ("推薦人 20 人分の宴席を用意してたらしいんです", "20 人"),
+        ("推薦人 ２０ 人分の宴席", "２０ 人"),
+        ("推薦人　２０　人分の宴席", "２０　人"),
+    ):
+        toks = collect_number_tokens(text)
+        assert len(toks) == 1, text
+        assert toks[0]["surface"] == surface, text
+        assert toks[0]["reading"] == "にじゅうにん", text
+        start, end = toks[0]["span"]
+        assert text[start:end] == surface, text
+    assert collect_number_tokens("午後 3 時に集合")[0]["reading"] == "さんじ"
+    assert collect_number_tokens("2 人で行く")[0]["reading"] == "ふたり"
+
+
+def test_collect_counter_across_space_keeps_compounds() -> None:
+    # 空白の先で解析器が2文字以上の語を始めていれば、数字だけを読む
+    text = "ベスト 8 日本代表"
+    toks = collect_number_tokens(text, frozenset({text.index("日本")}))
+    assert [t["surface"] for t in toks] == ["8"]
+    # 空白がなければ従来どおり（語の判定は見ない）
+    assert collect_number_tokens("8日", frozenset({1}))[0]["surface"] == "8日"
+    # 空白が長いものは区切りとみなす
+    assert collect_number_tokens("20   人")[0]["surface"] == "20"
+
+
+def test_analyze_counter_across_space() -> None:
+    from reading_engine import get_engine  # noqa: WPS433
+
+    eng = get_engine()
+    for text, surface, reading in (
+        ("推薦人 20 人分の宴席を用意してたらしいんです", "20 人", "にじゅうにん"),
+        ("推薦人 ２０ 人分の宴席", "２０ 人", "にじゅうにん"),
+        ("毎日 5 分だけ練習する", "5 分", "ごふん"),
+    ):
+        tokens = eng.analyze(text, user_dict=[])["tokens"]
+        hit = next(t for t in tokens if t["surface"] == surface)
+        assert hit["reading"] == reading, (text, hit)
+    # 空白の先が別の語なら、その語の読みを残す
+    for text, word in (
+        ("ベスト 8 日本代表", "日本"),
+        ("iPhone 15 分割払い", "分割"),
+        ("レベル 5 人間", "人間"),
+        ("全 3 回転", "回転"),
+        ("第 2 月曜日", "月曜日"),
+        ("あと 3 時間", "時間"),
+        ("ベスト 10 人気の店", "人気"),
+    ):
+        surfaces = [t["surface"] for t in eng.analyze(text, user_dict=[])["tokens"]]
+        assert word in surfaces, (text, surfaces)
+
+
 def test_analyze_includes_number() -> None:
     from reading_engine import get_engine  # noqa: WPS433
 
@@ -78,9 +132,12 @@ def main() -> None:
     test_digit_run()
     test_collect_with_kai()
     test_collect_9ji()
+    test_collect_counter_across_space()
+    test_collect_counter_across_space_keeps_compounds()
     try:
         test_analyze_includes_number()
         test_analyze_9ji()
+        test_analyze_counter_across_space()
     except ModuleNotFoundError as exc:
         # CI / 素の python3 に fugashi が無いときは数字規則だけ通す
         if "fugashi" not in str(exc):
