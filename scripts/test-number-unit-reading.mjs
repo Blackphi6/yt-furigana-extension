@@ -9,7 +9,8 @@ import {
   matchNumberUnitTokenSpan,
   applyJuuSokuon,
   parseDotSeparatedDigits,
-  readingForDotSeparatedDigits
+  readingForDotSeparatedDigits,
+  parseKanjiInteger
 } from "furigana-ruby-engine/lib/number-unit-reading.js";
 import { mergeTokensForRuby } from "furigana-ruby-engine/lib/token-merge.js";
 import { buildFuriganaHtml } from "furigana-ruby-engine/lib/furigana.js";
@@ -19,6 +20,16 @@ assert.equal(readCardinal(7), "なな");
 assert.equal(readCardinal(7000), "ななせん");
 assert.equal(readCardinal(10000), "いちまん");
 assert.equal(readCardinal(12345), "いちまんにせんさんびゃくよんじゅうご");
+
+// 前に数のない「万」は数にしない（何万人・数万人・万人 の 万人 が ぜろにん になる）
+assert.equal(parseKanjiInteger("万"), null);
+assert.equal(parseKanjiInteger("一万"), 10000);
+assert.equal(parseKanjiInteger("十万"), 100000);
+assert.notEqual(
+  matchNumberUnitTokenSpan([{ surface_form: "万人" }], 0)?.reading,
+  "ぜろにん"
+);
+assert.equal(matchNumberUnitTokenSpan([{ surface_form: "一万人" }], 0)?.reading, "いちまんにん");
 
 assert.equal(readingForNumberUnitSurface("0時"), "れいじ");
 assert.equal(readingForNumberUnitSurface("7時"), "しちじ");

@@ -365,6 +365,8 @@ export function parseKanjiInteger(text) {
       continue;
     }
     if (ch === "万") {
+      // 前に数のない「万」（何万人・万人 の 万）は数にしない。0 にすると ぜろにん になる
+      if (total + cur === 0) return null;
       total = (total + cur) * 10000;
       cur = 0;
       continue;

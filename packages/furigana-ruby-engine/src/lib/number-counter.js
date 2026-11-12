@@ -39,8 +39,11 @@ export function kanjiNumeralToInt(text) {
       section += (digit ?? 1) * KANJI_SMALL_UNIT[ch];
       digit = null;
     } else {
-      // 万
-      total += (section + (digit ?? 0) || 1) * 10000;
+      // 万。前に数のない「万」は一万とは限らない。解析器が「80万円」「十万円」の
+      // 万円 だけを切り出すことがあり、一万と読むと いちまんえん になる
+      const head = section + (digit ?? 0);
+      if (head === 0) return null;
+      total += head * 10000;
       section = 0;
       digit = null;
     }
