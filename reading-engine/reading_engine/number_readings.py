@@ -243,6 +243,8 @@ COUNTER_UNITS: dict[str, dict[str, Any]] = {
 
 # 「一人前」「一人称」など、人の直後に続くと結合しない
 _PERSON_COMPOUND_TAIL = frozenset("前称組月")
+# 字幕は「20 人」と数字の前後に空白を置くことが多い。長い空白は区切りとみなす
+_COUNTER_GAP_RE = re.compile(r"[ 　]{0,2}")
 
 
 def read_counter(number: int, spec: dict[str, Any]) -> str:
@@ -285,7 +287,13 @@ def read_kai_style_counter(number: int, suffix: str = "かい") -> str:
     return f"{cardinal}{unit}" if cardinal else ""
 
 
-def collect_number_tokens(text: str) -> list[dict[str, Any]]:
+def collect_number_tokens(
+    text: str, word_starts: frozenset[int] = frozenset()
+) -> list[dict[str, Any]]:
+    """word_starts: 解析器が2文字以上の語（日本・人間・分割など）を始めた位置。
+
+    空白をまたぐときだけ見る。「ベスト 8 日本代表」の 8 と 日 は別の語なので結合しない。
+    """
     src = text or ""
     tokens: list[dict[str, Any]] = []
     pos = 0
@@ -303,13 +311,15 @@ def collect_number_tokens(text: str) -> list[dict[str, Any]]:
         reading, digits = parsed
         integer = int(digits.split(".", 1)[0]) if digits else 0
 
-        next_ch = src[end : end + 1]
+        unit_at = _COUNTER_GAP_RE.match(src, end).end()
+        next_ch = src[unit_at : unit_at + 1]
         counter = COUNTER_UNITS.get(next_ch)
-        after_unit = src[end + 1 : end + 2]
-        if counter and not (
+        after_unit = src[unit_at + 1 : unit_at + 2]
+        starts_other_word = unit_at > end and unit_at in word_starts
+        if counter and not starts_other_word and not (
             next_ch == "人" and after_unit in _PERSON_COMPOUND_TAIL
         ):
-            end += 1
+            end = unit_at + 1
             surface = src[start:end]
             combined = read_counter(integer, counter)
             if not combined:
@@ -350,7 +360,12 @@ def merge_number_tokens(
     text: str, tokens: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
     """数字（＋時/分/人/階/回など）を優先。重なる漢字トークンは落とす。"""
-    numbers = collect_number_tokens(text)
+    word_starts = frozenset(
+        t["span"][0]
+        for t in tokens or []
+        if isinstance(t.get("span"), list) and t["span"][1] - t["span"][0] >= 2
+    )
+    numbers = collect_number_tokens(text, word_starts)
     if not numbers:
         return tokens
     existing = list(tokens or [])
