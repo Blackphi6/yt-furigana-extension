@@ -16,6 +16,12 @@ assert.equal(kanjiNumeralToInt("三千二百"), 3200);
 assert.equal(kanjiNumeralToInt("一万"), 10000);
 assert.equal(kanjiNumeralToInt("二〇二六"), 2026);
 assert.equal(kanjiNumeralToInt("本"), null);
+assert.equal(kanjiNumeralToInt("二十万"), 200000);
+// 前に数のない「万」は一万と決めつけない（80万円・十万円 の 万 だけが切り出されることがある）
+assert.equal(kanjiNumeralToInt("万"), null);
+assert.equal(readingForNumberWithCounter("万円"), "");
+assert.equal(readingForNumberWithCounter("万人"), "");
+assert.equal(readingForNumberWithCounter("一万円"), "いちまんえん");
 
 // 匹・杯は本と同じ音の変化
 assert.equal(readNumberWithUnit(1, "匹"), "いっぴき");
@@ -70,6 +76,18 @@ const ambiguous = applyNumberCounterReadings([
   { surface_form: "日", reading: "ニチ" }
 ]);
 assert.deepEqual(ambiguous.map((t) => t.surface_form), ["一", "日"]);
+// 「80 万円」「十万円」の 万円 は、解析器の読み（まんえん）のまま残す
+for (const head of [{ surface_form: "80" }, { surface_form: "十", reading: "ジュウ" }]) {
+  const man = applyNumberCounterReadings([
+    head,
+    { surface_form: "万", reading: "マン" },
+    { surface_form: "円", reading: "エン" }
+  ]);
+  assert.ok(
+    !man.some((t) => t.reading === "いちまんえん"),
+    `${head.surface_form}万円 を いちまんえん にしない`
+  );
+}
 // 入力は変更しない
 const input = [{ surface_form: "三本", reading: "ミツモト" }];
 applyNumberCounterReadings(input);
