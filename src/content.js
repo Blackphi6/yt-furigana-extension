@@ -14,6 +14,8 @@ import {
 } from "./caption-styles.js";
 import {
   DEFAULT_SETTINGS,
+  isGeminiNanoEngine,
+  isLlmEngine,
   isReadingApiEngine,
   normalizeStoredEngine,
   shouldUseRemoteConversion
@@ -325,7 +327,9 @@ async function convertText(text) {
   try {
     const html = isReadingApiEngine(settings.engine)
       ? await fetchReadingApiHtml(normalized)
-      : await fetchOllamaHtml(normalized);
+      : isGeminiNanoEngine(settings.engine)
+        ? await fetchGeminiNanoHtml(normalized)
+        : await fetchOllamaHtml(normalized);
     noteLearningSample(normalized, html);
     return html;
   } catch (error) {
@@ -538,6 +542,10 @@ function requestLlmFurigana(text) {
 
 function requestReadingApiFurigana(text) {
   return requestBackgroundHtml("CONVERT_READING_API", text);
+}
+
+function requestGeminiNanoFurigana(text) {
+  return requestBackgroundHtml("CONVERT_GEMINI_NANO", text);
 }
 
 function ensureOriginalText(element, normalized) {
@@ -826,6 +834,10 @@ async function fetchOllamaHtml(normalized) {
 
 async function fetchReadingApiHtml(normalized) {
   return fetchRemoteHtml(normalized, requestReadingApiFurigana);
+}
+
+async function fetchGeminiNanoHtml(normalized) {
+  return fetchRemoteHtml(normalized, requestGeminiNanoFurigana);
 }
 
 /**
@@ -1418,14 +1430,16 @@ async function applySettings() {
     settings.engine === "hybrid"
   ) {
     await ensureLocalTokenizer();
-  } else if (settings.engine === "reading-api" && shouldUseRemoteConversion(settings)) {
+  } else if (shouldUseRemoteConversion(settings)) {
     await ensureLocalTokenizer().catch(() => {});
-    try {
-      chrome.runtime.sendMessage({ type: "WARM_READING_API" }, () => {
-        void chrome.runtime.lastError;
-      });
-    } catch {
-      /* ignore */
+    if (settings.engine === "reading-api") {
+      try {
+        chrome.runtime.sendMessage({ type: "WARM_READING_API" }, () => {
+          void chrome.runtime.lastError;
+        });
+      } catch {
+        /* ignore */
+      }
     }
   }
 
@@ -1600,15 +1614,17 @@ async function bootstrap() {
         !shouldUseRemoteConversion(settings));
     if (useLocal) {
       await ensureLocalTokenizer();
-    } else if (settings.engine === "reading-api") {
+    } else if (settings.engine === "reading-api" || isLlmEngine(settings.engine)) {
       // 楽観表示用に端末内辞書を先に暖機し、並行で公開 API も起こす
       await ensureLocalTokenizer().catch(() => {});
-      try {
-        chrome.runtime.sendMessage({ type: "WARM_READING_API" }, () => {
-          void chrome.runtime.lastError;
-        });
-      } catch {
-        /* ignore */
+      if (settings.engine === "reading-api") {
+        try {
+          chrome.runtime.sendMessage({ type: "WARM_READING_API" }, () => {
+            void chrome.runtime.lastError;
+          });
+        } catch {
+          /* ignore */
+        }
       }
     }
     scheduleProcess();

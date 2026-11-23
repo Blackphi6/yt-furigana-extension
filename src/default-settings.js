@@ -67,6 +67,7 @@ export { PUBLIC_READING_API_URL };
 
 /** ふりがな用途で推奨するモデル（軽い・速い順） */
 export const PREFERRED_OLLAMA_MODELS = [
+  "gemma3n:e4b",
   "gemma3:4b",
   "gemma3:1b",
   "gemma2:2b",
@@ -101,7 +102,7 @@ export function pickPreferredOllamaModel(installedModels, configuredModel = "") 
     }
   }
 
-  const gemma = models.find((name) => /gemma3?:/i.test(name));
+  const gemma = models.find((name) => /gemma/i.test(name));
   if (gemma) {
     return gemma;
   }
@@ -120,7 +121,12 @@ export function isModelInstalled(installedModels, modelName) {
 }
 
 export function isLlmEngine(engine) {
-  return engine === "ollama";
+  return engine === "ollama" || engine === "gemini-nano";
+}
+
+/** Chrome 内蔵 AI（Gemini Nano / Prompt API）エンジンか */
+export function isGeminiNanoEngine(engine) {
+  return engine === "gemini-nano";
 }
 
 /** 候補ラティス型の読み推定API（BYO）。メンテナー常時推論ではない。 */
@@ -135,8 +141,9 @@ export function isReadingApiEngine(engine) {
  */
 export function normalizeStoredEngine(engine) {
   if (engine === "groq" || engine === "sudachi") return "hybrid";
-  // Ollama は公開 UI から外したまま。旧設定は端末内へ寄せる
-  if (engine === "ollama") return "kuromoji";
+  // Ollama / Gemini Nano はポップアップで明示選択したときだけ使う LLM エンジン
+  if (engine === "ollama") return "ollama";
+  if (engine === "gemini-nano") return "gemini-nano";
   if (engine === "reading-api") return "reading-api";
   return engine || DEFAULT_SETTINGS.engine;
 }
@@ -163,11 +170,13 @@ export function isRemoteEngine(engine) {
 
 /**
  * 実際にリモート変換を使うか。
- * reading-api はユーザーが明示選択したときだけ（オプトイン）。
+ * reading-api / LLM エンジンはいずれもユーザーが明示選択したときだけ（オプトイン）。
+ * LLM エンジンはどちらも端末内で完結する（Ollama は localhost、Nano は Chrome 内蔵）。
  * @param {{ engine?: string, readingApiUrl?: string }} settings
  */
 export function shouldUseRemoteConversion(settings = {}) {
   const engine = normalizeStoredEngine(settings.engine);
+  if (isLlmEngine(engine)) return true;
   if (!isReadingApiEngine(engine)) return false;
   return Boolean(resolveReadingApiBaseUrl({ ...settings, engine }));
 }

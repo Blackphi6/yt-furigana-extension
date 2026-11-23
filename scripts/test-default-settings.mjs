@@ -32,6 +32,10 @@ if (pickPreferredOllamaModel(["gemma3:4b", "qwen2.5:14b"], "") !== "gemma3:4b") 
   throw new Error("should prefer gemma3:4b when installed");
 }
 
+if (pickPreferredOllamaModel(["gemma3:4b", "gemma3n:e4b"], "") !== "gemma3n:e4b") {
+  throw new Error("should prefer gemma3n:e4b (lightest) when installed");
+}
+
 if (pickPreferredOllamaModel(installed, "qwen2.5:14b") !== "qwen2.5:14b") {
   throw new Error("should keep configured model when installed");
 }
@@ -40,7 +44,7 @@ if (pickPreferredOllamaModel([], "qwen2.5:14b") !== null) {
   throw new Error("empty list should return null");
 }
 
-if (!isLlmEngine("ollama") || isLlmEngine("hybrid")) {
+if (!isLlmEngine("ollama") || !isLlmEngine("gemini-nano") || isLlmEngine("hybrid")) {
   throw new Error("isLlmEngine mismatch");
 }
 
@@ -59,8 +63,11 @@ if (
 if (normalizeStoredEngine("reading-api") !== "reading-api") {
   throw new Error("reading-api must stay as opt-in engine");
 }
-if (normalizeStoredEngine("ollama") !== "kuromoji") {
-  throw new Error("ollama must migrate to kuromoji");
+if (normalizeStoredEngine("ollama") !== "ollama") {
+  throw new Error("ollama must stay selectable (explicit opt-in)");
+}
+if (normalizeStoredEngine("gemini-nano") !== "gemini-nano") {
+  throw new Error("gemini-nano must stay selectable (explicit opt-in)");
 }
 if (normalizeStoredEngine("sudachi") !== "hybrid") {
   throw new Error("sudachi must migrate to hybrid");
@@ -75,8 +82,11 @@ if (shouldUseRemoteConversion({ engine: "kuromoji" })) {
 if (shouldUseRemoteConversion({ engine: "hybrid" })) {
   throw new Error("hybrid must stay local");
 }
-if (shouldUseRemoteConversion({ engine: "ollama" })) {
-  throw new Error("ollama must stay local after normalize");
+if (!shouldUseRemoteConversion({ engine: "ollama" })) {
+  throw new Error("ollama selected explicitly must use remote conversion");
+}
+if (!shouldUseRemoteConversion({ engine: "gemini-nano" })) {
+  throw new Error("gemini-nano selected explicitly must use remote conversion");
 }
 if (
   !shouldUseRemoteConversion({ engine: "reading-api" }) ||

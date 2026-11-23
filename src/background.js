@@ -1,4 +1,8 @@
-import { buildFuriganaPrompt } from "./llm-prompt.js";
+import { buildFuriganaPrompt, buildFuriganaChatMessages } from "./llm-prompt.js";
+import {
+  geminiNanoAvailability,
+  promptGeminiNano
+} from "./gemini-nano.js";
 import {
   DEFAULT_SETTINGS,
   listInstalledModelNames,
@@ -270,6 +274,25 @@ export async function callOllama(text, settings, resolvedModel) {
   }
 }
 
+export async function callGeminiNano(text) {
+  const [systemMessage, userMessage] = buildFuriganaChatMessages(text);
+  const raw = await promptGeminiNano({
+    system: systemMessage.content,
+    user: userMessage.content
+  });
+
+  const segments = parseLlmSegments(raw);
+  const repaired = repairSegmentsToOriginal(text, segments);
+  if (!repaired) {
+    const detail = describeSegmentMismatch(text, segments);
+    throw new Error(
+      `Gemini Nano response failed validation (in="${detail.original.slice(0, 40)}" out="${detail.joined.slice(0, 40)}")`
+    );
+  }
+
+  return segmentsToHtml(repaired);
+}
+
 export async function callReadingApi(text, settings, userDict, userPhrases = {}) {
   const endpoint = normalizeReadingApiUrl(resolveReadingApiBaseUrl(settings));
   if (!endpoint) {
@@ -374,6 +397,16 @@ async function convertWithOllama(text) {
   return html;
 }
 
+async function convertWithGeminiNano(text) {
+  const cacheKey = `gemini-nano:${text}`;
+  if (llmCache.has(cacheKey)) {
+    return llmCache.get(cacheKey);
+  }
+  const html = await callGeminiNano(text);
+  setCache(cacheKey, html);
+  return html;
+}
+
 async function convertWithReadingApi(text) {
   const settings = await getSettings();
   const cacheKey = getReadingApiCacheKey(text, settings);
@@ -409,6 +442,20 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     convertWithOllama(message.text)
       .then((html) => sendResponse({ html, source: "ollama" }))
       .catch((error) => sendResponse({ error: error.message }));
+    return true;
+  }
+
+  if (message?.type === "CONVERT_GEMINI_NANO") {
+    convertWithGeminiNano(message.text)
+      .then((html) => sendResponse({ html, source: "gemini-nano" }))
+      .catch((error) => sendResponse({ error: error.message }));
+    return true;
+  }
+
+  if (message?.type === "CHECK_GEMINI_NANO") {
+    geminiNanoAvailability()
+      .then((status) => sendResponse({ ok: true, status }))
+      .catch((error) => sendResponse({ ok: false, error: error.message }));
     return true;
   }
 

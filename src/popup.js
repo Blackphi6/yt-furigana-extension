@@ -18,6 +18,10 @@ import {
   resolveEntitlement
 } from "./premium.js";
 import { getMergedSettings, saveMergedSettings } from "./settings-storage.js";
+import {
+  ensureGeminiNanoModel,
+  geminiNanoAvailability
+} from "./gemini-nano.js";
 
 const enabledInput = document.getElementById("enabled");
 const readingApiUrlInput = document.getElementById("readingApiUrl");
@@ -44,6 +48,10 @@ const ollamaStatus = document.getElementById("ollamaStatus");
 const engineInputs = document.querySelectorAll('input[name="engine"]');
 const ollamaSettings = document.getElementById("advanced-engine-settings");
 const ollamaSettingsFields = document.getElementById("ollama-settings-fields");
+const geminiNanoSettings = document.getElementById("gemini-nano-settings");
+const geminiNanoStatus = document.getElementById("geminiNanoStatus");
+const testGeminiNanoButton = document.getElementById("testGeminiNano");
+const prepareGeminiNanoButton = document.getElementById("prepareGeminiNano");
 const engineOnboarding = document.getElementById("engine-onboarding");
 const mainSettings = document.getElementById("main-settings");
 const onboardingAccuracyButton = document.getElementById("onboarding-accuracy");
@@ -76,6 +84,18 @@ function updateEnginePanels() {
   if (readingApiSettings) {
     readingApiSettings.hidden = engine !== "reading-api";
   }
+  if (ollamaSettingsFields) {
+    ollamaSettingsFields.hidden = engine !== "ollama";
+  }
+  if (geminiNanoSettings) {
+    geminiNanoSettings.hidden = engine !== "gemini-nano";
+  }
+  if (engine === "gemini-nano") {
+    void refreshGeminiNanoStatus();
+  }
+  if (engine === "ollama") {
+    void refreshInstalledModels();
+  }
   // 公開読み API を選んだ直後は URL 空＝公開サーバーでよい（明示同意はラジオ／初回選択）
   if (engine === "reading-api" && readingApiUrlInput && !readingApiUrlInput.value.trim()) {
     readingApiUrlInput.placeholder = PUBLIC_READING_API_URL;
@@ -87,6 +107,30 @@ function setStatus(el, message, ok) {
   el.hidden = false;
   el.textContent = message;
   el.className = ok ? "status ok" : "status error";
+}
+
+const GEMINI_NANO_STATUS_TEXT = {
+  available: "利用できます",
+  downloadable: "モデルをダウンロードすれば使えます。「モデルを用意する」を押してください",
+  downloading: "モデルのダウンロード中です。終わるまで待ってください",
+  unavailable: "この端末・Chrome では利用できません",
+  unsupported: "この Chrome では内蔵 AI が使えません（Chrome を最新版にしてください）"
+};
+
+async function refreshGeminiNanoStatus() {
+  if (!geminiNanoStatus) return;
+  const status = await geminiNanoAvailability();
+  setStatus(
+    geminiNanoStatus,
+    GEMINI_NANO_STATUS_TEXT[status] ?? status,
+    status === "available"
+  );
+  if (prepareGeminiNanoButton) {
+    prepareGeminiNanoButton.hidden = !(
+      status === "downloadable" || status === "downloading"
+    );
+  }
+  return status;
 }
 
 function updatePlanUi(settings) {
@@ -467,6 +511,43 @@ testOllamaButton?.addEventListener("click", async () => {
   }
 
   setStatus(ollamaStatus, `接続OK（${response.effectiveModel} で変換可能）`, true);
+});
+
+testGeminiNanoButton?.addEventListener("click", async () => {
+  setStatus(geminiNanoStatus, "確認中...", true);
+  await refreshGeminiNanoStatus();
+});
+
+prepareGeminiNanoButton?.addEventListener("click", async () => {
+  if (prepareGeminiNanoButton) prepareGeminiNanoButton.disabled = true;
+  setStatus(geminiNanoStatus, "モデルを用意しています...", true);
+  try {
+    const status = await ensureGeminiNanoModel({
+      onProgress: (fraction) => {
+        setStatus(
+          geminiNanoStatus,
+          `モデルをダウンロード中... ${Math.round(fraction * 100)}%`,
+          true
+        );
+      }
+    });
+    setStatus(
+      geminiNanoStatus,
+      GEMINI_NANO_STATUS_TEXT[status] ?? status,
+      status === "available"
+    );
+    if (prepareGeminiNanoButton) {
+      prepareGeminiNanoButton.hidden = status === "available";
+    }
+  } catch (error) {
+    setStatus(
+      geminiNanoStatus,
+      error?.message ?? "モデルの用意に失敗しました",
+      false
+    );
+  } finally {
+    if (prepareGeminiNanoButton) prepareGeminiNanoButton.disabled = false;
+  }
 });
 
 verifyLicenseButton?.addEventListener("click", async () => {

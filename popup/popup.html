@@ -101,6 +101,64 @@
             接続先を変えたいときは、下の「接続先 URL」に入力してください（セルフホスト可）。
           </p>
         </div>
+
+        <label class="radio">
+          <input type="radio" name="engine" value="ollama" />
+          <span>
+            <strong>ローカル LLM (Ollama)</strong>
+            <small>
+              この端末で動く Ollama のモデルに読みを付けさせます。字幕本文は端末の外へ出ません。
+              軽く動かすなら gemma3n:e4b がおすすめです。
+            </small>
+          </span>
+        </label>
+
+        <div id="ollama-settings-fields" hidden>
+          <label class="field" for="ollamaUrl">
+            <span>Ollama の URL</span>
+            <input type="text" id="ollamaUrl" placeholder="http://localhost:11434" />
+          </label>
+          <label class="field" for="ollamaModel">
+            <span>モデル</span>
+            <select id="ollamaModel"></select>
+          </label>
+          <input
+            type="text"
+            id="ollamaModelCustom"
+            placeholder="モデル名を入力（例: gemma3n:e4b）"
+            hidden
+          />
+          <div class="button-row">
+            <button type="button" id="testOllama" class="button secondary">接続を確認</button>
+          </div>
+          <p class="status" id="ollamaStatus" hidden></p>
+          <p class="hint">
+            モデルが無いときは、ターミナルで <code>ollama pull gemma3n:e4b</code> を実行してください。
+            拡張機能から接続できないときは、Ollama を <code>OLLAMA_ORIGINS=*</code> で起動し直してください。
+          </p>
+        </div>
+
+        <label class="radio">
+          <input type="radio" name="engine" value="gemini-nano" />
+          <span>
+            <strong>Gemini Nano（Chrome 内蔵 AI）</strong>
+            <small>
+              Chrome に内蔵された AI モデルに読みを付けさせます。インストール不要で、字幕本文は端末の外へ出ません。
+              初回だけモデルの用意（ダウンロード）が必要です。
+            </small>
+          </span>
+        </label>
+
+        <div id="gemini-nano-settings" hidden>
+          <div class="button-row">
+            <button type="button" id="testGeminiNano" class="button secondary">状態を確認</button>
+            <button type="button" id="prepareGeminiNano" class="button" hidden>モデルを用意する</button>
+          </div>
+          <p class="status" id="geminiNanoStatus" hidden></p>
+          <p class="hint">
+            対応する Chrome と端末でのみ使えます。「状態を確認」で利用できるかどうかが分かります。
+          </p>
+        </div>
       </details>
 
       <section class="panel">
