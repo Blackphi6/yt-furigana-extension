@@ -56,6 +56,8 @@ const engineOnboarding = document.getElementById("engine-onboarding");
 const mainSettings = document.getElementById("main-settings");
 const onboardingAccuracyButton = document.getElementById("onboarding-accuracy");
 const onboardingPrivacyButton = document.getElementById("onboarding-privacy");
+const onboardingOllamaButton = document.getElementById("onboarding-ollama");
+const onboardingGeminiNanoButton = document.getElementById("onboarding-gemini-nano");
 const onboardingPrivacyLink = document.getElementById("onboardingPrivacyLink");
 
 const CUSTOM_MODEL_VALUE = "__custom__";
@@ -378,6 +380,12 @@ async function completeEngineOnboarding(engine) {
       return;
     }
   }
+  if (engine === "ollama") {
+    const granted = await ensureOllamaPermission(ollamaUrlInput?.value.trim() || "");
+    if (!granted) {
+      return;
+    }
+  }
   await saveSettings({ engineOnboardingDone: true });
   updateOnboardingUi(true);
 }
@@ -460,6 +468,12 @@ onboardingAccuracyButton?.addEventListener("click", () => {
 });
 onboardingPrivacyButton?.addEventListener("click", () => {
   void completeEngineOnboarding(ONBOARDING_ENGINE_PRIVACY);
+});
+onboardingOllamaButton?.addEventListener("click", () => {
+  void completeEngineOnboarding("ollama");
+});
+onboardingGeminiNanoButton?.addEventListener("click", () => {
+  void completeEngineOnboarding("gemini-nano");
 });
 
 testReadingApiButton?.addEventListener("click", async () => {

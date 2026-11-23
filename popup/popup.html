@@ -38,6 +38,18 @@
             この端末だけで読みを付けます。字幕本文は外部へ送りません。珍しい固有語では読みが弱いことがあります。
           </span>
         </button>
+        <button type="button" class="choice" id="onboarding-ollama">
+          <strong>ローカル LLM (Ollama)</strong>
+          <span>
+            この端末の Ollama で読みを付けます。字幕本文は端末の外へ送りません。軽いモデルなら gemma3n:e4b がおすすめです。
+          </span>
+        </button>
+        <button type="button" class="choice" id="onboarding-gemini-nano">
+          <strong>Gemini Nano（Chrome 内蔵 AI）</strong>
+          <span>
+            Chrome に内蔵された AI で読みを付けます。字幕本文は端末の外へ送りません。初回だけモデルの用意が必要です。
+          </span>
+        </button>
         <p class="hint">
           詳細は
           <a id="onboardingPrivacyLink" href="https://blackphi6.github.io/yt-furigana-extension/privacy.html" target="_blank" rel="noreferrer">プライバシー</a>
